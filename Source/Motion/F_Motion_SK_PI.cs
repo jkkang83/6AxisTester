@@ -1,6 +1,4 @@
-﻿using Dln;
-using FZ4P;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -871,9 +869,9 @@ namespace MotorizedStage_SK_PI
             return PI.GetAllPositions();
         }
 
-        public void ConnectSKPI()
+        public bool ConnectSKPI()
         {
-
+            bool res = false;
             if (SK.IsConnected || PI.IsConnected)
             {
                 SK.Disconnect();
@@ -887,16 +885,17 @@ namespace MotorizedStage_SK_PI
 
                     if (string.IsNullOrEmpty(port))
                     {
-                        port = "COM13";
+                        port = "COM10";
                     }
 
-                    SK.Connect(_skAxes, port);
+                    res = SK.Connect(_skAxes, port);
                 }
                 if (_cntPIAxis != 0)
                 {
                     PI.Connect(_piAxes, "169.254.6.64");
                 }
             }
+            return res;
         }
         #endregion
 
@@ -1737,7 +1736,8 @@ namespace MotorizedStage_SK_PI
 
                     // CoordinateSystem
                     cs[axis] = double.Parse(_txtCSList[axis].Text);
-                };
+                }
+                ;
 
                 // SpeedLevel
                 SetSpeedLevelValue(speedLevelValue, (SpeedLevel)SpeedLevelSetGrp);
@@ -1832,6 +1832,57 @@ namespace MotorizedStage_SK_PI
         private void F_Motion_SK_PI_Load(object sender, EventArgs e)
         {
             AppendLogMessage(mInitialMsg);
+        }
+
+
+        bool isTesting = false;
+        bool stopCommand = false;
+
+        private async void btnXYZTest_Click(object sender, EventArgs e)
+        {
+            string xyzPosFile = "C:\\6AxisTester\\DoNotTouch\\Admin\\XYZPos.csv";
+
+            if (!isTesting)
+            {
+                isTesting = true;
+                btnXYZTest.Text = "Stop";
+
+                SetSpeed6D(SpeedLevel.Normal);
+                await Task.Run(async () =>
+                {
+                    while (!stopCommand)
+                    {
+                        for (int idxAxis = 0; idxAxis < _cntSKAxis; idxAxis++)
+                        {
+
+                            MoveHome6D();
+                            await Task.Delay(500);
+                            Axis axis = (Axis)idxAxis;
+                            if (stopCommand) break;
+                            MoveRelAxis(axis, -2000);
+                            await Task.Delay(500);
+
+                            double[] xyzPos = GetCurPos6D();
+                            File.AppendAllText(xyzPosFile, $"{DateTime.Now:MM/dd/yyyy H:mm},{axis},{xyzPos[0]:F3},{xyzPos[1]:F3},{xyzPos[2]:F3}\r\n");
+
+                            if (stopCommand) break;
+                            MoveRelAxis(axis, 4000);
+
+                            xyzPos = GetCurPos6D();
+                            File.AppendAllText(xyzPosFile, $"{DateTime.Now:MM/dd/yyyy H:mm},{axis},{xyzPos[0]:F3},{xyzPos[1]:F3},{xyzPos[2]:F3}\r\n");
+                        }
+                    }
+                });
+
+                isTesting = false;
+                stopCommand = false;
+                btnXYZTest.Text = "XYZ Move";
+            }
+            else
+            {
+                stopCommand = true;
+            }
+
         }
     }
 }

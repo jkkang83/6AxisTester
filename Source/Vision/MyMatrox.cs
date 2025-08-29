@@ -1,26 +1,25 @@
 ﻿
+using Matrox.MatroxImagingLibrary;
+using OpenCvSharp;
 using System;
-using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Runtime.InteropServices;
+using System.Diagnostics;
 using System.Drawing;
-using Matrox.MatroxImagingLibrary;
-using System.Threading;
-
-using System.Windows.Forms;
+using System.IO;
 using System.IO.Ports;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Xml;
-using OpenCvSharp;
 
 namespace S2System.Vision
 {
-    using FZ4P;
     using Dln.Exceptions;
+    using FZ4P;
     using OpenCvSharp.Extensions;
     using OpenCvSharp.Flann;
     using System;
@@ -28,8 +27,7 @@ namespace S2System.Vision
     using System.Runtime.InteropServices;
     using System.Runtime.InteropServices.ComTypes;
     using System.Xml.Serialization;
-    using static alglib;
-    //using static FZ4P.FVision;
+    //using static alglib;
     using static FAutoLearn.FAutoLearn;
     using Point = OpenCvSharp.Point;
     using Size = OpenCvSharp.Size;
@@ -70,16 +68,22 @@ namespace S2System.Vision
         public double[] mC_pTY = new double[10000];  //  Left 0,1 ;; Right 2,3 in a camera view
         public double[] mC_pTZ = new double[10000];  //  Left 0,1 ;; Right 2,3 in a camera view
 
+        public double[] mPrism_pTX = new double[10000];  //  
+        public double[] mPrism_pTY = new double[10000];  //  
+        public double[] mPrism_pTZ = new double[10000];  //  
+
         public double[][] mBufMTF = new double[12][];
         public bool bNoHostPC = false;
 
         public delegate void DelegateStandbyTrigger();
-        public delegate void DelegateAckSignal(int ch, bool IsHigh);
-        DelegateAckSignal AckSignal;
+        //public delegate void DelegateAckSignal(int ch, bool IsHigh);
+        public delegate void DelegateTriggerLossDetected();
+        //DelegateAckSignal AckSignal;
+        DelegateTriggerLossDetected TriggerLoss;
         DelegateStandbyTrigger StandbyTrigger;
-        public void RegisterDelegates(DelegateAckSignal fAckSignal)
+        public void RegisterDelegatesTriggerLoss(DelegateTriggerLossDetected fTriggerLoss)
         {
-            AckSignal = fAckSignal;
+            TriggerLoss = fTriggerLoss;
         }
         public void RegisterDelegatesStandbyTrigger(DelegateStandbyTrigger fStandbyTrigger)
         {
@@ -90,6 +94,10 @@ namespace S2System.Vision
         {
             mC_pX = new double[10000];
             mC_pY = new double[10000];
+            mC_pZ = new double[10000];
+            mC_pTX = new double[10000];
+            mC_pTY = new double[10000];
+            mC_pTZ = new double[10000];
         }
 
         public int mTmpCount = 0;
@@ -110,7 +118,7 @@ namespace S2System.Vision
         public static int allocatedSysNum = 0;
         public static int MAX_DEFAULT_GRAB_COUNT = 2;                     // 
 
-        public static int MAX_TRGGRAB_COUNT = 1000;                     // max 1000Frame/sec * 5sec = 5000
+        public static int MAX_TRGGRAB_COUNT = 10000;                     // max 1000Frame/sec * 5sec = 5000
         public static int MAX_TRGGRAB_6000 = 6050;                     // max 1000Frame/sec * 5sec = 5000
         public static int MAX_TRGGRAB_2500 = 2550;                     // max 1000Frame/sec * 5sec = 5000
         public static int MAX_TRGGRAB_1000 = 1050;                     // max 1000Frame/sec * 5sec = 5000
@@ -164,6 +172,7 @@ namespace S2System.Vision
 
         public double mWaitLimitForNextTrigger = 1000;  //  msec
         double mWaitLimitForNextTriggerSec = 1.0;
+
         public struct sSearchModel
         {
             public int width;
@@ -445,16 +454,6 @@ namespace S2System.Vision
             for (int n = 0; n < MAX_TRGGRAB_COUNT; n++)
                 milCommonImageGrab[n] = MIL.M_NULL;
 
-            for (int n = 0; n < MAX_TRGGRAB_1000; n++)
-            {
-                milAFRelay[n] = MIL.M_NULL;
-                milXRelay[n] = MIL.M_NULL;
-                milYRelay[n] = MIL.M_NULL;
-                milXLinRelay[n] = MIL.M_NULL;
-                milYLinRelay[n] = MIL.M_NULL;
-            }
-            for (int n = 0; n < MAX_TRGGRAB_6000; n++)
-                milCommonImageGrab6000[n] = MIL.M_NULL;
 
             //////// Inquire MIL licenses.
             ////////MIL.MsysInquire(milSystem, MIL.M_OWNER_APPLICATION, ref milRemoteApplication);
@@ -476,14 +475,14 @@ namespace S2System.Vision
 
             if (MIL.MsysAlloc(MIL.M_DEFAULT, SystemName, SystemNum, MIL.M_DEFAULT, ref milSystem) == MIL.M_NULL)
             {
-                MessageBox.Show("Check \"Matrox Imaging Adapter\" in Hardware Management Console.");
-                System.Diagnostics.Process process = new System.Diagnostics.Process();
-                System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
-                startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal;
-                startInfo.FileName = "cmd.exe";
-                startInfo.Arguments = "/C mmc /b devmgmt.msc";
-                process.StartInfo = startInfo;
-                process.Start();
+                //MessageBox.Show("Check \"Matrox Imaging Adapter\" in Hardware Management Console.");
+                //System.Diagnostics.Process process = new System.Diagnostics.Process();
+                //System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
+                //startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal;
+                //startInfo.FileName = "cmd.exe";
+                //startInfo.Arguments = "/C mmc /b devmgmt.msc";
+                //process.StartInfo = startInfo;
+                //process.Start();
                 mMatroxMsg = "Fail to MIL.MsysAlloc()";
                 return false;
             }
@@ -557,7 +556,6 @@ namespace S2System.Vision
                 else
                     break;
             }
-
             MilGrabBufferListSize = MAX_TRGGRAB_COUNT;
             //for (MilGrabBufferListSize = 0; MilGrabBufferListSize < MAX_TRGGRAB_COUNT; MilGrabBufferListSize++)
             //{
@@ -1129,11 +1127,13 @@ namespace S2System.Vision
         // 이미지 사이즈
         private readonly Size srcSize = new Size(1800, 342);
         private readonly Size resultSize = new Size(Global.mMergeImgWidth, Global.mMergeImgHeight);
+        private readonly Size resultSizeWide = new Size(Global.mMergeImgWidth + 40, Global.mMergeImgHeight);
         // 이미지 3부분으로 구분 Rect
         //private readonly Rect[] mSplitRect = new Rect[3];
         // Crop Rect
         public Rect[] mSrcCropRect = new Rect[4];
         private readonly Rect[] resultRoiRect = new Rect[4];
+        private readonly Rect[] resultRoiRectWide = new Rect[4];
 
         public int CropABgap = 0;
         public int CropCgap
@@ -1188,7 +1188,8 @@ namespace S2System.Vision
                     mSrcCropRect[i] = new Rect(srcRoiPos[i].X, srcRoiPos[i].Y, roiSize[i].Width, roiSize[i].Height);
                 }
 
-            };
+            }
+            ;
 
             // cropImg ROI 설정
             Point[] resultRoiPos = new Point[4];
@@ -1202,24 +1203,75 @@ namespace S2System.Vision
             for (int i = 0; i < 4; i++)
             {
                 resultRoiRect[i] = new Rect(resultRoiPos[i].X, resultRoiPos[i].Y, roiSize[i].Width, roiSize[i].Height);
+                resultRoiRectWide[i] = new Rect(resultRoiPos[i].X, resultRoiPos[i].Y, roiSize[i].Width, roiSize[i].Height);
+                if (i == 3)
+                    resultRoiRectWide[i] = new Rect(resultRoiPos[i].X, resultRoiPos[i].Y, roiSize[i].Width + 40, roiSize[i].Height);
             }
 
             SaveCropPosToXml();
         }
 
         public bool mbDrawReference = false;
-        public Mat LoadCropImg(int index)
+        public Mat GrabLoadCropImg(int index, bool bDrawReference)
         {
-            MIL.MdigGrab(milDigitizer, milCommonImageGrab[index]);    //
+            MIL.MdigGrab(milDigitizer, milCommonImageGrab[index]);
             MIL.MdigGrabWait(milDigitizer, MIL.M_GRAB_FRAME_END);
             //MIL.MbufExport("D:\\TestImage.bmp", MIL.M_BMP, milCommonImageGrab[index]);
+            MIL.MbufCopy(milCommonImageGrab[index], milImageDisp);
+            Mat cropImg = LoadCropMat(index);
+
+            //Cv2.ImWrite("D:\\CVImage.bmp", src);
+
+            if (bDrawReference)
+            {
+                Mat lOverlayedImg = new Mat();
+                Cv2.CvtColor(cropImg, lOverlayedImg, ColorConversionCodes.GRAY2RGB);
+
+                for (int i = 0; i < 5; i++)
+                {
+                    int x = (int)mFAL.mMarkPosOnPanel[i].X;
+                    int y = (int)mFAL.mMarkPosOnPanel[i].Y;
+                    Cv2.Line(lOverlayedImg, x - 10, y, x + 10, y, Scalar.OrangeRed, 1, LineTypes.Link4);
+                    Cv2.Line(lOverlayedImg, x, y - 10, x, y + 10, Scalar.OrangeRed, 1, LineTypes.Link4);
+                }
+                //return BitmapConverter.ToBitmap(lOverlayedImg);
+                return lOverlayedImg;
+            }
+            else
+                //return BitmapConverter.ToBitmap(cropImg);
+                return cropImg;
+        }
+        public Mat LoadCropImgFromLive(int index, bool bDrawReference)
+        {
             byte[] buf = new byte[nSizeX * nSizeY];
-            MIL.MbufCopy(milImageDisp, milCommonImageGrab[index]);
+            MIL.MbufGet2d(milImageDisp, 0, 0, nSizeX, nSizeY, buf);
+            Mat src = new Mat(nSizeY, nSizeX, MatType.CV_8UC1, buf);
+            Mat cropImg = CropImage(src);
+
+            if (bDrawReference)
+            {
+                Mat lOverlayedImg = new Mat();
+                Cv2.CvtColor(cropImg, lOverlayedImg, ColorConversionCodes.GRAY2RGB);
+
+                for (int i = 0; i < 5; i++)
+                {
+                    int x = (int)mFAL.mMarkPosOnPanel[i].X;
+                    int y = (int)mFAL.mMarkPosOnPanel[i].Y;
+                    Cv2.Line(lOverlayedImg, x - 10, y, x + 10, y, Scalar.OrangeRed, 1, LineTypes.Link4);
+                    Cv2.Line(lOverlayedImg, x, y - 10, x, y + 10, Scalar.OrangeRed, 1, LineTypes.Link4);
+                }
+                return lOverlayedImg;
+            }
+            else
+                return cropImg;
+        }
+        public Mat LoadCropImgWide(int index)
+        {
+            byte[] buf = new byte[nSizeX * nSizeY];
             MIL.MbufGet2d(milCommonImageGrab[index], 0, 0, nSizeX, nSizeY, buf);
 
             Mat src = new Mat(nSizeY, nSizeX, MatType.CV_8UC1, buf);
-            //Cv2.ImWrite("D:\\CVImage.bmp", src);
-            Mat cropImg = CropImage(src);
+            Mat cropImg = CropImageWide(src);
 
             if (mbDrawReference)
             {
@@ -1243,9 +1295,6 @@ namespace S2System.Vision
         public Mat LoadCropMat(int index)
         {
             byte[] buf = new byte[nSizeX * nSizeY];
-            MIL.MbufCopy(milImageDisp, milCommonImageGrab[index]);
-
-
             MIL.MbufGet2d(milCommonImageGrab[index], 0, 0, nSizeX, nSizeY, buf);
 
             Mat src = new Mat(nSizeY, nSizeX, MatType.CV_8UC1, buf);
@@ -1277,7 +1326,7 @@ namespace S2System.Vision
             DrawSetDCfree();
         }
 
-        private Mat CropImage(Mat src)
+        public Mat CropImage(Mat src)
         {
             Mat result = new Mat(resultSize, MatType.CV_8UC1, new Scalar(0));
 
@@ -1291,6 +1340,26 @@ namespace S2System.Vision
             }
             return result;
         }
+        public Mat CropImageWide(Mat src)
+        {
+            Mat result = new Mat(resultSizeWide, MatType.CV_8UC1, new Scalar(0));
+
+            Rect[] lSrcCropRectWide = new Rect[4];
+            lSrcCropRectWide[0] = new Rect(mSrcCropRect[0].X, mSrcCropRect[0].Y, mSrcCropRect[0].Width, mSrcCropRect[0].Height);
+            lSrcCropRectWide[1] = new Rect(mSrcCropRect[1].X, mSrcCropRect[1].Y, mSrcCropRect[1].Width, mSrcCropRect[1].Height);
+            lSrcCropRectWide[2] = new Rect(mSrcCropRect[2].X, mSrcCropRect[2].Y, mSrcCropRect[2].Width, mSrcCropRect[2].Height);
+            lSrcCropRectWide[3] = new Rect(mSrcCropRect[3].X, mSrcCropRect[3].Y, mSrcCropRect[3].Width + 40, mSrcCropRect[3].Height);
+
+            for (int i = 0; i < 4; i++)
+            {
+                using (Mat srcRoi = src.SubMat(lSrcCropRectWide[i]))
+                using (Mat resultRoi = result.SubMat(resultRoiRectWide[i]))
+                {
+                    srcRoi.CopyTo(resultRoi);
+                }
+            }
+            return result;
+        }
 
         private void CropImage(int index, int nbuf)
         {
@@ -1298,7 +1367,7 @@ namespace S2System.Vision
             // MIL 에서 Mat 로 변환한 뒤 Merge
             MIL.MbufGet2d(milCommonImageGrab[index], 0, 0, nSizeX, nSizeY, buf);
             //if ( index==0)
-            //    MIL.MbufExport("C:\\CSHTest\\Result\\RawData\\Image\\Crop.bmp", MIL.M_BMP, milCommonImageGrab[index]);
+            //    MIL.MbufExport("C:\\6AxisTester\\Result\\RawData\\Image\\Crop.bmp", MIL.M_BMP, milCommonImageGrab[index]);
 
             Mat src = new Mat(nSizeY, nSizeX, MatType.CV_8UC1, buf);
             mFAL.mSourceImg[nbuf].SetTo(new Scalar(0));
@@ -1471,7 +1540,7 @@ namespace S2System.Vision
         {
             CropABgap = mSrcCropRect[0].Bottom - mSrcCropRect[1].Top;
             mFAL.SetCropGaps(CropABgap, CropCgap);
-            string filePath = "C:\\B7WideTest\\DoNotTouch\\";
+            string filePath = "C:\\6AxisTester\\DoNotTouch\\";
             if (!Directory.Exists(filePath))
             {
                 Directory.CreateDirectory(filePath);
@@ -1487,7 +1556,7 @@ namespace S2System.Vision
         public bool LoadCropPosFromXml(string camID)
         {
             CamID = camID;
-            string filePath = $"C:\\B7WideTest\\DoNotTouch\\CropPos{CamID}.xml";
+            string filePath = $"C:\\6AxisTester\\DoNotTouch\\CropPos{CamID}.xml";
             try
             {
                 XmlSerializer serializer = new XmlSerializer(typeof(Rect[]));
@@ -1532,12 +1601,13 @@ namespace S2System.Vision
             Mat img = LoadCropMat(index);
             img.SaveImage(FullbmpName);
 
-            byte[] data = null;
-            img.GetArray(out data);
-            StreamWriter wr = new StreamWriter("raw" + index.ToString() + ".csv");
-            for (int i = 0; i < data.Length; i++)
-                wr.WriteLine(data[i].ToString());
-            wr.Close();
+
+            //byte[] data = null;
+            //img.GetArray(out data);
+            //StreamWriter wr = new StreamWriter("raw" + index.ToString() + ".csv");
+            //for ( int i=0; i< data.Length; i++)
+            //    wr.WriteLine(data[i].ToString());
+            //wr.Close();
 
         }
         public void SaveCompressedImage(int index, string FullbmpName)
@@ -1567,7 +1637,7 @@ namespace S2System.Vision
 
             //MIL.MbufClear(milImageDisp, 0);  //
             MIL.MdigGrab(milDigitizer, milCommonImageGrab[i]);    //
-            MIL.MdigGrabWait(milDigitizer, MIL.M_GRAB_FRAME_END); //   카메라 없을 경우 에러남. 에러 처리 필요. 
+            //MIL.MdigGrabWait(milDigitizer, MIL.M_GRAB_FRAME_END); //   카메라 없을 경우 에러남. 에러 처리 필요. 
 
             //MIL.MbufCopy(milCommonImageGrab[i], milImageDisp);
 
@@ -1746,7 +1816,7 @@ namespace S2System.Vision
             }
             MIL.MbufPut2d(milCommonImageGrab[0], 0, 0, nSizeX, nSizeY, p_Value[0]);
             MIL.MbufCopy(milCommonImageGrab[0], milImageDisp);
-            string FullbmpName = "C:\\B7WideTest\\Result\\RawData\\Image\\Balancing.bmp";
+            string FullbmpName = "C:\\6AxisTester\\Result\\RawData\\Image\\Balancing.bmp";
 
             MIL.MbufExport(FullbmpName, MIL.M_BMP, milCommonImageGrab[0]);
         }
@@ -2361,7 +2431,15 @@ namespace S2System.Vision
             {
                 //  0 번 프레임의 경우 모든 버퍼에 0번 프레임을 넣어준다. MultiTask작업 시 각 Task 에서 각 버퍼를 독립적으로 활용한다.
                 if (!IsFile)
+                {
                     CropImage(0, 0);
+                }
+                else
+                {
+                    mFAL.mSourceImg[0] = new Mat(Global.mMergeImgHeight, Global.mMergeImgWidth, MatType.CV_8UC1);
+                    mFAL.mSourceImg[0].SetArray(mFAL.mCommonImgFile[index]);
+                }
+
 
                 mFAL.ResizeSourceImg(0, 0);
                 for (int nbuf = 1; nbuf < 30; nbuf++)
@@ -2369,12 +2447,17 @@ namespace S2System.Vision
                     mFAL.mSourceImg[0].CopyTo(mFAL.mSourceImg[nbuf]);
                     mFAL.ResizeSourceImg(nbuf, nbuf); //  시간 많이 걸림. 단축할 필요 있음
                 }
-                //mFAL.mSourceImg[0].SaveImage("C:\\CSHTest\\Result\\RawData\\Image\\Crop2.bmp");
+                //mFAL.mSourceImg[0].SaveImage("C:\\6AxisTester\\Result\\RawData\\Image\\Crop2.bmp");
             }
             else
             {
                 if (!IsFile)
                     CropImage(index, iBuf);
+                else
+                {
+                    mFAL.mSourceImg[iBuf] = new Mat(Global.mMergeImgHeight, Global.mMergeImgWidth, MatType.CV_8UC1);
+                    mFAL.mSourceImg[iBuf].SetArray(mFAL.mCommonImgFile[index]);
+                }
                 mFAL.ResizeSourceImg(iBuf, iBuf);
             }
 
@@ -2407,7 +2490,7 @@ namespace S2System.Vision
                     m_sMR[i] = sMR[i];
                 }
             }
-            //if (IsShowBox)    //  Crop 영상에서 보여줘야 하므로 FZ4P 에서는 아래 기능이 의미 없다.
+            //if (IsShowBox)    //  Crop 영상에서 보여줘야 하므로 CSH030Ex 에서는 아래 기능이 의미 없다.
             //{
             //    for (int i = 0; i < markPos.Length; i++)
             //    {
@@ -2497,6 +2580,7 @@ namespace S2System.Vision
             //////////////////////////////////////////////////////////////////////////////////////
             //////////////////////////////////////////////////////////////////////////////////////
             double umsale = 5.5 / Global.LensMag;
+            double[] lPrismTXTYTZ = new double[3];
 
             if (Nfound >= 5 && need6D)
             {
@@ -2511,10 +2595,10 @@ namespace S2System.Vision
                 mC_pY[index] = lTranslation.Y;// - mFAL.mFZM.mZtoYbyView[1] * mC_pZ[index] - mFAL.mFZM.mXtoYbyView[1] * mC_pX[index] + mC_pTX[index] * 1.875134602 ; //  영상에서 위쪽으로 이동이 + 방향 되도록 조정함.
 
             }
-            if (lTranslation.X == 0 && bSaveLostMarkFrame)
+            if ((lTranslation.X == 0 && bSaveLostMarkFrame))
             {
                 DateTime dtNow = DateTime.Now;
-                string filename = "C:\\B7WideTest\\Result\\log\\Err" + index.ToString() + "_" + dtNow.ToString("ddHHmmss.fff") + ".bmp";
+                string filename = "C:\\6AxisTester\\Result\\log\\Err" + index.ToString() + "_" + dtNow.ToString("ddHHmmss.fff") + ".bmp";
                 mFAL.mSourceImg[iBuf].SaveImage(filename);
             }
 
@@ -2524,6 +2608,7 @@ namespace S2System.Vision
         public FAutoLearn.FZMath.Point2D[][] mMarkPosRes = new FAutoLearn.FZMath.Point2D[5][];
 
         bool bSaveLostMarkFrame = false;
+        public bool bPrismCoordinateSystem = false;
         public void SetSaveLostMarkFrame(bool which)
         {
             bSaveLostMarkFrame = which;
@@ -2638,7 +2723,7 @@ namespace S2System.Vision
         public string CheckResultFolder()
         {
             DateTime dt = DateTime.Now;
-            string resDirectory = "C:\\B7WideTest\\Data\\" + dt.Year + "\\" + dt.Month + "\\" + dt.Day + "\\";
+            string resDirectory = "C:\\6AxisTester\\Data\\" + dt.Year + "\\" + dt.Month + "\\" + dt.Day + "\\";
             if (!Directory.Exists(resDirectory))
                 Directory.CreateDirectory(resDirectory);
             return resDirectory;
@@ -2886,6 +2971,7 @@ namespace S2System.Vision
         public double[] mGrabAbsTiming = new double[11000];
         public static long mLastGrabTiming = 0;
         public static int mTriggeredFrameCount = 0;
+        public static int mStaticRequestedFrameCount = 0;
 
         public int GetTriggeredframeCount()
         {
@@ -2900,6 +2986,9 @@ namespace S2System.Vision
         static MIL_INT ProcessingFunction(MIL_INT HookType, MIL_ID HookId, IntPtr HookDataPtr)
         {
             //  최대 프레임 개수 넘어가면 자동으로 앞쪽 프레임은 삭제됨
+            if (mTriggeredFrameCount >= mStaticRequestedFrameCount)
+                return 0;
+
             MIL_ID ModifiedBufferId = MIL.M_NULL;
 
             //// this is how to check if the user data is null, the IntPtr class
@@ -3066,6 +3155,7 @@ namespace S2System.Vision
 
             mTrgBufLength = mRequestedTriggerCount;
             mTargetTriggerCount = mRequestedTriggerCount;
+            mStaticRequestedFrameCount = mRequestedTriggerCount;
             //AckSignal(1, true);
             //Thread.Sleep(100);
 
@@ -3100,6 +3190,10 @@ namespace S2System.Vision
 
             MIL.MdigProcess(milDigitizer, milCommonImageGrab, MilGrabBufferListSize, MIL.M_STOP, MIL.M_DEFAULT, ProcessingFunctionPtr, GCHandle.ToIntPtr(hUserData));
 
+            //  Tigger 개수 부족할 떄 신호 출력해주기
+            if (mRequestedTriggerCount > mTriggeredFrameCount)
+                TriggerLoss();
+
             ////////////////////////////////////////////////////
             //SupremeTimer.QueryPerformanceCounter(ref mAfterTime);
             //double digFreeTime = (mAfterTime - mBeforeTime) / (double)lTimerFrequency;
@@ -3129,14 +3223,28 @@ namespace S2System.Vision
                 dAFZM_FrameCount = MAX_TRGGRAB_COUNT;
 
             fperSec = ProcessFrameRate;
-            //MessageBox.Show(ProcessFrameCount.ToString() + " frames grabbed at " + ProcessFrameRate.ToString("F1") + " frames/sec " + (1000.0 / ProcessFrameRate).ToString("f3") + " ms/frame).");
-            StreamWriter wr = new StreamWriter("C:\\B7WideTest\\DoNotTouch\\Admin\\GrabTiming.csv");
-            for (int i = 0; i < ProcessFrameCount; i++)
+            DateTime dt = DateTime.Now;
+            string resDirectory = "C:\\6AxisTester\\Data\\" + dt.Year + "\\" + dt.Month + "\\" + dt.Day + "\\" + "GrabTiming\\";
+            if (!Directory.Exists(resDirectory))
+                Directory.CreateDirectory(resDirectory);
+            if (mRequestedTriggerCount > mTriggeredFrameCount)
             {
-                mGrabAbsTiming[i] = (mGrabTiming[i] - mGrabTiming[0]) / (double)(lTimerFrequency);
-                wr.WriteLine(mGrabAbsTiming[i].ToString("F6"));
+                StreamWriter wr = new StreamWriter(resDirectory + "F_GrabTiming_" + mRequestedTriggerCount.ToString() + dt.ToString("_hhmmss") + ".csv");
+                string gstr = "";
+                for (int i = 0; i < dAFZM_FrameCount; i++)
+                {
+                    mGrabAbsTiming[i] = (mGrabTiming[i] - mGrabTiming[0]) / (double)(lTimerFrequency);
+                    if (i > 0)
+                    {
+                        gstr += $"{i},{mGrabAbsTiming[i]:F4},{mGrabAbsTiming[i] - mGrabAbsTiming[i - 1]:F4}\r\n";
+                    }
+                    else
+                        gstr += i.ToString("F4") + "," + mGrabAbsTiming[i].ToString("F4") + "\r\n";
+                }
+                wr.Write(gstr);
+                wr.Close();
             }
-            wr.Close();
+
 
             mBeforeTime = mGrabTiming[0];
             //frameCount = (int)ProcessFrameCount;
@@ -3221,15 +3329,19 @@ namespace S2System.Vision
             //mTriggeredFrameCount
             int overtimeCount = 0;
             int skipCount = 0;
+
+            int skipTimeOut = 100;
+            if (mTargetTriggerCount > 5) skipTimeOut = 6;
             while (true)
             {
                 Thread.Sleep(10);
 
                 if (oldTriggeredFrameCount == mTriggeredFrameCount && mLastGrabTiming > 0)
                 {
-                    if (skipCount++ > 6)
+                    if (skipCount++ > skipTimeOut)
                     {
-                        mMatroxMsg += mTriggeredFrameCount.ToString() + "\r\n";
+                        //mMatroxMsg += mTriggeredFrameCount.ToString() + "\r\n";
+                        mMatroxMsg = "Timeout skipCount \r\n";
                         mAbort = false;
                         break;
                     }
@@ -3260,13 +3372,14 @@ namespace S2System.Vision
                     {
                         //  In case of Direct trigger from MCU Block, do not make "Timeout 4"
                         mMatroxMsg = "Timeout 4 \r\n";
+                        mAbort = false;
                         break;
                     }
                     else
                     {
                         //  In case of Trigger controlled By Host PC. Make "Timeout 5" 
                         mMatroxMsg = "Timeout 5 \tLimitTime = " + limitTime.ToString("F3") + "\twaitingTime = " + waitingTime.ToString("F3") + " TriggeredFrame = " + mTriggeredFrameCount.ToString() + " TargetFrame = " + maxGrab.ToString() + "r\n";
-                        mAbort = true;
+                        mAbort = false;
                         break;
                     }
                 }
@@ -3346,35 +3459,6 @@ namespace S2System.Vision
                     break;
             }
         }
-        public Mat GrabLoadCropImg(int index, bool bDrawReference)
-        {
-            MIL.MdigGrab(milDigitizer, milCommonImageGrab[index]);
-            MIL.MdigGrabWait(milDigitizer, MIL.M_GRAB_FRAME_END);
-            //MIL.MbufExport("D:\\TestImage.bmp", MIL.M_BMP, milCommonImageGrab[index]);
-            MIL.MbufCopy(milCommonImageGrab[index], milImageDisp);
-            Mat cropImg = LoadCropMat(index);
-
-            //Cv2.ImWrite("D:\\CVImage.bmp", src);
-
-            if (bDrawReference)
-            {
-                Mat lOverlayedImg = new Mat();
-                Cv2.CvtColor(cropImg, lOverlayedImg, ColorConversionCodes.GRAY2RGB);
-
-                for (int i = 0; i < 5; i++)
-                {
-                    int x = (int)mFAL.mMarkPosOnPanel[i].X;
-                    int y = (int)mFAL.mMarkPosOnPanel[i].Y;
-                    Cv2.Line(lOverlayedImg, x - 10, y, x + 10, y, Scalar.OrangeRed, 1, LineTypes.Link4);
-                    Cv2.Line(lOverlayedImg, x, y - 10, x, y + 10, Scalar.OrangeRed, 1, LineTypes.Link4);
-                }
-                //return BitmapConverter.ToBitmap(lOverlayedImg);
-                return lOverlayedImg;
-            }
-            else
-                //return BitmapConverter.ToBitmap(cropImg);
-                return cropImg;
-        }
         public void ReplayBufToDisp(string name, int delay)
         {
             switch (name)
@@ -3390,14 +3474,14 @@ namespace S2System.Vision
                     for (int i = 0; i < XRelayCnt; i++)
                     {
                         MIL.MbufCopy(milXRelay[i], milImageDisp);
-                        Thread.Sleep(delay+80);
+                        Thread.Sleep(delay);
                     }
                     break;
                 case "OIS Y Scan":
                     for (int i = 0; i < YRelayCnt; i++)
                     {
                         MIL.MbufCopy(milYRelay[i], milImageDisp);
-                        Thread.Sleep(delay+80);
+                        Thread.Sleep(delay);
                     }
                     break;
                 case "OIS Matrix Scan":
@@ -3442,6 +3526,4 @@ namespace S2System.Vision
             }
         }
     }
-
 }
-

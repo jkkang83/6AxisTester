@@ -60,7 +60,7 @@ namespace FZ4P
             this.TilteText.ReadOnly = true;
             this.TilteText.Size = new System.Drawing.Size(901, 144);
             this.TilteText.TabIndex = 332;
-            this.TilteText.Text = "B7 Wide Tester";
+            this.TilteText.Text = "6 Axis Tester";
             this.TilteText.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // textBox1

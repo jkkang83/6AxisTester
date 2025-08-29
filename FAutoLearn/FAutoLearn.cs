@@ -24,7 +24,7 @@ namespace FAutoLearn
     {
 
         public string mOrgFile = "";
-        string RootPath = "C:\\CSHTest\\DoNotTouch\\";
+        string RootPath = "C:\\6AxisTester\\DoNotTouch\\";
 
         public FZMath mFZM = new FZMath();
         public MOTSimDlg motSimDlg = new MOTSimDlg();
@@ -464,7 +464,7 @@ namespace FAutoLearn
 
             //var folder = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\\RawData"));
             //string sFilePath = folder;
-            string sFilePath = Path.GetFullPath("C:\\CSHTest\\Result\\RawData");
+            string sFilePath = Path.GetFullPath("C:\\6AxisTester\\Result\\RawData");
             if (!Directory.Exists(sFilePath))
                 Directory.CreateDirectory(sFilePath);
 
@@ -2256,7 +2256,7 @@ namespace FAutoLearn
 
             BackupFMI();
             DetectInSelectedFile();
-            //string fileName = "C:\\CSHTest\\Result\\RawData\\Image\\" + mOrgFile.Substring(mOrgFile.LastIndexOf("\\"), mOrgFile.LastIndexOf(".") - mOrgFile.LastIndexOf("\\")) + "_mark.bmp";
+            //string fileName = "C:\\6AxisTester\\Result\\RawData\\Image\\" + mOrgFile.Substring(mOrgFile.LastIndexOf("\\"), mOrgFile.LastIndexOf(".") - mOrgFile.LastIndexOf("\\")) + "_mark.bmp";
             //mOverlayedImg.SaveImage(fileName);
             RecoverFromBackupFMI();
 
@@ -2272,8 +2272,8 @@ namespace FAutoLearn
             Mat ImgDest = new Mat();
             Cv2.Resize(mSourceImg[srcBuf], ImgDest, new OpenCvSharp.Size(mSourceImg[srcBuf].Width / mModelScale, mSourceImg[srcBuf].Height / mModelScale), 1.0 / mModelScale, 1.0 / mModelScale, InterpolationFlags.Area);  //  1/mModelScale 축소
             ImgDest.GetArray(out q_Value[resizeBuf]);   //  ImgDest : 1/mModelScale Compressed Image
-            //mSourceImg[srcBuf].SaveImage("C:\\CSHTest\\Result\\RawData\\Image\\Src.bmp");
-            //ImgDest.SaveImage("C:\\CSHTest\\Result\\RawData\\Image\\qSrc.bmp");
+            //mSourceImg[srcBuf].SaveImage("C:\\6AxisTester\\Result\\RawData\\Image\\Src.bmp");
+            //ImgDest.SaveImage("C:\\6AxisTester\\Result\\RawData\\Image\\qSrc.bmp");
         }
         public void DetectInSelectedFile(int findex = 0)
         {
@@ -2312,8 +2312,8 @@ namespace FAutoLearn
             //  여기서 마크 찾기를 수행한다.
             Cv2.Resize(src, ImgDest, new OpenCvSharp.Size(src.Width / mModelScale, src.Height / mModelScale), 1.0 / mModelScale, 1.0 / mModelScale, InterpolationFlags.Area);  //  1/mModelScale 축소
             ImgDest.GetArray(out q_Value[0]);   //  ImgDest : 1/mModelScale Compressed Image
-            //src.SaveImage("C:\\CSHTest\\Result\\RawData\\Image\\Src.bmp");
-            //ImgDest.SaveImage("C:\\CSHTest\\Result\\RawData\\Image\\qSrc.bmp");
+            //src.SaveImage("C:\\6AxisTester\\Result\\RawData\\Image\\Src.bmp");
+            //ImgDest.SaveImage("C:\\6AxisTester\\Result\\RawData\\Image\\qSrc.bmp");
             //Bitmap image = null;
             //image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(ImgDest);
             //pictureBox4.Image = image;
@@ -6895,7 +6895,7 @@ namespace FAutoLearn
                     return posFoundS;
                 }
                 //if (si == 3)
-                //    tgtImg.SaveImage("C:\\CSHTest\\Result\\RawData\\Image\\tgt.bmp");
+                //    tgtImg.SaveImage("C:\\6AxisTester\\Result\\RawData\\Image\\tgt.bmp");
                 //////if (si == 2)
                 //////{
                 //////    tgtImg.SaveImage("img" + iIndex.ToString() + "_" + si.ToString() + "_" + convFoundS[si].ToString() + ".bmp");
@@ -6961,7 +6961,7 @@ namespace FAutoLearn
                     //if (si == 5 )
                     //{
                     //    DateTime now = DateTime.Now;
-                    //    string filename = "C:\\CSHTest\\Result\\RawData\\Image\\HistMark" + mCandidateIndex.ToString() + "_" + now.ToString("MMddhhmmss") + ".csv";
+                    //    string filename = "C:\\6AxisTester\\Result\\RawData\\Image\\HistMark" + mCandidateIndex.ToString() + "_" + now.ToString("MMddhhmmss") + ".csv";
 
                     //    StreamWriter sr = new StreamWriter(filename);
                     //    for (int j = 0; j < 255; j++)
@@ -7113,7 +7113,7 @@ namespace FAutoLearn
                         //    tmpByte[pi] = (byte)((128 + yDiffimg[pi] / 2));
                         //}
                         //Mat tmpImg = new Mat(tWidth, tHeight_1, MatType.CV_8U, tmpByte);
-                        //tmpImg.SaveImage("C:\\CSHTest\\Result\\RawData\\Image\\Ydiff" + si.ToString() + ".bmp");
+                        //tmpImg.SaveImage("C:\\6AxisTester\\Result\\RawData\\Image\\Ydiff" + si.ToString() + ".bmp");
 
                         //tmpByte = new byte[xDiffimg.Length];
                         //for (int pi = 0; pi < xDiffimg.Length; pi++)
@@ -7121,7 +7121,7 @@ namespace FAutoLearn
                         //    tmpByte[pi] = (byte)((128 + xDiffimg[pi] / 2));
                         //}
                         //tmpImg = new Mat(tHeight, tWidth_1, MatType.CV_8U, tmpByte);
-                        //tmpImg.SaveImage("C:\\CSHTest\\Result\\RawData\\Image\\Xdiff" + si.ToString() + ".bmp");
+                        //tmpImg.SaveImage("C:\\6AxisTester\\Result\\RawData\\Image\\Xdiff" + si.ToString() + ".bmp");
                     }
                 }
 
@@ -11706,7 +11706,7 @@ private void button15_Click(object sender, EventArgs e)
             //  모델을 만들때 또는 모델의 좌표정보를 업데이트할 때 Schematic File 의 이름을 새롭게 변경한 뒤 열어야 한다.
 
             //var folder = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\\Schematic"));
-            var folder = Path.GetFullPath("C:\\CSHTest\\DoNotTouch\\Schematic");
+            var folder = Path.GetFullPath("C:\\6AxisTester\\DoNotTouch\\Schematic");
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
 
@@ -13391,7 +13391,7 @@ private void button15_Click(object sender, EventArgs e)
 
         private void button25_Click(object sender, EventArgs e)
         {
-            var folder =  "C:\\CSHTest\\Result\\RawData\\Image";
+            var folder = "C:\\6AxisTester\\Result\\RawData\\Image";
 
             int clipOffset = 60;
             if ( tbClipOffset.Text.Length > 0)

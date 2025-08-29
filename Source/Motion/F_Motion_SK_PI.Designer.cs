@@ -33,8 +33,10 @@ namespace MotorizedStage_SK_PI
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(F_Motion_SK_PI));
             this.Label1 = new System.Windows.Forms.Label();
+            this.ConnectBtn = new System.Windows.Forms.Button();
             this.SetGrp = new System.Windows.Forms.GroupBox();
             this.IsEditChk = new System.Windows.Forms.CheckBox();
+            this.ResetBtn = new System.Windows.Forms.Button();
             this.SetHomeGrp = new System.Windows.Forms.GroupBox();
             this.homeFileTxt = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -51,6 +53,7 @@ namespace MotorizedStage_SK_PI
             this.XHomeTxt = new System.Windows.Forms.TextBox();
             this.label67 = new System.Windows.Forms.Label();
             this.CurPosToHomeBtn = new System.Windows.Forms.Button();
+            this.SetBtn = new System.Windows.Forms.Button();
             this.CoordinateGrp = new System.Windows.Forms.GroupBox();
             this.label74 = new System.Windows.Forms.Label();
             this.TZCSTxt = new System.Windows.Forms.TextBox();
@@ -127,6 +130,10 @@ namespace MotorizedStage_SK_PI
             this.MoveTypeCbo = new System.Windows.Forms.ComboBox();
             this.AxisMovPnl = new System.Windows.Forms.Panel();
             this.label27 = new System.Windows.Forms.Label();
+            this.StopAxisBtn = new System.Windows.Forms.Button();
+            this.MoveAxisBtn = new System.Windows.Forms.Button();
+            this.JogMinusBtn = new System.Windows.Forms.Button();
+            this.JogPlusBtn = new System.Windows.Forms.Button();
             this.label12 = new System.Windows.Forms.Label();
             this.targetPosTxt = new System.Windows.Forms.TextBox();
             this.AllAxesMovPnl = new System.Windows.Forms.Panel();
@@ -226,19 +233,13 @@ namespace MotorizedStage_SK_PI
             this.label105 = new System.Windows.Forms.Label();
             this.label106 = new System.Windows.Forms.Label();
             this.TZCurPosTxt = new System.Windows.Forms.TextBox();
+            this.CloseBtn = new System.Windows.Forms.Button();
+            this.LogClearBtn = new System.Windows.Forms.Button();
             this.ReferenceHexapodBtn = new System.Windows.Forms.Button();
             this.ReferencXYZBtn = new System.Windows.Forms.Button();
             this.label30 = new System.Windows.Forms.Label();
             this.label36 = new System.Windows.Forms.Label();
-            this.LogClearBtn = new System.Windows.Forms.Button();
-            this.CloseBtn = new System.Windows.Forms.Button();
-            this.ResetBtn = new System.Windows.Forms.Button();
-            this.SetBtn = new System.Windows.Forms.Button();
-            this.ConnectBtn = new System.Windows.Forms.Button();
-            this.StopAxisBtn = new System.Windows.Forms.Button();
-            this.MoveAxisBtn = new System.Windows.Forms.Button();
-            this.JogMinusBtn = new System.Windows.Forms.Button();
-            this.JogPlusBtn = new System.Windows.Forms.Button();
+            this.btnXYZTest = new System.Windows.Forms.Button();
             this.SetGrp.SuspendLayout();
             this.SetHomeGrp.SuspendLayout();
             this.CoordinateGrp.SuspendLayout();
@@ -268,6 +269,23 @@ namespace MotorizedStage_SK_PI
             this.Label1.TabIndex = 5;
             this.Label1.Text = "COM Ports";
             // 
+            // ConnectBtn
+            // 
+            this.ConnectBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.ConnectBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ConnectBtn.BackgroundImage")));
+            this.ConnectBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.ConnectBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.ConnectBtn.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold);
+            this.ConnectBtn.ForeColor = System.Drawing.Color.White;
+            this.ConnectBtn.Location = new System.Drawing.Point(179, 15);
+            this.ConnectBtn.Margin = new System.Windows.Forms.Padding(5, 3, 5, 3);
+            this.ConnectBtn.Name = "ConnectBtn";
+            this.ConnectBtn.Size = new System.Drawing.Size(123, 38);
+            this.ConnectBtn.TabIndex = 20;
+            this.ConnectBtn.Text = "Connect";
+            this.ConnectBtn.UseVisualStyleBackColor = false;
+            this.ConnectBtn.Click += new System.EventHandler(this.ConnectPortBtn_Click);
+            // 
             // SetGrp
             // 
             this.SetGrp.Controls.Add(this.IsEditChk);
@@ -295,6 +313,23 @@ namespace MotorizedStage_SK_PI
             this.IsEditChk.Text = "Edit";
             this.IsEditChk.UseVisualStyleBackColor = true;
             this.IsEditChk.CheckedChanged += new System.EventHandler(this.IsEditChk_CheckedChanged);
+            // 
+            // ResetBtn
+            // 
+            this.ResetBtn.BackColor = System.Drawing.SystemColors.Control;
+            this.ResetBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ResetBtn.BackgroundImage")));
+            this.ResetBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.ResetBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.ResetBtn.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold);
+            this.ResetBtn.ForeColor = System.Drawing.Color.White;
+            this.ResetBtn.Location = new System.Drawing.Point(288, 14);
+            this.ResetBtn.Margin = new System.Windows.Forms.Padding(5, 3, 5, 3);
+            this.ResetBtn.Name = "ResetBtn";
+            this.ResetBtn.Size = new System.Drawing.Size(71, 30);
+            this.ResetBtn.TabIndex = 331;
+            this.ResetBtn.Text = "Reset";
+            this.ResetBtn.UseVisualStyleBackColor = false;
+            this.ResetBtn.Click += new System.EventHandler(this.ResetBtn_Click);
             // 
             // SetHomeGrp
             // 
@@ -481,6 +516,23 @@ namespace MotorizedStage_SK_PI
             this.CurPosToHomeBtn.Text = "Current Position \r\nTo Home";
             this.CurPosToHomeBtn.UseVisualStyleBackColor = false;
             this.CurPosToHomeBtn.Click += new System.EventHandler(this.CurPosToHomeBtn_Click);
+            // 
+            // SetBtn
+            // 
+            this.SetBtn.BackColor = System.Drawing.SystemColors.Control;
+            this.SetBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("SetBtn.BackgroundImage")));
+            this.SetBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.SetBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.SetBtn.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold);
+            this.SetBtn.ForeColor = System.Drawing.Color.White;
+            this.SetBtn.Location = new System.Drawing.Point(209, 14);
+            this.SetBtn.Margin = new System.Windows.Forms.Padding(5, 3, 5, 3);
+            this.SetBtn.Name = "SetBtn";
+            this.SetBtn.Size = new System.Drawing.Size(71, 31);
+            this.SetBtn.TabIndex = 330;
+            this.SetBtn.Text = "Set";
+            this.SetBtn.UseVisualStyleBackColor = false;
+            this.SetBtn.Click += new System.EventHandler(this.SetBtn_Click);
             // 
             // CoordinateGrp
             // 
@@ -1375,6 +1427,69 @@ namespace MotorizedStage_SK_PI
             this.label27.TabIndex = 345;
             this.label27.Text = "Jog";
             // 
+            // StopAxisBtn
+            // 
+            this.StopAxisBtn.BackColor = System.Drawing.Color.Red;
+            this.StopAxisBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("StopAxisBtn.BackgroundImage")));
+            this.StopAxisBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.StopAxisBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.StopAxisBtn.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.StopAxisBtn.ForeColor = System.Drawing.Color.White;
+            this.StopAxisBtn.Location = new System.Drawing.Point(226, 7);
+            this.StopAxisBtn.Name = "StopAxisBtn";
+            this.StopAxisBtn.Size = new System.Drawing.Size(75, 58);
+            this.StopAxisBtn.TabIndex = 344;
+            this.StopAxisBtn.Text = "Stop";
+            this.StopAxisBtn.UseVisualStyleBackColor = false;
+            this.StopAxisBtn.Click += new System.EventHandler(this.StopAxisBtn_Click);
+            // 
+            // MoveAxisBtn
+            // 
+            this.MoveAxisBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("MoveAxisBtn.BackgroundImage")));
+            this.MoveAxisBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.MoveAxisBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.MoveAxisBtn.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.MoveAxisBtn.ForeColor = System.Drawing.Color.White;
+            this.MoveAxisBtn.Location = new System.Drawing.Point(145, 7);
+            this.MoveAxisBtn.Name = "MoveAxisBtn";
+            this.MoveAxisBtn.Size = new System.Drawing.Size(75, 58);
+            this.MoveAxisBtn.TabIndex = 343;
+            this.MoveAxisBtn.Text = "Move";
+            this.MoveAxisBtn.UseVisualStyleBackColor = true;
+            this.MoveAxisBtn.Click += new System.EventHandler(this.MoveAxisBtn_Click);
+            // 
+            // JogMinusBtn
+            // 
+            this.JogMinusBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("JogMinusBtn.BackgroundImage")));
+            this.JogMinusBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.JogMinusBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.JogMinusBtn.Font = new System.Drawing.Font("Arial", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.JogMinusBtn.ForeColor = System.Drawing.Color.White;
+            this.JogMinusBtn.Location = new System.Drawing.Point(143, 76);
+            this.JogMinusBtn.Name = "JogMinusBtn";
+            this.JogMinusBtn.Size = new System.Drawing.Size(75, 58);
+            this.JogMinusBtn.TabIndex = 342;
+            this.JogMinusBtn.Text = "<<";
+            this.JogMinusBtn.UseVisualStyleBackColor = true;
+            this.JogMinusBtn.MouseDown += new System.Windows.Forms.MouseEventHandler(this.JogMinusBtn_MouseDown);
+            this.JogMinusBtn.MouseUp += new System.Windows.Forms.MouseEventHandler(this.JogBtn_MouseUp);
+            // 
+            // JogPlusBtn
+            // 
+            this.JogPlusBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("JogPlusBtn.BackgroundImage")));
+            this.JogPlusBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.JogPlusBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.JogPlusBtn.Font = new System.Drawing.Font("Arial", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.JogPlusBtn.ForeColor = System.Drawing.Color.White;
+            this.JogPlusBtn.Location = new System.Drawing.Point(224, 76);
+            this.JogPlusBtn.Name = "JogPlusBtn";
+            this.JogPlusBtn.Size = new System.Drawing.Size(75, 58);
+            this.JogPlusBtn.TabIndex = 341;
+            this.JogPlusBtn.Text = ">>";
+            this.JogPlusBtn.UseVisualStyleBackColor = true;
+            this.JogPlusBtn.MouseDown += new System.Windows.Forms.MouseEventHandler(this.JogPlusBtn_MouseDown);
+            this.JogPlusBtn.MouseUp += new System.Windows.Forms.MouseEventHandler(this.JogBtn_MouseUp);
+            // 
             // label12
             // 
             this.label12.AutoSize = true;
@@ -1537,6 +1652,7 @@ namespace MotorizedStage_SK_PI
             // Stop6DBtn
             // 
             this.Stop6DBtn.BackColor = System.Drawing.Color.Red;
+            this.Stop6DBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("Stop6DBtn.BackgroundImage")));
             this.Stop6DBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.Stop6DBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.Stop6DBtn.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -2444,6 +2560,40 @@ namespace MotorizedStage_SK_PI
             this.TZCurPosTxt.Text = "100";
             this.TZCurPosTxt.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
+            // CloseBtn
+            // 
+            this.CloseBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.CloseBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("CloseBtn.BackgroundImage")));
+            this.CloseBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.CloseBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.CloseBtn.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold);
+            this.CloseBtn.ForeColor = System.Drawing.Color.White;
+            this.CloseBtn.Location = new System.Drawing.Point(982, 16);
+            this.CloseBtn.Margin = new System.Windows.Forms.Padding(5, 3, 5, 3);
+            this.CloseBtn.Name = "CloseBtn";
+            this.CloseBtn.Size = new System.Drawing.Size(114, 38);
+            this.CloseBtn.TabIndex = 308;
+            this.CloseBtn.Text = "Close";
+            this.CloseBtn.UseVisualStyleBackColor = false;
+            this.CloseBtn.Click += new System.EventHandler(this.CloseBtn_Click);
+            // 
+            // LogClearBtn
+            // 
+            this.LogClearBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.LogClearBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("LogClearBtn.BackgroundImage")));
+            this.LogClearBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.LogClearBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.LogClearBtn.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold);
+            this.LogClearBtn.ForeColor = System.Drawing.Color.White;
+            this.LogClearBtn.Location = new System.Drawing.Point(901, 16);
+            this.LogClearBtn.Margin = new System.Windows.Forms.Padding(5, 3, 5, 3);
+            this.LogClearBtn.Name = "LogClearBtn";
+            this.LogClearBtn.Size = new System.Drawing.Size(71, 38);
+            this.LogClearBtn.TabIndex = 309;
+            this.LogClearBtn.Text = "Clear";
+            this.LogClearBtn.UseVisualStyleBackColor = false;
+            this.LogClearBtn.Click += new System.EventHandler(this.LogClearBtn_Click);
+            // 
             // ReferenceHexapodBtn
             // 
             this.ReferenceHexapodBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ReferenceHexapodBtn.BackgroundImage")));
@@ -2494,153 +2644,20 @@ namespace MotorizedStage_SK_PI
             this.label36.TabIndex = 331;
             this.label36.Text = "헥사포드의 x,y,z 실시간 위치도 필요한가.";
             // 
-            // LogClearBtn
+            // btnXYZTest
             // 
-            this.LogClearBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
-            this.LogClearBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("LogClearBtn.BackgroundImage")));
-            this.LogClearBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.LogClearBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.LogClearBtn.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold);
-            this.LogClearBtn.ForeColor = System.Drawing.Color.White;
-            this.LogClearBtn.Location = new System.Drawing.Point(901, 16);
-            this.LogClearBtn.Margin = new System.Windows.Forms.Padding(5, 3, 5, 3);
-            this.LogClearBtn.Name = "LogClearBtn";
-            this.LogClearBtn.Size = new System.Drawing.Size(71, 38);
-            this.LogClearBtn.TabIndex = 309;
-            this.LogClearBtn.Text = "Clear";
-            this.LogClearBtn.UseVisualStyleBackColor = false;
-            this.LogClearBtn.Click += new System.EventHandler(this.LogClearBtn_Click);
-            // 
-            // CloseBtn
-            // 
-            this.CloseBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
-            this.CloseBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("CloseBtn.BackgroundImage")));
-            this.CloseBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.CloseBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.CloseBtn.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold);
-            this.CloseBtn.ForeColor = System.Drawing.Color.White;
-            this.CloseBtn.Location = new System.Drawing.Point(982, 16);
-            this.CloseBtn.Margin = new System.Windows.Forms.Padding(5, 3, 5, 3);
-            this.CloseBtn.Name = "CloseBtn";
-            this.CloseBtn.Size = new System.Drawing.Size(114, 38);
-            this.CloseBtn.TabIndex = 308;
-            this.CloseBtn.Text = "Close";
-            this.CloseBtn.UseVisualStyleBackColor = false;
-            this.CloseBtn.Click += new System.EventHandler(this.CloseBtn_Click);
-            // 
-            // ResetBtn
-            // 
-            this.ResetBtn.BackColor = System.Drawing.SystemColors.Control;
-            this.ResetBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ResetBtn.BackgroundImage")));
-            this.ResetBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.ResetBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.ResetBtn.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold);
-            this.ResetBtn.ForeColor = System.Drawing.Color.White;
-            this.ResetBtn.Location = new System.Drawing.Point(288, 14);
-            this.ResetBtn.Margin = new System.Windows.Forms.Padding(5, 3, 5, 3);
-            this.ResetBtn.Name = "ResetBtn";
-            this.ResetBtn.Size = new System.Drawing.Size(71, 30);
-            this.ResetBtn.TabIndex = 331;
-            this.ResetBtn.Text = "Reset";
-            this.ResetBtn.UseVisualStyleBackColor = false;
-            this.ResetBtn.Click += new System.EventHandler(this.ResetBtn_Click);
-            // 
-            // SetBtn
-            // 
-            this.SetBtn.BackColor = System.Drawing.SystemColors.Control;
-            this.SetBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("SetBtn.BackgroundImage")));
-            this.SetBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.SetBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.SetBtn.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold);
-            this.SetBtn.ForeColor = System.Drawing.Color.White;
-            this.SetBtn.Location = new System.Drawing.Point(209, 14);
-            this.SetBtn.Margin = new System.Windows.Forms.Padding(5, 3, 5, 3);
-            this.SetBtn.Name = "SetBtn";
-            this.SetBtn.Size = new System.Drawing.Size(71, 31);
-            this.SetBtn.TabIndex = 330;
-            this.SetBtn.Text = "Set";
-            this.SetBtn.UseVisualStyleBackColor = false;
-            this.SetBtn.Click += new System.EventHandler(this.SetBtn_Click);
-            // 
-            // ConnectBtn
-            // 
-            this.ConnectBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
-            this.ConnectBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ConnectBtn.BackgroundImage")));
-            this.ConnectBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.ConnectBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.ConnectBtn.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold);
-            this.ConnectBtn.ForeColor = System.Drawing.Color.White;
-            this.ConnectBtn.Location = new System.Drawing.Point(179, 15);
-            this.ConnectBtn.Margin = new System.Windows.Forms.Padding(5, 3, 5, 3);
-            this.ConnectBtn.Name = "ConnectBtn";
-            this.ConnectBtn.Size = new System.Drawing.Size(123, 38);
-            this.ConnectBtn.TabIndex = 20;
-            this.ConnectBtn.Text = "Connect";
-            this.ConnectBtn.UseVisualStyleBackColor = false;
-            this.ConnectBtn.Click += new System.EventHandler(this.ConnectPortBtn_Click);
-            // 
-            // StopAxisBtn
-            // 
-            this.StopAxisBtn.BackColor = System.Drawing.Color.Red;
-            this.StopAxisBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("StopAxisBtn.BackgroundImage")));
-            this.StopAxisBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.StopAxisBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.StopAxisBtn.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.StopAxisBtn.ForeColor = System.Drawing.Color.White;
-            this.StopAxisBtn.Location = new System.Drawing.Point(226, 7);
-            this.StopAxisBtn.Name = "StopAxisBtn";
-            this.StopAxisBtn.Size = new System.Drawing.Size(75, 58);
-            this.StopAxisBtn.TabIndex = 344;
-            this.StopAxisBtn.Text = "Stop";
-            this.StopAxisBtn.UseVisualStyleBackColor = false;
-            this.StopAxisBtn.Click += new System.EventHandler(this.StopAxisBtn_Click);
-            // 
-            // MoveAxisBtn
-            // 
-            this.MoveAxisBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("MoveAxisBtn.BackgroundImage")));
-            this.MoveAxisBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.MoveAxisBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.MoveAxisBtn.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.MoveAxisBtn.ForeColor = System.Drawing.Color.White;
-            this.MoveAxisBtn.Location = new System.Drawing.Point(145, 7);
-            this.MoveAxisBtn.Name = "MoveAxisBtn";
-            this.MoveAxisBtn.Size = new System.Drawing.Size(75, 58);
-            this.MoveAxisBtn.TabIndex = 343;
-            this.MoveAxisBtn.Text = "Move";
-            this.MoveAxisBtn.UseVisualStyleBackColor = true;
-            this.MoveAxisBtn.Click += new System.EventHandler(this.MoveAxisBtn_Click);
-            // 
-            // JogMinusBtn
-            // 
-            this.JogMinusBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("JogMinusBtn.BackgroundImage")));
-            this.JogMinusBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.JogMinusBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.JogMinusBtn.Font = new System.Drawing.Font("Arial", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.JogMinusBtn.ForeColor = System.Drawing.Color.White;
-            this.JogMinusBtn.Location = new System.Drawing.Point(143, 76);
-            this.JogMinusBtn.Name = "JogMinusBtn";
-            this.JogMinusBtn.Size = new System.Drawing.Size(75, 58);
-            this.JogMinusBtn.TabIndex = 342;
-            this.JogMinusBtn.Text = "<<";
-            this.JogMinusBtn.UseVisualStyleBackColor = true;
-            this.JogMinusBtn.MouseDown += new System.Windows.Forms.MouseEventHandler(this.JogMinusBtn_MouseDown);
-            this.JogMinusBtn.MouseUp += new System.Windows.Forms.MouseEventHandler(this.JogBtn_MouseUp);
-            // 
-            // JogPlusBtn
-            // 
-            this.JogPlusBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("JogPlusBtn.BackgroundImage")));
-            this.JogPlusBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.JogPlusBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.JogPlusBtn.Font = new System.Drawing.Font("Arial", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.JogPlusBtn.ForeColor = System.Drawing.Color.White;
-            this.JogPlusBtn.Location = new System.Drawing.Point(224, 76);
-            this.JogPlusBtn.Name = "JogPlusBtn";
-            this.JogPlusBtn.Size = new System.Drawing.Size(75, 58);
-            this.JogPlusBtn.TabIndex = 341;
-            this.JogPlusBtn.Text = ">>";
-            this.JogPlusBtn.UseVisualStyleBackColor = true;
-            this.JogPlusBtn.MouseDown += new System.Windows.Forms.MouseEventHandler(this.JogPlusBtn_MouseDown);
-            this.JogPlusBtn.MouseUp += new System.Windows.Forms.MouseEventHandler(this.JogBtn_MouseUp);
+            this.btnXYZTest.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnXYZTest.BackgroundImage")));
+            this.btnXYZTest.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnXYZTest.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnXYZTest.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold);
+            this.btnXYZTest.ForeColor = System.Drawing.Color.White;
+            this.btnXYZTest.Location = new System.Drawing.Point(1001, 342);
+            this.btnXYZTest.Name = "btnXYZTest";
+            this.btnXYZTest.Size = new System.Drawing.Size(85, 63);
+            this.btnXYZTest.TabIndex = 332;
+            this.btnXYZTest.Text = "XYZ Test";
+            this.btnXYZTest.UseVisualStyleBackColor = true;
+            this.btnXYZTest.Click += new System.EventHandler(this.btnXYZTest_Click);
             // 
             // F_Motion_SK_PI
             // 
@@ -2648,6 +2665,7 @@ namespace MotorizedStage_SK_PI
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1110, 604);
             this.ControlBox = false;
+            this.Controls.Add(this.btnXYZTest);
             this.Controls.Add(this.label36);
             this.Controls.Add(this.label30);
             this.Controls.Add(this.ReferencXYZBtn);
@@ -2919,6 +2937,7 @@ namespace MotorizedStage_SK_PI
         private Label label34;
         private Label label35;
         private Label label36;
+        private Button btnXYZTest;
     }
 }
 

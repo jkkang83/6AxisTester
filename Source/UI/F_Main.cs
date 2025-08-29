@@ -5,6 +5,8 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -948,6 +950,618 @@ namespace FZ4P
 
                 lblDefaultModel.Text = sFile;
             }
+        }
+        [Serializable]
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct sSaveResult
+        {
+            [MarshalAs(UnmanagedType.I8)]
+            public Int64 sTime;             //  sTime = DateTime.Now.ToBinary(), When reading, DateTime now = DateTime.FromBinary(sTime);
+            [MarshalAs(UnmanagedType.I4)]
+            public int frameCount;
+            [MarshalAs(UnmanagedType.R8)]
+            public double fps;
+            [MarshalAs(UnmanagedType.R8)]
+            public double ledLeft;
+            [MarshalAs(UnmanagedType.R8)]
+            public double ledRight;
+            [MarshalAs(UnmanagedType.R8)]
+            public double testTime;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10000)]
+            public double[] X;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10000)]
+            public double[] Y;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10000)]
+            public double[] Z;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10000)]
+            public double[] TX;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10000)]
+            public double[] TY;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10000)]
+            public double[] TZ;
+        }
+        [Serializable]
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct sSaveResult5
+        {
+            [MarshalAs(UnmanagedType.I8)]
+            public Int64 sTime;             //  sTime = DateTime.Now.ToBinary(), When reading, DateTime now = DateTime.FromBinary(sTime);
+            [MarshalAs(UnmanagedType.I4)]
+            public int frameCount;
+            [MarshalAs(UnmanagedType.R8)]
+            public double fps;
+            [MarshalAs(UnmanagedType.R8)]
+            public double ledLeft;
+            [MarshalAs(UnmanagedType.R8)]
+            public double ledRight;
+            [MarshalAs(UnmanagedType.R8)]
+            public double testTime;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5000)]
+            public double[] X;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5000)]
+            public double[] Y;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5000)]
+            public double[] Z;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5000)]
+            public double[] TX;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5000)]
+            public double[] TY;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5000)]
+            public double[] TZ;
+        }
+        [Serializable]
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct sSaveResult3
+        {
+            [MarshalAs(UnmanagedType.I8)]
+            public Int64 sTime;             //  sTime = DateTime.Now.ToBinary(), When reading, DateTime now = DateTime.FromBinary(sTime);
+            [MarshalAs(UnmanagedType.I4)]
+            public int frameCount;
+            [MarshalAs(UnmanagedType.R8)]
+            public double fps;
+            [MarshalAs(UnmanagedType.R8)]
+            public double ledLeft;
+            [MarshalAs(UnmanagedType.R8)]
+            public double ledRight;
+            [MarshalAs(UnmanagedType.R8)]
+            public double testTime;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3000)]
+            public double[] X;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3000)]
+            public double[] Y;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3000)]
+            public double[] Z;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3000)]
+            public double[] TX;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3000)]
+            public double[] TY;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3000)]
+            public double[] TZ;
+        }
+        [Serializable]
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct sSaveResult1
+        {
+            [MarshalAs(UnmanagedType.I8)]
+            public Int64 sTime;             //  sTime = DateTime.Now.ToBinary(), When reading, DateTime now = DateTime.FromBinary(sTime);
+            [MarshalAs(UnmanagedType.I4)]
+            public int frameCount;
+            [MarshalAs(UnmanagedType.R8)]
+            public double fps;
+            [MarshalAs(UnmanagedType.R8)]
+            public double ledLeft;
+            [MarshalAs(UnmanagedType.R8)]
+            public double ledRight;
+            [MarshalAs(UnmanagedType.R8)]
+            public double testTime;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1000)]
+            public double[] X;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1000)]
+            public double[] Y;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1000)]
+            public double[] Z;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1000)]
+            public double[] TX;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1000)]
+            public double[] TY;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1000)]
+            public double[] TZ;
+        }
+        [Serializable]
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct sSaveResult0
+        {
+            [MarshalAs(UnmanagedType.I8)]
+            public Int64 sTime;             //  sTime = DateTime.Now.ToBinary(), When reading, DateTime now = DateTime.FromBinary(sTime);
+            [MarshalAs(UnmanagedType.I4)]
+            public int frameCount;
+            [MarshalAs(UnmanagedType.R8)]
+            public double fps;
+            [MarshalAs(UnmanagedType.R8)]
+            public double ledLeft;
+            [MarshalAs(UnmanagedType.R8)]
+            public double ledRight;
+            [MarshalAs(UnmanagedType.R8)]
+            public double testTime;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 100)]
+            public double[] X;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 100)]
+            public double[] Y;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 100)]
+            public double[] Z;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 100)]
+            public double[] TX;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 100)]
+            public double[] TY;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 100)]
+            public double[] TZ;
+        }
+        [Serializable]
+        public class sSaveResultBin
+        {
+            public Int64 sTime;
+            public int frameCount;
+            public double fps;
+            public double ledLeft;
+            public double ledRight;
+            public double testTime;
+            public double[] X;
+            public double[] Y;
+            public double[] Z;
+            public double[] TX;
+            public double[] TY;
+            public double[] TZ;
+        }
+        public class sSaveResultPos
+        {
+            public Int64 sTime;
+            public int frameCount;
+            public double fps;
+            public double ledLeft;
+            public double ledRight;
+            public double testTime;
+            public double[] X1 = new double[5000];
+            public double[] Y1 = new double[5000];
+            public double[] X2 = new double[5000];
+            public double[] Y2 = new double[5000];
+            public double[] X3 = new double[5000];
+            public double[] Y3 = new double[5000];
+            public double[] X4 = new double[5000];
+            public double[] Y4 = new double[5000];
+            public double[] X5 = new double[5000];
+            public double[] Y5 = new double[5000];
+        }
+        public static sSaveResultPos ReadsSaveResultPos(string FileName)
+        {
+            System.Xml.Serialization.XmlSerializer reader =
+                new System.Xml.Serialization.XmlSerializer(typeof(sSaveResultPos));
+
+            System.IO.StreamReader file = new System.IO.StreamReader(FileName);
+            sSaveResultPos res = (sSaveResultPos)reader.Deserialize(file);
+            file.Close();
+
+            return res;
+        }
+
+        public static sSaveResult ReadsSaveResult(string FileName)
+        {
+            sSaveResult sRes = new sSaveResult();
+            int size = Marshal.SizeOf(typeof(sSaveResult));
+
+            Stream iStream = File.OpenRead(FileName);
+            BinaryReader reader = new BinaryReader(iStream);
+
+            IntPtr ptr = Marshal.AllocHGlobal(size);
+            byte[] buffer = reader.ReadBytes(size);
+            Marshal.Copy(buffer, 0, ptr, size);
+            sRes = (sSaveResult)Marshal.PtrToStructure(ptr, typeof(sSaveResult));
+            reader.Close();
+            Marshal.FreeHGlobal(ptr);
+
+            return sRes;
+        }
+        public static sSaveResult5 ReadsSaveResult5(string FileName)
+        {
+            sSaveResult5 sRes = new sSaveResult5();
+            int size = Marshal.SizeOf(typeof(sSaveResult5));
+
+            Stream iStream = File.OpenRead(FileName);
+            BinaryReader reader = new BinaryReader(iStream);
+
+            IntPtr ptr = Marshal.AllocHGlobal(size);
+            byte[] buffer = reader.ReadBytes(size);
+            Marshal.Copy(buffer, 0, ptr, size);
+            sRes = (sSaveResult5)Marshal.PtrToStructure(ptr, typeof(sSaveResult5));
+            reader.Close();
+            Marshal.FreeHGlobal(ptr);
+
+            return sRes;
+        }
+        public static sSaveResult3 ReadsSaveResult3(string FileName)
+        {
+            sSaveResult3 sRes = new sSaveResult3();
+            int size = Marshal.SizeOf(typeof(sSaveResult3));
+
+            Stream iStream = File.OpenRead(FileName);
+            BinaryReader reader = new BinaryReader(iStream);
+
+            IntPtr ptr = Marshal.AllocHGlobal(size);
+            byte[] buffer = reader.ReadBytes(size);
+            Marshal.Copy(buffer, 0, ptr, size);
+            sRes = (sSaveResult3)Marshal.PtrToStructure(ptr, typeof(sSaveResult3));
+            reader.Close();
+            Marshal.FreeHGlobal(ptr);
+
+            return sRes;
+        }
+
+        public static object ReadsSaveResultBin(string FileName)
+        {
+            Stream rs = new FileStream(FileName, FileMode.Open);
+            BinaryFormatter bf = new BinaryFormatter();
+
+            object sRes = bf.Deserialize(rs);
+            rs.Close();
+
+            return sRes;
+        }
+
+        public string ReadResultPos(string sFileName)
+        {
+            //Check if result file is readable
+            string filename = Path.GetFileName(sFileName);
+            string[] strframeCount = filename.Split('_');
+
+            int framCnt = int.Parse(strframeCount[0]);
+            string lstr = "";
+            sSaveResultPos result = ReadsSaveResultPos(sFileName);
+            int len = result.frameCount;
+            DateTimeOffset ltime = DateTimeOffset.FromUnixTimeSeconds(result.sTime);
+            DateTime TimeTested = ltime.DateTime;
+            if (sFileName.Contains("_0_"))
+                lstr = TimeTested.ToLocalTime().ToString() + "\t" + "X1 smt" + "\t" + "Y1 smt" + "\t" + "X2 smt" + "\t" + "Y2 smt" + "\t" + "X3 smt" + "\t" + "Y3 smt" + "\t" + "X4 smt" + "\t" + "Y4 smt" + "\t" + "X5 smt" + "\t" + "Y5 smt" + "\r\n";
+            else
+                lstr = TimeTested.ToLocalTime().ToString() + "\t" + "X1 std" + "\t" + "Y1 std" + "\t" + "X2 std" + "\t" + "Y2 std" + "\t" + "X3 std" + "\t" + "Y3 std" + "\t" + "X4 std" + "\t" + "Y4 std" + "\t" + "X5 std" + "\t" + "Y5 std" + "\r\n";
+
+            for (int i = 0; i < len; i++)
+            {
+                lstr += i.ToString() + "\t" + result.X1[i].ToString("F3") + "\t" + result.Y1[i].ToString("F3")
+                                     + "\t" + result.X2[i].ToString("F3") + "\t" + result.Y2[i].ToString("F3")
+                                     + "\t" + result.X3[i].ToString("F3") + "\t" + result.Y3[i].ToString("F3")
+                                     + "\t" + result.X4[i].ToString("F3") + "\t" + result.Y4[i].ToString("F3")
+                                     + "\t" + result.X5[i].ToString("F3") + "\t" + result.Y5[i].ToString("F3") + "\r\n";
+
+
+            }
+            return lstr;
+        }
+        public string WriteResultBin(int modelIndex = 0)
+        {
+            string sLotName = STATIC.fManage.GetLotName();
+            m__G.mNowLotName = sLotName;
+
+            string sLotDir = STATIC.fManage.CheckResultFolder();
+            if (sLotName != "")
+                sLotDir = sLotDir + sLotName;
+
+            if (!Directory.Exists(sLotDir))
+                Directory.CreateDirectory(sLotDir);
+
+            DateTime dtNow = DateTime.Now;   // 현재 날짜, 시간 얻기
+            int framCnt = STATIC.fVision.GetTriggerGrabbedFrame();
+
+            if (framCnt > m__G.oCam[0].mTargetTriggerCount)
+                framCnt = m__G.oCam[0].mTargetTriggerCount;
+
+            string filename = framCnt.ToString() + "_" + modelIndex.ToString() + "_" + dtNow.ToString("yyMMddHHmmss.fff") + ".dat";
+            string sFilePath = sLotDir + filename;
+
+            double umscale = 5.5 / Global.LensMag;                           //  rad to min
+            double minscale = 180 / Math.PI * 60;                           //  rad to min
+            double preZ = 0;
+            int i = 0;
+
+            if (framCnt > 5000)
+            {
+                sSaveResult sResult = new sSaveResult();
+
+                sResult.X = new double[10000];
+                sResult.Y = new double[10000];
+                sResult.Z = new double[10000];
+                sResult.TX = new double[10000];
+                sResult.TY = new double[10000];
+                sResult.TZ = new double[10000];
+
+                DateTime startDateTime = m__G.oCam[0].GetLastTriggerTime();
+                DateTimeOffset datetimeOffset = new DateTimeOffset(startDateTime);
+                long unixTime = datetimeOffset.ToUnixTimeSeconds();
+                //sResult.sTime = startDateTime.ToBinary();
+                sResult.sTime = unixTime;
+                sResult.frameCount = framCnt;
+                sResult.fps = STATIC.fVision.GetTriggerGrabbedFPS();
+                sResult.ledLeft = STATIC.fVision.mLEDcurrent[0];
+                sResult.ledRight = STATIC.fVision.mLEDcurrent[1];
+                sResult.testTime = STATIC.fVision.GetHowLongItTook();
+
+                //////  임시  230924
+                ////double tx0 = m__G.oCam[0].mC_pTX[0];
+                ////double ty0 = m__G.oCam[0].mC_pTY[0];
+                ////double tz0 = m__G.oCam[0].mC_pTZ[0];
+
+                for (i = 0; i < 5; i++)
+                {
+                    sResult.X[0] += m__G.oCam[0].mC_pX[i] * umscale / 5;  //  um
+                    sResult.Y[0] += m__G.oCam[0].mC_pY[i] * umscale / 5;  //  um
+                    sResult.Z[0] += m__G.oCam[0].mC_pZ[i] * umscale / 5;  //  um
+                    //preZ = m__G.oCam[0].mC_pZ[i] * umscale;
+                    //sResult.Z[i] += m__G.oCam[0].mC_pZ[i] * umscale / 5;
+                    sResult.TX[0] += m__G.oCam[0].mC_pTX[i] * minscale / 5; //  min
+                    sResult.TY[0] += m__G.oCam[0].mC_pTY[i] * minscale / 5; //  min
+                    sResult.TZ[0] += m__G.oCam[0].mC_pTZ[i] * minscale / 5; //  min
+                }
+
+                for (i = 1; i < framCnt; i++)
+                {
+                    sResult.X[i] = m__G.oCam[0].mC_pX[i] * umscale;  //  um
+                    sResult.Y[i] = m__G.oCam[0].mC_pY[i] * umscale;  //  um
+                    sResult.Z[i] = m__G.oCam[0].mC_pZ[i] * umscale;  //  um
+                    //preZ = m__G.oCam[0].mC_pZ[i] * umscale;
+                    //sResult.Z[i] = m__G.fVision.ApplyZLUT(preZ);
+                    sResult.TX[i] = m__G.oCam[0].mC_pTX[i] * minscale; //  min
+                    sResult.TY[i] = m__G.oCam[0].mC_pTY[i] * minscale; //  min
+                    sResult.TZ[i] = m__G.oCam[0].mC_pTZ[i] * minscale; //  min
+                }
+
+                int size = 0;
+                try
+                {
+                    size = Marshal.SizeOf(sResult);
+                }
+                catch (Exception e)
+                {
+                    MessageBox.Show(e.ToString());
+                }
+                IntPtr wPtr = Marshal.AllocHGlobal(size);
+                Marshal.StructureToPtr(sResult, wPtr, true);
+                //byte[] sDataBuff = new byte[size];
+                //Marshal.Copy(wPtr, sDataBuff, 0, size);
+                //wr.Write(sDataBuff);
+                STATIC.fManage.sDataBuff = new byte[size];
+                Marshal.Copy(wPtr, STATIC.fManage.sDataBuff, 0, size);
+
+                if (m__G.m_bSaveRawData)
+                {
+                    BinaryWriter wr = new BinaryWriter(File.OpenWrite(sFilePath));
+                    wr.Write(STATIC.fManage.sDataBuff);
+                    wr.Flush();
+                    wr.Close();
+                }
+
+                Marshal.FreeHGlobal(wPtr);
+            }
+            else if (framCnt > 3000)
+            {
+                sSaveResult5 sResult = new sSaveResult5();
+
+                sResult.X = new double[5000];
+                sResult.Y = new double[5000];
+                sResult.Z = new double[5000];
+                sResult.TX = new double[5000];
+                sResult.TY = new double[5000];
+                sResult.TZ = new double[5000];
+
+                DateTime startDateTime = m__G.oCam[0].GetLastTriggerTime();
+                DateTimeOffset datetimeOffset = new DateTimeOffset(startDateTime);
+                long unixTime = datetimeOffset.ToUnixTimeSeconds();
+                //sResult.sTime = startDateTime.ToBinary();
+                sResult.sTime = unixTime;
+                sResult.frameCount = framCnt;
+                sResult.fps = STATIC.fVision.GetTriggerGrabbedFPS();
+                sResult.ledLeft = STATIC.fVision.mLEDcurrent[0];
+                sResult.ledRight = STATIC.fVision.mLEDcurrent[1];
+                sResult.testTime = STATIC.fVision.GetHowLongItTook();
+
+                for (i = 0; i < 5; i++)
+                {
+                    sResult.X[0] += m__G.oCam[0].mC_pX[i] * umscale / 5;  //  um
+                    sResult.Y[0] += m__G.oCam[0].mC_pY[i] * umscale / 5;  //  um
+                    sResult.Z[0] += m__G.oCam[0].mC_pZ[i] * umscale / 5;  //  um
+                    //preZ = m__G.oCam[0].mC_pZ[i] * umscale;
+                    //sResult.Z[i] += m__G.oCam[0].mC_pZ[i] * umscale / 5;
+                    sResult.TX[0] += m__G.oCam[0].mC_pTX[i] * minscale / 5; //  min
+                    sResult.TY[0] += m__G.oCam[0].mC_pTY[i] * minscale / 5; //  min
+                    sResult.TZ[0] += m__G.oCam[0].mC_pTZ[i] * minscale / 5; //  min
+                }
+
+                for (i = 1; i < framCnt; i++)
+                {
+                    sResult.X[i] = m__G.oCam[0].mC_pX[i] * umscale;  //  um
+                    sResult.Y[i] = m__G.oCam[0].mC_pY[i] * umscale;  //  um
+                    sResult.Z[i] = m__G.oCam[0].mC_pZ[i] * umscale;  //  um     //  zlut 적용 검토
+                    //preZ = m__G.oCam[0].mC_pZ[i] * umscale;
+                    //sResult.Z[i] = m__G.fVision.ApplyZLUT(preZ);
+                    sResult.TX[i] = m__G.oCam[0].mC_pTX[i] * minscale; //  min
+                    sResult.TY[i] = m__G.oCam[0].mC_pTY[i] * minscale; //  min
+                    sResult.TZ[i] = m__G.oCam[0].mC_pTZ[i] * minscale; //  min
+                }
+
+                int size = 0;
+                try
+                {
+                    size = Marshal.SizeOf(sResult);
+                }
+                catch (Exception e)
+                {
+                    MessageBox.Show(e.ToString());
+                }
+                IntPtr wPtr = Marshal.AllocHGlobal(size);
+                Marshal.StructureToPtr(sResult, wPtr, true);
+                //byte[] sDataBuff = new byte[size];
+                //Marshal.Copy(wPtr, sDataBuff, 0, size);
+                //wr.Write(sDataBuff);
+                STATIC.fManage.sDataBuff = new byte[size];
+                Marshal.Copy(wPtr, STATIC.fManage.sDataBuff, 0, size);
+
+                if (m__G.m_bSaveRawData)
+                {
+                    BinaryWriter wr = new BinaryWriter(File.OpenWrite(sFilePath));
+                    wr.Write(STATIC.fManage.sDataBuff);
+                    wr.Flush();
+                    wr.Close();
+                }
+
+                Marshal.FreeHGlobal(wPtr);
+            }
+            else
+            {
+                sSaveResult3 sResult = new sSaveResult3();
+
+                sResult.X = new double[3000];
+                sResult.Y = new double[3000];
+                sResult.Z = new double[3000];
+                sResult.TX = new double[3000];
+                sResult.TY = new double[3000];
+                sResult.TZ = new double[3000];
+
+                DateTime startDateTime = m__G.oCam[0].GetLastTriggerTime();
+                DateTimeOffset datetimeOffset = new DateTimeOffset(startDateTime);
+                long unixTime = datetimeOffset.ToUnixTimeSeconds();
+                //sResult.sTime = startDateTime.ToBinary();
+                sResult.sTime = unixTime;
+                sResult.frameCount = framCnt;
+                sResult.fps = STATIC.fVision.GetTriggerGrabbedFPS();
+                sResult.ledLeft = STATIC.fVision.mLEDcurrent[0];
+                sResult.ledRight = STATIC.fVision.mLEDcurrent[1];
+                sResult.testTime = STATIC.fVision.GetHowLongItTook();
+
+                if (framCnt > 1000)
+                {
+                    for (i = 0; i < 5; i++)
+                    {
+                        sResult.X[0] += m__G.oCam[0].mC_pX[i] * umscale / 5;  //  um
+                        sResult.Y[0] += m__G.oCam[0].mC_pY[i] * umscale / 5;  //  um
+                        sResult.Z[0] += m__G.oCam[0].mC_pZ[i] * umscale / 5;  //  um
+                                                                              //preZ = m__G.oCam[0].mC_pZ[i] * umscale;
+                                                                              //sResult.Z[i] += m__G.oCam[0].mC_pZ[i] * umscale / 5;
+                        sResult.TX[0] += m__G.oCam[0].mC_pTX[i] * minscale / 5; //  min
+                        sResult.TY[0] += m__G.oCam[0].mC_pTY[i] * minscale / 5; //  min
+                        sResult.TZ[0] += m__G.oCam[0].mC_pTZ[i] * minscale / 5; //  min
+                    }
+
+                    for (i = 1; i < framCnt; i++)
+                    {
+                        sResult.X[i] = m__G.oCam[0].mC_pX[i] * umscale;  //  um
+                        sResult.Y[i] = m__G.oCam[0].mC_pY[i] * umscale;  //  um
+                        sResult.Z[i] = m__G.oCam[0].mC_pZ[i] * umscale;  //  um     //  zlut 적용 검토
+                                                                         //preZ = m__G.oCam[0].mC_pZ[i] * umscale;
+                                                                         //sResult.Z[i] = m__G.fVision.ApplyZLUT(preZ);
+                        sResult.TX[i] = m__G.oCam[0].mC_pTX[i] * minscale; //  min
+                        sResult.TY[i] = m__G.oCam[0].mC_pTY[i] * minscale; //  min
+                        sResult.TZ[i] = m__G.oCam[0].mC_pTZ[i] * minscale; //  min
+                    }
+                }
+                else
+                {
+                    for (i = 0; i < framCnt; i++)
+                    {
+                        sResult.X[i] = m__G.oCam[0].mC_pX[i] * umscale;  //  um
+                        sResult.Y[i] = m__G.oCam[0].mC_pY[i] * umscale;  //  um
+                        sResult.Z[i] = m__G.oCam[0].mC_pZ[i] * umscale;  //  um     //  zlut 적용 검토
+                                                                         //preZ = m__G.oCam[0].mC_pZ[i] * umscale;
+                                                                         //sResult.Z[i] = m__G.fVision.ApplyZLUT(preZ);
+                        sResult.TX[i] = m__G.oCam[0].mC_pTX[i] * minscale; //  min
+                        sResult.TY[i] = m__G.oCam[0].mC_pTY[i] * minscale; //  min
+                        sResult.TZ[i] = m__G.oCam[0].mC_pTZ[i] * minscale; //  min
+                    }
+                }
+
+
+                int size = 0;
+                try
+                {
+                    size = Marshal.SizeOf(sResult);
+                }
+                catch (Exception e)
+                {
+                    MessageBox.Show(e.ToString());
+                }
+                IntPtr wPtr = Marshal.AllocHGlobal(size);
+                Marshal.StructureToPtr(sResult, wPtr, true);
+                //byte[] sDataBuff = new byte[size];
+                //Marshal.Copy(wPtr, sDataBuff, 0, size);
+                //wr.Write(sDataBuff);
+                STATIC.fManage.sDataBuff = new byte[size];
+                Marshal.Copy(wPtr, STATIC.fManage.sDataBuff, 0, size);
+
+                if (m__G.m_bSaveRawData)
+                {
+                    BinaryWriter wr = new BinaryWriter(File.OpenWrite(sFilePath));
+                    wr.Write(STATIC.fManage.sDataBuff);
+                    wr.Flush();
+                    wr.Close();
+                }
+
+                Marshal.FreeHGlobal(wPtr);
+            }
+
+            //  Verify Read process
+            //Thread.Sleep(100);
+            //sSaveResult3 sRes = ReadsSaveResult3(sFilePath);
+            //DateTime now = DateTime.FromBinary(sRes.sTime);
+
+            return sFilePath;
+        }
+        public string ReadResultBin(string sFileName)
+        {
+            //Check if result file is readable
+            string filename = Path.GetFileName(sFileName);
+            string[] strframeCount = filename.Split('_');
+
+            int framCnt = int.Parse(strframeCount[0]);
+            string lstr = "";
+            string strHead = "";
+            if (sFileName.Contains("_0_"))
+                strHead = "\tX SMT\tY SMT\tZ SMT\tTX SMT\tTY SMT\tTZ SMT";
+            else
+                strHead = "\tX std\tY std\tZ std\tTX std\tTY std\tTZ std";
+
+            if (framCnt > 5000)
+            {
+                sSaveResult result = ReadsSaveResult(sFileName);
+                int len = result.frameCount;
+                DateTimeOffset ltime = DateTimeOffset.FromUnixTimeSeconds(result.sTime);
+                DateTime TimeTested = ltime.DateTime;
+                lstr = TimeTested.ToLocalTime().ToString() + strHead + "\r\n";
+                for (int i = 0; i < len; i++)
+                {
+                    lstr += i.ToString() + "\t" + result.X[i].ToString("F2") + "\t" + result.Y[i].ToString("F2") + "\t" + result.Z[i].ToString("F2") + "\t" + result.TX[i].ToString("F2") + "\t" + result.TY[i].ToString("F2") + "\t" + result.TZ[i].ToString("F2") + "\r\n";
+                }
+            }
+            else if (framCnt > 3000)
+            {
+                sSaveResult5 result5 = ReadsSaveResult5(sFileName);
+                int len = result5.frameCount;
+                DateTimeOffset ltime = DateTimeOffset.FromUnixTimeSeconds(result5.sTime);
+                DateTime TimeTested = ltime.DateTime;
+                lstr = TimeTested.ToLocalTime().ToString() + strHead + "\r\n";
+                for (int i = 0; i < len; i++)
+                {
+                    lstr += i.ToString() + "\t" + result5.X[i].ToString("F2") + "\t" + result5.Y[i].ToString("F2") + "\t" + result5.Z[i].ToString("F2") + "\t" + result5.TX[i].ToString("F2") + "\t" + result5.TY[i].ToString("F2") + "\t" + result5.TZ[i].ToString("F2") + "\r\n";
+                }
+            }
+            else
+            {
+                sSaveResult3 result3 = F_Main.ReadsSaveResult3(sFileName);
+                int len = result3.frameCount;
+                DateTimeOffset ltime = DateTimeOffset.FromUnixTimeSeconds(result3.sTime);
+                DateTime TimeTested = ltime.DateTime;
+                lstr = TimeTested.ToLocalTime().ToString() + strHead + "\r\n";
+                for (int i = 0; i < len; i++)
+                {
+                    lstr += i.ToString() + "\t" + result3.X[i].ToString("F2") + "\t" + result3.Y[i].ToString("F2") + "\t" + result3.Z[i].ToString("F2") + "\t" + result3.TX[i].ToString("F2") + "\t" + result3.TY[i].ToString("F2") + "\t" + result3.TZ[i].ToString("F2") + "\r\n";
+                }
+            }
+            return lstr;
         }
     }
 }

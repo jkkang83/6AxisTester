@@ -1,5 +1,8 @@
 ﻿using Basler.Pylon;
 using FAutoLearn;
+using MathNet.Numerics.LinearAlgebra;
+//using MyEmailer;
+//using MathNet.Numerics.LinearAlgebra;
 using Microsoft.Win32;
 using MotorizedStage_SK_PI;
 using OpenCvSharp;
@@ -8,31 +11,41 @@ using OpenCvSharp.Extensions;
 using S2System.Vision;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
+using System.Reflection.Emit;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-//using static CSH030Ex.FManage;
-//using static CSH030Ex.FVision;
+using static alglib;
+
+//using static alglib;
+//using static alglib.apserv;
 using static FAutoLearn.FAutoLearn;
 using static FAutoLearn.FZMath;
 using static MotorizedStage_SK_PI.F_Motion_SK_PI;
+using static S2System.Vision.MILlib;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 using Axis = MotorizedStage_SK_PI.Axis;
+using Button = System.Windows.Forms.Button;
+using TextBox = System.Windows.Forms.TextBox;
 
 namespace FZ4P
 {
     public partial class FVision : Form
     {
         public DLN Dln { get { return STATIC.Dln; } }
-        public  Process Process { get { return STATIC.Process; } }
+        public Process Process { get { return STATIC.Process; } }
         public Condition Condition { get { return STATIC.Rcp.Condition; } }
 
         public Global m__G;
         private Camera[] BaslerCam = new Camera[2];
+        public F_Main MyOwner = null;
 
         public int mTmpCount = 0;
 
@@ -94,7 +107,7 @@ namespace FZ4P
         int mTriggerGrabbedFrame = 0;
         double mTriggerGrabbedFPS = 0;
         double mHowLongItTook = 0;
-
+        public bool m_bPrismCoordinateSystem = false;
         public struct VROI
         {
             public int top;
@@ -145,6 +158,9 @@ namespace FZ4P
         public delegate void DelegateMotorMoveAbsAxis(Axis axis, double pos);
         public delegate void DelegateMotorMoveAbs6D(double x, double y, double z, double tx, double ty, double tz);
 
+        public delegate void DelegateMotorMoveRelAxis(Axis axis, double pos);
+        public delegate void DelegateMotorMoveRel6D(double x, double y, double z, double tx, double ty, double tz);
+
         public delegate void DelegateMotorJogRun(Axis axis, bool dir, SpeedLevel speedLevel);
         public delegate void DelegateMotorJogStop(Axis axis);
 
@@ -172,6 +188,9 @@ namespace FZ4P
         DelegateMotorMoveAbsAxis MotorMoveAbsAxis;
         DelegateMotorMoveAbs6D MotorMoveAbs6D;  //  mm, arcmin
 
+        DelegateMotorMoveAbsAxis MotorMoveRelAxis;
+        DelegateMotorMoveAbs6D MotorMoveRel6D;  //  mm, arcmin
+
         DelegateMotorJogRun MotorJogRun;
         DelegateMotorJogStop MotorJogStop;
 
@@ -188,6 +207,7 @@ namespace FZ4P
         DelegateHexapodRotate HexapodRotate;
         DelegateMotorXYZ MotorXYZ;
 
+        List<Button> CalBtnGroup;
 
         //  public void PrepareRemoteCalibration()
         //  public void SingleFindMark()
@@ -205,6 +225,9 @@ namespace FZ4P
 
             DelegateMotorMoveAbsAxis fmotorMoveAbsAxis,
             DelegateMotorMoveAbs6D fmotorMoveAbs6D,
+
+            DelegateMotorMoveAbsAxis fmotorMoveRelAxis,
+            DelegateMotorMoveAbs6D fmotorMoveRel6D,
 
             DelegateMotorJogRun fmotorJogRun,
             DelegateMotorJogStop fmotorJogStop,
@@ -232,6 +255,9 @@ namespace FZ4P
 
             MotorMoveAbsAxis = fmotorMoveAbsAxis;
             MotorMoveAbs6D = fmotorMoveAbs6D;
+
+            MotorMoveRelAxis = fmotorMoveRelAxis;
+            MotorMoveRel6D = fmotorMoveRel6D;
 
             MotorJogRun = fmotorJogRun;
             MotorJogStop = fmotorJogStop;
@@ -293,6 +319,7 @@ namespace FZ4P
 
                 Thread threadInitBalser = new Thread(() => InitBaslerCam());
                 threadInitBalser.Start();
+                //InitBaslerCam();
 
                 System.Drawing.Point[] pts =  {
                                 new System.Drawing.Point( 2,  2),
@@ -371,7 +398,6 @@ namespace FZ4P
             radioButton10Step.Checked = true;
             cbLiveWithMarks.Checked = false;
             rb1step.Checked = true;
-            AFRadio.Checked = true;
             this.BackColor = Color.FromArgb(96, 96, 100);
             //MessageBox.Show("aaa");
             //if (m__G!=null)
@@ -384,20 +410,21 @@ namespace FZ4P
             tbInfo.BringToFront();
             tbVsnLog.BringToFront();
 
-            rbCalZ.Checked = true;
-
             //ChartMTF.Hide();
             //LoadscaleNTheta();
             if (m__G.oCam[0].mFAL != null)
                 if (m__G.oCam[0].mFAL.mFZM != null)
+                {
                     m__G.oCam[0].mFAL.mFZM.SetSignTXTY(m__G.m_bXTiltReverse, m__G.m_bYTiltReverse);
+                }
 
             groupBox4.Hide();
             btnChangeCrop.Show();
             cbZaxis.Hide();
             cbTiltAxis.Hide();
             btnSaveOrgPosition.Hide();
-            rbCalZ.Checked = true;
+            CalBtnGroup = new List<Button> { btnFindCSHorg, btnRangeTest, btnScan, btnRepeatTest, btnEastView, btnAutoCal };
+            cboAxis.DataSource = Enum.GetValues(typeof(Axis));
             rbFromOrg.Checked = true;
             cbBench.Checked = true;
             cbBench.Checked = false;
@@ -416,18 +443,58 @@ namespace FZ4P
             tbTYstep.Text = "3";
             tbTZstep.Text = "3";
 
-            cbSkipFindFidOrg.Checked = false;
+            //cbSkipFindFidOrg.Checked = false;
             InitializeHexpodPivot();
             if (m__G.m_bCalibrationModel)
             {
                 m__G.mGageCounter?.OpenAllport();
-                grpCalVolum.Enabled = true;
-                grpCalibration.Enabled = true;
+                MAX_TRGGRAB_COUNT = 3000;
             }
-        }
+            else
+            {
+                grbCalibration.Visible = false;
+                grbVolumetric.Visible = false;
+            }
 
+            //if (!mHybridStageAvailable)
+            //{
+            //    grbCalibration.Visible = false;
+            //    grbVolumetric.Visible = false;
+            //}
+        }
+        public void BufferInit()
+        {
+            int orgmTargetTriggerCount = m__G.oCam[0].mTargetTriggerCount;
+            m__G.oCam[0].mTargetTriggerCount = 3000;
+            int frmCnt = 3000;
+            //for (int i = 0; i < m__G.oCam[0].mTargetTriggerCount; i++)
+            //    m__G.oCam[0].GrabB(i);
+
+            for (int mi = 0; mi < 5; mi++)
+                m__G.oCam[0].mMarkPosRes[mi] = new FAutoLearn.FZMath.Point2D[frmCnt + 1];
+
+
+            m__G.oCam[0].SetTriggeredframeCount(frmCnt);
+
+            m__G.oCam[0].mFAL.LoadFMICandidate();
+            m__G.oCam[0].PrepareFineCOG();
+            m__G.oCam[0].mFAL.BackupFMI();
+            m__G.oCam[0].mFAL.RecoverFromBackupFMI();
+            m__G.oCam[0].ForceTriggerTime();
+            m__G.oCam[0].mTrgBufLength = 3000;
+
+            ChangeFiducialMark(m__G.mFAL.mCandidateIndex);
+            SetDefaultMarkConfig(true);
+
+            m__G.oCam[0].PointTo6DMotion(-1, mStdMarkPos);  //  초기 세팅한 절대좌표 기준으로 좌표값이 추출되도록 한다.
+
+            //ProcessVisionData(frmCnt, m__G.mMaxThread);
+            m__G.mbSuddenStop[0] = false;
+            m__G.oCam[0].mTargetTriggerCount = orgmTargetTriggerCount;
+        }
         public string camID0 = "";
         public string camID1 = "";
+        public bool mHybridStageAvailable = true;
         public void InitBaslerCam()
         {
             //string which = "true";
@@ -480,7 +547,6 @@ namespace FZ4P
                 }
                 if (camID0 == "")
                 {
-                    mLoaded = true;
                     MessageBox.Show("Camera ID is not found. Check Camera ID and Restart Application.");
                     return;
                 }
@@ -582,7 +648,6 @@ namespace FZ4P
                         radioButton10Step.Checked = true;
                         rb1step.Checked = true;
                         cbContinuosMode.Enabled = true;
-
                     });
             }
             TransferModelFileList();
@@ -590,16 +655,16 @@ namespace FZ4P
             SetExposure(0, Condition.iExposure);
             LoadBackbroundNoise();
             LoadScaleNTheta();
-            LoadTXTYZeroOffset();
+            //LoadTXTYZeroOffset();
             SetDefaultMarkConfig();
             //string ZLUTfile = m__G.m_RootDirectory + "\\DoNotTouch\\ZLUT_" + camID0 + ".txt";
             //GetZLUT(ZLUTfile);
             string strTXTYTZoffset = LoadTXTYZeroOffset();
-            //m__G.fManage.AddViewLog("CSH ID " + camID0 + "\t" + strTXTYTZoffset);
+            //STATIC.fManage.("CSH ID " + camID0 + "\t" + strTXTYTZoffset);
 
             //Regstry Write ====
-            Registry.LocalMachine.CreateSubKey("SOFTWARE").CreateSubKey("B7WideTest");
-            RegistryKey reg = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\B7WideTest", true);
+            Registry.LocalMachine.CreateSubKey("SOFTWARE").CreateSubKey("6AxisTester");
+            RegistryKey reg = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\6AxisTester", true);
 
             if (reg.GetValue(camID0) == null)
                 reg.SetValue(camID0, DateTime.Now.ToString("yyyy/MM/dd/HH:mm:ss"));
@@ -664,6 +729,9 @@ namespace FZ4P
                                    m__G.fMotion.MoveAbsAxis,
                                    m__G.fMotion.MoveAbs6D,
 
+                                   m__G.fMotion.MoveRelAxis,
+                                   m__G.fMotion.MoveRel6D,
+
                                    m__G.fMotion.JogRun,
                                    m__G.fMotion.JogStop,
 
@@ -683,17 +751,21 @@ namespace FZ4P
                                    );
             if (m__G.m_bCalibrationModel)
             {
-                m__G.fMotion.ConnectSKPI();
-                m__G.fMotion.mInitialMsg = "Connection completed.";
-                if (InvokeRequired)
+                if (m__G.fMotion.ConnectSKPI())
                 {
-                    BeginInvoke((MethodInvoker)delegate
+                    m__G.fMotion.mInitialMsg = "Connection completed.";
+                    if (InvokeRequired)
                     {
+                        BeginInvoke((MethodInvoker)delegate
+                        {
+                            tbVsnLog.Text = "Hybrid Stage connection complete.";
+                        });
+                    }
+                    else
                         tbVsnLog.Text = "Hybrid Stage connection complete.";
-                    });
                 }
-                else
-                    tbVsnLog.Text = "Hybrid Stage connection complete.";
+                //else
+                //mHybridStageAvailable = false;
             }
             // JH 스테이지
             //RegisterMotorDelegates(m__G.fManage.M_C,
@@ -714,7 +786,51 @@ namespace FZ4P
         //private void FVision_FormClosing(object sender, FormClosingEventArgs e)
         //{
         //}
+        public int GetMasterZeroCount()
+        {
+            string cPath = m__G.m_RootDirectory + "\\DoNotTouch\\OffsetZero";
+            return Directory.GetFiles(cPath).Length;
+        }
+        public int GetMasterZeroIndex()
+        {
+            int curIndex;
+            string cPath = m__G.m_RootDirectory + "\\DoNotTouch\\PreviousOffsetIndex.txt";
+            StreamReader rd = new StreamReader(cPath);
+            curIndex = int.Parse(rd.ReadLine());
+            rd.Close();
+            return curIndex;
+        }
+        public void SetMasterZeroIndex(int index)
+        {
+            string cPath = m__G.m_RootDirectory + "\\DoNotTouch\\PreviousOffsetIndex.txt";
+            StreamWriter sw = new StreamWriter(cPath);
+            sw.WriteLine(index);
+            sw.Close();
+        }
+        public void InitMasterZeroList()
+        {
 
+            string[] files = Directory.GetFiles(m__G.m_RootDirectory + "\\DoNotTouch\\OffsetZero");
+
+            if (InvokeRequired)
+                BeginInvoke((MethodInvoker)delegate
+                {
+                    MasterList.Items.Clear();
+                    for (int j = 0; j < files.Length; j++)
+                    {
+                        MasterList.Items.Add(Path.GetFileName(files[j]));
+                    }
+
+                });
+            else
+            {
+                MasterList.Items.Clear();
+                for (int j = 0; j < files.Length; j++)
+                {
+                    MasterList.Items.Add(Path.GetFileName(files[j]));
+                }
+            }
+        }
         public void SetEdgeBand(int nband = 7)
         {
             if (m__G == null) return;
@@ -728,6 +844,32 @@ namespace FZ4P
             BaslerCam[0].Parameters[PLCamera.GainRaw].SetValue(lGain);
             BaslerCam[0].Parameters[PLCamera.Gamma].SetValue(lGamma);
             BaslerCam[0].Parameters[PLCamera.GammaEnable].SetValue(true);
+        }
+        public void EnableBtns(bool bEnable)
+        {
+            if (bEnable)
+            {
+                //btnSetAbsZero.Enabled = false;
+            }
+            else
+            {
+                //btnSetAbsZero.Enabled = true;
+            }
+
+            //SlowlyChk.Checked = false; //2021.08.31 added
+            rbLED2.Checked = true; //2021.08.31 added
+            rb1step.Checked = true;
+            cbSetTXTYwithMaster.Checked = false;
+
+            MasterList.Enabled = false;
+            btnDeleteMaster.Enabled = false;
+            btnAddMaster.Enabled = false;
+            btnInitialTilt.Enabled = false;
+            btnSetMasterTilt.Enabled = false;
+            tbMasterTX.Enabled = false;
+            tbMasterTY.Enabled = false;
+
+            m_FocusedLED = 0;
         }
         //------------------------------------------------------------------------------------------------------------------------------------------------
         private void panelCam1_MouseDown(object sender, MouseEventArgs e)
@@ -809,11 +951,10 @@ namespace FZ4P
             Thread.Sleep(200);
 
             bHaltLive = false;
-            m__G.mbSuddenStop[0] = true;        //  왜 ?
+            m__G.mbSuddenStop[0] = true;
             m__G.mDoingStatus = "Checking Vision";
 
             //m__G.fGraph.mDriverIC.SetLEDpowers((int)((mLEDcurrent[0] - 0.07) * 5000), (int)((mLEDcurrent[1] - 0.07) * 5000), m__G.mCamCount);
-            //m__G.fGraph.Drive_LEDs(mLEDcurrent[0], mLEDcurrent[1]);
             Process.LEDs_All_On(0, true);
             btnAllLEDOn.ForeColor = Color.White;
 
@@ -824,9 +965,15 @@ namespace FZ4P
             m__G.oCam[0].DrawAllRectangles();
 
             if (cbLiveWithMarks.Checked && bLiveFindMark == false)
+            {
+                // 250326 폰트 설정 cbLiveWithMarks_CheckedChanged()에서 이동
+                tbInfo.Font = new Font("Calibri", 14, FontStyle.Bold);
                 Task.Run(() => LiveFindMark());
+            }
             else
             {
+                tbInfo.Font = new Font("Calibri", 8, FontStyle.Regular);
+
                 if (m__G.mCamCount > 1)
                 {
                     m__G.oCam[1].ClearDisp();
@@ -845,72 +992,26 @@ namespace FZ4P
 
         public void LiveFindMark()
         {
-            if (!bLiveFindMark)
+            //if (!bLiveFindMark)
+            //    return;
+
+            // 250326 이미 LiveFindMark 중 이라면 return 으로 조건 변경
+            if (bLiveFindMark)
                 return;
 
             m__G.mDoingStatus = "LiveFindMark";
 
-            //m__G.fGraph.Drive_LEDs(Condition.iLEDcurrentLR, Condition.iLEDcurrentLL);
+            // 데이터 mCalibrationFullData에 저장해서 SetMasterTilt할때 마지막 데이터 사용
+            mCalibrationFullData.Clear();
+            double[] lCalibrationData = new double[23];
+
+
             Process.LEDs_All_On(0, true);
             Thread.Sleep(10);
 
             bLiveFindMark = true;
             int fcnt = 0;
 
-            BufferInit();
-
-            while (!bHaltLive)
-            {
-                m__G.oCam[0].DrawClear();
-                DrawMarkPositions();
-                m__G.oCam[0].DrawAllRectangles();
-
-                m__G.oCam[0].mFAL.LoadFMICandidate();
-                m__G.oCam[0].mFAL.BackupFMI();
-                m__G.oCam[0].GrabB(fcnt);
-                FindMarks(fcnt++);
-                if (fcnt == 10000)
-                    fcnt = 0;
-
-                string lstr = tbInfo.Text;
-                string[] lineStr = lstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-
-                if (lineStr.Length > 6)
-                {
-                    lstr = "";
-                    for (int i = 0; i < 6; i++)
-                        lstr += lineStr[lineStr.Length - 6 + i] + "\r\n";
-
-                    if (InvokeRequired)
-                    {
-                        BeginInvoke((MethodInvoker)delegate
-                        {
-                            tbInfo.Text = lstr;
-                            tbInfo.SelectionStart = tbInfo.Text.Length;
-                            tbInfo.ScrollToCaret();
-                        });
-                    }
-                    else
-                    {
-                        tbInfo.Text = lstr;
-                        tbInfo.SelectionStart = tbInfo.Text.Length;
-                        tbInfo.ScrollToCaret();
-                    }
-                }
-
-                m__G.oCam[0].mFAL.RecoverFromBackupFMI();
-                Thread.Sleep(180);
-                if (!cbLiveWithMarks.Checked)
-                    break;
-            }
-            bHaltLive = false;
-            bLiveFindMark = false;
-
-        }
-        public double mExpectedYfromSideNStpTopNS = 0;
-
-        public void BufferInit()
-        {
             int orgmTargetTriggerCount = m__G.oCam[0].mTargetTriggerCount;
             m__G.oCam[0].mTargetTriggerCount = 3000;
             int frmCnt = 3000;
@@ -935,10 +1036,74 @@ namespace FZ4P
 
             m__G.oCam[0].PointTo6DMotion(-1, mStdMarkPos);  //  초기 세팅한 절대좌표 기준으로 좌표값이 추출되도록 한다.
 
-            //m__G.fVision.ProcessVisionData(frmCnt, m__G.mMaxThread);
+            ProcessVisionData(frmCnt, m__G.mMaxThread);
             m__G.mbSuddenStop[0] = false;
             m__G.oCam[0].mTargetTriggerCount = orgmTargetTriggerCount;
+
+
+            while (!bHaltLive)
+            {
+                m__G.oCam[0].DrawClear();
+                DrawMarkPositions();
+                m__G.oCam[0].DrawAllRectangles();
+
+                m__G.oCam[0].mFAL.LoadFMICandidate();
+                m__G.oCam[0].mFAL.BackupFMI();
+                m__G.oCam[0].GrabB(fcnt);
+                FindMarks(fcnt++);
+                if (fcnt == 10000)
+                    fcnt = 0;
+
+                m__G.oCam[0].mFAL.RecoverFromBackupFMI();
+
+
+                if (tbInfo.InvokeRequired)
+                {
+                    tbInfo.BeginInvoke(new Action(() =>
+                    {
+                        string lstr = tbInfo.Text;
+                        string[] lineStr = lstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+
+                        if (lineStr.Length > 6)
+                        {
+                            lstr = "";
+                            for (int i = 0; i < 6; i++)
+                                lstr += lineStr[lineStr.Length - 6 + i] + "\r\n";
+
+
+                            tbInfo.Text = lstr;
+                            tbInfo.SelectionStart = tbInfo.Text.Length;
+                            tbInfo.ScrollToCaret();
+                        }
+                    }));
+                }
+                else
+                {
+                    string lstr = tbInfo.Text;
+                    string[] lineStr = lstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+
+                    if (lineStr.Length > 6)
+                    {
+                        lstr = "";
+                        for (int i = 0; i < 6; i++)
+                            lstr += lineStr[lineStr.Length - 6 + i] + "\r\n";
+
+
+                        tbInfo.Text = lstr;
+                        tbInfo.SelectionStart = tbInfo.Text.Length;
+                        tbInfo.ScrollToCaret();
+                    }
+                }
+
+                Thread.Sleep(180);
+                if (!cbLiveWithMarks.Checked)
+                    break;
+            }
+            // bHaltLive = false;
+            bLiveFindMark = false;
+
         }
+        public double mExpectedYfromSideNStpTopNS = 0;
         //------------------------------------------------------------------------------------------------------------------------------------------------
         private void btnGrab2_Click(object sender, EventArgs e)
         {
@@ -1013,17 +1178,19 @@ namespace FZ4P
 
         }
         //------------------------------------------------------------------------------------------------------------------------------------------------
-        bool bHaltLive = false;
+        // 처음 시작할때 Live 상태 아니므로 bHaltLive는 true
+        //bool bHaltLive = false;
+        public bool bHaltLive = true;
         public void GrabHalt()
         {
             //label6.Text = "";
+            m__G.mbSuddenStop[0] = false;
             m__G.oCam[0].HaltA();
             bHaltLive = true;
             btnAllLEDOn.ForeColor = Color.SlateGray;
             m__G.mDoingStatus = "IDLE";
             m__G.mIDLEcount = 0;
             Thread.Sleep(100);
-            //m__G.fGraph.Drive_LEDs(0, 0);
             Process.LEDs_All_On(0, false);
 
             //m__G.oCam[0].ClearDisp();
@@ -1400,23 +1567,8 @@ namespace FZ4P
                 m__G.oCam[1].ClearDisp();
         }
 
-        private async void btnOISXStepReplay_Click(object sender, EventArgs e)
+        private void btnOISXStepReplay_Click(object sender, EventArgs e)
         {
-            //m__G.oCam[0].ClearDisp();
-            //m__G.oCam[0].DrawClear();
-            //if (m__G.mCamCount > 1)
-            //{
-            //    m__G.oCam[1].ClearDisp();
-            //    m__G.oCam[1].DrawClear();
-            //}
-            //btnOISXReplay.Enabled = false;
-            //btnOISXStepReplay.Enabled = false;
-
-
-            //Thread ThreadReplayL = new Thread(() => Process_OISXReplay(0, 1));
-            //ThreadReplayL.Start();
-            ////m_replayIndex = 0;
-            ///
             m__G.oCam[0].ClearDisp();
             m__G.oCam[0].DrawClear();
             if (m__G.mCamCount > 1)
@@ -1424,16 +1576,13 @@ namespace FZ4P
                 m__G.oCam[1].ClearDisp();
                 m__G.oCam[1].DrawClear();
             }
+            btnOISXReplay.Enabled = false;
+            btnOISXStepReplay.Enabled = false;
 
-            Button bt = (Button)sender;
 
-            bt.Enabled = false;
-            await Task.Factory.StartNew(() =>
-            {
-                m__G.oCam[0].ReplayBufToDisp(ScanName, 40);
-            });
-
-            bt.Enabled = true;
+            Thread ThreadReplayL = new Thread(() => Process_OISXReplay(0, 1));
+            ThreadReplayL.Start();
+            //m_replayIndex = 0;
 
         }
 
@@ -1492,19 +1641,16 @@ namespace FZ4P
             if (ch == 1)
             {
                 if (tbLedLeft.Text.Length > 0)
-                    Condition.LedCurrentL = double.Parse(tbLedLeft.Text);
-
-                if (Condition.LedCurrentL > 0)
-                    Condition.LedCurrentL -= 0.01;
+                    mLEDcurrent[ch] = double.Parse(tbLedLeft.Text);
             }
             else
             {
                 if (tbLedRight.Text.Length > 0)
-                    Condition.LedCurrentR = double.Parse(tbLedRight.Text);
-
-                if (Condition.LedCurrentR > 0)
-                    Condition.LedCurrentR -= 0.01;
+                    mLEDcurrent[ch] = double.Parse(tbLedRight.Text);
             }
+
+            if (mLEDcurrent[ch] > 0)
+                mLEDcurrent[ch] -= 0.01;
 
             //m__G.oCam[0].HaltA();
             //if (m__G.mCamCount > 1)
@@ -1513,8 +1659,8 @@ namespace FZ4P
             //m__G.fGraph.mDriverIC.SetLEDpowers((int)((mLEDcurrent[0] - 0.07) * 5000), (int)((mLEDcurrent[1] - 0.07) * 5000), m__G.mCamCount);
             //m__G.fGraph.Drive_LED(ch, mLEDcurrent[ch]);
 
-            tbLedLeft.Text = Condition.LedCurrentL.ToString("F3");
-            tbLedRight.Text = Condition.LedCurrentR.ToString("F3");
+            tbLedLeft.Text = mLEDcurrent[1].ToString("F3");
+            tbLedRight.Text = mLEDcurrent[0].ToString("F3");
 
             if (bHaltLive) StartLive();
             else
@@ -1536,19 +1682,17 @@ namespace FZ4P
             if (ch == 1)
             {
                 if (tbLedLeft.Text.Length > 0)
-                    Condition.LedCurrentL = double.Parse(tbLedLeft.Text);
-
-                if (Condition.LedCurrentL < 5)
-                    Condition.LedCurrentL += 0.01;
+                    mLEDcurrent[ch] = double.Parse(tbLedLeft.Text);
             }
             else
             {
                 if (tbLedRight.Text.Length > 0)
-                    Condition.LedCurrentR = double.Parse(tbLedRight.Text);
-
-                if (Condition.LedCurrentR < 5)
-                    Condition.LedCurrentR += 0.01;
+                    mLEDcurrent[ch] = double.Parse(tbLedRight.Text);
             }
+
+
+            if (mLEDcurrent[ch] < 5)
+                mLEDcurrent[ch] += 0.01;
 
             //m__G.oCam[0].HaltA();
             //if (m__G.mCamCount > 1)
@@ -1557,10 +1701,10 @@ namespace FZ4P
             //m__G.fGraph.mDriverIC.SetLEDpowers((int)((mLEDcurrent[0] - 0.07) * 5000), (int)((mLEDcurrent[1] - 0.07) * 5000), m__G.mCamCount);
             //m__G.fGraph.Drive_LED(ch, mLEDcurrent[ch]);
 
-            tbLedLeft.Text = Condition.LedCurrentL.ToString("F3");   //  Left
-            tbLedRight.Text = Condition.LedCurrentR.ToString("F3");   //  Right
+            tbLedLeft.Text = mLEDcurrent[1].ToString("F3");   //  Left
+            tbLedRight.Text = mLEDcurrent[0].ToString("F3");   //  Right
 
-            if(bHaltLive) StartLive();
+            if (bHaltLive) StartLive();
             else
             {
                 Process.LEDs_All_On(0, true);
@@ -1770,238 +1914,288 @@ namespace FZ4P
 
         public List<double[]> mCalibrationFullData = new List<double[]>();  //  (um, min)
         public List<double[]> mGageFullData = new List<double[]>();         //  (um)
-        public void JHMotorizedFindMarks(int Nth, bool IsOrg, bool IsSave = true)
+        public List<double[]> mPrismTXTYTZ = new List<double[]>();         //  (um)
+        public List<double[]> mStdevTXTYTZ = new List<double[]>();  //  (um, min)
+        //public List<double[]> mProbeTZ = new List<double[]>();
+
+        //public void JHMotorizedFindMarks(int Nth, bool IsOrg, bool IsSave = true)
+        //{
+        //    m__G.mDoingStatus = "Checking Vision";
+
+        //    int mavNum = 4;
+
+        //    m__G.oCam[0].mTargetTriggerCount = 3000;
+        //    m__G.oCam[0].dAFZM_FrameCount = 9;
+        //    m__G.oCam[0].mTrgBufLength = MILlib.MAX_TRGGRAB_COUNT;
+        //    double[] gageData = null;
+
+        //    for (int mi = 0; mi < 5; mi++)
+        //        m__G.oCam[0].mMarkPosRes[mi] = new FAutoLearn.FZMath.Point2D[mavNum + 1];
+
+        //    /////////////////////////////////////////////////////////////////////////
+        //    // 자화로 대체
+        //    // gageData = 현재 값 읽어오기;
+        //    ///////////////////////////////////////////////////////////////////////////////
+
+        //    for (int i = 0; i < mavNum; i++)
+        //        m__G.oCam[0].GrabB(i + 1, true);    //  1 ~ mavNum 영상이 바뀜, 0번 영상은 그대로 유지
+
+        //    if (IsOrg)
+        //    {
+        //        m__G.oCam[0].mFAL.LoadFMICandidate();
+        //        m__G.oCam[0].mFAL.BackupFMI();
+        //        SetDefaultMarkConfig(true);
+        //    }
+
+        //    double minscale = (180 / Math.PI * 60) / mavNum;                           //  rad to min
+        //    double umscale = (5.5 / Global.LensMag) / mavNum;                           //  rad to min
+
+        //    m__G.oCam[0].SetTriggeredframeCount(mavNum + 1);
+
+        //    //int numFMIcandidate = m__G.mFAL.GetNumFMICandidate();
+        //    string[] strtmp = new string[2] { "", "" };
+        //    m__G.mbSuddenStop[0] = false;
+        //    TextBox[] ltextBox = new TextBox[2] { tbInfo, tbVsnLog };
+
+        //    double[] lCalibrationData = new double[23];
+
+        //    int ci = 0;
+        //    strtmp[ci] = "";
+        //    m__G.mFAL.mCandidateIndex = ci;
+
+        //    if (IsOrg)
+        //        ChangeFiducialMark(ci);
+
+        //    if (IsOrg)
+        //    {
+
+        //        m__G.oCam[0].PrepareFineCOG();
+        //        m__G.oCam[0].PointTo6DMotion(-1, mStdMarkPos);  //  초기 세팅한 절대좌표 기준으로 좌표값이 추출되도록 한다.
+        //        m__G.oCam[0].FineCOG(true, 0, 0);    // 마크찾기
+        //    }
+        //    m__G.oCam[0].FineCOG(false, 1, 0);    // 마크찾기
+        //    m__G.oCam[0].FineCOG(false, 2, 0);    // 마크찾기
+        //    m__G.oCam[0].FineCOG(false, 3, 0);    // 마크찾기
+        //    m__G.oCam[0].FineCOG(false, 4, 0);    // 마크찾기
+
+        //    if (ci != 0)
+        //        m__G.mFAL.mFZM.mbCompY = ci;
+        //    else
+        //        m__G.mFAL.mFZM.mbCompY = 0;
+        //    double sx = 0;
+        //    double sy = 0;
+        //    double sz = 0;
+        //    double tx = 0;
+        //    double ty = 0;
+        //    double tz = 0;
+
+        //    for (int findex = 1; findex < mavNum + 1; findex++)
+        //    {
+        //        //NthMeasure(findex, true);
+
+        //        //strtmp += "\r\n" + findex.ToString() + "\t" + m__G.oCam[0].mAvgLED[findex].ToString("F3") + "\t";
+
+        //        sx += m__G.oCam[0].mC_pX[findex] * umscale;
+        //        sy += m__G.oCam[0].mC_pY[findex] * umscale;
+        //        sz += m__G.oCam[0].mC_pZ[findex] * umscale;
+        //        tx += m__G.oCam[0].mC_pTX[findex] * minscale;   //  radian to minute
+        //        ty += m__G.oCam[0].mC_pTY[findex] * minscale;   //  radian to minute
+        //        tz += m__G.oCam[0].mC_pTZ[findex] * minscale;   //  radian to minute
+        //    }
+        //    lCalibrationData[0] = sx;
+        //    lCalibrationData[1] = sy;
+        //    lCalibrationData[2] = sz;
+        //    lCalibrationData[3] = tx;
+        //    lCalibrationData[4] = ty;
+        //    lCalibrationData[5] = tz;
+
+        //    strtmp[ci] = Nth.ToString() + "\t"
+        //           + lCalibrationData[0].ToString("F2") + "\t"
+        //           + lCalibrationData[1].ToString("F2") + "\t"
+        //           + lCalibrationData[2].ToString("F2") + "\t"
+        //           + lCalibrationData[3].ToString("F2") + "\t"
+        //           + lCalibrationData[4].ToString("F2") + "\t"
+        //           + lCalibrationData[5].ToString("F2") + "\t";
+
+        //    double[] xavg = new double[12];
+        //    double[] yavg = new double[12];
+        //    for (int findex = 1; findex < mavNum + 1; findex++)
+        //    {
+        //        for (int i = 0; i < 12; i++)
+        //        {
+        //            if (m__G.oCam[0].mAzimuthPts[findex][i].X == 0) continue;
+        //            xavg[i] += m__G.oCam[0].mAzimuthPts[findex][i].X / mavNum;
+        //            yavg[i] += m__G.oCam[0].mAzimuthPts[findex][i].Y / mavNum;
+        //        }
+        //    }
+        //    int kk = 0;
+        //    for (int i = 0; i < 12; i++)
+        //    {
+        //        if (xavg[i] == 0) continue;
+        //        strtmp[ci] += xavg[i].ToString("F3") + "\t" + yavg[i].ToString("F3") + "\t";
+
+        //        lCalibrationData[6 + 2 * kk] = xavg[i];
+        //        lCalibrationData[6 + 2 * kk + 1] = yavg[i];
+        //        kk++;
+        //    }
+        //    if (gageData != null)
+        //    {
+        //        if (gageData.Length == 6)
+        //        {
+        //            // 자화 부호 맞춰야함.
+        //            lCalibrationData[16] = gageData[0];   // um
+        //            lCalibrationData[17] = gageData[1];   // um
+        //            lCalibrationData[18] = gageData[2];   // um
+        //            lCalibrationData[19] = gageData[3]; // min          // TX   acr min
+        //            lCalibrationData[20] = gageData[4]; // min          // TY   acr min
+        //            lCalibrationData[21] = gageData[5]; // min          // TZ   acr min
+
+        //            //  출력은 um, arcmin
+        //            strtmp[ci] += lCalibrationData[16].ToString("F1") + "\t" + lCalibrationData[17].ToString("F1") + "\t" + lCalibrationData[18].ToString("F1")
+        //                 + "\t" + lCalibrationData[19].ToString("F1") + "\t" + lCalibrationData[20].ToString("F1") + "\t" + lCalibrationData[21].ToString("F1");
+        //        }
+        //    }
+        //    if (ci == 0 && IsSave)
+        //    {
+        //        mCalibrationFullData.Add(lCalibrationData);
+        //        mGageFullData.Add(gageData);
+        //    }
+
+
+        //    if (InvokeRequired)
+        //    {
+        //        BeginInvoke((MethodInvoker)delegate
+        //        {
+        //            DrawMarkDetected();
+        //            //pictureBox2.Image = BitmapConverter.ToBitmap(m__G.oCam[0].mFAL.mSourceImg[0]);
+        //            if (ltextBox[0].Text.Length > 7000)
+        //                ltextBox[0].Text = strtmp[0] + "\r\n";
+        //            else
+        //                ltextBox[0].Text += strtmp[0] + "\r\n";
+
+        //            ltextBox[0].SelectionStart = ltextBox[0].Text.Length;
+        //            ltextBox[0].ScrollToCaret();
+        //        });
+        //    }
+        //    else
+        //    {
+        //        DrawMarkDetected();
+        //        //pictureBox2.Image = BitmapConverter.ToBitmap(m__G.oCam[0].mFAL.mSourceImg[0]);
+
+        //        if (ltextBox[0].Text.Length > 7000)
+        //            ltextBox[0].Text = strtmp[0] + "\r\n";
+        //        else
+        //            ltextBox[0].Text += strtmp[0] + "\r\n";
+
+        //        ltextBox[0].SelectionStart = ltextBox[0].Text.Length;
+        //        ltextBox[0].ScrollToCaret();
+        //    }
+        //    //if (InvokeRequired)
+        //    //{
+        //    //    BeginInvoke((MethodInvoker)delegate
+        //    //    {
+        //    //        if (ltextBox[1].Text.Length > 7000)
+        //    //            ltextBox[1].Text = strtmp[1] + "\r\n";
+        //    //        else
+        //    //            ltextBox[1].Text += strtmp[1] + "\r\n";
+
+        //    //        ltextBox[1].SelectionStart = ltextBox[1].Text.Length;
+        //    //        ltextBox[1].ScrollToCaret();
+        //    //    });
+        //    //}
+        //    //else
+        //    //{
+        //    //    if (ltextBox[1].Text.Length > 2000)
+        //    //        ltextBox[1].Text = strtmp[1] + "\r\n";
+        //    //    else
+        //    //        ltextBox[1].Text += strtmp[1] + "\r\n";
+
+        //    //    ltextBox[1].SelectionStart = ltextBox[1].Text.Length;
+        //    //    ltextBox[1].ScrollToCaret();
+        //    //}
+
+        //    m__G.oCam[0].mFAL.RecoverFromBackupFMI();
+        //    m__G.mDoingStatus = "IDLE";
+        //    m__G.mIDLEcount = 0;
+        //}
+
+        public double GetStdevOfArray(double[] x, int startIndex, int count)
         {
-            m__G.mDoingStatus = "Checking Vision";
-
-            int mavNum = 4;
-
-            m__G.oCam[0].mTargetTriggerCount = 3000;
-            m__G.oCam[0].dAFZM_FrameCount = 9;
-            m__G.oCam[0].mTrgBufLength = MILlib.MAX_TRGGRAB_COUNT;
-            double[] gageData = null;
-
-            for (int mi = 0; mi < 5; mi++)
-                m__G.oCam[0].mMarkPosRes[mi] = new FAutoLearn.FZMath.Point2D[mavNum + 1];
-
-            /////////////////////////////////////////////////////////////////////////
-            // 자화로 대체
-            // gageData = 현재 값 읽어오기;
-            ///////////////////////////////////////////////////////////////////////////////
-
-            for (int i = 0; i < mavNum; i++)
-                m__G.oCam[0].GrabB(i + 1, true);    //  1 ~ mavNum 영상이 바뀜, 0번 영상은 그대로 유지
-
-            if (IsOrg)
+            double res = 0;
+            double mean = 0;
+            for (int i = startIndex; i < startIndex + count; i++)
             {
-                m__G.oCam[0].mFAL.LoadFMICandidate();
-                m__G.oCam[0].mFAL.BackupFMI();
-                SetDefaultMarkConfig(true);
+                mean += x[i];
             }
-
-            double minscale = (180 / Math.PI * 60) / mavNum;                           //  rad to min
-            double umscale = (5.5 / Global.LensMag) / mavNum;                           //  rad to min
-
-            m__G.oCam[0].SetTriggeredframeCount(mavNum + 1);
-
-            //int numFMIcandidate = m__G.mFAL.GetNumFMICandidate();
-            string[] strtmp = new string[2] { "", "" };
-            m__G.mbSuddenStop[0] = false;
-            TextBox[] ltextBox = new TextBox[2] { tbInfo, tbVsnLog };
-
-            double[] lCalibrationData = new double[23];
-
-            int ci = 0;
-            strtmp[ci] = "";
-            m__G.mFAL.mCandidateIndex = ci;
-
-            if (IsOrg)
-                ChangeFiducialMark(ci);
-
-            if (IsOrg)
+            mean /= count;
+            double SumOfSquare = 0;
+            for (int i = startIndex; i < startIndex + count; i++)
             {
-
-                m__G.oCam[0].PrepareFineCOG();
-                m__G.oCam[0].PointTo6DMotion(-1, mStdMarkPos);  //  초기 세팅한 절대좌표 기준으로 좌표값이 추출되도록 한다.
-                m__G.oCam[0].FineCOG(true, 0, 0);    // 마크찾기
+                SumOfSquare += Math.Pow(x[i] - mean, 2);
             }
-            m__G.oCam[0].FineCOG(false, 1, 0);    // 마크찾기
-            m__G.oCam[0].FineCOG(false, 2, 0);    // 마크찾기
-            m__G.oCam[0].FineCOG(false, 3, 0);    // 마크찾기
-            m__G.oCam[0].FineCOG(false, 4, 0);    // 마크찾기
-
-            if (ci != 0)
-                m__G.mFAL.mFZM.mbCompY = ci;
-            else
-                m__G.mFAL.mFZM.mbCompY = 0;
-            double sx = 0;
-            double sy = 0;
-            double sz = 0;
-            double tx = 0;
-            double ty = 0;
-            double tz = 0;
-
-            for (int findex = 1; findex < mavNum + 1; findex++)
-            {
-                //NthMeasure(findex, true);
-
-                //strtmp += "\r\n" + findex.ToString() + "\t" + m__G.oCam[0].mAvgLED[findex].ToString("F3") + "\t";
-
-                sx += m__G.oCam[0].mC_pX[findex] * umscale;
-                sy += m__G.oCam[0].mC_pY[findex] * umscale;
-                sz += m__G.oCam[0].mC_pZ[findex] * umscale;
-                tx += m__G.oCam[0].mC_pTX[findex] * minscale;   //  radian to minute
-                ty += m__G.oCam[0].mC_pTY[findex] * minscale;   //  radian to minute
-                tz += m__G.oCam[0].mC_pTZ[findex] * minscale;   //  radian to minute
-            }
-            lCalibrationData[0] = sx;
-            lCalibrationData[1] = sy;
-            lCalibrationData[2] = sz;
-            lCalibrationData[3] = tx;
-            lCalibrationData[4] = ty;
-            lCalibrationData[5] = tz;
-
-            strtmp[ci] = Nth.ToString() + "\t"
-                   + lCalibrationData[0].ToString("F2") + "\t"
-                   + lCalibrationData[1].ToString("F2") + "\t"
-                   + lCalibrationData[2].ToString("F2") + "\t"
-                   + lCalibrationData[3].ToString("F2") + "\t"
-                   + lCalibrationData[4].ToString("F2") + "\t"
-                   + lCalibrationData[5].ToString("F2") + "\t";
-
-            double[] xavg = new double[12];
-            double[] yavg = new double[12];
-            for (int findex = 1; findex < mavNum + 1; findex++)
-            {
-                for (int i = 0; i < 12; i++)
-                {
-                    if (m__G.oCam[0].mAzimuthPts[findex][i].X == 0) continue;
-                    xavg[i] += m__G.oCam[0].mAzimuthPts[findex][i].X / mavNum;
-                    yavg[i] += m__G.oCam[0].mAzimuthPts[findex][i].Y / mavNum;
-                }
-            }
-            int kk = 0;
-            for (int i = 0; i < 12; i++)
-            {
-                if (xavg[i] == 0) continue;
-                strtmp[ci] += xavg[i].ToString("F3") + "\t" + yavg[i].ToString("F3") + "\t";
-
-                lCalibrationData[6 + 2 * kk] = xavg[i];
-                lCalibrationData[6 + 2 * kk + 1] = yavg[i];
-                kk++;
-            }
-            if (gageData != null)
-            {
-                if (gageData.Length == 6)
-                {
-                    // 자화 부호 맞춰야함.
-                    lCalibrationData[16] = gageData[0];   // um
-                    lCalibrationData[17] = gageData[1];   // um
-                    lCalibrationData[18] = gageData[2];   // um
-                    lCalibrationData[19] = gageData[3]; // min          // TX   acr min
-                    lCalibrationData[20] = gageData[4]; // min          // TY   acr min
-                    lCalibrationData[21] = gageData[5]; // min          // TZ   acr min
-
-                    //  출력은 um, arcmin
-                    strtmp[ci] += lCalibrationData[16].ToString("F1") + "\t" + lCalibrationData[17].ToString("F1") + "\t" + lCalibrationData[18].ToString("F1")
-                         + "\t" + lCalibrationData[19].ToString("F1") + "\t" + lCalibrationData[20].ToString("F1") + "\t" + lCalibrationData[21].ToString("F1");
-                }
-            }
-            if (ci == 0 && IsSave)
-            {
-                mCalibrationFullData.Add(lCalibrationData);
-                mGageFullData.Add(gageData);
-            }
-
-
-            if (InvokeRequired)
-            {
-                BeginInvoke((MethodInvoker)delegate
-                {
-                    DrawMarkDetected();
-                    //pictureBox2.Image = BitmapConverter.ToBitmap(m__G.oCam[0].mFAL.mSourceImg[0]);
-                    if (ltextBox[0].Text.Length > 7000)
-                        ltextBox[0].Text = strtmp[0] + "\r\n";
-                    else
-                        ltextBox[0].Text += strtmp[0] + "\r\n";
-
-                    ltextBox[0].SelectionStart = ltextBox[0].Text.Length;
-                    ltextBox[0].ScrollToCaret();
-                });
-            }
-            else
-            {
-                DrawMarkDetected();
-                //pictureBox2.Image = BitmapConverter.ToBitmap(m__G.oCam[0].mFAL.mSourceImg[0]);
-
-                if (ltextBox[0].Text.Length > 7000)
-                    ltextBox[0].Text = strtmp[0] + "\r\n";
-                else
-                    ltextBox[0].Text += strtmp[0] + "\r\n";
-
-                ltextBox[0].SelectionStart = ltextBox[0].Text.Length;
-                ltextBox[0].ScrollToCaret();
-            }
-            //if (InvokeRequired)
-            //{
-            //    BeginInvoke((MethodInvoker)delegate
-            //    {
-            //        if (ltextBox[1].Text.Length > 7000)
-            //            ltextBox[1].Text = strtmp[1] + "\r\n";
-            //        else
-            //            ltextBox[1].Text += strtmp[1] + "\r\n";
-
-            //        ltextBox[1].SelectionStart = ltextBox[1].Text.Length;
-            //        ltextBox[1].ScrollToCaret();
-            //    });
-            //}
-            //else
-            //{
-            //    if (ltextBox[1].Text.Length > 2000)
-            //        ltextBox[1].Text = strtmp[1] + "\r\n";
-            //    else
-            //        ltextBox[1].Text += strtmp[1] + "\r\n";
-
-            //    ltextBox[1].SelectionStart = ltextBox[1].Text.Length;
-            //    ltextBox[1].ScrollToCaret();
-            //}
-
-            m__G.oCam[0].mFAL.RecoverFromBackupFMI();
-            m__G.mDoingStatus = "IDLE";
-            m__G.mIDLEcount = 0;
+            res = Math.Sqrt(SumOfSquare / count);
+            return res;
         }
-
         public void MotorizedFindMarks(int Nth, bool IsOrg, bool IsSave = true)
         {
             m__G.mDoingStatus = "Checking Vision";
 
             int mavNum = 16;  //4
+            if (m__G.m_bPrismCS)
+                mavNum = 4;  //4
 
             m__G.oCam[0].mTargetTriggerCount = 3000;
             m__G.oCam[0].dAFZM_FrameCount = 9;
             m__G.oCam[0].mTrgBufLength = MILlib.MAX_TRGGRAB_COUNT;
             double[] gageData = null;
+            //double[] gageData2 = null;
 
             for (int mi = 0; mi < 5; mi++)
                 m__G.oCam[0].mMarkPosRes[mi] = new FAutoLearn.FZMath.Point2D[mavNum + 1];
 
             ///////////////////////////////////////////////////////////////////////////////
             ///////////////////////////////////////////////////////////////////////////////
-            ///// 다음 HEXAPOD 로 대체 필요
-            //gageData = MotorCurLogicPos6D();
-
+            //double[] lProbeTZ = new double[2];
             //  Grab 과 가장 가까운 시점에 gage 를 읽어들인다.
             if (m__G.mGageCounter != null)
             {
                 m__G.mGageCounter.m__G = m__G;
+
                 if (m__G.m_bCalibrationModel)
+                {
                     gageData = m__G.mGageCounter.ReadPortAll();
+                    // Probe TZ 튀는 현상 디버깅
+                    //lProbeTZ[0] = m__G.mGageCounter.probeTZ[0];  
+                    //lProbeTZ[1] = m__G.mGageCounter.probeTZ[1];
+                    //if (mGageFullData.Count != 0)
+                    //{
+                    //    if (m__G.m_bPrismCS)
+                    //    {
+                    //        double error = Math.Abs(mGageFullData[mGageFullData.Count - 1][3] - gageData[3]);
+
+                    //        if (error > 2.62)
+                    //        { 
+                    //            gageData = m__G.mGageCounter.ReadPortAll();
+                    //        }
+                    //    }
+                    //}
+                }
             }
             ///////////////////////////////////////////////////////////////////////////////
             ///////////////////////////////////////////////////////////////////////////////
 
             for (int i = 0; i < mavNum; i++)
                 m__G.oCam[0].GrabB(i + 1, true);    //  1 ~ mavNum 영상이 바뀜, 0번 영상은 그대로 유지
+
+            //if ( m__G.m_bPrismCS )
+            //{
+            //    if (m__G.mGageCounter != null)
+            //    {
+            //        m__G.mGageCounter.m__G = m__G;
+            //        if (m__G.m_bCalibrationModel)
+            //            gageData2 = m__G.mGageCounter.ReadPortAll();
+            //    }
+            //}
 
             if (IsOrg)
             {
@@ -2011,7 +2205,7 @@ namespace FZ4P
             }
 
             double minscale = (180 / Math.PI * 60) / mavNum;                           //  rad to min
-            double umscale = (5.5 / Global.LensMag) / mavNum;                           //  rad to min
+            double umscale = (5.5 / Global.LensMag) / mavNum;                           //  pixel to um
 
             m__G.oCam[0].SetTriggeredframeCount(mavNum + 1);
 
@@ -2020,7 +2214,15 @@ namespace FZ4P
             m__G.mbSuddenStop[0] = false;
             TextBox[] ltextBox = new TextBox[2] { tbInfo, tbVsnLog };
 
-            double[] lCalibrationData = new double[25]; // 22
+            double[] lCalibrationData = new double[22]; // 33
+            double[] lStdevTXTYTZ = new double[6];
+            double[] lPrismTXTYTZ = new double[3];
+
+            //* 250404 Probe Z(TY1, TY2) 디버깅 *//
+            // [0. Probe TY1, TY2 평균] , [1. X거리, Y거리에 따른 Z 보정 (최종)]
+            //double[] probeZ = new double[2];
+            //***********************************//
+
 
             int ci = 0;
             strtmp[ci] = "";
@@ -2036,10 +2238,46 @@ namespace FZ4P
                 m__G.oCam[0].PointTo6DMotion(-1, mStdMarkPos);  //  초기 세팅한 절대좌표 기준으로 좌표값이 추출되도록 한다.
                 m__G.oCam[0].FineCOG(true, 0, 0);    // 마크찾기
             }
+
+            //if (m__G.m_bPrismCS)
+            //{
+            //    Task[] taskArray = new Task[5];
+
+            //    m__G.fManage.AddViewLog(string.Format("FineCOG Parallel\r\n"));
+            //    int count = mavNum + 1;
+            //    Task task1 = Task.Run(() => {
+            //        for (int findex = 1; findex < mavNum + 1; findex+=5)
+            //            m__G.oCam[0].FineCOG(false, findex, 0);    // 마크찾기
+            //    });
+            //    taskArray[0] = task1;
+            //    Task task2 = Task.Run(() => {
+            //        for (int findex = 2; findex < mavNum + 1; findex += 5)
+            //            m__G.oCam[0].FineCOG(false, findex, 1);    // 마크찾기
+            //    });
+            //    taskArray[1] = task2;
+            //    Task task3 = Task.Run(() => {
+            //        for (int findex = 3; findex < mavNum + 1; findex += 5)
+            //            m__G.oCam[0].FineCOG(false, findex, 2);    // 마크찾기
+            //    });
+            //    taskArray[2] = task3;
+            //    Task task4 = Task.Run(() => {
+            //        for (int findex = 4; findex < mavNum + 1; findex += 5)
+            //            m__G.oCam[0].FineCOG(false, findex, 3);    // 마크찾기
+            //    });
+            //    taskArray[3] = task4;
+            //    Task task5 = Task.Run(() => {
+            //        for (int findex = 5; findex < mavNum + 1; findex += 5)
+            //            m__G.oCam[0].FineCOG(false, findex, 4);    // 마크찾기
+            //    });
+            //    taskArray[4] = task5;
+            //    Task.WaitAll(taskArray);
+            //}
+            //else
+            //{
             for (int findex = 1; findex < mavNum + 1; findex++)
-            {
                 m__G.oCam[0].FineCOG(false, findex, 0);    // 마크찾기
-            }
+            //}
+
 
             if (ci != 0)
                 m__G.mFAL.mFZM.mbCompY = ci;
@@ -2053,6 +2291,11 @@ namespace FZ4P
             double ty = 0;
             double tz = 0;
 
+            //double[] lPrismTXTYTZ = new double[3];
+            double[] lProbePrismTXTYTZ = new double[3];
+            //double[] lErrorPrismTXTYTZ = new double[3];
+            bool bGageOn = false;
+
             for (int findex = 1; findex < mavNum + 1; findex++)
             {
                 //NthMeasure(findex, true);
@@ -2062,10 +2305,21 @@ namespace FZ4P
                 sx += m__G.oCam[0].mC_pX[findex] * umscale;
                 sy += m__G.oCam[0].mC_pY[findex] * umscale;
                 sz += m__G.oCam[0].mC_pZ[findex] * umscale;
-                tx += m__G.oCam[0].mC_pTX[findex] * minscale;
-                ty += m__G.oCam[0].mC_pTY[findex] * minscale;
-                tz += m__G.oCam[0].mC_pTZ[findex] * minscale;
+                tx += m__G.oCam[0].mC_pTX[findex] * minscale;   //  Radian to minute / mavNum
+                ty += m__G.oCam[0].mC_pTY[findex] * minscale;   //  Radian to minute / mavNum
+                tz += m__G.oCam[0].mC_pTZ[findex] * minscale;   //  Radian to minute / mavNum
             }
+            if (m__G.m_bPrismCS)
+            {
+                lStdevTXTYTZ[0] = GetStdevOfArray(m__G.oCam[0].mC_pTX, 1, mavNum) * RAD_To_MIN; //  Radian to Arcminute
+                lStdevTXTYTZ[1] = GetStdevOfArray(m__G.oCam[0].mC_pTY, 1, mavNum) * RAD_To_MIN;
+                lStdevTXTYTZ[2] = GetStdevOfArray(m__G.oCam[0].mC_pTZ, 1, mavNum) * RAD_To_MIN;
+
+                //  CSHead 좌표계 기준으로 계산된 평균치만 Prism 좌표계로 변환해서 lPrismTXTYTZ 에 저장
+                lPrismTXTYTZ = m__G.oCam[0].mFAL.mFZM.ConvertTXTYTZofCSHtoPrism(tx, ty, tz, true);
+                tx = lPrismTXTYTZ[1];
+            }
+
             lCalibrationData[0] = sx;//-sx;
             lCalibrationData[1] = sy;//sy;
             lCalibrationData[2] = sz;//-sz;
@@ -2107,31 +2361,8 @@ namespace FZ4P
             {
                 if (gageData.Length == 7)
                 {
-                    //
-                    //  Old Formula
-                    //
-                    //lCalibrationData[16] = -gageData[0]; //  X
-                    //lCalibrationData[17] = gageData[2]; //  Y
-                    //if (mbUseZ123)
-                    //    lCalibrationData[18] = -(gageData[4] + gageData[5] + gageData[6]) / 3; //  Z
-                    //else
-                    //    lCalibrationData[18] = -(gageData[5] + gageData[6]) / 2; //  Z
+                    bGageOn = true;
 
-                    //lCalibrationData[19] = -(gageData[4] - (gageData[5] + gageData[6]) / 2) / 55000; //  TX, gageData[3] is inversed, radian
-                    //lCalibrationData[20] = -(gageData[5] - gageData[6]) / 110000; //  TY, radian
-                    //lCalibrationData[21] = -(gageData[1] - gageData[0] - (gageData[3] - gageData[2])) / (80000 * 0.999325049); //  TZ, radian
-                    //lCalibrationData[22] = gageData[3]; //  Y
-
-                    //
-                    //  New Formula
-                    //
-                    //  32mm : X probe offset from center along X axis
-                    //  47mm : Y probe offset from center along Y axis
-
-                    ////////////////////////////////////////////////////////////////////////////
-                    //  여기 수정 필요    20241213. PM 5:45
-                    //double[] XYTz = m__G.oCam[0].mFAL.CalcXYTZfromProbes(-m__G.oCam[0].mFAL.mFZM.mProbeXRx + gageData[0] / 1000, -m__G.oCam[0].mFAL.mFZM.mProbeXRx + gageData[1] / 1000, gageData[2] / 1000 + m__G.oCam[0].mFAL.mFZM.mProbeYRy, gageData[3] / 1000 + m__G.oCam[0].mFAL.mFZM.mProbeYRy, 40, m__G.oCam[0].mFAL.mFZM.mProbeXRx, m__G.oCam[0].mFAL.mFZM.mProbeYRy);   // 40   // 32.2 // 32.2
-                    //double[] TxTyZ = m__G.oCam[0].mFAL.CalcTXTYZfromProbes(gageData[5] / 1000, gageData[6] / 1000, gageData[4] / 1000, XYTz[0], XYTz[1], XYTz[2]);
                     double[] XYTz = new double[3];
                     XYTz[0] = gageData[0];
                     XYTz[1] = gageData[1];
@@ -2141,21 +2372,45 @@ namespace FZ4P
                     TxTyZ[1] = Math.Atan((gageData[5] - gageData[6]) / 120000);  //  120mm
                     TxTyZ[2] = (gageData[5] + gageData[6]) / 2;  //  120mm
 
-                    //double compZ = ProbeZcompensationForTXTY(XYTz[0], XYTz[1], TxTyZ[2], TxTyZ[0], TxTyZ[1]);
                     double compZ = ProbeZcompensationForTXTY(XYTz[0], XYTz[1], TxTyZ[2], TxTyZ[0] /*- mPorg.TX * MIN_To_RAD*/, TxTyZ[1] /*- mPorg.TY * MIN_To_RAD*/);
+
                     lCalibrationData[16] = XYTz[0]; // um
                     lCalibrationData[17] = XYTz[1]; // um
                     lCalibrationData[18] = compZ;// TxTyZ[2]; // um
-                    //Point3d compRes = XYZcompensationAboutZPivots(new Point3d(XYTz[0], XYTz[1], TxTyZ[2]), TxTyZ[0], TxTyZ[1]);
-                    //lCalibrationData[16] = compRes.X;//XYTz[0]; // um
-                    //lCalibrationData[17] = compRes.Y;//XYTz[1]; // um
-                    //lCalibrationData[18] = compRes.Z;// compZ;// TxTyZ[2]; // um
                     lCalibrationData[19] = TxTyZ[0] * RAD_To_MIN;       // TX   radian -> min으로 통일
                     lCalibrationData[20] = TxTyZ[1] * RAD_To_MIN;       // TY   radian -> min으로 통일
                     lCalibrationData[21] = -XYTz[2] * RAD_To_MIN;       // TZ   radian -> min으로 통일  241216 부호 변경
-                    lCalibrationData[22] = gageData[4];
-                    lCalibrationData[23] = gageData[5];
-                    lCalibrationData[24] = gageData[6];
+
+                    //if (m__G.m_bPrismCS)
+                    //{
+                    //    double[] XYTz2 = new double[3];
+                    //    double[] TxTyZ2 = new double[3];
+                    //    XYTz2[0] = gageData2[0];
+                    //    XYTz2[1] = gageData2[1];
+                    //    XYTz2[2] = Math.Atan((gageData2[2] - gageData2[3]) / 45000);  //  45mm
+                    //    TxTyZ2[0] = Math.Atan((gageData2[4] - (gageData2[5] + gageData2[6]) / 2) / 83000);  //  83mm
+                    //    TxTyZ2[1] = Math.Atan((gageData2[5] - gageData2[6]) / 120000);  //  120mm
+                    //    TxTyZ2[2] = (gageData2[5] + gageData2[6]) / 2;  //  120mm
+                    //    double compZ2 = ProbeZcompensationForTXTY(XYTz2[0], XYTz2[1], TxTyZ2[2], TxTyZ2[0] /*- mPorg.TX * MIN_To_RAD*/, TxTyZ2[1] /*- mPorg.TY * MIN_To_RAD*/);
+
+                    //    //double[] lProbePrismTXTYTZ = m__G.oCam[0].mFAL.mFZM.ConvertTXTYTZofCSHtoPrism(TxTyZ2[0], TxTyZ2[1], XYTz2[2]);
+
+                    //    lCalibrationData[16] = (XYTz[0]   + XYTz2[0] )/2     ; // um
+                    //    lCalibrationData[17] = (XYTz[1]   + XYTz2[1] )/2     ; // um
+                    //    lCalibrationData[18] = (compZ     + compZ2   )/2     ;// TxTyZ[2]; // um
+                    //    lCalibrationData[19] = (TxTyZ[0]  + TxTyZ2[0]) * RAD_To_MIN / 2;       // TX   radian -> min으로 통일
+                    //    lCalibrationData[20] = (TxTyZ[1]  + TxTyZ2[1]) * RAD_To_MIN / 2;       // TY   radian -> min으로 통일
+                    //    lCalibrationData[21] = (-XYTz[2]  - XYTz2[2] ) * RAD_To_MIN / 2;       // TZ   radian -> min으로 통일  241216 부호 변경
+
+                    //    lStdevTXTYTZ[3] = Math.Abs(0.7071*(TxTyZ[0] - TxTyZ2[0])) * RAD_To_MIN; //  Radian to Arcminute
+                    //    lStdevTXTYTZ[4] = Math.Abs(0.7071*(TxTyZ[1] - TxTyZ2[1])) * RAD_To_MIN;
+                    //    lStdevTXTYTZ[5] = Math.Abs(0.7071*(XYTz[2] - XYTz2[2])) * RAD_To_MIN;
+                    //}
+
+                    //* 250404 Probe Z(TY1, TY2) 디버깅 *//
+                    // [0. Probe TY1, TY2 평균]
+                    //probeZ[0] = TxTyZ[2];               //  저장 0
+                    //***********************************//
 
                     //
                     // Hexapod
@@ -2169,15 +2424,83 @@ namespace FZ4P
                     //
                     //
 
-                    strtmp[ci] += lCalibrationData[16].ToString("F1") + "\t" + lCalibrationData[17].ToString("F1") + "\t" + lCalibrationData[18].ToString("F1") + "\t" + lCalibrationData[19].ToString("F1") + "\t"
-                        + lCalibrationData[20].ToString("F1") + "\t" + lCalibrationData[21].ToString("F1");
+                    //* 250404 Probe Z(TY1, TY2) 디버깅 *//
+                    // [1. X거리, Y거리에 따른 Z 보정 (최종)]
+                    //probeZ[1] = compZ;               //  저장 1
+                    //lCalibrationData[22] = m__G.mGageCounter.probeTY1[0];  // [0.첫 Probe 값] 
+                    //lCalibrationData[23] = m__G.mGageCounter.probeTY2[0];
+                    //lCalibrationData[24] = m__G.mGageCounter.probeTY1[1];  // [1.X, Y이동, Z회전에 따른 Glass 기울기에 대한 Probe 보정]
+                    //lCalibrationData[25] = m__G.mGageCounter.probeTY2[1];
+                    //lCalibrationData[26] = m__G.mGageCounter.probeTY1[2];  //  [2.Glass 두께에 따른 Probe보정]
+                    //lCalibrationData[27] = m__G.mGageCounter.probeTY2[2];
+                    //lCalibrationData[28] = probeZ[0];  // [0.Probe TY1, TY2 평균] 
+                    //lCalibrationData[29] = probeZ[1];  // [1.X거리, Y거리에 따른 Z 보정(최종)]
+                    //lCalibrationData[30] = m__G.mGageCounter.probeTX[0];
+                    //lCalibrationData[31] = m__G.mGageCounter.probeTX[1];
+                    //lCalibrationData[32] = m__G.mGageCounter.probeTX[2];
+                    //***********************************//
 
+                    strtmp[ci] += lCalibrationData[16].ToString("F1") + "\t" + lCalibrationData[17].ToString("F1") + "\t" + lCalibrationData[18].ToString("F1") + "\t" + lCalibrationData[19].ToString("F1") + "\t"
+                        + lCalibrationData[20].ToString("F1") + "\t" + lCalibrationData[21].ToString("F1") + "\t";
+
+
+                    //double[] motorCurpos = MotorCurPos6D();
+                    //strtmp[ci] += $"{motorCurpos[0]:F1}\t{motorCurpos[1]:F1}\t{motorCurpos[2]:F1}\t{motorCurpos[3]:F1}\t{motorCurpos[4]:F1}\t{motorCurpos[5]:F1}";
+
+
+                }
+
+                if (m__G.m_bPrismCS)
+                {
+                    // lPrismTXTYTZ = m__G.oCam[0].mFAL.mFZM.ConvertTXTYTZofCSHtoPrism(lCalibrationData[3], lCalibrationData[4], lCalibrationData[5], true);
+
+                    if (bGageOn)
+                    {
+                        lProbePrismTXTYTZ = m__G.oCam[0].mFAL.mFZM.ConvertTXTYTZofCSHtoPrism(lCalibrationData[19], lCalibrationData[20], lCalibrationData[21], true, true);
+                        lProbePrismTXTYTZ[1] = lCalibrationData[19];
+
+                        /////////////////////////////////////////////////////////////////////////////////////////////////////
+                        /////////////////////////////////////////////////////////////////////////////////////////////////////
+                        ////  개별데이터  저장목적
+                        //if ( File.Exists(mDataFile100))
+                        //{
+                        //    string saveStr = "";
+                        //    StreamWriter writer = File.AppendText(mDataFile100);
+                        //    for (int findex = 1; findex < mavNum + 1; findex++)
+                        //    {
+                        //        tx = m__G.oCam[0].mC_pTX[findex] * minscale * mavNum;   //  Radian to minute / mavNum
+                        //        ty = m__G.oCam[0].mC_pTY[findex] * minscale * mavNum;   //  Radian to minute / mavNum
+                        //        tz = m__G.oCam[0].mC_pTZ[findex] * minscale * mavNum;   //  Radian to minute / mavNum
+                        //        double [] lPrismTXTYTZ100 = m__G.oCam[0].mFAL.mFZM.ConvertTXTYTZofCSHtoPrism(tx, ty, tz, true);
+                        //        tx = lPrismTXTYTZ100[1];
+                        //        saveStr = lProbePrismTXTYTZ[0].ToString("F5") + "," + lProbePrismTXTYTZ[1].ToString("F5") + "," + lProbePrismTXTYTZ[2].ToString("F5") + "," +
+                        //                    lPrismTXTYTZ100[0].ToString("F5") + "," + lPrismTXTYTZ100[1].ToString("F5") + "," + lPrismTXTYTZ100[2].ToString("F5") + ",";
+                        //        writer.WriteLine(saveStr);
+                        //    }
+                        //    writer.Close();
+                        //    ///////////////////////////////////////////////////////////////////////////////////////////////////
+                        //    ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+                        //}
+
+                        strtmp[ci] += "\t" + lPrismTXTYTZ[0].ToString("F5") + "\t" + lPrismTXTYTZ[1].ToString("F5") + "\t" + lPrismTXTYTZ[2].ToString("F5") + "\t" +
+                                        lProbePrismTXTYTZ[0].ToString("F5") + "\t" + lProbePrismTXTYTZ[1].ToString("F5") + "\t" + lProbePrismTXTYTZ[2].ToString("F5");
+                    }
+                    else
+                    {
+                        strtmp[ci] += "\t" + lPrismTXTYTZ[0].ToString("F5") + "\t" + lPrismTXTYTZ[1].ToString("F5") + "\t" + lPrismTXTYTZ[2].ToString("F5");
+                    }
                 }
             }
             if (ci == 0 && IsSave)
             {
                 mCalibrationFullData.Add(lCalibrationData);
                 mGageFullData.Add(gageData);
+                mStdevTXTYTZ.Add(lStdevTXTYTZ);
+                mPrismTXTYTZ.Add(lPrismTXTYTZ);
+                // 디버깅
+                //mProbeTZ.Add(lProbeTZ);
+
             }
 
 
@@ -2237,7 +2560,368 @@ namespace FZ4P
             m__G.mDoingStatus = "IDLE";
             m__G.mIDLEcount = 0;
         }
+        public void MotorizedFindMarksAnosis(ref double[] lCalibrationData, int Nth, bool IsOrg, bool IsSave = true)
+        {
+            m__G.mDoingStatus = "Checking Vision";
 
+            int mavNum = 16;  //4
+            if (m__G.m_bPrismCS)
+                mavNum = 100;  //4
+
+            m__G.oCam[0].mTargetTriggerCount = 3000;
+            m__G.oCam[0].dAFZM_FrameCount = 9;
+            m__G.oCam[0].mTrgBufLength = MILlib.MAX_TRGGRAB_COUNT;
+            double[] gageData = null;
+            double[] gageData2 = null;
+
+            for (int mi = 0; mi < 5; mi++)
+                m__G.oCam[0].mMarkPosRes[mi] = new FAutoLearn.FZMath.Point2D[mavNum + 1];
+
+            ///////////////////////////////////////////////////////////////////////////////
+            ///////////////////////////////////////////////////////////////////////////////
+
+            //  Grab 과 가장 가까운 시점에 gage 를 읽어들인다.
+            if (m__G.mGageCounter != null)
+            {
+                m__G.mGageCounter.m__G = m__G;
+                if (m__G.m_bCalibrationModel)
+                    gageData = m__G.mGageCounter.ReadPortAll();
+            }
+            ///////////////////////////////////////////////////////////////////////////////
+            ///////////////////////////////////////////////////////////////////////////////
+
+            for (int i = 0; i < mavNum; i++)
+                m__G.oCam[0].GrabB(i + 1, true);    //  1 ~ mavNum 영상이 바뀜, 0번 영상은 그대로 유지
+
+            if (m__G.m_bPrismCS)
+            {
+                if (m__G.mGageCounter != null)
+                {
+                    m__G.mGageCounter.m__G = m__G;
+                    if (m__G.m_bCalibrationModel)
+                        gageData2 = m__G.mGageCounter.ReadPortAll();
+                }
+            }
+
+            if (IsOrg)
+            {
+                m__G.oCam[0].mFAL.LoadFMICandidate();
+                m__G.oCam[0].mFAL.BackupFMI();
+                SetDefaultMarkConfig(true);
+            }
+
+            double minscale = (180 / Math.PI * 60) / mavNum;                           //  rad to min
+            double umscale = (5.5 / Global.LensMag) / mavNum;                           //  pixel to um
+
+            m__G.oCam[0].SetTriggeredframeCount(mavNum + 1);
+
+            //int numFMIcandidate = m__G.mFAL.GetNumFMICandidate();
+            string[] strtmp = new string[2] { "", "" };
+            m__G.mbSuddenStop[0] = false;
+            TextBox[] ltextBox = new TextBox[2] { tbInfo, tbVsnLog };
+
+            double[] lStdevTXTYTZ = new double[6];
+            double[] lPrismTXTYTZ = new double[3];
+
+            //* 250404 Probe Z(TY1, TY2) 디버깅 *//
+            // [0. Probe TY1, TY2 평균] , [1. X거리, Y거리에 따른 Z 보정 (최종)]
+            //double[] probeZ = new double[2];
+            //***********************************//
+
+            int ci = 0;
+            strtmp[ci] = "";
+            m__G.mFAL.mCandidateIndex = ci;
+
+            if (IsOrg)
+                ChangeFiducialMark(ci);
+
+            if (IsOrg)
+            {
+
+                m__G.oCam[0].PrepareFineCOG();
+                m__G.oCam[0].PointTo6DMotion(-1, mStdMarkPos);  //  초기 세팅한 절대좌표 기준으로 좌표값이 추출되도록 한다.
+                m__G.oCam[0].FineCOG(true, 0, 0);    // 마크찾기
+            }
+
+            if (m__G.m_bPrismCS)
+            {
+                Task[] taskArray = new Task[5];
+
+                //m__G.fManage.AddViewLog(string.Format("FineCOG Parallel\r\n"));
+                int count = mavNum + 1;
+                Task task1 = Task.Run(() => {
+                    for (int findex = 1; findex < mavNum + 1; findex += 5)
+                        m__G.oCam[0].FineCOG(false, findex, 0);    // 마크찾기
+                });
+                taskArray[0] = task1;
+                Task task2 = Task.Run(() => {
+                    for (int findex = 2; findex < mavNum + 1; findex += 5)
+                        m__G.oCam[0].FineCOG(false, findex, 1);    // 마크찾기
+                });
+                taskArray[1] = task2;
+                Task task3 = Task.Run(() => {
+                    for (int findex = 3; findex < mavNum + 1; findex += 5)
+                        m__G.oCam[0].FineCOG(false, findex, 2);    // 마크찾기
+                });
+                taskArray[2] = task3;
+                Task task4 = Task.Run(() => {
+                    for (int findex = 4; findex < mavNum + 1; findex += 5)
+                        m__G.oCam[0].FineCOG(false, findex, 3);    // 마크찾기
+                });
+                taskArray[3] = task4;
+                Task task5 = Task.Run(() => {
+                    for (int findex = 5; findex < mavNum + 1; findex += 5)
+                        m__G.oCam[0].FineCOG(false, findex, 4);    // 마크찾기
+                });
+                taskArray[4] = task5;
+                Task.WaitAll(taskArray);
+            }
+            else
+            {
+                for (int findex = 1; findex < mavNum + 1; findex++)
+                    m__G.oCam[0].FineCOG(false, findex, 0);    // 마크찾기
+            }
+
+
+            if (ci != 0)
+                m__G.mFAL.mFZM.mbCompY = ci;
+            else
+                m__G.mFAL.mFZM.mbCompY = 0;
+
+            double sx = 0;
+            double sy = 0;
+            double sz = 0;
+            double tx = 0;
+            double ty = 0;
+            double tz = 0;
+
+            //double[] lPrismTXTYTZ = new double[3];
+            double[] lProbePrismTXTYTZ = new double[3];
+            //double[] lErrorPrismTXTYTZ = new double[3];
+            //bool bGageOn = false;
+
+            for (int findex = 1; findex < mavNum + 1; findex++)
+            {
+                //NthMeasure(findex, true);
+
+                //strtmp += "\r\n" + findex.ToString() + "\t" + m__G.oCam[0].mAvgLED[findex].ToString("F3") + "\t";
+
+                sx += m__G.oCam[0].mC_pX[findex] * umscale;
+                sy += m__G.oCam[0].mC_pY[findex] * umscale;
+                sz += m__G.oCam[0].mC_pZ[findex] * umscale;
+                tx += m__G.oCam[0].mC_pTX[findex] * minscale;   //  Radian to minute / mavNum
+                ty += m__G.oCam[0].mC_pTY[findex] * minscale;   //  Radian to minute / mavNum
+                tz += m__G.oCam[0].mC_pTZ[findex] * minscale;   //  Radian to minute / mavNum
+            }
+            if (m__G.m_bPrismCS)
+            {
+                lStdevTXTYTZ[0] = GetStdevOfArray(m__G.oCam[0].mC_pTX, 1, mavNum) * RAD_To_MIN; //  Radian to Arcminute
+                lStdevTXTYTZ[1] = GetStdevOfArray(m__G.oCam[0].mC_pTY, 1, mavNum) * RAD_To_MIN;
+                lStdevTXTYTZ[2] = GetStdevOfArray(m__G.oCam[0].mC_pTZ, 1, mavNum) * RAD_To_MIN;
+
+                lPrismTXTYTZ = m__G.oCam[0].mFAL.mFZM.ConvertTXTYTZofCSHtoPrism(tx, ty, tz, true);
+                tx = lPrismTXTYTZ[1];
+            }
+
+
+            lCalibrationData[0] = sx;//-sx;
+            lCalibrationData[1] = sy;//sy;
+            lCalibrationData[2] = sz;//-sz;
+            lCalibrationData[3] = tx;//tx;
+            lCalibrationData[4] = ty;//-ty;
+            lCalibrationData[5] = tz;//-tz;
+
+            //strtmp[ci] = Nth.ToString() + "\t" + sx.ToString("F2") + "\t" + sy.ToString("F2") + "\t" + sz.ToString("F2") + "\t" + tx.ToString("F2") + "\t" + ty.ToString("F2") + "\t" + tz.ToString("F2") + "\t";
+            strtmp[ci] = Nth.ToString() + "\t"
+                   + lCalibrationData[0].ToString("F2") + "\t"
+                   + lCalibrationData[1].ToString("F2") + "\t"
+                   + lCalibrationData[2].ToString("F2") + "\t"
+                   + lCalibrationData[3].ToString("F2") + "\t"
+                   + lCalibrationData[4].ToString("F2") + "\t"
+                   + lCalibrationData[5].ToString("F2") + "\t";
+
+            double[] xavg = new double[12];
+            double[] yavg = new double[12];
+            for (int findex = 1; findex < mavNum + 1; findex++)
+            {
+                for (int i = 0; i < 12; i++)
+                {
+                    if (m__G.oCam[0].mAzimuthPts[findex][i].X == 0) continue;
+                    xavg[i] += m__G.oCam[0].mAzimuthPts[findex][i].X / mavNum;
+                    yavg[i] += m__G.oCam[0].mAzimuthPts[findex][i].Y / mavNum;
+                }
+            }
+            int kk = 0;
+            for (int i = 0; i < 12; i++)
+            {
+                if (xavg[i] == 0) continue;
+                strtmp[ci] += xavg[i].ToString("F3") + "\t" + yavg[i].ToString("F3") + "\t";
+
+                lCalibrationData[6 + 2 * kk] = xavg[i];
+                lCalibrationData[6 + 2 * kk + 1] = yavg[i];
+                kk++;
+            }
+            if (gageData != null)
+            {
+                if (gageData.Length == 7)
+                {
+                    double[] XYTz = new double[3];
+                    XYTz[0] = gageData[0];
+                    XYTz[1] = gageData[1];
+                    XYTz[2] = Math.Atan((gageData[2] - gageData[3]) / 45000);  //  45mm
+                    double[] TxTyZ = new double[3];
+                    TxTyZ[0] = Math.Atan((gageData[4] - (gageData[5] + gageData[6]) / 2) / 83000);  //  83mm
+                    TxTyZ[1] = Math.Atan((gageData[5] - gageData[6]) / 120000);  //  120mm
+                    TxTyZ[2] = (gageData[5] + gageData[6]) / 2;  //  120mm
+
+                    double compZ = ProbeZcompensationForTXTY(XYTz[0], XYTz[1], TxTyZ[2], TxTyZ[0] /*- mPorg.TX * MIN_To_RAD*/, TxTyZ[1] /*- mPorg.TY * MIN_To_RAD*/);
+
+                    lCalibrationData[16] = XYTz[0]; // um
+                    lCalibrationData[17] = XYTz[1]; // um
+                    lCalibrationData[18] = compZ;// TxTyZ[2]; // um
+                    lCalibrationData[19] = TxTyZ[0] * RAD_To_MIN;       // TX   radian -> min으로 통일
+                    lCalibrationData[20] = TxTyZ[1] * RAD_To_MIN;       // TY   radian -> min으로 통일
+                    lCalibrationData[21] = -XYTz[2] * RAD_To_MIN;       // TZ   radian -> min으로 통일  241216 부호 변경
+
+                    if (m__G.m_bPrismCS)
+                    {
+                        double[] XYTz2 = new double[3];
+                        double[] TxTyZ2 = new double[3];
+                        XYTz2[0] = gageData2[0];
+                        XYTz2[1] = gageData2[1];
+                        XYTz2[2] = Math.Atan((gageData2[2] - gageData2[3]) / 45000);  //  45mm
+                        TxTyZ2[0] = Math.Atan((gageData2[4] - (gageData2[5] + gageData2[6]) / 2) / 83000);  //  83mm
+                        TxTyZ2[1] = Math.Atan((gageData2[5] - gageData2[6]) / 120000);  //  120mm
+                        TxTyZ2[2] = (gageData2[5] + gageData2[6]) / 2;  //  120mm
+                        double compZ2 = ProbeZcompensationForTXTY(XYTz2[0], XYTz2[1], TxTyZ2[2], TxTyZ2[0] /*- mPorg.TX * MIN_To_RAD*/, TxTyZ2[1] /*- mPorg.TY * MIN_To_RAD*/);
+
+                        //double[] lProbePrismTXTYTZ = m__G.oCam[0].mFAL.mFZM.ConvertTXTYTZofCSHtoPrism(TxTyZ2[0], TxTyZ2[1], XYTz2[2]);
+
+                        lCalibrationData[16] = (XYTz[0] + XYTz2[0]) / 2; // um
+                        lCalibrationData[17] = (XYTz[1] + XYTz2[1]) / 2; // um
+                        lCalibrationData[18] = (compZ + compZ2) / 2;// TxTyZ[2]; // um
+                        lCalibrationData[19] = (TxTyZ[0] + TxTyZ2[0]) * RAD_To_MIN / 2;       // TX   radian -> min으로 통일
+                        lCalibrationData[20] = (TxTyZ[1] + TxTyZ2[1]) * RAD_To_MIN / 2;       // TY   radian -> min으로 통일
+                        lCalibrationData[21] = (-XYTz[2] - XYTz2[2]) * RAD_To_MIN / 2;       // TZ   radian -> min으로 통일  241216 부호 변경
+
+                        lStdevTXTYTZ[3] = Math.Abs(0.7071 * (TxTyZ[0] - TxTyZ2[0])) * RAD_To_MIN; //  Radian to Arcminute
+                        lStdevTXTYTZ[4] = Math.Abs(0.7071 * (TxTyZ[1] - TxTyZ2[1])) * RAD_To_MIN;
+                        lStdevTXTYTZ[5] = Math.Abs(0.7071 * (XYTz[2] - XYTz2[2])) * RAD_To_MIN;
+                    }
+
+                    //* 250404 Probe Z(TY1, TY2) 디버깅 *//
+                    // [0. Probe TY1, TY2 평균]
+                    //probeZ[0] = TxTyZ[2];               //  저장 0
+                    //***********************************//
+
+
+
+
+
+
+                    //
+                    // Hexapod
+                    //
+                    //lCalibrationData[16] = gageData[0] * 1000; //ofx - XYTz[0]) * 1000;     // um
+                    //lCalibrationData[17] = -gageData[1] * 1000; //ofy + XYTz[1]) * 1000;     // um
+                    //lCalibrationData[18] = -gageData[2] * 1000; //TxTyZ[2] * 1000;   // um
+                    //lCalibrationData[19] = -gageData[3] * Math.PI / 180; //xTyZ[0];           // TX   radian
+                    //lCalibrationData[20] = gageData[4] * Math.PI / 180; //TxTyZ[1];          // TY   radian
+                    //lCalibrationData[21] = -gageData[5] * Math.PI / 180; //XYTz[2];           // TZ   radian
+                    //
+                    //
+
+                    //* 250404 Probe Z(TY1, TY2) 디버깅 *//
+                    // [1. X거리, Y거리에 따른 Z 보정 (최종)]
+                    //probeZ[1] = compZ;               //  저장 1
+                    //lCalibrationData[22] = m__G.mGageCounter.probeTY1[0];  // [0.첫 Probe 값] 
+                    //lCalibrationData[23] = m__G.mGageCounter.probeTY2[0];
+                    //lCalibrationData[24] = m__G.mGageCounter.probeTY1[1];  // [1.X, Y이동, Z회전에 따른 Glass 기울기에 대한 Probe 보정]
+                    //lCalibrationData[25] = m__G.mGageCounter.probeTY2[1];
+                    //lCalibrationData[26] = m__G.mGageCounter.probeTY1[2];  //  [2.Glass 두께에 따른 Probe보정]
+                    //lCalibrationData[27] = m__G.mGageCounter.probeTY2[2];
+                    //lCalibrationData[28] = probeZ[0];  // [0.Probe TY1, TY2 평균] 
+                    //lCalibrationData[29] = probeZ[1];  // [1.X거리, Y거리에 따른 Z 보정(최종)]
+                    //lCalibrationData[30] = m__G.mGageCounter.probeTX[0];
+                    //lCalibrationData[31] = m__G.mGageCounter.probeTX[1];
+                    //lCalibrationData[32] = m__G.mGageCounter.probeTX[2];
+                    //***********************************//
+
+                    strtmp[ci] += lCalibrationData[16].ToString("F1") + "\t" + lCalibrationData[17].ToString("F1") + "\t" + lCalibrationData[18].ToString("F1") + "\t" + lCalibrationData[19].ToString("F1") + "\t"
+                        + lCalibrationData[20].ToString("F1") + "\t" + lCalibrationData[21].ToString("F1") + "\t";
+
+
+                    //double[] motorCurpos = MotorCurPos6D();
+                    //strtmp[ci] += $"{motorCurpos[0]:F1}\t{motorCurpos[1]:F1}\t{motorCurpos[2]:F1}\t{motorCurpos[3]:F1}\t{motorCurpos[4]:F1}\t{motorCurpos[5]:F1}";
+
+
+                }
+
+                //if (m__G.m_bPrismCS)
+                //{
+                //    lPrismTXTYTZ = m__G.oCam[0].mFAL.mFZM.ConvertTXTYTZofCSHtoPrism(lCalibrationData[3], lCalibrationData[4], lCalibrationData[5], true);
+                //    if (bGageOn)
+                //    {
+                //        lProbePrismTXTYTZ = m__G.oCam[0].mFAL.mFZM.ConvertTXTYTZofCSHtoPrism(lCalibrationData[19], lCalibrationData[20], lCalibrationData[21], true, true);
+                //        lProbePrismTXTYTZ[1] = lCalibrationData[19];
+
+
+                //        strtmp[ci] += "\t" + lPrismTXTYTZ[0].ToString("F5") + "\t" + lPrismTXTYTZ[1].ToString("F5") + "\t" + lPrismTXTYTZ[2].ToString("F5") + "\t" +
+                //                        lProbePrismTXTYTZ[0].ToString("F5") + "\t" + lProbePrismTXTYTZ[1].ToString("F5") + "\t" + lProbePrismTXTYTZ[2].ToString("F5");
+                //    }
+                //    else
+                //    {
+                //        strtmp[ci] += "\t" + lPrismTXTYTZ[0].ToString("F5") + "\t" + lPrismTXTYTZ[1].ToString("F5") + "\t" + lPrismTXTYTZ[2].ToString("F5");
+                //    }
+                //}
+            }
+
+            //mCalibrationFullData[0] = lCalibrationData;
+            if (ci == 0 && IsSave)
+            {
+                mCalibrationFullData.Add(lCalibrationData);
+                mGageFullData.Add(gageData);
+                mStdevTXTYTZ.Add(lStdevTXTYTZ);
+                mPrismTXTYTZ.Add(lPrismTXTYTZ);
+
+            }
+
+            if (!m__G.m_bHideAllGraph)
+            {
+                if (InvokeRequired)
+                {
+                    BeginInvoke((MethodInvoker)delegate
+                    {
+                        DrawMarkDetected();
+                        //pictureBox2.Image = BitmapConverter.ToBitmap(m__G.oCam[0].mFAL.mSourceImg[0]);
+                        if (ltextBox[0].Text.Length > 10000)
+                            ltextBox[0].Text = strtmp[0] + "\r\n";
+                        else
+                            ltextBox[0].Text += strtmp[0] + "\r\n";
+
+                        ltextBox[0].SelectionStart = ltextBox[0].Text.Length;
+                        ltextBox[0].ScrollToCaret();
+                    });
+                }
+                else
+                {
+                    DrawMarkDetected();
+                    //pictureBox2.Image = BitmapConverter.ToBitmap(m__G.oCam[0].mFAL.mSourceImg[0]);
+
+                    if (ltextBox[0].Text.Length > 10000)
+                        ltextBox[0].Text = strtmp[0] + "\r\n";
+                    else
+                        ltextBox[0].Text += strtmp[0] + "\r\n";
+
+                    ltextBox[0].SelectionStart = ltextBox[0].Text.Length;
+                    ltextBox[0].ScrollToCaret();
+                }
+            }
+
+            m__G.oCam[0].mFAL.RecoverFromBackupFMI();
+            m__G.mDoingStatus = "IDLE";
+            m__G.mIDLEcount = 0;
+        }
         public void RemoteManualFindMark()
         {
             //m__G.fGraph.mDriverIC.SetLEDpower(1, (int)((mLEDcurrent[0]) * 500));
@@ -2245,7 +2929,7 @@ namespace FZ4P
             Thread.Sleep(50);
             ManualFindMarks(0, false, false);
 
-            //m__G.fGraph.Drive_LEDs(0, 0);
+            Process.LEDs_All_On(0, false);
         }
 
         public void JHManualFindMarks(int Nth, bool IsShowResult = true)
@@ -2487,6 +3171,10 @@ namespace FZ4P
             TextBox[] ltextBox = new TextBox[2] { tbInfo, tbVsnLog };
 
             double[] lCalibrationData = new double[23];
+            double[] lPrismTXTYTZ = new double[3];
+            double[] lProbePrismTXTYTZ = new double[3];
+            double[] lErrorPrismTXTYTZ = new double[3];
+            bool bGageOn = false;
 
             for (int ci = 0; ci < numFMIcandidate; ci++)
             {
@@ -2536,6 +3224,8 @@ namespace FZ4P
                 lCalibrationData[3] = tx;//tx;
                 lCalibrationData[4] = ty;//-ty;
                 lCalibrationData[5] = tz;//-tz;
+
+
                 if (IsShowResult)
                     //strtmp[ci] = Nth.ToString() + "\t" + sx.ToString("F2") + "\t" + sy.ToString("F2") + "\t" + sz.ToString("F2") + "\t" + tx.ToString("F2") + "\t" + ty.ToString("F2") + "\t" + tz.ToString("F2") + "\t";
                     strtmp[ci] = Nth.ToString() + "\t"
@@ -2545,6 +3235,7 @@ namespace FZ4P
                                 + lCalibrationData[3].ToString("F2") + "\t"
                                 + lCalibrationData[4].ToString("F2") + "\t"
                                 + lCalibrationData[5].ToString("F2") + "\t";
+
                 double[] xavg = new double[12];
                 double[] yavg = new double[12];
                 for (int findex = 1; findex < mavNum + 1; findex++)
@@ -2571,6 +3262,7 @@ namespace FZ4P
                 {
                     if (gageData.Length == 7)
                     {
+                        bGageOn = true;
                         //
                         //  Old Formula
                         //
@@ -2633,6 +3325,22 @@ namespace FZ4P
                 }
 
 
+                if (IsShowResult && m__G.m_bPrismCS)
+                {
+                    if (bGageOn)
+                    {
+                        lProbePrismTXTYTZ = m__G.oCam[0].mFAL.mFZM.ConvertTXTYTZofCSHtoPrism(lCalibrationData[19], lCalibrationData[20], lCalibrationData[21], true, true);
+                        lProbePrismTXTYTZ[1] = lCalibrationData[19];
+
+                        strtmp[ci] += "\t" + lPrismTXTYTZ[0].ToString("F5") + "\t" + lPrismTXTYTZ[1].ToString("F5") + "\t" + lPrismTXTYTZ[2].ToString("F5") + "\t" +
+                                        lProbePrismTXTYTZ[0].ToString("F5") + "\t" + lProbePrismTXTYTZ[1].ToString("F5") + "\t" + lProbePrismTXTYTZ[2].ToString("F5");
+                    }
+                    else
+                    {
+                        strtmp[ci] += "\t" + lPrismTXTYTZ[0].ToString("F5") + "\t" + lPrismTXTYTZ[1].ToString("F5") + "\t" + lPrismTXTYTZ[2].ToString("F5");
+                    }
+                }
+
                 //
                 //HexaPod Data
                 //
@@ -2655,6 +3363,8 @@ namespace FZ4P
                 {
                     mCalibrationFullData.Add(lCalibrationData);
                     mGageFullData.Add(lCalibrationData);
+                    mPrismTXTYTZ.Add(lPrismTXTYTZ);
+
                 }
             }
 
@@ -2667,7 +3377,7 @@ namespace FZ4P
                     {
                         DrawMarkDetected();
                         //pictureBox2.Image = BitmapConverter.ToBitmap(m__G.oCam[0].mFAL.mSourceImg[0]);
-
+                        tbInfo.Font = new Font("Calibri", 8, FontStyle.Regular);
                         ltextBox[0].Text += strtmp[0] + "\r\n";
                         ltextBox[0].SelectionStart = ltextBox[0].Text.Length;
                         ltextBox[0].ScrollToCaret();
@@ -2677,7 +3387,7 @@ namespace FZ4P
                 {
                     DrawMarkDetected();
                     //pictureBox2.Image = BitmapConverter.ToBitmap(m__G.oCam[0].mFAL.mSourceImg[0]);
-
+                    tbInfo.Font = new Font("Calibri", 8, FontStyle.Regular);
                     ltextBox[0].Text += strtmp[0] + "\r\n";
                     ltextBox[0].SelectionStart = ltextBox[0].Text.Length;
                     ltextBox[0].ScrollToCaret();
@@ -2751,8 +3461,76 @@ namespace FZ4P
             }
             if (withID)
             {
-                // ID Mark Position
-                lrc.X = (int)(m__G.oCam[0].mDetectedMarkPos[0][1].X * m__G.oCam[0].mFAL.mModelScale + 39 + 13);
+                // ID Mark Position
+                lrc.X = (int)(m__G.oCam[0].mDetectedMarkPos[0][1].X * m__G.oCam[0].mFAL.mModelScale + 38 + 13);
+                lrc.Y = (int)(m__G.oCam[0].mDetectedMarkPos[0][1].Y * m__G.oCam[0].mFAL.mModelScale + 3);
+                lrc.Width = 39;
+                lrc.Height = 36;// (int)(180 - (m__G.oCam[0].mDetectedMarkPos[0][0].Y + m__G.oCam[0].mDetectedMarkPos[0][1].Y) * m__G.oCam[0].mFAL.mModelScale / 2 - 10);
+                lOverlayedImg.Rectangle(lrc, Scalar.Magenta, 1);
+                lrc.X += 49;
+                lOverlayedImg.Rectangle(lrc, Scalar.Magenta, 1);
+                lrc.X += 49;
+                lOverlayedImg.Rectangle(lrc, Scalar.Magenta, 1);
+                lrc.X += 49;
+                lOverlayedImg.Rectangle(lrc, Scalar.Magenta, 1);
+            }
+
+
+            Bitmap myImage = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(lOverlayedImg);
+            pictureBox2.Image = myImage;
+        }
+
+        public void DrawMarkDetectedWithDummyShift(int dummyX, int dummyY, bool withID = false)
+        {
+            Mat tmpImg = new Mat();
+            Mat lOverlayedImg = new Mat();
+            Cv2.CvtColor(m__G.oCam[0].mFAL.mSourceImg[0], lOverlayedImg, ColorConversionCodes.GRAY2RGB);
+
+            sFiducialMark lfMark = null;
+            ref OpenCvSharp.Point[] fMarkPos = ref m__G.oCam[0].mDetectedMarkPos[0];
+            int lMarkCount = fMarkPos.Length;
+            int lModelScale = m__G.oCam[0].mFAL.mFidMarkTop[0].MScale;
+            int lwidth = 0;
+            int lheight = 0;
+            OpenCvSharp.Rect lrc = new OpenCvSharp.Rect();
+
+            for (int i = 0; i < lMarkCount; i++)
+            {
+                if (fMarkPos[i].X == 0 && fMarkPos[i].Y == 0)
+                    continue;
+
+                if (i < 3)
+                {
+                    lwidth = m__G.oCam[0].mFAL.mFidMarkSide[0].modelSize.Width;
+                    lheight = m__G.oCam[0].mFAL.mFidMarkSide[0].modelSize.Height;
+                }
+                else
+                {
+                    lwidth = m__G.oCam[0].mFAL.mFidMarkTop[0].modelSize.Width;
+                    lheight = m__G.oCam[0].mFAL.mFidMarkTop[0].modelSize.Height;
+                }
+
+                lrc.X = fMarkPos[i].X * lModelScale;
+                lrc.Y = fMarkPos[i].Y * lModelScale;
+                lrc.Width = lModelScale * lwidth;
+                lrc.Height = lModelScale * lheight;
+
+                //lOverlayedImg.Rectangle(lrc, Scalar.Cyan, 1);
+
+                if (m__G.oCam[0].mbDrawReference)
+                {
+                    int x = (int)m__G.oCam[0].mFAL.mMarkPosOnPanel[i].X;
+                    int y = (int)m__G.oCam[0].mFAL.mMarkPosOnPanel[i].Y;
+                    Cv2.Line(lOverlayedImg, x - 10, y, x + 10, y, Scalar.OrangeRed, 1, LineTypes.Link4);
+                    Cv2.Line(lOverlayedImg, x, y - 10, x, y + 10, Scalar.OrangeRed, 1, LineTypes.Link4);
+                }
+                Cv2.Line(lOverlayedImg, dummyX - 8, dummyY, dummyX + 8, dummyY, Scalar.Lime, 1, LineTypes.Link4);
+                Cv2.Line(lOverlayedImg, dummyX, dummyY - 8, dummyX, dummyY + 8, Scalar.Lime, 1, LineTypes.Link4);
+            }
+            if (withID)
+            {
+                // ID Mark Position
+                lrc.X = (int)(m__G.oCam[0].mDetectedMarkPos[0][1].X * m__G.oCam[0].mFAL.mModelScale + 39 + 13);
                 lrc.Y = (int)(m__G.oCam[0].mDetectedMarkPos[0][1].Y * m__G.oCam[0].mFAL.mModelScale + 5);
                 lrc.Width = 39;
                 lrc.Height = (int)(180 - (m__G.oCam[0].mDetectedMarkPos[0][0].Y + m__G.oCam[0].mDetectedMarkPos[0][1].Y) * m__G.oCam[0].mFAL.mModelScale / 2 - 10);
@@ -2784,10 +3562,21 @@ namespace FZ4P
             {
                 if (!bThreadManualFindMarks)
                 {
-                    btnLive2.Enabled = false;
+                    if (InvokeRequired)
+                    {
+                        BeginInvoke((MethodInvoker)delegate
+                        {
+                            btnLive2.Enabled = false;
+                            button10.Enabled = false;
+                        });
+                    }
+                    else
+                    {
+                        btnLive2.Enabled = false;
+                        button10.Enabled = false;
+                    }
                     m__G.oCam[0].HaltA();
                     bHaltLive = true;
-                    button10.Enabled = false;
                     IsLiveCropStop = true;
                     bThreadManualFindMarks = true;
                     mCalibrationFullData = new List<double[]>();
@@ -2799,8 +3588,20 @@ namespace FZ4P
                 }
                 else
                 {
-                    btnLive2.Enabled = true;
-                    button10.Enabled = true;
+                    if (InvokeRequired)
+                    {
+                        BeginInvoke((MethodInvoker)delegate
+                        {
+                            btnLive2.Enabled = true;
+                            button10.Enabled = true;
+                        });
+                    }
+                    else
+                    {
+                        btnLive2.Enabled = true;
+                        button10.Enabled = true;
+                    }
+
                     bThreadManualFindMarks = false;
 
                     while (!bFinishThreadManualFindMarks)
@@ -2814,10 +3615,23 @@ namespace FZ4P
             }
             else
             {
-                btnLive2.Enabled = false;
+                if (InvokeRequired)
+                {
+                    BeginInvoke((MethodInvoker)delegate
+                    {
+                        btnLive2.Enabled = false;
+                        button10.Enabled = false;
+                    });
+                }
+                else
+                {
+                    btnLive2.Enabled = false;
+                    button10.Enabled = false;
+                }
+
+
                 m__G.oCam[0].HaltA();
                 bHaltLive = true;
-                button10.Enabled = false;
                 IsLiveCropStop = true;
                 bThreadManualFindMarks = true;
                 mCalibrationFullData = new List<double[]>();
@@ -2826,13 +3640,28 @@ namespace FZ4P
 
                 //m__G.fGraph.mDriverIC.SetLEDpower(1, (int)((mLEDcurrent[0]) * 500));
                 //m__G.fGraph.mDriverIC.SetLEDpower(2, (int)((mLEDcurrent[1]) * 500));
+
+                Process.LEDs_All_On(0 , true);
+
                 ManualFindMarks(0, true, false);
 
-                //m__G.fGraph.Drive_LEDs(0, 0);
+                Process.LEDs_All_On(0, false);
                 Thread.Sleep(500);
 
-                btnLive2.Enabled = true;
-                button10.Enabled = true;
+                if (InvokeRequired)
+                {
+                    BeginInvoke((MethodInvoker)delegate
+                    {
+                        btnLive2.Enabled = true;
+                        button10.Enabled = true;
+                    });
+                }
+                else
+                {
+                    btnLive2.Enabled = true;
+                    button10.Enabled = true;
+                }
+
                 bThreadManualFindMarks = false;
 
                 //if (m__G.mGageCounter != null)
@@ -2852,33 +3681,49 @@ namespace FZ4P
             mAutoCalibrationIndex = 0;
         }
 
-        public void RemoteCalibration(string strAxis, int skipCount)
-        {
-            //  strAxis 은 "Z", "Y', "X", "TX", "TY" 를 넣을 수 있다.
-            //  Calibraition 순서는 "Z" -> "Z"  -> "Y" -> "Y" -> "X" -> "X" -> "TX" -> "TY"
-            //  각 보정결과를 확인해야 하므로 보전 전 - 후 로 실시한다.
+        //public void RemoteCalibration(string strAxis, int skipCount)
+        //{
+        //    //  strAxis 은 "Z", "Y', "X", "TX", "TY" 를 넣을 수 있다.
+        //    //  Calibraition 순서는 "Z" -> "Z"  -> "Y" -> "Y" -> "X" -> "X" -> "TX" -> "TY"
+        //    //  각 보정결과를 확인해야 하므로 보전 전 - 후 로 실시한다.
 
-            //  ORG 위치에서 한쪽 끝으로 이동하면서 얻어진 데이터( skipCount )는 삭제한다.
-            for (int i = 0; i < skipCount; i++)
-                mCalibrationFullData.RemoveAt(0);
+        //    //  ORG 위치에서 한쪽 끝으로 이동하면서 얻어진 데이터( skipCount )는 삭제한다.
+        //    for (int i = 0; i < skipCount; i++)
+        //        mCalibrationFullData.RemoveAt(0);
 
-            //JH_SK_CreateLUTfromMeasuredData(mCalibrationFullData.ToArray(), strAxis, m__G.mCamID0, true);
-            CreateLUTfromMeasuredData(mCalibrationFullData.ToArray(), strAxis, m__G.mCamID0, true);
-        }
+        //    //JH_SK_CreateLUTfromMeasuredData(mCalibrationFullData.ToArray(), strAxis, m__G.mCamID0, true);
+        //    CreateLUTfromMeasuredData(mCalibrationFullData.ToArray(), strAxis, m__G.mCamID0, true);
+        //}
+
         public void SingleFindMark(bool IsSave = true)
         {
             //  TCP/IP 를 통한 원격 Calibration 또는 모션제어를 통한 자동 Calibration 시에 활용할 함수
             //  SingleFindMark is used for External Calibration
-            //m__G.fGraph.mDriverIC.SetLEDpower(1, (int)((mLEDcurrent[0]) * 500));
-            //m__G.fGraph.mDriverIC.SetLEDpower(2, (int)((mLEDcurrent[1]) * 500));
-            Thread.Sleep(100);   //  Wait LED Power Up.
+            Process.LEDs_All_On(0, true);
+            Thread.Sleep(50);   //  Wait LED Power Up.
             if (mAutoCalibrationIndex == 0)
                 MotorizedFindMarks(mAutoCalibrationIndex, true, IsSave);
             else
                 MotorizedFindMarks(mAutoCalibrationIndex, false, IsSave);
 
             mAutoCalibrationIndex++;
-            //m__G.fGraph.Drive_LEDs(0, 0);
+            Process.LEDs_All_On(0, false);
+        }
+        public double[] AnosisCalData = new double[22]; // 33
+        public void SingleFindMarkAnosis(bool IsSave = true)
+        {
+            //  TCP/IP 를 통한 원격 Calibration 또는 모션제어를 통한 자동 Calibration 시에 활용할 함수
+            //  SingleFindMark is used for External Calibration
+            Process.LEDs_All_On(0, true);
+            Thread.Sleep(100);   //  Wait LED Power Up.
+
+            if (mAutoCalibrationIndex == 0)
+                MotorizedFindMarksAnosis(ref AnosisCalData, mAutoCalibrationIndex, true, IsSave);
+            else
+                MotorizedFindMarksAnosis(ref AnosisCalData, mAutoCalibrationIndex, false, IsSave);
+
+            mAutoCalibrationIndex++;
+            Process.LEDs_All_On(0, false);
         }
 
         public void ThreadManualFindMarks(int maxCnt = 500)
@@ -2887,8 +3732,6 @@ namespace FZ4P
 
             for (int i = 0; i < maxCnt; i++)
             {
-                //m__G.fGraph.mDriverIC.SetLEDpower(1, (int)((mLEDcurrent[0]) * 500));
-                //m__G.fGraph.mDriverIC.SetLEDpower(2, (int)((mLEDcurrent[1]) * 500));
                 Process.LEDs_All_On(0, true);
                 ManualFindMarks(i, true, true);
 
@@ -2901,8 +3744,8 @@ namespace FZ4P
                 //m__G.oCam[0].SaveGrabbedImage(2, fileName);
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
                 Process.LEDs_All_On(0, false);
-                //m__G.fGraph.Drive_LEDs(0, 0);
                 Thread.Sleep(500);
                 if (!bThreadManualFindMarks)
                     break;
@@ -2923,7 +3766,18 @@ namespace FZ4P
             bThreadManualFindMarks = false;
             bFinishThreadManualFindMarks = true;
         }
+        public string RemoteGrab()
+        {
+            DrawMarkPositions();
 
+            m__G.oCam[0].GrabB(0);
+
+            string fname = m__G.m_RootDirectory + "\\Result\\RawData\\Image\\LastGrab.bmp";
+            m__G.oCam[0].SaveGrabbedImage(0, fname);
+            //string fname = m__G.m_RootDirectory + "\\Result\\RawData\\Image\\LastGrab.bmp";
+            //m__G.oCam[0].SaveImageBuf(fname);
+            return fname;
+        }
         public void FindMarks(int index = 1)
         {
             string strtmp = "";
@@ -2961,6 +3815,19 @@ namespace FZ4P
             ltz = m__G.oCam[0].mC_pTZ[index] * 180 * 60 / Math.PI;    //  radian to min
 
             strtmp += lx.ToString("F2") + "\t" + ly.ToString("F2") + "\t" + lz.ToString("F2") + "\t| " + ltx.ToString("F2") + "\t" + lty.ToString("F2") + "\t" + ltz.ToString("F2") + "\t| ";
+
+
+            double[] lCalibrationData = new double[23];
+
+            lCalibrationData[0] = lx;
+            lCalibrationData[1] = ly;
+            lCalibrationData[2] = lz;
+            lCalibrationData[3] = ltx;
+            lCalibrationData[4] = lty;
+            lCalibrationData[5] = ltz;
+
+            mCalibrationFullData.Add(lCalibrationData);
+
 
 
             //for (int i = 0; i < 12; i++)
@@ -3022,6 +3889,7 @@ namespace FZ4P
             if (openFile.ShowDialog() != DialogResult.OK)
                 return;
 
+            m__G.oCam[0].mFAL.ClearCommonImgFile();
             //  영상들의 처리에 앞서서 반드시 들어가야 한다.
             //  Mark 가 업데이트 되면 반드시 수행, 영상크기가 확정되어야 한다.
             int findex = 0;
@@ -3054,7 +3922,7 @@ namespace FZ4P
 
             if (openFile.FileNames.Length == 1)
             {
-                m__G.oCam[0].LoadBMPtoBuf0(openFile.FileNames[0]);
+                m__G.oCam[0].mFAL.LoadBMPtoBufN(openFile.FileNames[0], 0);
                 m__G.oCam[0].DrawCSHCross(Brushes.OrangeRed);
 
                 int numFMIcandidate = m__G.mFAL.GetNumFMICandidate();
@@ -3091,7 +3959,8 @@ namespace FZ4P
                 m__G.oCam[0].mTrgBufLength = openFile.FileNames.Length;
                 foreach (string filename in openFile.FileNames)
                 {
-                    m__G.oCam[0].LoadBMPtoBufN(filename, i++);
+                    //m__G.oCam[0].LoadBMPtoBufN(filename, i++);
+                    m__G.oCam[0].mFAL.LoadBMPtoBufN(filename, i++);
                 }
                 m__G.oCam[0].DrawCSHCross(Brushes.OrangeRed);
 
@@ -3131,7 +4000,13 @@ namespace FZ4P
                     m__G.oCam[0].mTargetTriggerCount = numFile;
                     //m__G.oCam[0].mTrgBufLength = 3000;
                     m__G.oCam[0].SetTriggeredframeCount(numFile);
-                    //m__G.fVision.ProcessVisionData(numFile, maxThread);
+
+
+
+                    ProcessVisionData(numFile, maxThread, true);
+
+
+
                     m__G.mbSuddenStop[0] = false;
                     m__G.oCam[0].mTargetTriggerCount = orgmTargetTriggerCount;
 
@@ -3165,11 +4040,12 @@ namespace FZ4P
                 tbVsnLog.Text += "\r\nEllapsed Time : " + ellapse.ToString("F3") + " msec for processing " + numFile.ToString() + " Frames, LED : " + mLEDcurrent[0].ToString("F2") + " " + mLEDcurrent[1].ToString("F2") + "\r\n";
 
                 mTriggerGrabbedFrame = numFile;
-                //MyOwner.WriteResultBin();
+                MyOwner.WriteResultBin();
                 //MyOwner.WriteResult();
 
             }
             //  Default Mark Position
+            DrawMarkDetected();
             m__G.oCam[0].DrawMarkPos(Brushes.Lime, markPos);
             tbVsnLog.Text += "Finish\r\n";
             tbVsnLog.SelectionStart = tbVsnLog.Text.Length;
@@ -3189,7 +4065,7 @@ namespace FZ4P
         //}
 
 
-        public void CalcVisionData(int cam, int ci, int ce, int cstep, int iBuf)
+        public void CalcVisionData(int cam, int ci, int ce, int cstep, int iBuf, bool IsFile = false)
         {
             int i = 0;
             mb_FinishCalcVision[iBuf] = false;
@@ -3207,7 +4083,7 @@ namespace FZ4P
                             break;
                         try
                         {
-                            res = m__G.oCam[cam].FineCOG(false, i, iBuf);    // 마크찾기
+                            res = m__G.oCam[cam].FineCOG(false, i, iBuf, false, true, false, IsFile);    // 마크찾기
                         }
                         catch (Exception ex)
                         {
@@ -3227,7 +4103,7 @@ namespace FZ4P
                         if (m__G.mbSuddenStop[0])   //  연산도 중단함.
                             break;
 
-                        res = m__G.oCam[cam].FineCOG(false, i, iBuf);    // 마크찾기
+                        res = m__G.oCam[cam].FineCOG(false, i, iBuf, false, true, false, IsFile);    // 마크찾기
                         if (res)
                             mDebugCalcVisionCount[iBuf]++;
                     }
@@ -3235,7 +4111,8 @@ namespace FZ4P
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString());
+                //MessageBox.Show(ex.ToString());
+                //m__G.fManage.AddViewLog(ex.ToString() + "\r\n");
             }
             mb_FinishCalcVision[iBuf] = true;
         }
@@ -3283,7 +4160,10 @@ namespace FZ4P
         private void btnBack_Click(object sender, EventArgs e)
         {
             //m__G.fManage.ManualToPlot();
-            //cbContinuosMode.Checked = false;
+            if (!bHaltLive)
+                GrabHalt();
+
+            cbContinuosMode.Checked = false;
             cbSaveNthImg.Checked = false;
             IsLiveCropStop = true;
             bThreadManualFindMarks = false;
@@ -3360,101 +4240,6 @@ namespace FZ4P
             }
         }
 
-        private void btnFailLED1_Click(object sender, EventArgs e)
-        {
-            if (m__G.mChannelCount < 2)
-                return;
-            //m__G.fGraph.mDriverIC.SetFailLED(0, true);
-            Thread.Sleep(1000);
-            //m__G.fGraph.mDriverIC.SetFailLED(0, false);
-        }
-
-        private void btnFailLED2_Click(object sender, EventArgs e)
-        {
-            if (m__G.mChannelCount < 2)
-                return;
-            //m__G.fGraph.mDriverIC.SetFailLED(1, true);
-            Thread.Sleep(1000);
-            //m__G.fGraph.mDriverIC.SetFailLED(1, false);
-        }
-
-        private void btnFailLED3_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void btnFailLED4_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        //public void LEDMarkCheck()
-        //{
-        //    m_bLEDMarkCheck = true;
-
-        //    int i = 0;
-        //    while (m_bLEDMarkCheck)
-        //    {
-        //        if ((i % 2) == 0)
-        //            m__G.fGraph.Drive_LED(0, mLEDcurrent[0]);
-        //        else
-        //            m__G.fGraph.Drive_LED(0, 0);
-        //        if (m__G.mChannelCount > 1)
-        //        {
-        //            if (((i / 2) % 2) == 0)
-        //                m__G.fGraph.Drive_LED(1, mLEDcurrent[1]);
-        //            else
-        //                m__G.fGraph.Drive_LED(1, 0);
-        //        }
-
-        //        if (m__G.mCamCount > 1)
-        //        {
-        //            if (((i / 4) % 2) == 0)
-        //                m__G.fGraph.Drive_LED(2, mLEDcurrent[2]);
-        //            else
-        //                m__G.fGraph.Drive_LED(2, 0);
-
-        //            if (((i / 8) % 2) == 0)
-        //                m__G.fGraph.Drive_LED(3, mLEDcurrent[3]);
-        //            else
-        //                m__G.fGraph.Drive_LED(3, 0);
-        //        }
-
-        //        Thread.Sleep(100);
-        //        i++;
-        //    }
-        //    m__G.fGraph.Drive_LED(0, 0);
-        //    if (m__G.mChannelCount > 1)
-        //        m__G.fGraph.Drive_LED(1, 0);
-        //    if (m__G.mCamCount > 1)
-        //    {
-        //        m__G.fGraph.Drive_LED(2, 0);
-        //        m__G.fGraph.Drive_LED(3, 0);
-        //    }
-        //}
-
-        private void btnLoadUnloadL_Click(object sender, EventArgs e)
-        {
-            if (m_FocusedLED > 1)
-            {
-                m_FocusedLED = 0;
-            }
-
-            int port = m_FocusedLED / 2;
-            if (!mSocketLoaded[port])
-            {
-                //m__G.fGraph.socket_IN(port);
-                mSocketLoaded[port] = true;
-                mDoneWriteRun = false;
-            }
-            else
-            {
-                //m__G.fGraph.socket_OUT(port);
-                mSocketLoaded[port] = false;
-                mDoneWriteRun = false;
-            }
-
-        }
         public int saveCount = 0;
         private void btnAllLEDOn_Click(object sender, EventArgs e)
         {
@@ -3542,46 +4327,15 @@ namespace FZ4P
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (tbImgNumber.Text == "") return;
-            int imgIndex = Convert.ToInt16(tbImgNumber.Text);
-            UptoMeasureTxTyTz(imgIndex);
-            imgIndex++;
-            tbImgNumber.Text = imgIndex.ToString();
-        }
-        public void UptoMeasureTxTyTz(int imgIndex)
-        {
-
-            try
+            if (tbImgNumber.Text == "")
             {
-                FindResult result = MeasureTxTyTz(imgIndex, ScanName, false, cbSaveNthImg.Checked);
-
-                string strtmp = "";
-
-                strtmp += "\r\n" + imgIndex.ToString() + "\t";
-                for (int i = 0; i < 12; i++)
-                {
-                    if (m__G.oCam[0].mAzimuthPts[imgIndex][i].X == 0) continue;
-                    strtmp += m__G.oCam[0].mAzimuthPts[imgIndex][i].X.ToString("F3") + "\t" + m__G.oCam[0].mAzimuthPts[imgIndex][i].Y.ToString("F3") + "\t";
-                }
-                strtmp += ">\t";
-                for (int i = 0; i < 5; i++)
-                    strtmp += m__G.oCam[0].m_sMRinstant[i].mMTF.ToString("F0") + "\t";
-
-                tbInfo.Text += strtmp + "\r\n";
-            }
-            catch
-            {
-                MessageBox.Show("Input Correct Image Number, Then Retry.");
+                MessageBox.Show("Please input the image number!");
                 return;
             }
-        }
-        public static double mTZtoY1Y2 = 0.660316;
-        public double umscale = 5.5 / Global.LensMag;                           //  rad to min
-        public double minscale = 180 / Math.PI * 60;                           //  rad to min
-        public FindResult MeasureTxTyTz(int imgIndex, string name = "", bool bAccu = false, bool isShow = false)
-        {
 
             m__G.oCam[0].mFAL.LoadFMICandidate();
+
+            int imgIndex = Convert.ToInt16(tbImgNumber.Text);
 
             if (imgIndex == 0)
             {
@@ -3591,24 +4345,33 @@ namespace FZ4P
             m__G.mFAL.mCandidateIndex = 0;
             ChangeFiducialMark(0);
 
-            if (name == "") m__G.oCam[0].ReplayBuftoCommon(ScanName, imgIndex);
-            else m__G.oCam[0].ReplayBuftoCommon(name, imgIndex);
 
-            m__G.oCam[0].mFAL.LoadFMICandidate();
-            m__G.oCam[0].mFAL.BackupFMI();
+            string strtmp = NthMeasure(imgIndex);
 
-            NthMeasure(imgIndex, bAccu, isShow);
+            strtmp += "\r\n" + imgIndex.ToString() + "\t";
+            for (int i = 0; i < 12; i++)
+            {
+                if (m__G.oCam[0].mAzimuthPts[imgIndex][i].X == 0) continue;
+                strtmp += m__G.oCam[0].mAzimuthPts[imgIndex][i].X.ToString("F3") + "\t" + m__G.oCam[0].mAzimuthPts[imgIndex][i].Y.ToString("F3") + "\t";
+            }
+            strtmp += ">\t";
+            for (int i = 0; i < 5; i++)
+                strtmp += m__G.oCam[0].m_sMRinstant[i].mMTF.ToString("F0") + "\t";
 
-            FindResult result =new FindResult();
-            result.cy[0] = m__G.oCam[0].mC_pX[imgIndex] * umscale;
-            result.cx[0] = m__G.oCam[0].mC_pY[imgIndex] * umscale;
-            result.cz[0] = m__G.oCam[0].mC_pZ[imgIndex] * umscale;
-            result.tx[0] = m__G.oCam[0].mC_pTX[imgIndex] * minscale;
-            result.ty[0] = m__G.oCam[0].mC_pTY[imgIndex] * minscale;
-            result.tz[0] = m__G.oCam[0].mC_pTZ[imgIndex] * minscale;
-            result.cy1[0] = result.cy[0] + result.tz[0] * mTZtoY1Y2;
-            result.cy2[0] = result.cy[0] - result.tz[0] * mTZtoY1Y2;
-            return result;
+            tbInfo.Text += strtmp + "\r\n";/*+ m__G.oCam[0].mGrabAbsTiming[imgIndex].ToString("F5")*/
+
+            tbInfo.SelectionStart = tbInfo.Text.Length;
+            tbInfo.ScrollToCaret();
+
+            int nextFrame = 0;
+            if (rb1step.Checked)
+                nextFrame = imgIndex + 1;
+            else
+                nextFrame = imgIndex + 5;
+            //if (nextFrame < 0)
+            //    nextFrame = 0;
+
+            tbImgNumber.Text = nextFrame.ToString();
         }
 
         public string NthMeasure(int imgIndex, bool bAccu = false, bool isShow = false)
@@ -3692,7 +4455,69 @@ namespace FZ4P
 
             return strtmp;
         }
+        public void UptoMeasureTxTyTz(int imgIndex)
+        {
 
+            try
+            {
+                FindResult result = MeasureTxTyTz(imgIndex, ScanName, false, cbSaveNthImg.Checked);
+
+                string strtmp = "";
+
+                strtmp += "\r\n" + imgIndex.ToString() + "\t";
+                for (int i = 0; i < 12; i++)
+                {
+                    if (m__G.oCam[0].mAzimuthPts[imgIndex][i].X == 0) continue;
+                    strtmp += m__G.oCam[0].mAzimuthPts[imgIndex][i].X.ToString("F3") + "\t" + m__G.oCam[0].mAzimuthPts[imgIndex][i].Y.ToString("F3") + "\t";
+                }
+                strtmp += ">\t";
+                for (int i = 0; i < 5; i++)
+                    strtmp += m__G.oCam[0].m_sMRinstant[i].mMTF.ToString("F0") + "\t";
+
+                tbInfo.Text += strtmp + "\r\n";
+            }
+            catch
+            {
+                MessageBox.Show("Input Correct Image Number, Then Retry.");
+                return;
+            }
+        }
+        public static double mTZtoY1Y2 = 0.660316;
+        public double umscale = 5.5 / Global.LensMag;                           //  rad to min
+        public double minscale = 180 / Math.PI * 60;                           //  rad to min
+        public string ScanName = "";
+        public FindResult MeasureTxTyTz(int imgIndex, string name = "", bool bAccu = false, bool isShow = false)
+        {
+
+            m__G.oCam[0].mFAL.LoadFMICandidate();
+
+            if (imgIndex == 0)
+            {
+                m__G.oCam[0].mFAL.RecoverFromBackupFMI();
+                m__G.oCam[0].mFAL.BackupFMI();
+            }
+            m__G.mFAL.mCandidateIndex = 0;
+            ChangeFiducialMark(0);
+
+            if (name == "") m__G.oCam[0].ReplayBuftoCommon(ScanName, imgIndex);
+            else m__G.oCam[0].ReplayBuftoCommon(name, imgIndex);
+
+            m__G.oCam[0].mFAL.LoadFMICandidate();
+            m__G.oCam[0].mFAL.BackupFMI();
+
+            NthMeasure(imgIndex, bAccu, isShow);
+
+            FindResult result = new FindResult();
+            result.cx[0] = m__G.oCam[0].mC_pX[imgIndex] * umscale;
+            result.cy[0] = m__G.oCam[0].mC_pY[imgIndex] * umscale;
+            result.cz[0] = m__G.oCam[0].mC_pZ[imgIndex] * umscale;
+            result.tx[0] = m__G.oCam[0].mC_pTX[imgIndex] * minscale;
+            result.ty[0] = m__G.oCam[0].mC_pTY[imgIndex] * minscale;
+            result.tz[0] = m__G.oCam[0].mC_pTZ[imgIndex] * minscale;
+            result.cy1[0] = result.cy[0] + result.tz[0] * mTZtoY1Y2;
+            result.cy2[0] = result.cy[0] - result.tz[0] * mTZtoY1Y2;
+            return result;
+        }
         private void radioButton10Step_CheckedChanged(object sender, EventArgs e)
         {
             if (radioButton10Step.Checked)
@@ -3711,82 +4536,6 @@ namespace FZ4P
         {
 
         }
-
-        //public void Process_AutoLED(bool IsFlipped = false)
-        //{
-
-        //    double[] sPitch = new double[4];
-        //    double[] sYaw = new double[4];
-        //    double[] cx = new double[4];
-        //    double[] cy = new double[4];
-
-        //    double[] strokeL = new double[4];
-        //    double[] yawL = new double[4];
-        //    double[] pitchL = new double[4];
-        //    double[] refBin = new double[4];
-        //    double leftBin = 0;
-        //    double rightBin = 0;
-
-        //    //long nFound = 0;
-
-        //    double Lpower = 2.63;
-        //    double Rpower = 2.63;
-        //    int limit = 16;
-        //    while (limit-- > 0)
-        //    {
-        //        m__G.oCam[0].DrawClear();
-        //        if (m__G.mCamCount > 1)
-        //        {
-        //            m__G.oCam[1].DrawClear();
-        //        }
-
-        //        m__G.fGraph.Drive_LED(0, Lpower);
-        //        if (m__G.mCamCount > 1)
-        //            m__G.fGraph.Drive_LED(1, Rpower);
-
-        //        Thread.Sleep(20);
-
-        //        if (m__G.mCamCount > 1)
-        //            m__G.oCam[1].GrabA(1);
-
-        //        m__G.oCam[0].GrabA(1);
-        //        m__G.fGraph.Drive_LEDs(0, 0);
-
-        //        refBin = new double[4];
-        //        m__G.oCam[0].GetRefBrightness(cx, cy, ref refBin);
-
-        //        leftBin = (refBin[0] + refBin[1]) / 2.0;
-        //        rightBin = (refBin[2] + refBin[3]) / 2.0;
-        //        tbVsnLog.Text += Lpower.ToString("F2") + " - " + leftBin.ToString("F3") + " : " + Rpower.ToString("F2") + " - " + rightBin.ToString("F3") + "\r\n";
-        //        if (!IsFlipped)
-        //        {
-        //            if (leftBin < 23 && Lpower < 2.78)
-        //                Lpower += 0.01;
-        //            if (rightBin < 23 && Rpower < 2.78)
-        //                Rpower += 0.01;
-        //        }
-        //        else
-        //        {
-        //            if (leftBin < 23 && Rpower < 2.78)
-        //                Rpower += 0.01;
-        //            if (rightBin < 23 && Lpower < 2.78)
-        //                Lpower += 0.01;
-        //        }
-
-        //        if (leftBin > 23 && rightBin > 23)
-        //            break;
-
-        //        if (Lpower > 2.74 && Rpower > 2.74)
-        //            break;
-        //    }
-        //    tbVsnLog.Text += "Auto LED Power : " + Lpower.ToString("F2") + "\t" + Rpower.ToString("F2") + "\r\n";
-        //}
-
-        private void button4_Click(object sender, EventArgs e)
-        {
-
-        }
-
 
         private void btnUptoNthMesure_Click(object sender, EventArgs e)
         {
@@ -3838,7 +4587,7 @@ namespace FZ4P
             m__G.oCam[0].mFAL.LoadFMICandidate();
 
             m__G.oCam[0].mFAL.BackupFMI();
-            //m__G.oCam[0].mFAL.mFastMode = m__G.m_bFastMode;   //  FastMode 에서는 계단(튐)현상이 나타나므로 사용하지 않기로 함. 2023.2.23
+            //m__G.oCam[0].mFAL.mFastMode = m__G.m_bEulerRotation;   //  FastMode 에서는 계단(튐)현상이 나타나므로 사용하지 않기로 함. 2023.2.23
 
             long beginTime = 0;
             long endTime = 0;
@@ -3857,6 +4606,9 @@ namespace FZ4P
             SetDefaultMarkConfig(false);
 
             int lmaxThread = m__G.mMaxThread;
+
+            m__G.oCam[0].mTargetTriggerCount = imgIndex;
+
             int frmCnt = m__G.oCam[0].mTargetTriggerCount;
 
             //tbVsnLog.Text += "Target Trigger Count = " + frmCnt.ToString() + "\r\n";
@@ -3885,20 +4637,10 @@ namespace FZ4P
                 //////////////////////////////////////////////////////////////
                 /////   모델 2개 추적하기위한 모델 변경 관련 코드
                 //////////////////////////////////////////////////////////////
-                m__G.mFAL.mCandidateIndex = ci;
-                ChangeFiducialMark(ci);
+                ///
 
-                if (ci != 0)
-                    m__G.mFAL.mFZM.mbCompY = ci;
-                else
-                    m__G.mFAL.mFZM.mbCompY = 0;
+                //Save 위치 변경
 
-                SupremeTimer.QueryPerformanceCounter(ref beginTime);
-                //m__G.fVision.ProcessVisionData(imgIndex, lmaxThread);
-                SupremeTimer.QueryPerformanceCounter(ref endTime);
-                double ellapsedTime = (endTime - beginTime) / (double)(lTimerFrequency);
-
-                strtmp = strGrp[ci % 2] + "#\tLed\tX\tY\tZ\tTX\tTY\tTZ\tX1\tY1\tX2\tY2\tX3\tY3\tX4\tY4\tX5\tY5";
                 for (int findex = 0; findex < imgIndex; findex++)
                 {
                     if (IsShow)
@@ -3910,6 +4652,33 @@ namespace FZ4P
                         fileName += "Ana" + findex.ToString() + ".bmp";
                         m__G.oCam[0].SaveGrabbedImage(findex, fileName);
                     }
+                }
+
+                m__G.mFAL.mCandidateIndex = ci;
+                ChangeFiducialMark(ci);
+
+                if (ci != 0)
+                    m__G.mFAL.mFZM.mbCompY = ci;
+                else
+                    m__G.mFAL.mFZM.mbCompY = 0;
+
+                SupremeTimer.QueryPerformanceCounter(ref beginTime);
+                ProcessVisionData(imgIndex, lmaxThread);
+                SupremeTimer.QueryPerformanceCounter(ref endTime);
+                double ellapsedTime = (endTime - beginTime) / (double)(lTimerFrequency);
+
+                strtmp = strGrp[ci % 2] + "#\tLed\tX\tY\tZ\tTX\tTY\tTZ\tX1\tY1\tX2\tY2\tX3\tY3\tX4\tY4\tX5\tY5";
+                for (int findex = 0; findex < imgIndex; findex++)
+                {
+                    //if (IsShow)
+                    //{
+                    //    string fileName = m__G.m_RootDirectory + "\\Result\\RawData\\ImgAna\\";
+                    //    if (!Directory.Exists(fileName))
+                    //        Directory.CreateDirectory(fileName);
+
+                    //    fileName += "Ana" + findex.ToString() + ".bmp";
+                    //    m__G.oCam[0].SaveGrabbedImage(findex, fileName);
+                    //}
 
                     //strtmp += "\r\n" + findex.ToString() + "\t" + m__G.oCam[0].mAvgLED[findex].ToString("F3") + "\t";
                     strtmp += "\r\n" + findex.ToString() + "\t" + m__G.oCam[0].mGrabAbsTiming[findex].ToString("F5") + "\t";
@@ -4233,68 +5002,100 @@ namespace FZ4P
 
         private void button8_Click(object sender, EventArgs e)
         {
-            if (tbImgNumber.Text == "") return;
+            if (tbImgNumber.Text == "")
+            {
+                MessageBox.Show("Please input the image number!");
+                return;
+            }
+
+            m__G.oCam[0].mFAL.LoadFMICandidate();
+
             int imgIndex = Convert.ToInt16(tbImgNumber.Text);
-            if (imgIndex <= 0) return;
-            UptoMeasureTxTyTz(imgIndex);
-            imgIndex--;
-            tbImgNumber.Text = imgIndex.ToString();
+
+            if (imgIndex == 0)
+            {
+                m__G.oCam[0].mFAL.RecoverFromBackupFMI();
+                m__G.oCam[0].mFAL.BackupFMI();
+            }
+
+            string strtmp = NthMeasure(imgIndex);
+            strtmp += "\r\n" + imgIndex.ToString() + "\t";
+            for (int i = 0; i < 12; i++)
+            {
+                if (m__G.oCam[0].mAzimuthPts[imgIndex][i].X == 0) continue;
+                strtmp += m__G.oCam[0].mAzimuthPts[imgIndex][i].X.ToString("F3") + "\t" + m__G.oCam[0].mAzimuthPts[imgIndex][i].Y.ToString("F3") + "\t";
+            }
+
+            tbInfo.Text += strtmp;
+
+            tbInfo.SelectionStart = tbVsnLog.Text.Length;
+            tbInfo.ScrollToCaret();
+
+            int nextFrame = 0;
+            if (rb1step.Checked)
+                nextFrame = imgIndex - 1;
+            else
+                nextFrame = imgIndex - 5;
+            if (nextFrame < 0)
+                nextFrame = 0;
+
+            tbImgNumber.Text = nextFrame.ToString();
         }
         private void btnMouseEnter(object sender, EventArgs e)
         {
             Button lbtn = (Button)sender;
             if (lbtn.Text.Contains("Replay"))
-                lbtn.BackgroundImage = FZ4P.Properties.Resources.BtnLightBlueP;
+                lbtn.BackgroundImage = Properties.Resources.BtnLightBlueP;
             else if (lbtn.TabIndex == 139 || lbtn.TabIndex == 442 || lbtn.TabIndex == 339 || lbtn.TabIndex == 123 || lbtn.TabIndex == 131 || lbtn.TabIndex == 132 || lbtn.TabIndex == 137 || lbtn.TabIndex == 238 || lbtn.TabIndex == 279 || lbtn.TabIndex == 280 || lbtn.TabIndex == 345 || lbtn.TabIndex == 348 || lbtn.TabIndex / 2 == 210 || lbtn.TabIndex == 346 || lbtn.TabIndex == 422 || lbtn.Text.Contains("Scale"))
-                lbtn.BackgroundImage = FZ4P.Properties.Resources.BtnLightBlueP;
+                lbtn.BackgroundImage = Properties.Resources.BtnLightBlueP;
             else if (lbtn.Text.Contains("N'th") || lbtn.Text.Contains("Mark") || lbtn.Text.Contains("Meas") || lbtn.Text.Contains("Noise"))
-                lbtn.BackgroundImage = FZ4P.Properties.Resources.BtnMP;
+                lbtn.BackgroundImage = Properties.Resources.BtnMP;
             else if (lbtn.TabIndex == 440 || lbtn.TabIndex == 456)
-                lbtn.BackgroundImage = FZ4P.Properties.Resources.BtnGP;
+                lbtn.BackgroundImage = Properties.Resources.BtnGP;
             else
-                lbtn.BackgroundImage = FZ4P.Properties.Resources.BtnKP;
+                lbtn.BackgroundImage = Properties.Resources.BtnKP;
         }
         private void btnMouseHover(object sender, EventArgs e)
         {
             Button lbtn = (Button)sender;
             if (lbtn.Text.Contains("Replay"))
-                lbtn.BackgroundImage = FZ4P.Properties.Resources.BtnLightBlueN;
+                lbtn.BackgroundImage = Properties.Resources.BtnLightBlueN;
             else if (lbtn.TabIndex == 139 || lbtn.TabIndex == 442 || lbtn.TabIndex == 339 || lbtn.TabIndex == 123 || lbtn.TabIndex == 131 || lbtn.TabIndex == 132 || lbtn.TabIndex == 137 || lbtn.TabIndex == 238 || lbtn.TabIndex == 279 || lbtn.TabIndex == 280 || lbtn.TabIndex == 345 || lbtn.TabIndex == 348 || lbtn.TabIndex / 2 == 210 || lbtn.TabIndex == 346 || lbtn.TabIndex == 422 || lbtn.Text.Contains("Scale"))
-                lbtn.BackgroundImage = FZ4P.Properties.Resources.BtnLightBlueN;
+                lbtn.BackgroundImage = Properties.Resources.BtnLightBlueN;
             else if (lbtn.Text.Contains("N'th") || lbtn.Text.Contains("Mark") || lbtn.Text.Contains("Meas") || lbtn.Text.Contains("Noise"))
-                lbtn.BackgroundImage = FZ4P.Properties.Resources.BtnMN;
+                lbtn.BackgroundImage = Properties.Resources.BtnMN;
             else if (lbtn.TabIndex == 440 || lbtn.TabIndex == 456)
-                lbtn.BackgroundImage = FZ4P.Properties.Resources.BtnGN;
+                lbtn.BackgroundImage = Properties.Resources.BtnGN;
             else
-                lbtn.BackgroundImage = FZ4P.Properties.Resources.BtnKN;
+                lbtn.BackgroundImage = Properties.Resources.BtnKN;
         }
         private void btnMouseEnter(object sender, MouseEventArgs e)
         {
             Button lbtn = (Button)sender;
             if (lbtn.Text.Contains("Replay"))
-                lbtn.BackgroundImage = FZ4P.Properties.Resources.BtnLightBlueP;
+                lbtn.BackgroundImage = Properties.Resources.BtnLightBlueP;
             else if (lbtn.TabIndex == 139 || lbtn.TabIndex == 442 || lbtn.TabIndex == 339 || lbtn.TabIndex == 123 || lbtn.TabIndex == 131 || lbtn.TabIndex == 132 || lbtn.TabIndex == 137 || lbtn.TabIndex == 238 || lbtn.TabIndex == 279 || lbtn.TabIndex == 280 || lbtn.TabIndex == 345 || lbtn.TabIndex == 348 || lbtn.TabIndex / 2 == 210 || lbtn.TabIndex == 346 || lbtn.TabIndex == 422 || lbtn.Text.Contains("Scale"))
-                lbtn.BackgroundImage = FZ4P.Properties.Resources.BtnLightBlueP;
+                lbtn.BackgroundImage = Properties.Resources.BtnLightBlueP;
             else if (lbtn.Text.Contains("N'th") || lbtn.Text.Contains("Mark") || lbtn.Text.Contains("Meas") || lbtn.Text.Contains("Noise"))
-                lbtn.BackgroundImage = FZ4P.Properties.Resources.BtnMP;
+                lbtn.BackgroundImage = Properties.Resources.BtnMP;
             else if (lbtn.TabIndex == 440 || lbtn.TabIndex == 456)
-                lbtn.BackgroundImage = FZ4P.Properties.Resources.BtnGP;
+                lbtn.BackgroundImage = Properties.Resources.BtnGP;
             else
-                lbtn.BackgroundImage = FZ4P.Properties.Resources.BtnKP;
+                lbtn.BackgroundImage = Properties.Resources.BtnKP;
         }
         private void btnMouseHover(object sender, MouseEventArgs e)
         {
             Button lbtn = (Button)sender;
             if (lbtn.Text.Contains("Replay"))
-                lbtn.BackgroundImage = FZ4P.Properties.Resources.BtnLightBlueN;
+                lbtn.BackgroundImage = Properties.Resources.BtnLightBlueN;
             else if (lbtn.TabIndex == 139 || lbtn.TabIndex == 442 || lbtn.TabIndex == 339 || lbtn.TabIndex == 123 || lbtn.TabIndex == 131 || lbtn.TabIndex == 132 || lbtn.TabIndex == 137 || lbtn.TabIndex == 238 || lbtn.TabIndex == 279 || lbtn.TabIndex == 280 || lbtn.TabIndex == 345 || lbtn.TabIndex == 348 || lbtn.TabIndex / 2 == 210 || lbtn.TabIndex == 346 || lbtn.TabIndex == 422 || lbtn.Text.Contains("Scale"))
-                lbtn.BackgroundImage = FZ4P.Properties.Resources.BtnLightBlueN;
+                lbtn.BackgroundImage = Properties.Resources.BtnLightBlueN;
             else if (lbtn.Text.Contains("N'th") || lbtn.Text.Contains("Mark") || lbtn.Text.Contains("Meas") || lbtn.Text.Contains("Noise"))
-                lbtn.BackgroundImage = FZ4P.Properties.Resources.BtnMN;
+                lbtn.BackgroundImage = Properties.Resources.BtnMN;
             else if (lbtn.TabIndex == 440 || lbtn.TabIndex == 456)
-                lbtn.BackgroundImage = FZ4P.Properties.Resources.BtnGN;
+                lbtn.BackgroundImage = Properties.Resources.BtnGN;
             else
-                lbtn.BackgroundImage = FZ4P.Properties.Resources.BtnKN;
+                lbtn.BackgroundImage = Properties.Resources.BtnKN;
         }
 
         private void btnAutoLearn_Click(object sender, EventArgs e)
@@ -4333,8 +5134,7 @@ namespace FZ4P
             m__G.oCam[0].HaltA();
             m__G.mDoingStatus = "Checking Vision";
 
-            //m__G.fGraph.mDriverIC.SetLEDpower(1, (int)((mLEDcurrent[0]) * 500));
-            //m__G.fGraph.mDriverIC.SetLEDpower(2, (int)((mLEDcurrent[1]) * 500));
+            Process.LEDs_All_On(0, true);
             //cbContinuosMode.Checked = true;
             Thread.Sleep(100);
 
@@ -4353,7 +5153,7 @@ namespace FZ4P
             for (int mi = 0; mi < 5; mi++)
                 m__G.oCam[0].mMarkPosRes[mi] = new FAutoLearn.FZMath.Point2D[m__G.oCam[0].dAFZM_FrameCount];
 
-            m__G.mbSuddenStop[0] = true;        //  왜 ?
+            m__G.mbSuddenStop[0] = true;
             //MessageBox.Show("m__G.mbSuddenStop[0] = true in button11()");
             int lgrabbedFrame = 0;
             double frameRate = 0;
@@ -4384,7 +5184,7 @@ namespace FZ4P
             m__G.oCam[0].ExternalTriggerOrg(ref frameRate, ref lgrabbedFrame);
             m__G.oCam[0].mFinishVisionData = false;
 
-            //m__G.fGraph.Drive_LEDs(0, 0);
+            Process.LEDs_All_On(0, false);
 
             tbGrabbedFrame.Text = lgrabbedFrame.ToString();
             tbImgNumber.Text = m__G.oCam[0].mTargetTriggerCount.ToString();
@@ -4463,7 +5263,7 @@ namespace FZ4P
 
         //private void button2_Click(object sender, EventArgs e)
         //{
-        //    m__G.fGraph.Drive_LEDs(mLEDcurrent[0], mLEDcurrent[1]);
+        //    Process.LEDs_All_On(0, true);
         //    m__G.fVision.SetOrgExposure(0);
 
         //    SupremeTimer.QueryPerformanceFrequency(ref m__G.TimerFrequency);
@@ -4480,7 +5280,7 @@ namespace FZ4P
         //        m__G.oCam[0].GetAvgBin(i, ref avgBin[i]);
         //    }
 
-        //    m__G.fGraph.Drive_LEDs(0, 0);
+        //    Process.LEDs_All_On(0, false);
         //    SupremeTimer.QueryPerformanceCounter(ref endTime);
         //    Ellapsed = 1000000 * (endTime - startTime) / (double)(m__G.TimerFrequency);
         //    string lstr = "";
@@ -4646,7 +5446,7 @@ namespace FZ4P
         //            effFrameCount = 1000;
 
         //    }
-        //    m__G.fGraph.Drive_LEDs(0, 0);
+        //    Process.LEDs_All_On(0, false);
         //    m__G.oCam[0].mFAL.RecoverFromBackupFMI();
         //    m__G.oCam[0].dAFZM_FrameCount = index % 1000;
         //    m__G.mbSuddenStop[0] = false;
@@ -4754,16 +5554,16 @@ namespace FZ4P
             m__G.oCam[0].PointTo6DMotion(-1, mStdMarkPos);  //  초기 세팅한 절대좌표 기준으로 좌표값이 추출되도록 한다.
 
 
-            m__G.oCam[0].FineCOG(true, 0, 0);    // 마크찾기
-
+            m__G.oCam[0].FineCOG(true, 0, 0, false, true, false, IsFile);    // 마크찾기
+            //m__G.fManage.AddViewLog(string.Format("FineCOG 0\r\n"));
             if (count < HowManyThread)
             {
                 mb_FinishCalcVision[0] = false;
                 mDebugCalcVisionCount[0] = 0;
-                m__G.oCam[0].FineCOG(true, 0, 0, true, false, IsFile);    // 마크찾기
+                m__G.oCam[0].FineCOG(true, 0, 0, false, true, false, IsFile);    // 마크찾기
                 if (count > 1)
                 {
-                    CalcVisionData(0, 0, count, 1, 0);
+                    CalcVisionData(0, 0, count, 1, 0, IsFile);
                 }
                 mb_FinishCalcVision[0] = true;
                 m__G.oCam[0].mFinishVisionData = true;    //  맞다
@@ -4773,34 +5573,36 @@ namespace FZ4P
                 return ltime;
             }
 
+
             Task[] Task_CalcVisionData = new Task[HowManyThread];
 
-            int halfCnt = count / 2;
-            int lastIndx = count - 1;
-            int halfThread = HowManyThread / 2;
-            HowManyThread = halfThread * 2;
+            //int halfCnt = count / 2;
+            //int lastIndx = count - 1;
+            //int halfThread = HowManyThread / 2;
+            //HowManyThread = halfThread * 2;
 
             List<int> taskIndices = new List<int>();
             List<int> lastImgIndex = new List<int>();
-            for (int i = 0; i < halfThread; i++)
+            for (int i = 0; i < HowManyThread; i++)
             {
                 mb_FinishCalcVision[i] = false;
                 mDebugCalcVisionCount[i] = 0;
-                mb_FinishCalcVision[halfThread + i] = false;
-                mDebugCalcVisionCount[halfThread + i] = 0;
+                //mb_FinishCalcVision[halfThread + i] = false;
+                //mDebugCalcVisionCount[halfThread + i] = 0;
 
                 taskIndices.Add(i);
-                lastImgIndex.Add(lastIndx - i);
+                //lastImgIndex.Add(lastIndx - i);
             }
 
             if (HowManyThread <= 1)
-                CalcVisionData(0, 0, count, 1, 1);
+                CalcVisionData(0, 0, count, 1, 1, IsFile);
             else
             {
+                //m__G.fManage.AddViewLog(string.Format("FineCOG Parallel\r\n"));
+
                 Parallel.ForEach(taskIndices, taskIndex =>
                 {
-                    CalcVisionData(0, taskIndex, halfCnt, halfThread, taskIndex * 2);
-                    CalcVisionData(0, lastIndx - taskIndex, halfCnt, halfThread, taskIndex * 2 + 1);
+                    CalcVisionData(0, taskIndex, count, HowManyThread, taskIndex, IsFile);
                 });
             }
 
@@ -5005,8 +5807,7 @@ namespace FZ4P
 
             Thread.Sleep(1000);
 
-            //m__G.fGraph.mDriverIC.SetLEDpower(1, (int)((mLEDcurrent[0]) * 500));
-            //m__G.fGraph.mDriverIC.SetLEDpower(2, (int)((mLEDcurrent[1]) * 500));
+            Process.LEDs_All_On(0, true);
             Thread.Sleep(50);
             m__G.oCam[0].GrabB(0);
 
@@ -5388,7 +6189,7 @@ namespace FZ4P
             wr.WriteLine($"{ms_TZtoZbyView[0]:E5}\t{ms_TZtoZbyView[1]:E5}\t{ms_TZtoZbyView[2]:E5}\t// Tab 분리, TZ to Z coef");
             wr.Close();
 
-            TextAppendTbInfo("Saved scales");
+            AddVsnLog("Saved scales");
 
         }
         // 옛날 스테이지 Scale
@@ -5612,7 +6413,6 @@ namespace FZ4P
             }
             return true;
         }
-
         // 하이드리드 스테이지 Scale
         public bool LoadScaleNTheta()
         {
@@ -5690,7 +6490,7 @@ namespace FZ4P
                                                  ms_XJtoXbyView, ms_YJtoYbyView, ms_ZJtoZbyView,
                                                  ms_TZtoZbyView
                                                  );
-                TextAppendTbInfo("Loaded scales");
+                AddVsnLog("Loaded scales");
 
                 if (ms_sinTheta > 0)
                     m__G.oCam[0].SetSideviewTheta(Math.Asin(ms_sinTheta));
@@ -5699,6 +6499,18 @@ namespace FZ4P
 
                 //m__G.fManage.AddViewLog("Scale Z : " + ms_scaleZ[1].ToString("F5") + "\r\n");
 
+                bool isUncalibrated = false;
+                // default scaleNtheta
+                //if ((ms_scaleX[0] == 0 && ms_scaleX[1] == 1 && ms_scaleX[0] == 0) ||
+                //    ms_EastViewYPscale == 1 || ms_TZtoZbyView[1] == 0)
+                if ((ms_scaleX[0] == 0 && ms_scaleX[1] == 1 && ms_scaleX[0] == 0) ||
+                    ms_EastViewYPscale == 1)
+                {
+                    isUncalibrated = true;
+                }
+
+                SettbUnCalibratedInfoVisible(isUncalibrated);
+                STATIC.fManage.SettbUncalibratedInfoVisible(isUncalibrated);
             }
             catch (Exception e)
             {
@@ -5873,16 +6685,26 @@ namespace FZ4P
         {
             if (cbLiveWithMarks.Checked)
             {
-                tbInfo.Font = new Font("Calibri", 14, FontStyle.Bold);
-                bLiveFindMark = true;
-                Task.Run(() => LiveFindMark());
+
+                // 250326 Live with Mark 타이밍 수정
+                // tbInfo.Font = new Font("Calibri", 14, FontStyle.Bold);
+                // bLiveFindMark = true;
+                //Task.Run(() => LiveFindMark());              
             }
             else
             {
-                bLiveFindMark = false;
+                // 250326 Live with Mark 타이밍 수정
+                // bLiveFindMark = false;
                 tbInfo.Font = new Font("Calibri", 8, FontStyle.Regular);
                 m__G.mDoingStatus = "IDLE";
                 m__G.mIDLEcount = 0;
+            }
+
+            // 250326 Live with Mark 타이밍 수정
+            // 이미 Live 중 cbLiveWithMarks를 변경했을 때
+            if (!bHaltLive)
+            {
+                StartLive();
             }
 
         }
@@ -6215,7 +7037,7 @@ namespace FZ4P
         }
 
 
-        private void button3_Click(object sender, EventArgs e)
+        private void btnSetMasterTilt_Click(object sender, EventArgs e)
         {
             if (!bLiveFindMark && !bThreadManualFindMarks)
             {
@@ -6372,21 +7194,7 @@ namespace FZ4P
             //m__G.oCam[0].mFAL.RecoverFromBackupFMI();
 
         }
-        public int GetMasterZeroCount()
-        {
-            string cPath = m__G.m_RootDirectory + "\\DoNotTouch\\OffsetZero";
-            return Directory.GetFiles(cPath).Length;
-        }
-        public int GetMasterZeroIndex()
-        {
-            int curIndex;
-            string cPath = m__G.m_RootDirectory + "\\DoNotTouch\\PreviousOffsetIndex.txt";
-            StreamReader rd = new StreamReader(cPath);
-            curIndex = int.Parse(rd.ReadLine());
-            rd.Close();
-            return curIndex;
-        }
-
+        // offset X, Y, Z 추가 25.03.25
         public void SaveTXTYZeroOffset(double x, double y, double z, double tx, double ty, double tz, double orgMasterX, double orgMasterY, double orgMasterZ, double orgMasterTx, double orgMasterTy, double orgMasterTz, bool isNew = false)
         {
 
@@ -6417,6 +7225,8 @@ namespace FZ4P
             wr.WriteLine(orgMasterTz.ToString());
             wr.Close();
         }
+
+        // offset X, Y, Z 추가 25.03.25
         public string LoadTXTYZeroOffset()
         {
             try
@@ -6552,6 +7362,11 @@ namespace FZ4P
 
         ////}
 
+        private void button6_Click_1(object sender, EventArgs e)
+        {
+            SaveTXTYZeroOffset(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, true);
+        }
+
         string mBinPath = "";
         private void btnOpenResultBin_Click(object sender, EventArgs e)
         {
@@ -6580,11 +7395,11 @@ namespace FZ4P
                     sFileName[i] = openFile.FileNames[i];
                     if (!File.Exists(sFileName[i]))
                         return;
-                    //string lstr = MyOwner.ReadResultBin(sFileName[i]);
-                    //if (sFileName[i].Contains("_0_"))
-                    //    lTBX[0].Text += lstr + "\r\n";
-                    //else
-                    //    lTBX[1].Text += lstr + "\r\n";
+                    string lstr = MyOwner.ReadResultBin(sFileName[i]);
+                    if (sFileName[i].Contains("_0_"))
+                        lTBX[0].Text += lstr + "\r\n";
+                    else
+                        lTBX[1].Text += lstr + "\r\n";
                 }
                 mBinPath = sFileName[0].Substring(0, sFileName[0].LastIndexOf("\\"));
             }
@@ -6594,6 +7409,9 @@ namespace FZ4P
         {
             if (cbSetTXTYwithMaster.Checked)
             {
+                MasterList.Enabled = true;
+                btnDeleteMaster.Enabled = true;
+                btnAddMaster.Enabled = true;
                 btnInitialTilt.Enabled = true;
                 btnSetMasterTilt.Enabled = true;
                 tbMasterX.Enabled = true;
@@ -6606,6 +7424,9 @@ namespace FZ4P
             }
             else
             {
+                MasterList.Enabled = false;
+                btnDeleteMaster.Enabled = false;
+                btnAddMaster.Enabled = false;
                 btnInitialTilt.Enabled = false;
                 btnSetMasterTilt.Enabled = false;
                 tbMasterX.Enabled = false;
@@ -6646,11 +7467,11 @@ namespace FZ4P
                     sFileName[i] = openFile.FileNames[i];
                     if (!File.Exists(sFileName[i]))
                         return;
-                    //string lstr = MyOwner.ReadResultPos(sFileName[i]);
-                    //if (sFileName[i].Contains("_1_"))
-                    //    lTBX[1].Text += lstr + "\r\n";
-                    //else
-                    //    lTBX[0].Text += lstr + "\r\n";
+                    string lstr = MyOwner.ReadResultPos(sFileName[i]);
+                    if (sFileName[i].Contains("_1_"))
+                        lTBX[1].Text += lstr + "\r\n";
+                    else
+                        lTBX[0].Text += lstr + "\r\n";
                 }
             }
         }
@@ -6658,7 +7479,6 @@ namespace FZ4P
         {
             if (!bHaltLive)
                 GrabHalt();
-
 
             LoadScaleNTheta();
             LoadTXTYZeroOffset();
@@ -6670,7 +7490,6 @@ namespace FZ4P
 
             Process.LEDs_All_On(0, true);
             Thread.Sleep(50);
-
 
             Mat lCropImg = m__G.oCam[0].GrabLoadCropImg(0, false);
             pictureBox2.Image = BitmapConverter.ToBitmap(lCropImg);    //  Grab & Crop
@@ -6722,6 +7541,9 @@ namespace FZ4P
             strtmp = "";
             m__G.mbSuddenStop[0] = false;
 
+            // Constrast 50보다 작을때 MsgBox
+            bool isLowContrast = false;
+
             for (int ci = 0; ci < numFMIcandidate; ci++)
             {
                 //////////////////////////////////////////////////////////////
@@ -6741,10 +7563,27 @@ namespace FZ4P
                 double ty = 0;
                 double tz = 0;
 
+                double[] lPrismTXTYTZ = new double[3];
+                double[] lProbePrismTXTYTZ = new double[3];
+                double[] lErrorPrismTXTYTZ = new double[3];
+
                 m__G.oCam[0].PrepareFineCOG();
                 m__G.oCam[0].mFAL.mbGetHistogram = true;
                 NthMeasure(0);
                 FindIDmark(lCropImg);
+                SetMasterZeroIndex(mMarkID);
+                //txtMsaterNum.Text = mMarkID.ToString();
+                if (txtMsaterNum.InvokeRequired)
+                    BeginInvoke((MethodInvoker)delegate
+                    {
+                        txtMsaterNum.Text = mMarkID.ToString();
+                    });
+                else
+                {
+                    txtMsaterNum.Text = mMarkID.ToString();
+                }
+
+
                 m__G.oCam[0].mFAL.mbGetHistogram = false;
 
                 sx = m__G.oCam[0].mC_pX[0] * umscale;
@@ -6753,17 +7592,49 @@ namespace FZ4P
                 tx = m__G.oCam[0].mC_pTX[0] * minscale;
                 ty = m__G.oCam[0].mC_pTY[0] * minscale;
                 tz = m__G.oCam[0].mC_pTZ[0] * minscale;
+
                 strtmp += sx.ToString("F2") + "\t" + sy.ToString("F2") + "\t" + sz.ToString("F2") + "\t" + tx.ToString("F2") + "\t" + ty.ToString("F2") + "\t" + tz.ToString("F2") + "\t\tContrast\t";
+
+
+
+
                 for (int i = 0; i < 5; i++)
-                    strtmp += m__G.oCam[0].mFAL.mEffectiveContrast[i].ToString() + "\t";
+                {
+                    var constrast = m__G.oCam[0].mFAL.mEffectiveContrast[i];
 
-                strtmp += "( > 20 ) MarkID = " + mMarkID.ToString();
+                    if (constrast < 50)
+                    {
+                        isLowContrast = true;
+                    }
 
+                    strtmp += constrast.ToString() + "\t";
 
+                }
+
+                strtmp += "( > 20 )";
+
+                if (m__G.m_bPrismCS)
+                {
+                    m__G.oCam[0].mFAL.mFZM.SetPrismZeroTXTZ(0, 0, 0);  // init에서는 ConvertTXTYTZofCSHtoPrism를 하기전 PrismZeroTXTZ를 0으로 초기화
+                    lPrismTXTYTZ = m__G.oCam[0].mFAL.mFZM.ConvertTXTYTZofCSHtoPrism(tx, ty, tz, true);
+                    m__G.oCam[0].mFAL.mFZM.SetPrismZeroTXTZ(lPrismTXTYTZ[0], lPrismTXTYTZ[1], lPrismTXTYTZ[2]);
+
+                    strtmp += "\tPCS\t" + lPrismTXTYTZ[0].ToString("F5") + "\t" + lPrismTXTYTZ[1].ToString("F5") + "\t" + lPrismTXTYTZ[2].ToString("F5");
+                }
             }
             DrawMarkDetected(true);
 
-            tbInfo.Text += strtmp + "\r\n";
+            if (InvokeRequired)
+            {
+                BeginInvoke((MethodInvoker)delegate
+                {
+                    tbInfo.Text += strtmp + "\r\n";
+                });
+            }
+            else
+            {
+                tbInfo.Text += strtmp + "\r\n";
+            }
 
             m__G.oCam[0].mFAL.RecoverFromBackupFMI();
             m__G.mDoingStatus = "IDLE";
@@ -6771,22 +7642,420 @@ namespace FZ4P
 
             bHaltLive = true;
             IsLiveCropStop = true;
-        }
 
+            if (isLowContrast)
+            {
+                //MessageBox.Show($"Contrast below 50 detected. Please check the Recipe.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
         public int mMarkID = 0;
         public void FindIDmark(Mat cropImg)
         {
             Rect IDmarkRegion = new Rect();
-            IDmarkRegion.X = (int)(m__G.oCam[0].mDetectedMarkPos[0][1].X * m__G.oCam[0].mFAL.mModelScale + 39);
-            IDmarkRegion.Y = (int)(m__G.oCam[0].mDetectedMarkPos[0][1].Y * m__G.oCam[0].mFAL.mModelScale - 10);
+            IDmarkRegion.X = (int)(m__G.oCam[0].mDetectedMarkPos[0][1].X * m__G.oCam[0].mFAL.mModelScale + 38);
+            IDmarkRegion.Y = (int)(m__G.oCam[0].mDetectedMarkPos[0][1].Y * m__G.oCam[0].mFAL.mModelScale + 3);
             IDmarkRegion.Width = (int)(m__G.oCam[0].mDetectedMarkPos[0][0].X - m__G.oCam[0].mDetectedMarkPos[0][1].X - 9) * m__G.oCam[0].mFAL.mModelScale;
-            IDmarkRegion.Height = (int)(180 - (m__G.oCam[0].mDetectedMarkPos[0][0].Y + m__G.oCam[0].mDetectedMarkPos[0][1].Y) * m__G.oCam[0].mFAL.mModelScale / 2) ;
-            Mat IDmarkImg = cropImg.SubMat(IDmarkRegion);
-            mMarkID = m__G.oCam[0].mFAL.FindMarkID(IDmarkImg);
+            IDmarkRegion.Height = 36;// (int)(180 - (m__G.oCam[0].mDetectedMarkPos[0][0].Y + m__G.oCam[0].mDetectedMarkPos[0][1].Y) * m__G.oCam[0].mFAL.mModelScale / 2);
+            if (IDmarkRegion.X < 1 || IDmarkRegion.Y < 1 || IDmarkRegion.Width < 1 || IDmarkRegion.Height < 1)
+                mMarkID = 0;
+            else
+            {
+                Mat IDmarkImg = cropImg.SubMat(IDmarkRegion);
+                //Cv2.ImShow("A", IDmarkImg);
+                mMarkID = m__G.oCam[0].mFAL.FindMarkID(IDmarkImg);
+            }
         }
-        private void button7_Click(object sender, EventArgs e)
+
+        public Point2d[] mMarkShift = new Point2d[3];
+        // public Point2d[] mMarkShift = new Point2d[3]; 
+        public byte[] MakeMarkShift()
+        {
+            byte[] dataBuf = new byte[8 * 6];
+            int curCount = 0;
+            byte[] data;
+            data = BitConverter.GetBytes(mMarkShift[0].X);
+            Array.Copy(data, 0, dataBuf, curCount, data.Length);
+            curCount += data.Length;
+
+            data = BitConverter.GetBytes(mMarkShift[0].Y);
+            Array.Copy(data, 0, dataBuf, curCount, data.Length);
+            curCount += data.Length;
+
+            data = BitConverter.GetBytes(mMarkShift[1].X);
+            Array.Copy(data, 0, dataBuf, curCount, data.Length);
+            curCount += data.Length;
+
+            data = BitConverter.GetBytes(mMarkShift[1].Y);
+            Array.Copy(data, 0, dataBuf, curCount, data.Length);
+            curCount += data.Length;
+
+            data = BitConverter.GetBytes(mMarkShift[2].X);
+            Array.Copy(data, 0, dataBuf, curCount, data.Length);
+            curCount += data.Length;
+
+            data = BitConverter.GetBytes(mMarkShift[2].Y);
+            Array.Copy(data, 0, dataBuf, curCount, data.Length);
+            //curCount += data.Length;
+
+            return dataBuf;
+        }
+        public void FindCarrierToDummyShift()
+        {
+            CameraReset(2, true);
+            Process.LEDs_All_On(0, true);
+            Thread.Sleep(50);
+
+            ManualFindMarks(0, false, false);   //  Fiducial Mark 찾기
+
+            SetExposure(0, 700);
+
+            Thread.Sleep(10);
+            Point2d lCarrierRefPt = FineCarrierRef();   //   기준점 찾기
+            //Point2d lCarrierRefPt = new Point2d();
+
+            SetOrgExposure(0); //  노출시간 원상복귀
+
+            if (InvokeRequired)
+            {
+                BeginInvoke((MethodInvoker)delegate
+                {
+                    DrawMarkDetectedWithDummyShift((int)lCarrierRefPt.X, (int)lCarrierRefPt.Y);
+                });
+            }
+            else
+            {
+                DrawMarkDetectedWithDummyShift((int)lCarrierRefPt.X, (int)lCarrierRefPt.Y);
+            }
+            Thread.Sleep(10);
+
+            mMarkShift[0].X = -18.3333 * m__G.oCam[0].mFAL.mFZM.mScaleX[1] * ((m__G.oCam[0].mAzimuthPts[1][8].X + m__G.oCam[0].mAzimuthPts[1][8].X) / 2 - lCarrierRefPt.X);
+            mMarkShift[0].Y = -18.3333 * m__G.oCam[0].mFAL.mFZM.mScaleY[1] * ((m__G.oCam[0].mAzimuthPts[1][8].Y + m__G.oCam[0].mAzimuthPts[1][8].Y) / 2 - lCarrierRefPt.Y);
+            mMarkShift[1].X = -18.3333 * m__G.oCam[0].mFAL.mFZM.mScaleX[1] * ((m__G.oCam[0].mAzimuthPts[1][10].X + m__G.oCam[0].mAzimuthPts[1][10].X) / 2 - lCarrierRefPt.X + 260);
+            mMarkShift[1].Y = -18.3333 * m__G.oCam[0].mFAL.mFZM.mScaleY[1] * ((m__G.oCam[0].mAzimuthPts[1][10].Y + m__G.oCam[0].mAzimuthPts[1][10].Y) / 2 - lCarrierRefPt.Y);
+            //mMarkShift[2].X = -18.3333 * m__G.oCam[0].mFAL.mFZM.mScaleX[1] * ((m__G.oCam[0].mAzimuthPts[1][6].X + m__G.oCam[0].mAzimuthPts[1][6].X) / 2 - lCarrierRefPt.X + 130);
+            //mMarkShift[2].Y = -18.3333 * m__G.oCam[0].mFAL.mFZM.mScaleY[1] * ((m__G.oCam[0].mAzimuthPts[1][6].Y + m__G.oCam[0].mAzimuthPts[1][6].Y) / 2 - lCarrierRefPt.Y);
+            string lstr = "CarrierShift(um) >\t" + mMarkShift[0].X.ToString("F1") + "\t " + mMarkShift[0].Y.ToString("F1") + "\t "
+                        + mMarkShift[1].X.ToString("F1") + "\t " + mMarkShift[1].Y.ToString("F1") + "\t "
+                        + mMarkShift[2].X.ToString("F1") + "\t " + mMarkShift[2].Y.ToString("F1") + "\tfrom (" + lCarrierRefPt.X.ToString("F3") + "," + lCarrierRefPt.Y.ToString("F3") + ")\r\n";
+            tbInfo.Text += lstr;
+
+            CameraReset(2, false);
+        }
+        public int FineCarrierCount = 0;
+        public Point2d FineCarrierRef()
+        {
+            // 예전 기준점 찾기
+            ////int TopNX = (int)m__G.oCam[0].mAzimuthPts[1][8].X;
+            ////int TopNY = (int)m__G.oCam[0].mAzimuthPts[1][8].Y;
+            ////Rect refRoiRegion = new Rect();
+            ////refRoiRegion.X = TopNX + 51;
+            ////refRoiRegion.Y = TopNY + 6;
+            ////refRoiRegion.Width = 44;
+            ////refRoiRegion.Height = 44;
+
+            Point2d res = new Point2d();
+            double[] cx = new double[2];
+            double[] cy = new double[2];
+            bool cornerFound = false;
+            bool cornerFound2 = false;
+
+            Rect refRoiRegion = new Rect();
+            refRoiRegion.X = 665;
+            refRoiRegion.Y = 240;
+            refRoiRegion.Width = 60;
+            refRoiRegion.Height = 90;
+
+            m__G.oCam[0].GrabB(1, true);
+            m__G.oCam[0].GrabB(2, true);
+            //   영상 2개 확보해서 Avg 취한다.
+
+            Mat lCropImg1 = m__G.oCam[0].LoadCropImgWide(1);
+            Mat lCropImg2 = m__G.oCam[0].LoadCropImgWide(2);
+
+            Mat refRoiImg1 = lCropImg1.SubMat(refRoiRegion);
+            Mat refRoiImg2 = lCropImg2.SubMat(refRoiRegion);
+
+            string fPath = string.Format("D:\\TestImg_lCropImg1_{0}.bmp", FineCarrierCount);
+            lCropImg1.SaveImage(fPath);
+            FineCarrierCount++;
+            //lCropImg2.SaveImage("D:\\TestImg_lCropImg2.bmp");
+            //Cv2.ImShow("A", lCropImg1);
+            //Cv2.WaitKey();
+            //Cv2.DestroyWindow("A");
+
+            ///////////////////////////////////////////////////////////////////////////////////////////
+            ///////////////////////////////
+            ///
+            ////   다음은 저장된 시험용 영상을 이용하는 경우
+            ///
+            //string sFilePath = Path.GetFullPath("C:\\6AxisTester\\Result\\RawData");
+            //if (!Directory.Exists(sFilePath))
+            //    Directory.CreateDirectory(sFilePath);
+
+            //OpenFileDialog openFileDialog1 = new OpenFileDialog();
+            //openFileDialog1.Filter = "BMP Files (*.bmp)|*.bmp|All Files (*.*)|*.*";
+            //openFileDialog1.Multiselect = true;
+            //openFileDialog1.InitialDirectory = sFilePath;
+            //openFileDialog1.FilterIndex = 2;
+            //if (openFileDialog1.ShowDialog() != DialogResult.OK)
+            //    return new Point2d();
+
+            //for ( int i=0; i< openFileDialog1.FileNames.Length; i++ )
+            //{
+            //    lCropImg1 = new Mat(openFileDialog1.FileNames[i], ImreadModes.Grayscale);
+            //    lCropImg2 = new Mat();
+            //    lCropImg1.CopyTo(lCropImg2);
+            //    lCropImg1.CopyTo(m__G.oCam[0].mFAL.mSourceImg[0]);
+
+            //    refRoiImg1 = lCropImg1.SubMat(refRoiRegion);
+            //    refRoiImg2 = lCropImg2.SubMat(refRoiRegion);
+
+            //    cornerFound = CalcTopRight(refRoiImg1, ref cx[0], ref cy[0]);
+
+            //    if (cornerFound )
+            //        res = new Point2d((refRoiRegion.X + cx[0]), (refRoiRegion.Y + cy[0]));
+
+            //    string lstr = i.ToString() + "\t" + res.X.ToString("F3") + "\t" + res.Y.ToString("F3") + "\r\n";
+            //    tbInfo.Text += lstr;
+            //}
+
+            ////////////////////////////////
+            ///////////////////////////////////////////////////////////////////////////////////////////
+
+            ///////////////////////////////////////////////////////////////////////////////////////////
+            ///////////////////////////////
+            //Cv2.ImShow("B", refRoiImg1);
+            //Cv2.WaitKey();
+            //Cv2.DestroyWindow("B");
+            ////////////////////////////////
+            ///////////////////////////////////////////////////////////////////////////////////////////
+
+
+            //  우측 경계 - 기울기 최대 X 좌표,   상측 경계 - 기울기 최대 Y 좌표
+            cornerFound = CalcTopRight(refRoiImg1, ref cx[0], ref cy[0]);
+            cornerFound2 = CalcTopRight(refRoiImg2, ref cx[1], ref cy[1]);
+
+            if (cornerFound && cornerFound2)
+                res = new Point2d((refRoiRegion.X + (cx[0] + cx[1]) / 2), (refRoiRegion.Y + (cy[0] + cy[1]) / 2));
+
+            return res;
+        }
+
+        public bool CalcTopRight(Mat lSourceImg, ref double cx, ref double cy)
+        {
+            byte[] imgBuf = null;
+            lSourceImg.GetArray(out imgBuf);
+            //Cv2.ImShow("A", lSourceImg);
+            //Cv2.WaitKey();
+            //Cv2.DestroyWindow("A");
+
+            int nSizeX = lSourceImg.Width;
+            int nSizeY = lSourceImg.Height;
+            int xmin = 0;
+            int xmax = nSizeX - 1;
+            int ymin = 0;
+            int ymax = nSizeY - 1;
+            int xmid = (xmin + xmax) / 2;
+            int ymid = (ymin + ymax) / 2;
+            int i = 0;
+            int j = ymid;
+            bool returnValue = true;
+            try
+            {
+                //  사각형의 각 Edge 영역을 대략 찾은 뒤 
+                //  각 영역의 중심점을 계산하여 영역을 보정하고, 
+                //  보정한 영역에 대해서 중심점을 다시 계산하기를 반복한다.
+                //  Top View 의 경우 X 중심점은 X영역 결정 및 Stroke 기준 역할을 하고, y 중심점은 Yaw 계산에 활용된다,.
+                double sum = 0;
+                double psum = 0;
+                double pv = 0;
+
+
+                //cx = xmid;
+                //cy = ymid;
+                //return;
+                int maxdP = 0;
+                int dP = 0;
+                int ddP = 0;
+                int roiR = 0;  //  Right
+                int roiT = 0;  //  Top
+                double[] mx = new double[2];
+                double[] my = new double[2];
+                double[] residueH = new double[2];  //  0 : Left,   1: Right
+                double[] residueV = new double[2];  //  0 : Top,    1: Bottom
+                //  Edge Search 영역 획득
+                int Pleft = 0;
+                int Pright = 0;
+                int upperArea = 0;
+                int lowerArea = 0;
+                double middleArea = 0;
+
+                //  Right
+                maxdP = 0;
+                int xmidR = xmax - 20;
+
+                for (i = xmax - 2; i > xmidR; i--)
+                {
+                    dP = 0;
+                    Pleft = 0;
+                    Pright = 0;
+                    for (j = ymin; j < ymax; j++)
+                    {
+                        Pleft += imgBuf[i - 2 + j * nSizeX] + imgBuf[i - 1 + j * nSizeX];
+                        Pright += imgBuf[i + 2 + j * nSizeX] + imgBuf[i + 1 + j * nSizeX];
+                    }
+
+                    //dP = Pleft - Pright; //  왼쪽이 밝으므로 양수  -> 기존 기준
+                    dP = Pright - Pleft; //  오른쪽이 밝으므로 양수  -> 수정 기준 250609
+
+                    if (dP > maxdP)
+                    {
+                        maxdP = dP;
+                        roiR = i - 1;
+                    }
+                }
+                //  Top
+                maxdP = 0;
+                //int[] dpY = new int[ymid - ymin + 2];
+                //string llstr = "";
+                for (j = ymin + 4; j < ymin + 34; j++)
+                {
+                    dP = 0;
+                    upperArea = 0;
+                    lowerArea = 0;
+                    middleArea = 0;
+                    for (i = 0; i <= roiR; i++)
+                    {
+                        //middleArea += imgBuf[i + j * nSizeX];
+                        upperArea += imgBuf[i + (j - 1) * nSizeX] + imgBuf[i + (j - 2) * nSizeX] + imgBuf[i + (j - 3) * nSizeX] + imgBuf[i + (j - 4) * nSizeX];
+                        lowerArea += imgBuf[i + (j + 1) * nSizeX] + imgBuf[i + (j + 2) * nSizeX] + imgBuf[i + (j + 3) * nSizeX] + imgBuf[i + (j + 4) * nSizeX];
+                        ddP = upperArea - lowerArea;
+                        dP += ddP;
+                    }
+                    //upperArea = upperArea / roiR;
+                    //lowerArea = lowerArea / roiR;
+                    //middleArea = middleArea / roiR;
+
+                    if (dP > maxdP) // 내측 밝고 외측 어두운 경계
+                    {
+                        maxdP = dP;
+                        roiT = j;
+                    }
+                }
+
+                ///////////////////////
+                ///////////////////////
+                //  Edge 영역별 COG 계산
+                maxdP = 0;
+
+                double weight = 1;
+                for (int k = 0; k < 3; k++)
+                {
+                    //  Right
+                    psum = 0;
+                    sum = 0;
+                    xmax = Math.Min(roiR + 5, nSizeX - 3);
+                    for (j = roiT + 3; j <= roiT + 53; j++)
+                    {
+                        //if (mIsDebug && k == 4)
+                        //    lstr = j.ToString() + ",";
+                        for (i = roiR - 4; i <= xmax; i++)
+                        {
+                            if (i == (roiR - 4))
+                                weight = 1 - residueH[1];
+                            else if (i == (roiR + 4))
+                                weight = residueH[1];
+                            else
+                                weight = 1;
+
+                            //pv = imgBuf[i - 1 + j * nSizeX] - imgBuf[i + 1 + j * nSizeX];   //  왼쪽이 밝을 때
+                            pv = imgBuf[i + 1 + j * nSizeX] - imgBuf[i - 1 + j * nSizeX] + imgBuf[i + 2 + j * nSizeX] - imgBuf[i - 2 + j * nSizeX];   //  오른쪽이 밝을 때
+
+                            if (pv < 0)
+                                pv = 0;
+
+                            psum += weight * pv * i;
+                            sum += weight * pv;
+                            //if (mIsDebug && k == 4)
+                            //    lstr += p_Value[iBuf][i + j * nSizeX].ToString() + ",";
+                        }
+                        //if (mIsDebug && k == 4)
+                        //    wr.WriteLine(lstr);
+                    }
+                    //if (mIsDebug && k == 4)
+                    //    wr.Close();
+                    if (sum > 0)
+                    {
+                        mx[1] = psum / sum;
+                        roiR = (int)(mx[1] + 0.5);
+                        residueH[1] = mx[1] - roiR;
+                    }
+                    else
+                        mx[1] = roiR;
+
+                    //  Top
+                    psum = 0;
+                    sum = 0;
+                    ymin = Math.Max(2, roiT - 7);
+
+                    for (j = ymin; j <= roiT + 7; j++)
+                    {
+                        if (j >= nSizeY || j < 1)
+                            continue;
+                        //if (mIsDebug && k == 4)
+                        //    lstr = j.ToString() + ",";
+
+                        if (j == (roiT - 7))
+                            weight = 1 - residueV[0];
+                        else if (j == (roiT + 7))
+                            weight = residueV[0];
+                        else
+                            weight = 1;
+
+                        for (i = 0; i < roiR; i++)
+                        {
+                            if (i == nSizeX)
+                                break;
+
+                            pv = imgBuf[i + (j - 2) * nSizeX] + imgBuf[i + (j - 1) * nSizeX] - imgBuf[i + (j + 1) * nSizeX] - imgBuf[i + (j + 2) * nSizeX];
+                            if (pv < 0) pv = 0;
+                            psum += weight * pv * j;
+                            sum += weight * pv;
+                            //if (mIsDebug && k == 4)
+                            //    lstr += p_Value[iBuf][i + j * nSizeX].ToString() + ",";
+                        }
+                        //if (mIsDebug && k == 4)
+                        //    wr.WriteLine(lstr);
+                    }
+                    //if (mIsDebug && k == 4)
+                    //    wr.Close();
+                    if (sum > 0)
+                    {
+                        my[0] = psum / sum;
+                        roiT = (int)(my[0] + 0.5);
+                        residueV[0] = my[0] - roiT;
+                    }
+                    else
+                        my[0] = roiT;
+
+                    cx = mx[1];
+                    cy = my[0];
+                }
+                //MessageBox.Show("m_nCam=" + m_nCam.ToString() + " X " + mx[0].ToString("F1") + "-" + mx[1].ToString("F1") + " Y " + my[0].ToString("F1") + "-" + my[1].ToString("F1") + "\r\nL R T B"
+                //    + roiL.ToString() + "-" + roiR.ToString() + " " + roiT.ToString() + " " + roiB.ToString());
+                //  cx cy 저장
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
+        }
+        private void Grab_Initial_Click(object sender, EventArgs e)
         {
             GrabInitalMark();
+
+            //FindCarrierToDummyShift();
         }
 
         private void button9_Click_1(object sender, EventArgs e)
@@ -6970,1829 +8239,1831 @@ namespace FZ4P
         double mYCalAvgY1Y2pp = 0;
         double mYCalY3pp = 0;
         double mEstimatedEastViewYscale = 0;
-        public void JH_SK_CreateLUTfromMeasuredData(double[][] measure, string axis, string cameraID, bool IsRemote = false)
-        {
-            if (m__G.oCam[0].mFAL.mFZM == null)
-            {
-                MessageBox.Show("mFZM not loaded.");
-                return;
-            }
-
-            string AdminPathName = m__G.m_RootDirectory + "\\DoNotTouch\\Admin\\";
-            string DoNotTouchPathName = m__G.m_RootDirectory + "\\DoNotTouch\\";
-            if (!Directory.Exists(AdminPathName))
-                Directory.CreateDirectory(AdminPathName);
-
-            int fullLength = measure.Length;
-            StreamWriter wr = null;
-            //  measure[i] 에는 X,Y,Z,TX,TY,TZ,X1,Y1,X2,Y2, ... , X5,Y5, SZ, SX, SY, Stx, Sty 의 총 21개 데이터가 들어있다.
-
-            //  안정화 유효데이터를 추출한다.
-            //  각 유효Index 에서의 데이터배열을 별도 List 에 저장한다.
-
-            List<double[]> stablizedData = new List<double[]>();
-
-            int effLength = 0;
-            //double a = 0;
-            //double b = 0;
-            int[] effIndex = null;
-            FZMath.Point2D[] szy1 = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] szy2 = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] szy3 = new FZMath.Point2D[effLength];
-
-            FZMath.Point2D[] sZZ = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sXX = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sYY = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sTXTX = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sTYTY = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sTZTZ = new FZMath.Point2D[effLength];
-
-            FZMath.Point2D[] sXtoY = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sXtoZ = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sXtoTX = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sXtoTY = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sXtoTZ = new FZMath.Point2D[effLength];
-
-            FZMath.Point2D[] sYtoX = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sYtoZ = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sYtoTX = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sYtoTY = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sYtoTZ = new FZMath.Point2D[effLength];
-
-            FZMath.Point2D[] sZtoX = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sZtoY = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sZtoTX = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sZtoTY = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sZtoTZ = new FZMath.Point2D[effLength];
-
-            FZMath.Point2D[] sTXtoTY = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sTXtoTZ = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sTYtoTX = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sTYtoTZ = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sTZtoTX = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sTZtoTY = new FZMath.Point2D[effLength];
-
-            double[] XtoXab = new double[3];
-            double[] YtoYab = new double[3];
-            double[] ZtoZab = new double[3];
-            double[] TXtoTXab = new double[3];
-            double[] TYtoTYab = new double[3];
-            double[] TZtoTZab = new double[3];
-
-            double[] XtoYab = new double[3];
-            double[] XtoZab = new double[3];
-            double[] XtoTXab = new double[2];
-            double[] XtoTYab = new double[2];
-            double[] XtoTZab = new double[2];
-
-            double[] YtoXab = new double[3];
-            double[] YtoZab = new double[3];
-            double[] YtoTXab = new double[2];
-            double[] YtoTYab = new double[2];
-            double[] YtoTZab = new double[2];
-
-            double[] ZtoXab = new double[3];
-            double[] ZtoYab = new double[3];
-            double[] ZtoTXab = new double[3];
-            double[] ZtoTYab = new double[3];
-            double[] ZtoTZab = new double[3];
-
-            double[] TXtoTYab = new double[3];
-            double[] TXtoTZab = new double[3];
-
-            double[] TYtoTXab = new double[3];
-            double[] TYtoTZab = new double[3];
-
-            double[] TZtoTXab = new double[3];
-            double[] TZtoTYab = new double[3];
-
-            if (!IsRemote)
-            {
-                switch (axis)
-                {
-                    case "Z":
-                        effIndex = ExtractStablizedIndex(measure, 2);
-                        break;
-
-                    case "X":
-                        effIndex = ExtractStablizedIndex(measure, 0);
-                        break;
-                    case "Y":
-                        effIndex = ExtractStablizedIndex(measure, 1);
-                        break;
-                    case "TX":
-                        effIndex = ExtractStablizedIndex(measure, 3);
-                        break;
-                    case "TY":
-                        effIndex = ExtractStablizedIndex(measure, 4);
-                        break;
-                    default:
-                        break;
-                }
-                effLength = effIndex.Length;
-
-                for (int i = 0; i < effLength; i++)
-                {
-                    szy1[i] = new FZMath.Point2D();
-                    szy2[i] = new FZMath.Point2D();
-                    szy3[i] = new FZMath.Point2D();
-
-                    sZZ[i] = new FZMath.Point2D();
-                    sXX[i] = new FZMath.Point2D();
-                    sYY[i] = new FZMath.Point2D();
-                    sTXTX[i] = new FZMath.Point2D();
-                    sTYTY[i] = new FZMath.Point2D();
-                    sTZTZ[i] = new FZMath.Point2D();
-
-                    sXtoTX[i] = new FZMath.Point2D();
-                    sXtoTY[i] = new FZMath.Point2D();
-                    sXtoTZ[i] = new FZMath.Point2D();
-                    sYtoTX[i] = new FZMath.Point2D();
-                    sYtoTY[i] = new FZMath.Point2D();
-                    sYtoTZ[i] = new FZMath.Point2D();
-                    sZtoTX[i] = new FZMath.Point2D();
-                    sZtoTY[i] = new FZMath.Point2D();
-                    sZtoTZ[i] = new FZMath.Point2D();
-
-                    sTXtoTY[i] = new FZMath.Point2D();
-                    sTXtoTZ[i] = new FZMath.Point2D();
-                    sTYtoTX[i] = new FZMath.Point2D();
-                    sTYtoTZ[i] = new FZMath.Point2D();
-                    sTZtoTX[i] = new FZMath.Point2D();
-                    sTZtoTY[i] = new FZMath.Point2D();
-                }
-
-                if (effLength == 0)
-                {
-                    if (InvokeRequired)
-                    {
-                        BeginInvoke((MethodInvoker)delegate
-                        {
-                            tbInfo.Text += "Stabilized data not found\r\n";
-                            tbInfo.SelectionStart = tbInfo.Text.Length;
-                            tbInfo.ScrollToCaret();
-                        });
-                    }
-                    else
-                    {
-                        tbInfo.Text += "Stabilized data not found\r\n";
-                        tbInfo.SelectionStart = tbInfo.Text.Length;
-                        tbInfo.ScrollToCaret();
-                    }
-                    return;
-
-                }
-                for (int i = 0; i < effLength; i++)
-                {
-                    double[] lstbData = new double[22];
-                    for (int j = 0; j < 22; j++)
-                        lstbData[j] = measure[effIndex[i]][j];
-
-                    stablizedData.Add(lstbData);
-                }
-            }
-            else
-            {
-                //  Remote or Auto Calibration
-                effLength = measure.Length;
-
-                szy1 = new FZMath.Point2D[effLength];
-                szy2 = new FZMath.Point2D[effLength];
-                szy3 = new FZMath.Point2D[effLength];
-
-                sZZ = new FZMath.Point2D[effLength];
-                sXX = new FZMath.Point2D[effLength];
-                sYY = new FZMath.Point2D[effLength];
-                sTXTX = new FZMath.Point2D[effLength];
-                sTYTY = new FZMath.Point2D[effLength];
-                sTZTZ = new FZMath.Point2D[effLength];
-
-                sXtoY = new FZMath.Point2D[effLength];
-                sXtoZ = new FZMath.Point2D[effLength];
-                sXtoTX = new FZMath.Point2D[effLength];
-                sXtoTY = new FZMath.Point2D[effLength];
-                sXtoTZ = new FZMath.Point2D[effLength];
-
-                sYtoX = new FZMath.Point2D[effLength];
-                sYtoZ = new FZMath.Point2D[effLength];
-                sYtoTX = new FZMath.Point2D[effLength];
-                sYtoTY = new FZMath.Point2D[effLength];
-                sYtoTZ = new FZMath.Point2D[effLength];
-
-                sZtoX = new FZMath.Point2D[effLength];
-                sZtoY = new FZMath.Point2D[effLength];
-                sZtoTX = new FZMath.Point2D[effLength];
-                sZtoTY = new FZMath.Point2D[effLength];
-                sZtoTZ = new FZMath.Point2D[effLength];
-
-                sTXtoTY = new FZMath.Point2D[effLength];
-                sTXtoTZ = new FZMath.Point2D[effLength];
-
-                sTYtoTX = new FZMath.Point2D[effLength];
-                sTYtoTZ = new FZMath.Point2D[effLength];
-
-                sTZtoTX = new FZMath.Point2D[effLength];
-                sTZtoTY = new FZMath.Point2D[effLength];
-
-                for (int i = 0; i < effLength; i++)
-                {
-                    szy1[i] = new FZMath.Point2D();
-                    szy2[i] = new FZMath.Point2D();
-                    szy3[i] = new FZMath.Point2D();
-
-                    sZZ[i] = new FZMath.Point2D();
-                    sXX[i] = new FZMath.Point2D();
-                    sYY[i] = new FZMath.Point2D();
-                    sTXTX[i] = new FZMath.Point2D();
-                    sTYTY[i] = new FZMath.Point2D();
-                    sTZTZ[i] = new FZMath.Point2D();
-
-                    sXtoY[i] = new FZMath.Point2D();
-                    sXtoZ[i] = new FZMath.Point2D();
-                    sXtoTX[i] = new FZMath.Point2D();
-                    sXtoTY[i] = new FZMath.Point2D();
-                    sXtoTZ[i] = new FZMath.Point2D();
-
-                    sYtoX[i] = new FZMath.Point2D();
-                    sYtoZ[i] = new FZMath.Point2D();
-                    sYtoTX[i] = new FZMath.Point2D();
-                    sYtoTY[i] = new FZMath.Point2D();
-                    sYtoTZ[i] = new FZMath.Point2D();
-
-                    sZtoX[i] = new FZMath.Point2D();
-                    sZtoY[i] = new FZMath.Point2D();
-                    sZtoTX[i] = new FZMath.Point2D();
-                    sZtoTY[i] = new FZMath.Point2D();
-                    sZtoTZ[i] = new FZMath.Point2D();
-
-                    sTXtoTY[i] = new FZMath.Point2D();
-                    sTXtoTZ[i] = new FZMath.Point2D();
-
-                    sTYtoTX[i] = new FZMath.Point2D();
-                    sTYtoTZ[i] = new FZMath.Point2D();
-
-                    sTZtoTX[i] = new FZMath.Point2D();
-                    sTZtoTY[i] = new FZMath.Point2D();
-                }
-
-                for (int i = 0; i < effLength; i++)
-                    stablizedData.Add(measure[i]);
-            }
-
-            //////////////////////////////////////////////////////////////
-            //////////////////////////////////////////////////////////////
-            //  전체 데이터를 다 저장하는 파일을 하나 만들어야한다.
-            StreamWriter lwr = null;
-            double ProbeYtoSideViewPixel = Math.Sin(40 / 180 * Math.PI) / (5.5 / 0.3);
-
-            if (!IsRemote)
-            {
-                lwr = new StreamWriter(AdminPathName + "FullData.csv");
-                lwr.WriteLine("#,X,Y,Z,TX,TY,TZ,X1,Y1,X2,Y2,X3,Y3,X4,Y4,X5,Y5,pX,pY,pZ,pTX,pTY,pTZ,pY2");
-                int k = 0;
-                for (int i = 0; i < fullLength; i++)
-                {
-                    string slstr = i.ToString() + ",";
-                    for (int j = 0; j < 23; j++)
-                        slstr += measure[i][j].ToString("F5") + ",";
-                    if (i == effIndex[k])
-                    {
-                        slstr += "*";
-                        k++;
-                    }
-                    lwr.WriteLine(slstr);
-                    if (k == effLength)
-                        break;
-                }
-                lwr.Close();
-            }
-
-            string calName = axis;
-            if (isAutoCalibrationEastView)
-            {
-                calName += "_EastView";
-            }
-
-            string strStabilizedFile = "";
-            if (mAutoCalibrationCount % 2 == 0)
-                strStabilizedFile = AdminPathName + "StabilizedData_" + calName + "_Before.csv";
-            else
-                strStabilizedFile = AdminPathName + "StabilizedData_" + calName + "_After.csv";
-
-            try
-            {
-                lwr = new StreamWriter(strStabilizedFile);
-            }
-            catch (Exception e)
-            {
-                Int64 lnow = (DateTime.Now.ToBinary()) % 1000000;
-                if (mAutoCalibrationCount % 2 == 0)
-                    strStabilizedFile = AdminPathName + "StabilizedData_" + calName + "_Before" + lnow.ToString() + ".csv";
-                else
-                    strStabilizedFile = AdminPathName + "StabilizedData_" + calName + "_After" + lnow.ToString() + ".csv";
-
-                lwr = new StreamWriter(strStabilizedFile);
-            }
-            if (lwr != null)
-            {
-                lwr.WriteLine("#,X,Y,Z,TX,TY,TZ,X1,Y1,X2,Y2,X3,Y3,X4,Y4,X5,Y5,pX,pY,pZ,pTX,pTY,pTZ,pY2");
-                for (int i = 0; i < effLength; i++)
-                {
-                    string slstr = i.ToString() + ",";
-                    for (int j = 0; j < 23; j++)
-                    {
-                        //if (j < 19 || j == 22)
-                        slstr += stablizedData[i][j].ToString("F5") + ",";
-                        //else
-                        //{
-                        //    //slstr += (RAD_To_MIN * stablizedData[i][j]).ToString("F5") + ",";
-                        //    slstr += (stablizedData[i][j]).ToString("F5") + ",";
-                        //}
-                    }
-
-                    lwr.WriteLine(slstr);
-                }
-                lwr.Close();
-            }
-
-            //////////////////////////////////////////////////////////////
-            //////////////////////////////////////////////////////////////
-
-            //  axis 따라서 List 에 저장된 데이터를 처리한다.
-            double[] p2ndCoef = new double[3];
-            double[] p2ndCoef2 = new double[3];
-            double[] p2ndCoef3 = new double[3];
-            int fovYoffset = GetROIY(0);
-            string lstr = "";
-            switch (axis)
-            {
-                case "Z":
-                    //  axis == "Z" : YLUT 의 경우 
-                    //  SZ vs Y1 배열을 생성하여 LMS 의 a,b 를 구한다.
-                    //  데이터 개수가 N 개일 때
-                    //  LUT1_tmp[i] = a * SZ[i] - ( Y1[i] - b )
-                    //  LUT1[i] = ( LUT1_tmp[i - 1] + LUT1_tmp[i] + LUT1_tmp[i + 1] ) / 3 ; 0 < i < N-1
-                    //  LUT1[0] = ( 2 * LUT1_tmp[0] + LUT1_tmp[1]) / 3 ;
-                    //  LUT1[N-1] = ( 2 * LUT1_tmp[N-1] + LUT1_tmp[N-2]) / 3 ;
-
-                    //  Z scale 도 여기서 구해야 한다. 현재 빠져있다. 2024.3.5
-
-                    double a1 = 0;
-                    double b1 = 0;
-                    double a2 = 0;
-                    double b2 = 0;
-                    double a3 = 0;
-                    double b3 = 0;
-
-                    mZCalAvgY1Y2pp = Math.Abs(stablizedData[0][7] - stablizedData[effLength - 1][7] + stablizedData[0][9] - stablizedData[effLength - 1][9]) / 2;
-                    mZCalY3pp = Math.Abs(stablizedData[0][11] - stablizedData[effLength - 1][11]);
-
-                    //  stablizedData[i][16] : X
-                    //  stablizedData[i][17] : Y
-                    //  stablizedData[i][18] : Z
-                    //  stablizedData[i][19] : TX   rad
-                    //  stablizedData[i][20] : TY   rad
-                    //  stablizedData[i][21] : TZ   rad
-
-                    for (int i = 0; i < effLength; i++)
-                    {
-                        //szy1[i].X = ( stablizedData[i][16] + stablizedData[i][19] ) / 2;   //  ( Z1 + Z2 ) / 2
-                        //szy1[i].Y = stablizedData[i][7] - stablizedData[i][18] * ProbeYtoSideViewPixel;
-                        szy1[i].X = stablizedData[i][18];   //  Z from 6 axis stage
-                        szy1[i].Y = stablizedData[i][7] - stablizedData[i][17] * ProbeYtoSideViewPixel; // Y1 - probe Y in pixel unit ; from 6 axis stage
-                    }
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(szy1, effLength, ref a1, ref b1);
-                    double[] LUT1_tmp = new double[effLength];
-                    double[] LUT1 = new double[effLength];
-                    for (int i = 0; i < effLength; i++)
-                        LUT1_tmp[i] = a1 * szy1[i].X - (szy1[i].Y - b1);
-
-                    for (int i = 1; i < effLength - 1; i++)
-                        LUT1[i] = (LUT1_tmp[i - 1] + LUT1_tmp[i] + LUT1_tmp[i + 1]) / 3;
-
-                    LUT1[0] = (2 * LUT1_tmp[0] + LUT1_tmp[1]) / 3;
-                    LUT1[effLength - 1] = (2 * LUT1_tmp[effLength - 1] + LUT1_tmp[effLength - 2]) / 3;
-
-                    //  SZ vs Y2 배열을 생성하여 LMS 의 a,b 를 구한다.
-                    //  데이터 개수가 N 개일 때
-                    //  LUT2_tmp[i] = a * SZ[i] - ( Y2[i] - b )
-                    //  LUT2[i] = ( LUT2_tmp[i - 1] + LUT2_tmp[i] + LUT2_tmp[i + 1] ) / 3 ; 0 < i < N-1
-                    //  LUT2[0] = ( 2 * LUT2_tmp[0] + LUT2_tmp[1]) / 3 ;
-                    //  LUT2[N-1] = ( 2 * LUT2_tmp[N-1] + LUT2_tmp[N-2]) / 3 ;
-                    for (int i = 0; i < effLength; i++)
-                    {
-                        //szy2[i].X = ( stablizedData[i][16] + stablizedData[i][19] ) / 2;   //  ( Z1 + Z2 ) / 2
-                        //szy2[i].Y = stablizedData[i][9] - stablizedData[i][18] * ProbeYtoSideViewPixel;
-                        szy2[i].X = stablizedData[i][18];   //  Z from 6 axis stage
-                        szy2[i].Y = stablizedData[i][9] - stablizedData[i][17] * ProbeYtoSideViewPixel; // Y2 - probe Y in pixel unit ; from 6 axis stage
-                    }
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(szy2, effLength, ref a2, ref b2);
-                    double[] LUT2_tmp = new double[effLength];
-                    double[] LUT2 = new double[effLength];
-                    for (int i = 0; i < effLength; i++)
-                        LUT2_tmp[i] = a2 * szy2[i].X - (szy2[i].Y - b2);
-
-                    for (int i = 1; i < effLength - 1; i++)
-                        LUT2[i] = (LUT2_tmp[i - 1] + LUT2_tmp[i] + LUT2_tmp[i + 1]) / 3;
-
-                    LUT2[0] = (2 * LUT2_tmp[0] + LUT2_tmp[1]) / 3;
-                    LUT2[effLength - 1] = (2 * LUT2_tmp[effLength - 1] + LUT2_tmp[effLength - 2]) / 3;
-
-                    //  axis == 0 : YLUT 의 경우 Z scale 도 같이 저장
-                    //  SZ vs Y3 배열을 생성하여 LMS 의 a,b 를 구한다.
-                    //  데이터 개수가 N 개일 때
-                    //  LUT3_tmp[i] = a * SZ[i] - ( Y3[i] - b )
-                    //  LUT3[i] = ( LUT3_tmp[i - 1] + LUT3_tmp[i] + LUT3_tmp[i + 1] ) / 3 ; 0 < i < N-1
-                    //  LUT3[0] = ( 2 * LUT3_tmp[0] + LUT3_tmp[1]) / 3 ;
-                    //  LUT3[N-1] = ( 2 * LUT3_tmp[N-1] + LUT3_tmp[N-2]) / 3 ;
-                    for (int i = 0; i < effLength; i++)
-                    {
-                        //szy3[i].X = ( stablizedData[i][16] + stablizedData[i][19] ) / 2;   //  ( Z1 + Z2 ) / 2
-                        //szy3[i].Y = stablizedData[i][11] - stablizedData[i][18] * ProbeYtoSideViewPixel;
-                        szy3[i].X = stablizedData[i][18];      //  Z from 6 axis stage
-                        szy3[i].Y = stablizedData[i][11] - stablizedData[i][17] * ProbeYtoSideViewPixel; // Y3 - probe Y in pixel unit ; from 6 axis stage
-                    }
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(szy3, effLength, ref a3, ref b3);
-                    double[] LUT3_tmp = new double[effLength];
-                    double[] LUT3 = new double[effLength];
-                    for (int i = 0; i < effLength; i++)
-                        LUT3_tmp[i] = a3 * szy3[i].X - (szy3[i].Y - b3);
-
-                    for (int i = 1; i < effLength - 1; i++)
-                        LUT3[i] = (LUT3_tmp[i - 1] + LUT3_tmp[i] + LUT3_tmp[i + 1]) / 3;
-
-                    LUT3[0] = (2 * LUT3_tmp[0] + LUT3_tmp[1]) / 3;
-                    LUT3[effLength - 1] = (2 * LUT3_tmp[effLength - 1] + LUT3_tmp[effLength - 2]) / 3;
-
-                    //  Z scale
-                    // 241206 YLUT 제거 후, Z scale 2차로 변경
-                    for (int i = 0; i < effLength; i++)
-                    {
-                        sZZ[i].Y = stablizedData[i][18];        //  Z from 6 axis stage
-                        sZZ[i].X = stablizedData[i][2];         //  Z 변위의 CSHead 측정값
-                    }
-                    //m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(szz, effLength, ref a, ref b);
-                    //a = a * 0.9993; // 0.9992; // 헥사포드 Cal 변경
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sZZ, effLength, ref ZtoZab);
-
-                    //a = (a - 1) * 0.4 + 1; 
-                    //  YLUT 에 의한 Scale 보상이 있으므로 측정된 Scale 의 40% 만 보상해준다. 40% 는 실험적으로 확인됬으나,
-                    //  정규 Calibration 시에는 얻어진 결과에 따라 Z Scale 을 직접 조정해줘야 할 것으로 예상.
-                    //  Scale 만 조정해가면서 수차례 반복 필요
-                    //  LUT 가 PP를 최소화하는 방식이 아니고 LMS 오차가 최소화되는 방향이므로 Z scale 수작업 조정 필요 
-
-
-                    if (mAutoCalibrationCount % 2 == 0 && !isAutoCalibrationEastView)
-                    {
-                        string srcFile = AdminPathName + "YLUT" + cameraID + ".csv";
-                        string destFile = DoNotTouchPathName + "YLUT" + cameraID + ".csv";
-                        wr = new StreamWriter(srcFile);
-                        wr.WriteLine("Y Index," + fovYoffset.ToString() + ",Z Scale," + ZtoZab[1].ToString());
-                        wr.WriteLine("Y1," + a1.ToString() + ",Y2," + a2.ToString() + ",Y3," + a3.ToString());
-                        for (int i = 0; i < effLength; i++)
-                        {
-                            wr.WriteLine(szy1[i].Y.ToString() + "," + LUT1[i].ToString() + "," + szy2[i].Y.ToString() + "," + LUT2[i].ToString() + "," + szy3[i].Y.ToString() + "," + LUT3[i].ToString());
-                        }
-                        wr.Close();
-                        System.IO.File.Copy(srcFile, destFile, true);
-                    }
-
-                    /////////////////////////////////////////////////////////////////////////////////
-                    //  Z to X 계산
-                    //  Z vs X - Xprobe , Z vs Y - Yprobe                 
-                    for (int i = 0; i < effLength; i++)
-                    {
-                        //sZtoX[i] = new FZMath.Point2D(szy1[i].X, stablizedData[i][0] - stablizedData[i][17]);   //  X - probe X
-                        //sZtoY[i] = new FZMath.Point2D(szy1[i].X, stablizedData[i][1] - stablizedData[i][18]);   //  Y - probe Y
-                        sZtoX[i] = new FZMath.Point2D(sZZ[i].X, stablizedData[i][0] - stablizedData[i][16]);   //  X - probe X from 6 axis stage
-                        sZtoY[i] = new FZMath.Point2D(sZZ[i].X, stablizedData[i][1] - stablizedData[i][17]);   //  Y - probe Y from 6 axis stage
-
-                        sZtoTX[i] = new FZMath.Point2D(sZZ[i].X, stablizedData[i][3] - stablizedData[i][19]);   //  X - probe X from 6 axis stage
-                        sZtoTY[i] = new FZMath.Point2D(sZZ[i].X, stablizedData[i][4] - stablizedData[i][20]);   //  Y - probe Y from 6 axis stage
-                        sZtoTZ[i] = new FZMath.Point2D(sZZ[i].X, stablizedData[i][5] - stablizedData[i][21]);   //  Y - probe Y from 6 axis stage
-                    }
-
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sZtoX, effLength, ref ZtoXab[0], ref ZtoXab[1]);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sZtoY, effLength, ref ZtoYab[0], ref ZtoYab[1]);
-
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sZtoTX, effLength, ref ZtoTXab[0], ref ZtoTXab[1]);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sZtoTY, effLength, ref ZtoTYab[0], ref ZtoTYab[1]);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sZtoTZ, effLength, ref ZtoTZab[0], ref ZtoTZab[1]);
-
-                    if (!isAutoCalibrationEastView)
-                    {
-                        // ZtoX, ZtoY 수정
-                        //double aZtoX = 0;
-                        //double aZtoY = 0;
-                        //m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sZtoX, effLength, ref aZtoX, ref b);
-                        //m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sZtoY, effLength, ref aZtoY, ref b);
-                        lstr = $"ZZ Scale\t{ZtoZab[0]:E5}\t{ZtoZab[1]:E5}\t{ZtoZab[2]:E5}\r\n";
-                        lstr += $"ZtoX\t{ZtoXab[0]:E5}\r\n";
-                        lstr += $"ZtoY\t{ZtoYab[0]:E5}\r\n";
-
-
-                        if (mAutoCalibrationCount % 2 == 0)
-                        {
-                            string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
-                            StreamReader sr = new StreamReader(scaleNthetaFile);
-                            string allstr = sr.ReadToEnd();
-                            sr.Close();
-                            string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            string[] strZscaleLine = allLines[2].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            allLines[2] = ZtoZab[0].ToString("E5") + "\t" + ZtoZab[1].ToString("E5") + "\t" + ZtoZab[2].ToString("E5") + "\t//";
-                            for (int i = 1; i < strZscaleLine.Length; i++)
-                                allLines[2] += strZscaleLine[i];
-
-                            string[] strZtoXLine = allLines[6].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            allLines[6] = ZtoXab[0].ToString("E5") + "\t//";
-                            for (int i = 1; i < strZtoXLine.Length; i++)
-                                allLines[6] += strZtoXLine[i];
-
-                            string[] strZtoYLine = allLines[7].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            allLines[7] = ZtoYab[0].ToString("E5") + "\t//";
-                            for (int i = 1; i < strZtoYLine.Length; i++)
-                                allLines[7] += strZtoYLine[i];
-
-                            wr = new StreamWriter(scaleNthetaFile);
-                            for (int i = 0; i < allLines.Length; i++)
-                            {
-                                wr.WriteLine(allLines[i]);
-                            }
-                            wr.Close();
-                        }
-                    }
-
-
-                    //////////////////////////////////////////////////////////////////////////////////
-
-                    break;
-                case "X":
-                    //  Axis = 1 : X scale 확인 및 저장
-                    //  SX vs Xavg ( = (X4+X5) / 2 ) 배열을 생성하여 LMS 의 a,b 를 구한다.
-                    //  데이터 개수가 N 개일 때
-                    //  LUTX_tmp[i] = a * SX[i] - ( Xavg[i] - b )
-                    //  LUTX[i] = ( LUTX_tmp[i - 1] + LUTX_tmp[i] + LUTX_tmp[i + 1] ) / 3 ; 0 < i < N-1
-                    //  LUTX[0] = ( 2 * LUTX_tmp[0] + LUTX_tmp[1]) / 3 ;
-                    //  LUTX[N-1] = ( 2 * LUTX_tmp[N-1] + LUTX_tmp[N-2]) / 3 ;
-                    for (int i = 0; i < effLength; i++)
-                    {
-                        sXX[i].Y = stablizedData[i][16];    //  X 변위의 Displacement Sensor 측정값   6 axis stage
-                        sXX[i].X = stablizedData[i][0];     //  X 변위의 CSHead 측정값
-                    }
-                    //m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sXX, effLength, ref a, ref b);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sXX, effLength, ref XtoXab);  //  A[0]X^2 + A[1]X + A[2]
-
-                    lstr = "XX Scale,\t" + XtoXab[0].ToString("E5") + ",\t" + XtoXab[1].ToString("E5") + ",\t" + XtoXab[2].ToString("E5") + "\r\n";
-
-                    /////////////////////////////////////////////////////////////////////////////////
-                    //  X to Y ／Ｚ　계산
-                    //  X vs Y - Yprobe , X vs Z - Zprobe
-
-                    for (int i = 0; i < effLength; i++)
-                    {
-                        //sXtoY[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][1] - stablizedData[i][18]);
-                        //sXtoZ[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][2] - (stablizedData[i][16] + stablizedData[i][19]) / 2);
-                        sXtoY[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][1] - stablizedData[i][17]);    //  Y - probe Y     from 6axis stage
-                        sXtoZ[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][2] - stablizedData[i][18]);   //  Z - probe Z      from 6axis stage
-
-                        sXtoTX[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][3] - stablizedData[i][19]);   //  X - probe X from 6 axis stage
-                        sXtoTY[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][4] - stablizedData[i][20]);   //  Y - probe Y from 6 axis stage
-                        sXtoTZ[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][5] - stablizedData[i][21]);   //  Y - probe Y from 6 axis stage
-                    }
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sXtoY, effLength, ref XtoYab[0], ref XtoYab[1]);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sXtoZ, effLength, ref XtoZab);
-
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sXtoTX, effLength, ref XtoTXab[0], ref XtoTXab[1]);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sXtoTY, effLength, ref XtoTYab[0], ref XtoTYab[1]);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sXtoTZ, effLength, ref XtoTZab[0], ref XtoTZab[1]);
-
-                    lstr += "XtoY,\t" + XtoYab[0].ToString("E5") + "\r\n";
-                    lstr += "XtoZ,\t" + XtoZab[0].ToString("E5") + ",\t" + XtoZab[1].ToString("E5") + ",\t" + XtoZab[2].ToString("E5") + "\r\n";
-                    lstr += "XtoTX,\t" + XtoTXab[0].ToString("E5") + "\r\n";
-
-                    /////////////////////////////////////////////////////////////////////////////////
-                    //  X to Y ／Ｚ　계산
-                    //  X vs Y - Yprobe , X vs Z - Zprobe
-                    //////FZMath.Point2D[] sXtoTX = new FZMath.Point2D[effLength];
-                    //////for (int i = 0; i < effLength; i++)
-                    //////{
-                    //////    sXtoTX[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][3]);
-                    //////}
-
-                    wr = new StreamWriter(AdminPathName + "XXLUT" + cameraID + ".csv");
-                    //for (int i = 0; i < effLength; i++)
-                    //    lstr += sXtoZ[i].X.ToString("F4") + "," + sXtoZ[i].Y.ToString("F4") + "\r\n";
-                    wr.Write(lstr);
-                    wr.Close();
-
-                    //////////////////////////////////////////////////////////////////////////////////
-                    if (mAutoCalibrationCount % 2 == 0)
-                    {
-                        string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
-                        StreamReader sr = new StreamReader(scaleNthetaFile);
-                        string allstr = sr.ReadToEnd();
-                        sr.Close();
-                        string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        string[] strXXscaleLine = allLines[0].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        allLines[0] = XtoXab[0].ToString("E5") + "\t" + XtoXab[1].ToString("E5") + "\t" + XtoXab[2].ToString("E5") + "\t//";
-                        for (int i = 1; i < strXXscaleLine.Length; i++)
-                            allLines[0] += strXXscaleLine[i];
-
-                        string[] strXtoYLine = allLines[10].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        allLines[10] = XtoYab[0].ToString("E5") + "\t//";
-                        for (int i = 1; i < strXtoYLine.Length; i++)
-                            allLines[10] += strXtoYLine[i];
-
-                        string[] strXtoZLine = allLines[11].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        allLines[11] = XtoZab[0].ToString("E5") + "\t" + XtoZab[1].ToString("E5") + "\t" + XtoZab[2].ToString("E5") + "\t//";
-                        for (int i = 1; i < strXtoZLine.Length; i++)
-                            allLines[11] += strXtoZLine[i];
-
-                        string[] strXtoTXLine = allLines[13].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        allLines[13] = XtoTXab[0].ToString("E5") + "\t//";
-                        for (int i = 1; i < strXtoTXLine.Length; i++)
-                            allLines[13] += strXtoTXLine[i];
-
-                        wr = new StreamWriter(scaleNthetaFile);
-                        for (int i = 0; i < allLines.Length; i++)
-                        {
-                            wr.WriteLine(allLines[i]);
-                        }
-                        wr.Close();
-                    }
-                    break;
-
-                case "Y":
-                    mYCalAvgY1Y2pp = Math.Abs(stablizedData[0][7] - stablizedData[effLength - 1][7] + stablizedData[0][9] - stablizedData[effLength - 1][9]) / 2;
-                    mYCalY3pp = Math.Abs(stablizedData[0][11] - stablizedData[effLength - 1][11]);
-                    mEstimatedEastViewYscale = (mYCalAvgY1Y2pp + mZCalAvgY1Y2pp) / (mYCalY3pp + mZCalY3pp);
-
-                    //  Axis = 2 : Y scale 확인 및 저장
-                    //  SY vs Yavg ( = (Y4+Y5) / 2 ) 배열을 생성하여 LMS 의 a,b 를 구한다.
-                    //  데이터 개수가 N 개일 때
-                    //  LUTY_tmp[i] = a * SY[i] - ( Yavg[i] - b )
-                    //  LUTY[i] = ( LUTY_tmp[i - 1] + LUTY_tmp[i] + LUTY_tmp[i + 1] ) / 3 ; 0 < i < N-1
-                    //  LUTY[0] = ( 2 * LUTY_tmp[0] + LUTY_tmp[1]) / 3 ;
-                    //  LUTY[N-1] = ( 2 * LUTY_tmp[N-1] + LUTY_tmp[N-2]) / 3 ;
-                    for (int i = 0; i < effLength; i++)
-                    {
-                        sYY[i].Y = stablizedData[i][17];    //  Y 변위의 Displacement Sensor 측정값   from 6 axis stage
-                        sYY[i].X = stablizedData[i][1];
-                    }
-                    //m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sYY, effLength, ref a, ref b);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sYY, effLength, ref YtoYab);
-
-                    lstr = "YY Scale,\t" + YtoYab[0].ToString("E5") + ",\t" + YtoYab[1].ToString("E5") + ",\t" + YtoYab[2].ToString("E5") + "\r\n";
-                    /////////////////////////////////////////////////////////////////////////////////
-                    //  X to Y ／Ｚ　계산
-                    //  X vs Y - Yprobe , X vs Z - Zprobe
-
-                    for (int i = 0; i < effLength; i++)
-                    {
-                        //sYtoX[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][0] - stablizedData[i][17]);    //  X - probe X
-                        //sYtoZ[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][2] - (stablizedData[i][16] + stablizedData[i][19]) / 2);   //  Z - probe Z
-                        sYtoX[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][0] - stablizedData[i][16]);    //  X - probe X     from 6 axis stage
-                        sYtoZ[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][2] - stablizedData[i][18]);   //  Z - probe Z     from 6 axis stage
-
-                        sYtoTX[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][3] - stablizedData[i][19]);   //  X - probe X from 6 axis stage
-                        sYtoTY[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][4] - stablizedData[i][20]);   //  Y - probe Y from 6 axis stage
-                        sYtoTZ[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][5] - stablizedData[i][21]);   //  Y - probe Y from 6 axis stage
-                    }
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sYtoX, effLength, ref YtoXab[0], ref YtoXab[1]);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sYtoZ, effLength, ref YtoZab);
-
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sYtoTX, effLength, ref YtoTXab[0], ref YtoTXab[1]);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sYtoTY, effLength, ref YtoTYab[0], ref YtoTYab[1]);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sYtoTZ, effLength, ref YtoTZab[0], ref YtoTZab[1]);
-
-
-                    lstr += "YtoX,\t" + YtoXab[0].ToString("E5") + "\r\n";
-                    lstr += "YtoZ,\t" + YtoZab[0].ToString("E5") + ",\t" + YtoZab[1].ToString("E5") + ",\t" + YtoZab[2].ToString("E5") + "\r\n";
-                    lstr += "YtoTX,\t" + YtoTXab[0].ToString("E5") + "\r\n";
-
-                    if (isAutoCalibrationEastView)
-                    {
-                        lstr = "EastViewYscale,\t" + mEstimatedEastViewYscale.ToString("F6") + "\r\n";
-                    }
-
-                    wr = new StreamWriter(AdminPathName + "YYLUT" + cameraID + ".csv");
-                    wr.Write(lstr);
-                    wr.Close();
-
-                    //////////////////////////////////////////////////////////////////////////////////                    
-                    if (mAutoCalibrationCount % 2 == 0)
-                    {
-                        string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
-                        StreamReader sr = new StreamReader(scaleNthetaFile);
-                        string allstr = sr.ReadToEnd();
-                        string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-
-                        sr.Close();
-                        if (isAutoCalibrationEastView)
-                        {
-                            string[] strEastScaleLine = allLines[12].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            allLines[12] = mEstimatedEastViewYscale.ToString("E5") + "\t//";
-                            for (int i = 1; i < strEastScaleLine.Length; i++)
-                                allLines[12] += strEastScaleLine[i];
-                        }
-                        else
-                        {
-                            string[] strYYscaleLine = allLines[1].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            allLines[1] = YtoYab[0].ToString("E5") + "\t" + YtoYab[1].ToString("E5") + "\t" + YtoYab[2].ToString("E5") + "\t//";
-                            for (int i = 1; i < strYYscaleLine.Length; i++)
-                                allLines[1] += strYYscaleLine[i];
-
-                            string[] strYtoXLine = allLines[8].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            allLines[8] = YtoXab[0].ToString("E5") + "\t//";
-                            for (int i = 1; i < strYtoXLine.Length; i++)
-                                allLines[8] += strYtoXLine[i];
-
-                            string[] strYtoZLine = allLines[9].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            allLines[9] = YtoZab[0].ToString("E5") + "\t" + YtoZab[1].ToString("E5") + "\t" + YtoZab[2].ToString("E5") + "\t//";
-                            for (int i = 1; i < strYtoZLine.Length; i++)
-                                allLines[9] += strYtoZLine[i];
-
-                            string[] strYtoTXLine = allLines[14].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            allLines[14] = YtoTXab[0].ToString("E5") + "\t//";
-                            for (int i = 1; i < strYtoTXLine.Length; i++)
-                                allLines[14] += strYtoTXLine[i];
-                        }
-
-                        wr = new StreamWriter(scaleNthetaFile);
-                        for (int i = 0; i < allLines.Length; i++)
-                        {
-                            wr.WriteLine(allLines[i]);
-                        }
-                        wr.Close();
-                    }
-                    break;
-
-                //  이하는 YLUTs , X Scale 적용한 후에 수행해야 함.
-                case "TX":
-                    //  Axis = 3 : TXLUT 의 경우 TX scale 확인 및 저장
-                    //  SY vs TX 배열을 생성하여 LMS 의 a,b 를 구한다.
-                    //  데이터 개수가 N 개일 때
-                    //  LUTY_tmp[i] = a * SY[i] - ( Yavg[i] - b )
-                    //  LUTY[i] = ( LUTY_tmp[i - 1] + LUTY_tmp[i] + LUTY_tmp[i + 1] ) / 3 ; 0 < i < N-1
-                    //  LUTY[0] = ( 2 * LUTY_tmp[0] + LUTY_tmp[1]) / 3 ;
-                    //  LUTY[N-1] = ( 2 * LUTY_tmp[N-1] + LUTY_tmp[N-2]) / 3 ;
-
-                    //  stablizedData[i][19] : TX   rad
-                    //  stablizedData[i][20] : TY   rad
-                    //  stablizedData[i][21] : TZ   rad
-
-                    for (int i = 0; i < effLength; i++)
-                    {
-                        sTXTX[i].Y = stablizedData[i][19]; // RAD_To_MIN;    //  Tilt X 를 위한 Z 변위의 Displacement Sensor 측정값에서 CSH Z 변위를 소거된 값이어야 함
-                        sTXTX[i].X = stablizedData[i][3];
-
-                        sTXtoTY[i] = new FZMath.Point2D(sTXTX[i].X, stablizedData[i][4] - stablizedData[i][20]);   //  Y - probe Y from 6 axis stage
-                        sTXtoTZ[i] = new FZMath.Point2D(sTXTX[i].X, stablizedData[i][5] - stablizedData[i][21]);   //  Y - probe Y from 6 axis stage
-                    }
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sTXTX, effLength, ref TXtoTXab);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sTXtoTY, effLength, ref TXtoTYab[0], ref TXtoTYab[1]);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sTXtoTZ, effLength, ref TXtoTZab[0], ref TXtoTZab[1]);
-
-
-                    lstr += "TX Scale,\t" + TXtoTXab[0].ToString("E5") + ",\t" + TXtoTXab[1].ToString("E5") + ",\t" + TXtoTXab[2].ToString("E5") + "\r\n";
-
-                    wr = new StreamWriter(AdminPathName + "TXLUT" + cameraID + ".csv");
-                    wr.WriteLine("TX Scale,\t" + TXtoTXab[0].ToString("E5") + ",\t" + TXtoTXab[1].ToString("E5") + ",\t" + TXtoTXab[2].ToString("E5") + "\r\n");
-                    wr.Close();
-
-                    if (mAutoCalibrationCount % 2 == 0)
-                    {
-                        string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
-                        StreamReader sr = new StreamReader(scaleNthetaFile);
-                        string allstr = sr.ReadToEnd();
-                        sr.Close();
-                        string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        string[] strTXscaleLine = allLines[4].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        allLines[4] = TXtoTXab[0].ToString("E5") + "\t" + TXtoTXab[1].ToString("E5") + "\t" + TXtoTXab[2].ToString("E5") + "\t//";
-                        for (int i = 1; i < strTXscaleLine.Length; i++)
-                            allLines[4] += strTXscaleLine[i];
-
-                        wr = new StreamWriter(scaleNthetaFile);
-                        for (int i = 0; i < allLines.Length; i++)
-                        {
-                            wr.WriteLine(allLines[i]);
-                        }
-                        wr.Close();
-                    }
-                    break;
-                case "TY":
-                    //  Axis = 4 : TYLUT 의 경우 TY scale 확인 및 저장
-                    //  SY vs TY 배열을 생성하여 LMS 의 a,b 를 구한다.
-                    //  데이터 개수가 N 개일 때
-                    //  LUTY_tmp[i] = a * SY[i] - ( Yavg[i] - b )
-                    //  LUTY[i] = ( LUTY_tmp[i - 1] + LUTY_tmp[i] + LUTY_tmp[i + 1] ) / 3 ; 0 < i < N-1
-                    //  LUTY[0] = ( 2 * LUTY_tmp[0] + LUTY_tmp[1]) / 3 ;
-                    //  LUTY[N-1] = ( 2 * LUTY_tmp[N-1] + LUTY_tmp[N-2]) / 3 ;
-                    for (int i = 0; i < effLength; i++)
-                    {
-                        sTYTY[i].Y = stablizedData[i][20];// * RAD_To_MIN;    //  Tilt Y 를 위한 Z 변위의 Displacement Sensor 측정값에서 CSH Z 변위를 소거된 값이어야 함
-                        sTYTY[i].X = stablizedData[i][4];
-
-                        sTYtoTX[i] = new FZMath.Point2D(sTYTY[i].X, stablizedData[i][3] - stablizedData[i][19]);
-                        sTYtoTZ[i] = new FZMath.Point2D(sTYTY[i].X, stablizedData[i][5] - stablizedData[i][21]);
-                    }
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sTYTY, effLength, ref TYtoTYab[0], ref TYtoTYab[1]);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sTYtoTX, effLength, ref TYtoTXab[0], ref TYtoTXab[1]);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sTYtoTZ, effLength, ref TYtoTZab[0], ref TYtoTZab[1]);
-
-                    lstr += "TY Scale,\t" + TYtoTYab[0].ToString("E5") + "\r\n";
-
-                    wr = new StreamWriter(AdminPathName + "TYLUT" + cameraID + ".csv");
-                    wr.WriteLine("TY Scale," + TYtoTYab[0].ToString());
-                    wr.Close();
-
-                    if (mAutoCalibrationCount % 2 == 0)
-                    {
-                        string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
-                        StreamReader sr = new StreamReader(scaleNthetaFile);
-                        string allstr = sr.ReadToEnd();
-                        sr.Close();
-                        string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        string[] strTYscaleLine = allLines[5].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        allLines[5] = TYtoTYab[0].ToString("E5") + "\t//";
-                        for (int i = 1; i < strTYscaleLine.Length; i++)
-                            allLines[5] += strTYscaleLine[i];
-
-                        wr = new StreamWriter(scaleNthetaFile);
-                        for (int i = 0; i < allLines.Length; i++)
-                        {
-                            wr.WriteLine(allLines[i]);
-                        }
-                        wr.Close();
-                    }
-                    break;
-                default:
-                    break;
-            }
-            if (InvokeRequired)
-                BeginInvoke((MethodInvoker)delegate
-                {
-                    tbCalibration.Text += lstr;
-                });
-            else
-                tbCalibration.Text += lstr;
-
-        }
-        public void CreateLUTfromMeasuredData(double[][] measure, string axis, string cameraID, bool IsRemote = false)
-        {
-            if (m__G.oCam[0].mFAL.mFZM == null)
-            {
-                MessageBox.Show("mFZM not loaded.");
-                return;
-            }
-
-            string AdminPathName = m__G.m_RootDirectory + "\\DoNotTouch\\Admin\\";
-            string DoNotTouchPathName = m__G.m_RootDirectory + "\\DoNotTouch\\";
-            if (!Directory.Exists(AdminPathName))
-                Directory.CreateDirectory(AdminPathName);
-
-            int fullLength = measure.Length;
-            StreamWriter wr = null;
-            //  measure[i] 에는 X,Y,Z,TX,TY,TZ,X1,Y1,X2,Y2, ... , X5,Y5, SZ, SX, SY, Stx, Sty 의 총 21개 데이터가 들어있다.
-
-            //  안정화 유효데이터를 추출한다.
-            //  각 유효Index 에서의 데이터배열을 별도 List 에 저장한다.
-
-            List<double[]> stablizedData = new List<double[]>();
-
-            int effLength = 0;
-            int[] effIndex = null;
-            FZMath.Point2D[] szy1 = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] szy2 = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] szy3 = new FZMath.Point2D[effLength];
-
-            FZMath.Point2D[] sXX = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sYY = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sZZ = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sTXTX = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sTYTY = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sTZTZ = new FZMath.Point2D[effLength];
-
-            FZMath.Point2D[] sXtoY = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sXtoZ = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sXtoTX = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sXtoTY = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sXtoTZ = new FZMath.Point2D[effLength];
-
-            FZMath.Point2D[] sYtoX = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sYtoZ = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sYtoTX = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sYtoTY = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sYtoTZ = new FZMath.Point2D[effLength];
-
-            FZMath.Point2D[] sZtoX = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sZtoY = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sZtoTX = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sZtoTY = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sZtoTZ = new FZMath.Point2D[effLength];
-
-            FZMath.Point2D[] sTXtoTY = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sTXtoTZ = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sTYtoTX = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sTYtoTZ = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sTZtoTX = new FZMath.Point2D[effLength];
-            FZMath.Point2D[] sTZtoTY = new FZMath.Point2D[effLength];
-
-            double[] XtoXab = new double[3];
-            double[] YtoYab = new double[3];
-            double[] ZtoZab = new double[3];
-            double[] TXtoTXab = new double[3];
-            double[] TYtoTYab = new double[3];
-            double[] TZtoTZab = new double[3];
-
-            double[] XtoYab = new double[3];
-            double[] XtoZab = new double[3];
-            double[] XtoTXab = new double[3];
-            double[] XtoTYab = new double[3];
-            double[] XtoTZab = new double[3];
-
-            double[] YtoXab = new double[3];
-            double[] YtoZab = new double[3];
-            double[] YtoTXab = new double[3];
-            double[] YtoTYab = new double[3];
-            double[] YtoTZab = new double[3];
-
-            double[] ZtoXab = new double[3];
-            double[] ZtoYab = new double[3];
-            double[] ZtoTXab = new double[3];
-            double[] ZtoTYab = new double[3];
-            double[] ZtoTZab = new double[3];
-
-            double[] TXtoTYab = new double[3];
-            double[] TXtoTZab = new double[3];
-
-            double[] TYtoTXab = new double[3];
-            double[] TYtoTZab = new double[3];
-
-            double[] TZtoTXab = new double[3];
-            double[] TZtoTYab = new double[3];
-
-            if (!IsRemote)
-            {
-                switch (axis)
-                {
-                    case "Z":
-                        effIndex = ExtractStablizedIndex(measure, 2);
-                        break;
-
-                    case "X":
-                        effIndex = ExtractStablizedIndex(measure, 0);
-                        break;
-                    case "Y":
-                        effIndex = ExtractStablizedIndex(measure, 1);
-                        break;
-                    case "TX":
-                        effIndex = ExtractStablizedIndex(measure, 3);
-                        break;
-                    case "TY":
-                        effIndex = ExtractStablizedIndex(measure, 4);
-                        break;
-                    case "TZ":
-                        effIndex = ExtractStablizedIndex(measure, 5);
-                        break;
-                    default:
-                        break;
-                }
-                effLength = effIndex.Length;
-
-                for (int i = 0; i < effLength; i++)
-                {
-                    szy1[i] = new FZMath.Point2D();
-                    szy2[i] = new FZMath.Point2D();
-                    szy3[i] = new FZMath.Point2D();
-
-                    sXX[i] = new FZMath.Point2D();
-                    sYY[i] = new FZMath.Point2D();
-                    sZZ[i] = new FZMath.Point2D();
-                    sTXTX[i] = new FZMath.Point2D();
-                    sTYTY[i] = new FZMath.Point2D();
-                    sTZTZ[i] = new FZMath.Point2D();
-
-                    sXtoTX[i] = new FZMath.Point2D();
-                    sXtoTY[i] = new FZMath.Point2D();
-                    sXtoTZ[i] = new FZMath.Point2D();
-                    sYtoTX[i] = new FZMath.Point2D();
-                    sYtoTY[i] = new FZMath.Point2D();
-                    sYtoTZ[i] = new FZMath.Point2D();
-                    sZtoTX[i] = new FZMath.Point2D();
-                    sZtoTY[i] = new FZMath.Point2D();
-                    sZtoTZ[i] = new FZMath.Point2D();
-
-                    sTXtoTY[i] = new FZMath.Point2D();
-                    sTXtoTZ[i] = new FZMath.Point2D();
-                    sTYtoTX[i] = new FZMath.Point2D();
-                    sTYtoTZ[i] = new FZMath.Point2D();
-                    sTZtoTX[i] = new FZMath.Point2D();
-                    sTZtoTY[i] = new FZMath.Point2D();
-                }
-
-                if (effLength == 0)
-                {
-                    if (InvokeRequired)
-                    {
-                        BeginInvoke((MethodInvoker)delegate
-                        {
-                            tbInfo.Text += "Stabilized data not found\r\n";
-                            tbInfo.SelectionStart = tbInfo.Text.Length;
-                            tbInfo.ScrollToCaret();
-                        });
-                    }
-                    else
-                    {
-                        tbInfo.Text += "Stabilized data not found\r\n";
-                        tbInfo.SelectionStart = tbInfo.Text.Length;
-                        tbInfo.ScrollToCaret();
-                    }
-                    return;
-
-                }
-                for (int i = 0; i < effLength; i++)
-                {
-                    double[] lstbData = new double[22];
-                    for (int j = 0; j < 22; j++)
-                        lstbData[j] = measure[effIndex[i]][j];
-
-                    stablizedData.Add(lstbData);
-                }
-            }
-            else
-            {
-                //  Remote or Auto Calibration
-                effLength = measure.Length;
-
-                szy1 = new FZMath.Point2D[effLength];
-                szy2 = new FZMath.Point2D[effLength];
-                szy3 = new FZMath.Point2D[effLength];
-
-                sXX = new FZMath.Point2D[effLength];
-                sYY = new FZMath.Point2D[effLength];
-                sZZ = new FZMath.Point2D[effLength];
-                sTXTX = new FZMath.Point2D[effLength];
-                sTYTY = new FZMath.Point2D[effLength];
-                sTZTZ = new FZMath.Point2D[effLength];
-
-                sXtoY = new FZMath.Point2D[effLength];
-                sXtoZ = new FZMath.Point2D[effLength];
-                sXtoTX = new FZMath.Point2D[effLength];
-                sXtoTY = new FZMath.Point2D[effLength];
-                sXtoTZ = new FZMath.Point2D[effLength];
-
-                sYtoX = new FZMath.Point2D[effLength];
-                sYtoZ = new FZMath.Point2D[effLength];
-                sYtoTX = new FZMath.Point2D[effLength];
-                sYtoTY = new FZMath.Point2D[effLength];
-                sYtoTZ = new FZMath.Point2D[effLength];
-
-                sZtoX = new FZMath.Point2D[effLength];
-                sZtoY = new FZMath.Point2D[effLength];
-                sZtoTX = new FZMath.Point2D[effLength];
-                sZtoTY = new FZMath.Point2D[effLength];
-                sZtoTZ = new FZMath.Point2D[effLength];
-
-                sTXtoTY = new FZMath.Point2D[effLength];
-                sTXtoTZ = new FZMath.Point2D[effLength];
-
-                sTYtoTX = new FZMath.Point2D[effLength];
-                sTYtoTZ = new FZMath.Point2D[effLength];
-
-                sTZtoTX = new FZMath.Point2D[effLength];
-                sTZtoTY = new FZMath.Point2D[effLength];
-
-                for (int i = 0; i < effLength; i++)
-                {
-                    szy1[i] = new FZMath.Point2D();
-                    szy2[i] = new FZMath.Point2D();
-                    szy3[i] = new FZMath.Point2D();
-
-                    sXX[i] = new FZMath.Point2D();
-                    sYY[i] = new FZMath.Point2D();
-                    sZZ[i] = new FZMath.Point2D();
-                    sTXTX[i] = new FZMath.Point2D();
-                    sTYTY[i] = new FZMath.Point2D();
-                    sTZTZ[i] = new FZMath.Point2D();
-
-                    sXtoY[i] = new FZMath.Point2D();
-                    sXtoZ[i] = new FZMath.Point2D();
-                    sXtoTX[i] = new FZMath.Point2D();
-                    sXtoTY[i] = new FZMath.Point2D();
-                    sXtoTZ[i] = new FZMath.Point2D();
-
-                    sYtoX[i] = new FZMath.Point2D();
-                    sYtoZ[i] = new FZMath.Point2D();
-                    sYtoTX[i] = new FZMath.Point2D();
-                    sYtoTY[i] = new FZMath.Point2D();
-                    sYtoTZ[i] = new FZMath.Point2D();
-
-                    sZtoX[i] = new FZMath.Point2D();
-                    sZtoY[i] = new FZMath.Point2D();
-                    sZtoTX[i] = new FZMath.Point2D();
-                    sZtoTY[i] = new FZMath.Point2D();
-                    sZtoTZ[i] = new FZMath.Point2D();
-
-                    sTXtoTY[i] = new FZMath.Point2D();
-                    sTXtoTZ[i] = new FZMath.Point2D();
-
-                    sTYtoTX[i] = new FZMath.Point2D();
-                    sTYtoTZ[i] = new FZMath.Point2D();
-
-                    sTZtoTX[i] = new FZMath.Point2D();
-                    sTZtoTY[i] = new FZMath.Point2D();
-                }
-
-                for (int i = 0; i < effLength; i++)
-                    stablizedData.Add(measure[i]);
-            }
-
-            //////////////////////////////////////////////////////////////
-            //////////////////////////////////////////////////////////////
-            //  전체 데이터를 다 저장하는 파일을 하나 만들어야한다.
-            StreamWriter lwr = null;
-            double ProbeYtoSideViewPixel = Math.Sin(40 / 180 * Math.PI) / (5.5 / 0.3);
-
-            if (!IsRemote)
-            {
-                lwr = new StreamWriter(AdminPathName + "FullData.csv");
-                lwr.WriteLine("#,X,Y,Z,TX,TY,TZ,X1,Y1,X2,Y2,X3,Y3,X4,Y4,X5,Y5,pX,pY,pZ,pTX,pTY,pTZ,pY2");
-                int k = 0;
-                for (int i = 0; i < fullLength; i++)
-                {
-                    string slstr = i.ToString() + ",";
-                    for (int j = 0; j < 23; j++)
-                        slstr += measure[i][j].ToString("F5") + ",";
-                    if (i == effIndex[k])
-                    {
-                        slstr += "*";
-                        k++;
-                    }
-                    lwr.WriteLine(slstr);
-                    if (k == effLength)
-                        break;
-                }
-                lwr.Close();
-            }
-
-            string calName = axis;
-            if (isAutoCalibrationEastView)
-            {
-                calName += "_EastView";
-            }
-
-            string strStabilizedFile = "";
-            if (mAutoCalibrationCount % 2 == 0)
-                strStabilizedFile = AdminPathName + "StabilizedData_" + calName + "_Before.csv";
-            else
-                strStabilizedFile = AdminPathName + "StabilizedData_" + calName + "_After.csv";
-
-            try
-            {
-                lwr = new StreamWriter(strStabilizedFile);
-            }
-            catch (Exception e)
-            {
-                Int64 lnow = (DateTime.Now.ToBinary()) % 1000000;
-                if (mAutoCalibrationCount % 2 == 0)
-                    strStabilizedFile = AdminPathName + "StabilizedData_" + calName + "_Before" + lnow.ToString() + ".csv";
-                else
-                    strStabilizedFile = AdminPathName + "StabilizedData_" + calName + "_After" + lnow.ToString() + ".csv";
-
-                lwr = new StreamWriter(strStabilizedFile);
-            }
-            if (lwr != null)
-            {
-                lwr.WriteLine("#,X,Y,Z,TX,TY,TZ,X1,Y1,X2,Y2,X3,Y3,X4,Y4,X5,Y5,pX,pY,pZ,pTX,pTY,pTZ,pY2");
-                for (int i = 0; i < effLength; i++)
-                {
-                    string slstr = i.ToString() + ",";
-                    for (int j = 0; j < 23; j++)
-                    {
-                        //if (j < 19 || j == 22)
-                        slstr += stablizedData[i][j].ToString("F5") + ",";
-                        //else
-                        //{
-                        //    slstr += (RAD_To_MIN * stablizedData[i][j]).ToString("F5") + ",";
-                        //}
-                    }
-
-                    lwr.WriteLine(slstr);
-                }
-                lwr.Close();
-            }
-
-            //////////////////////////////////////////////////////////////
-            //////////////////////////////////////////////////////////////
-
-            //  axis 따라서 List 에 저장된 데이터를 처리한다.
-            //double[] p2ndCoef = new double[3];
-            //double[] p2ndCoef2 = new double[3];
-            //double[] p2ndCoef3 = new double[3];
-            int fovYoffset = GetROIY(0);
-            string lstr = "";
-            switch (axis)
-            {
-                case "Z":
-                    //  axis == "Z" : YLUT 의 경우 
-                    //  SZ vs Y1 배열을 생성하여 LMS 의 a,b 를 구한다.
-                    //  데이터 개수가 N 개일 때
-                    //  LUT1_tmp[i] = a * SZ[i] - ( Y1[i] - b )
-                    //  LUT1[i] = ( LUT1_tmp[i - 1] + LUT1_tmp[i] + LUT1_tmp[i + 1] ) / 3 ; 0 < i < N-1
-                    //  LUT1[0] = ( 2 * LUT1_tmp[0] + LUT1_tmp[1]) / 3 ;
-                    //  LUT1[N-1] = ( 2 * LUT1_tmp[N-1] + LUT1_tmp[N-2]) / 3 ;
-
-                    //  Z scale 도 여기서 구해야 한다. 현재 빠져있다. 2024.3.5
-
-                    double a1 = 0;
-                    double b1 = 0;
-                    double a2 = 0;
-                    double b2 = 0;
-                    double a3 = 0;
-                    double b3 = 0;
-
-                    mZCalAvgY1Y2pp = Math.Abs(stablizedData[0][7] - stablizedData[effLength - 1][7] + stablizedData[0][9] - stablizedData[effLength - 1][9]) / 2;
-                    mZCalY3pp = Math.Abs(stablizedData[0][11] - stablizedData[effLength - 1][11]);
-
-                    //  stablizedData[i][16] : X
-                    //  stablizedData[i][17] : Y
-                    //  stablizedData[i][18] : Z
-                    //  stablizedData[i][19] : TX   rad
-                    //  stablizedData[i][20] : TY   rad
-                    //  stablizedData[i][21] : TZ   rad
-
-                    for (int i = 0; i < effLength; i++)
-                    {
-                        //szy1[i].X = ( stablizedData[i][16] + stablizedData[i][19] ) / 2;   //  ( Z1 + Z2 ) / 2
-                        //szy1[i].Y = stablizedData[i][7] - stablizedData[i][18] * ProbeYtoSideViewPixel;
-                        szy1[i].X = stablizedData[i][18];   //  Z from 6 axis stage
-                        szy1[i].Y = stablizedData[i][7] - stablizedData[i][17] * ProbeYtoSideViewPixel; // Y1 - probe Y in pixel unit ; from 6 axis stage
-                    }
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(szy1, effLength, ref a1, ref b1);
-                    double[] LUT1_tmp = new double[effLength];
-                    double[] LUT1 = new double[effLength];
-                    for (int i = 0; i < effLength; i++)
-                        LUT1_tmp[i] = a1 * szy1[i].X - (szy1[i].Y - b1);
-
-                    for (int i = 1; i < effLength - 1; i++)
-                        LUT1[i] = (LUT1_tmp[i - 1] + LUT1_tmp[i] + LUT1_tmp[i + 1]) / 3;
-
-                    LUT1[0] = (2 * LUT1_tmp[0] + LUT1_tmp[1]) / 3;
-                    LUT1[effLength - 1] = (2 * LUT1_tmp[effLength - 1] + LUT1_tmp[effLength - 2]) / 3;
-
-                    //  SZ vs Y2 배열을 생성하여 LMS 의 a,b 를 구한다.
-                    //  데이터 개수가 N 개일 때
-                    //  LUT2_tmp[i] = a * SZ[i] - ( Y2[i] - b )
-                    //  LUT2[i] = ( LUT2_tmp[i - 1] + LUT2_tmp[i] + LUT2_tmp[i + 1] ) / 3 ; 0 < i < N-1
-                    //  LUT2[0] = ( 2 * LUT2_tmp[0] + LUT2_tmp[1]) / 3 ;
-                    //  LUT2[N-1] = ( 2 * LUT2_tmp[N-1] + LUT2_tmp[N-2]) / 3 ;
-                    for (int i = 0; i < effLength; i++)
-                    {
-                        //szy2[i].X = ( stablizedData[i][16] + stablizedData[i][19] ) / 2;   //  ( Z1 + Z2 ) / 2
-                        //szy2[i].Y = stablizedData[i][9] - stablizedData[i][18] * ProbeYtoSideViewPixel;
-                        szy2[i].X = stablizedData[i][18];   //  Z from 6 axis stage
-                        szy2[i].Y = stablizedData[i][9] - stablizedData[i][17] * ProbeYtoSideViewPixel; // Y2 - probe Y in pixel unit ; from 6 axis stage
-                    }
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(szy2, effLength, ref a2, ref b2);
-                    double[] LUT2_tmp = new double[effLength];
-                    double[] LUT2 = new double[effLength];
-                    for (int i = 0; i < effLength; i++)
-                        LUT2_tmp[i] = a2 * szy2[i].X - (szy2[i].Y - b2);
-
-                    for (int i = 1; i < effLength - 1; i++)
-                        LUT2[i] = (LUT2_tmp[i - 1] + LUT2_tmp[i] + LUT2_tmp[i + 1]) / 3;
-
-                    LUT2[0] = (2 * LUT2_tmp[0] + LUT2_tmp[1]) / 3;
-                    LUT2[effLength - 1] = (2 * LUT2_tmp[effLength - 1] + LUT2_tmp[effLength - 2]) / 3;
-
-                    //  axis == 0 : YLUT 의 경우 Z scale 도 같이 저장
-                    //  SZ vs Y3 배열을 생성하여 LMS 의 a,b 를 구한다.
-                    //  데이터 개수가 N 개일 때
-                    //  LUT3_tmp[i] = a * SZ[i] - ( Y3[i] - b )
-                    //  LUT3[i] = ( LUT3_tmp[i - 1] + LUT3_tmp[i] + LUT3_tmp[i + 1] ) / 3 ; 0 < i < N-1
-                    //  LUT3[0] = ( 2 * LUT3_tmp[0] + LUT3_tmp[1]) / 3 ;
-                    //  LUT3[N-1] = ( 2 * LUT3_tmp[N-1] + LUT3_tmp[N-2]) / 3 ;
-                    for (int i = 0; i < effLength; i++)
-                    {
-                        //szy3[i].X = ( stablizedData[i][16] + stablizedData[i][19] ) / 2;   //  ( Z1 + Z2 ) / 2
-                        //szy3[i].Y = stablizedData[i][11] - stablizedData[i][18] * ProbeYtoSideViewPixel;
-                        szy3[i].X = stablizedData[i][18];      //  Z from 6 axis stage
-                        szy3[i].Y = stablizedData[i][11] - stablizedData[i][17] * ProbeYtoSideViewPixel; // Y3 - probe Y in pixel unit ; from 6 axis stage
-                    }
-                    m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(szy3, effLength, ref a3, ref b3);
-                    double[] LUT3_tmp = new double[effLength];
-                    double[] LUT3 = new double[effLength];
-                    for (int i = 0; i < effLength; i++)
-                        LUT3_tmp[i] = a3 * szy3[i].X - (szy3[i].Y - b3);
-
-                    for (int i = 1; i < effLength - 1; i++)
-                        LUT3[i] = (LUT3_tmp[i - 1] + LUT3_tmp[i] + LUT3_tmp[i + 1]) / 3;
-
-                    LUT3[0] = (2 * LUT3_tmp[0] + LUT3_tmp[1]) / 3;
-                    LUT3[effLength - 1] = (2 * LUT3_tmp[effLength - 1] + LUT3_tmp[effLength - 2]) / 3;
-
-                    //  Z scale
-                    for (int i = 0; i < effLength; i++)
-                    {
-                        sZZ[i].Y = stablizedData[i][18];        //  Z from 6 axis stage
-                        sZZ[i].X = stablizedData[i][2];         //  Z 변위의 CSHead 측정값
-                    }
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sZZ, effLength, ref ZtoZab);    // 2차로 변경
-                    //ZtoZab[0] = ZtoZab[0] * 0.9993; // 0.9992; // 헥사포드 Cal 변경
-                    //a = (a - 1) * 0.4 + 1; 
-                    //  YLUT 에 의한 Scale 보상이 있으므로 측정된 Scale 의 40% 만 보상해준다. 40% 는 실험적으로 확인됬으나,
-                    //  정규 Calibration 시에는 얻어진 결과에 따라 Z Scale 을 직접 조정해줘야 할 것으로 예상.
-                    //  Scale 만 조정해가면서 수차례 반복 필요
-                    //  LUT 가 PP를 최소화하는 방식이 아니고 LMS 오차가 최소화되는 방향이므로 Z scale 수작업 조정 필요 
-
-
-                    if (mAutoCalibrationCount % 2 == 0 && !isAutoCalibrationEastView)
-                    {
-                        string srcFile = AdminPathName + "YLUT" + cameraID + ".csv";
-                        string destFile = DoNotTouchPathName + "YLUT" + cameraID + ".csv";
-                        wr = new StreamWriter(srcFile);
-                        wr.WriteLine("Y Index," + fovYoffset.ToString() + ",Z Scale," + ZtoZab[1].ToString());
-                        wr.WriteLine("Y1," + a1.ToString() + ",Y2," + a2.ToString() + ",Y3," + a3.ToString());
-                        for (int i = 0; i < effLength; i++)
-                        {
-                            wr.WriteLine(szy1[i].Y.ToString() + "," + LUT1[i].ToString() + "," + szy2[i].Y.ToString() + "," + LUT2[i].ToString() + "," + szy3[i].Y.ToString() + "," + LUT3[i].ToString());
-                        }
-                        wr.Close();
-                        System.IO.File.Copy(srcFile, destFile, true);
-                    }
-
-                    /////////////////////////////////////////////////////////////////////////////////
-                    //  Z to X 계산
-                    //  Z vs X - Xprobe , Z vs Y - Yprobe
-                    for (int i = 0; i < effLength; i++)
-                    {
-                        //sZtoX[i] = new FZMath.Point2D(szy1[i].X, stablizedData[i][0] - stablizedData[i][17]);   //  X - probe X
-                        //sZtoY[i] = new FZMath.Point2D(szy1[i].X, stablizedData[i][1] - stablizedData[i][18]);   //  Y - probe Y
-                        sZtoX[i] = new FZMath.Point2D(sZZ[i].X, stablizedData[i][0] - stablizedData[i][16]);   //  X - probe X from 6 axis stage
-                        sZtoY[i] = new FZMath.Point2D(sZZ[i].X, stablizedData[i][1] - stablizedData[i][17]);   //  Y - probe Y from 6 axis stage
-                        sZtoTX[i] = new FZMath.Point2D(sZZ[i].X, stablizedData[i][3] - stablizedData[i][19]);   //  X - probe X from 6 axis stage
-                        sZtoTY[i] = new FZMath.Point2D(sZZ[i].X, stablizedData[i][4] - stablizedData[i][20]);   //  Y - probe Y from 6 axis stage
-                        sZtoTZ[i] = new FZMath.Point2D(sZZ[i].X, stablizedData[i][5] - stablizedData[i][21]);   //  Y - probe Y from 6 axis stage
-                    }
-
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sZtoX, effLength, ref ZtoXab);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sZtoY, effLength, ref ZtoYab);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sZtoTX, effLength, ref ZtoTXab);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sZtoTY, effLength, ref ZtoTYab);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sZtoTZ, effLength, ref ZtoTZab);
-
-                    if (!isAutoCalibrationEastView)
-                    {
-                        lstr = "ZZ Scale\t" + ZtoZab[0].ToString("E5") + ",\r\n" + ZtoZab[1].ToString("E5") + ",\t" + ZtoZab[2].ToString("E5") + "\r\n";
-                        lstr += "ZtoX\t" + ZtoXab[0].ToString("E5") + ",\t" + ZtoXab[1].ToString("E5") + ",\t" + ZtoXab[2].ToString("E5") + "\r\n";
-                        lstr += "ZtoY\t" + ZtoYab[0].ToString("E5") + ",\t" + ZtoYab[1].ToString("E5") + ",\t" + ZtoYab[2].ToString("E5") + "\r\n";
-                        lstr += "ZtoTX\t" + ZtoTXab[0].ToString("E5") + ",\t" + ZtoTXab[1].ToString("E5") + ",\t" + ZtoTXab[2].ToString("E5") + "\r\n";
-                        lstr += "ZtoTY\t" + ZtoTYab[0].ToString("E5") + ",\t" + ZtoTYab[1].ToString("E5") + ",\t" + ZtoTYab[2].ToString("E5") + "\r\n";
-                        lstr += "ZtoTZ\t" + ZtoTZab[0].ToString("E5") + ",\t" + ZtoTZab[1].ToString("E5") + ",\t" + ZtoTZab[2].ToString("E5") + "\r\n";
-
-                        if (mAutoCalibrationCount % 2 == 0)
-                        {
-                            string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
-                            StreamReader sr = new StreamReader(scaleNthetaFile);
-                            string allstr = sr.ReadToEnd();
-                            sr.Close();
-                            string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            // Z
-                            string[] strZscaleLine = allLines[3].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            allLines[3] = ZtoZab[0].ToString("E5") + "\t" + ZtoZab[1].ToString("E5") + "\t" + ZtoZab[2].ToString("E5") + "\t//";
-                            for (int i = 1; i < strZscaleLine.Length; i++)
-                                allLines[3] += strZscaleLine[i];
-                            // Z TO X
-                            string[] strZtoXLine = allLines[18].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            allLines[18] = ZtoXab[0].ToString("E5") + "\t" + ZtoXab[1].ToString("E5") + "\t" + ZtoXab[2].ToString("E5") + "\t//";
-                            for (int i = 1; i < strZtoXLine.Length; i++)
-                                allLines[18] += strZtoXLine[i];
-                            // Z TO Y
-                            string[] strZtoYLine = allLines[19].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            allLines[19] = ZtoYab[0].ToString("E5") + "\t" + ZtoYab[1].ToString("E5") + "\t" + ZtoYab[2].ToString("E5") + "\t//";
-                            for (int i = 1; i < strZtoYLine.Length; i++)
-                                allLines[19] += strZtoYLine[i];
-                            // Z TO TX
-                            string[] strZtoTXLine = allLines[20].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            allLines[20] = ZtoTXab[0].ToString("E5") + "\t" + ZtoTXab[1].ToString("E5") + "\t" + ZtoTXab[2].ToString("E5") + "\t//";
-                            for (int i = 1; i < strZtoTXLine.Length; i++)
-                                allLines[20] += strZtoTXLine[i];
-                            // Z TO TY
-                            string[] strZtoTYLine = allLines[21].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            allLines[21] = ZtoTYab[0].ToString("E5") + "\t" + ZtoTYab[1].ToString("E5") + "\t" + ZtoTYab[2].ToString("E5") + "\t//";
-                            for (int i = 1; i < strZtoTYLine.Length; i++)
-                                allLines[21] += strZtoTYLine[i];
-                            // Z TO TZ
-                            string[] strZtoTZLine = allLines[22].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            allLines[22] = ZtoTZab[0].ToString("E5") + "\t" + ZtoTZab[1].ToString("E5") + "\t" + ZtoTZab[2].ToString("E5") + "\t//";
-                            for (int i = 1; i < strZtoTZLine.Length; i++)
-                                allLines[22] += strZtoTZLine[i];
-
-                            wr = new StreamWriter(scaleNthetaFile);
-                            for (int i = 0; i < allLines.Length; i++)
-                            {
-                                wr.WriteLine(allLines[i]);
-                            }
-                            wr.Close();
-                        }
-                    }
-
-
-                    //////////////////////////////////////////////////////////////////////////////////
-
-                    break;
-                case "X":
-                    //  Axis = 1 : X scale 확인 및 저장
-                    //  SX vs Xavg ( = (X4+X5) / 2 ) 배열을 생성하여 LMS 의 a,b 를 구한다.
-                    //  데이터 개수가 N 개일 때
-                    //  LUTX_tmp[i] = a * SX[i] - ( Xavg[i] - b )
-                    //  LUTX[i] = ( LUTX_tmp[i - 1] + LUTX_tmp[i] + LUTX_tmp[i + 1] ) / 3 ; 0 < i < N-1
-                    //  LUTX[0] = ( 2 * LUTX_tmp[0] + LUTX_tmp[1]) / 3 ;
-                    //  LUTX[N-1] = ( 2 * LUTX_tmp[N-1] + LUTX_tmp[N-2]) / 3 ;
-                    for (int i = 0; i < effLength; i++)
-                    {
-                        sXX[i].Y = stablizedData[i][16];    //  X 변위의 Displacement Sensor 측정값   6 axis stage
-                        sXX[i].X = stablizedData[i][0];     //  X 변위의 CSHead 측정값
-
-                        sXtoY[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][1] - stablizedData[i][17]);    //  Y - probe Y     from 6axis stage
-                        sXtoZ[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][2] - stablizedData[i][18]);   //  Z - probe Z      from 6axis stage
-
-                        sXtoTX[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][3] - stablizedData[i][19]);   //  X - probe X from 6 axis stage
-                        sXtoTY[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][4] - stablizedData[i][20]);   //  Y - probe Y from 6 axis stage
-                        sXtoTZ[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][5] - stablizedData[i][21]);   //  Y - probe Y from 6 axis stage
-                    }
-
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sXX, effLength, ref XtoXab);  //  A[0]X^2 + A[1]X + A[2]
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sXtoY, effLength, ref XtoYab);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sXtoZ, effLength, ref XtoZab);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sXtoTX, effLength, ref XtoTXab);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sXtoTY, effLength, ref XtoTYab);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sXtoTZ, effLength, ref XtoTZab);
-
-                    lstr = "XX Scale\t" + XtoXab[0].ToString("E5") + ",\t" + XtoXab[1].ToString("E5") + ",\t" + XtoXab[2].ToString("E5") + "\r\n";
-                    lstr += "XtoY\t" + XtoYab[0].ToString("E5") + ",\t" + XtoYab[1].ToString("E5") + ",\t" + XtoYab[2].ToString("E5") + "\r\n";
-                    lstr += "XtoZ\t" + XtoZab[0].ToString("E5") + ",\t" + XtoZab[1].ToString("E5") + ",\t" + XtoZab[2].ToString("E5") + "\r\n";
-                    lstr += "XtoTX\t" + XtoTXab[0].ToString("E5") + ",\t" + XtoTXab[1].ToString("E5") + ",\t" + XtoTXab[2].ToString("E5") + "\r\n";
-                    lstr += "XtoTY\t" + XtoTYab[0].ToString("E5") + ",\t" + XtoTYab[1].ToString("E5") + ",\t" + XtoTYab[2].ToString("E5") + "\r\n";
-                    lstr += "XtoTZ\t" + XtoTZab[0].ToString("E5") + ",\t" + XtoTZab[1].ToString("E5") + ",\t" + XtoTZab[2].ToString("E5") + "\r\n";
-
-                    wr = new StreamWriter(AdminPathName + "XXLUT" + cameraID + ".csv");
-                    wr.Write(lstr);
-                    wr.Close();
-
-                    //////////////////////////////////////////////////////////////////////////////////
-                    if (mAutoCalibrationCount % 2 == 0)
-                    {
-                        string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
-                        StreamReader sr = new StreamReader(scaleNthetaFile);
-                        string allstr = sr.ReadToEnd();
-                        sr.Close();
-                        string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        // X
-                        string[] strXXscaleLine = allLines[1].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        allLines[1] = XtoXab[0].ToString("E5") + "\t" + XtoXab[1].ToString("E5") + "\t" + XtoXab[2].ToString("E5") + "\t//";
-                        for (int i = 1; i < strXXscaleLine.Length; i++)
-                            allLines[1] += strXXscaleLine[i];
-                        // X TO Y
-                        string[] strXtoYLine = allLines[8].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        allLines[8] = XtoYab[0].ToString("E5") + "\t" + XtoYab[1].ToString("E5") + "\t" + XtoYab[2].ToString("E5") + "\t//";
-                        for (int i = 1; i < strXtoYLine.Length; i++)
-                            allLines[8] += strXtoYLine[i];
-                        // X TO Z
-                        string[] strXtoZLine = allLines[9].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        allLines[9] = XtoZab[0].ToString("E5") + "\t" + XtoZab[1].ToString("E5") + "\t" + XtoZab[2].ToString("E5") + "\t//";
-                        for (int i = 1; i < strXtoZLine.Length; i++)
-                            allLines[9] += strXtoZLine[i];
-                        // X TO TX
-                        string[] strXtoTXLine = allLines[10].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        allLines[10] = XtoTXab[0].ToString("E5") + "\t" + XtoTXab[1].ToString("E5") + "\t" + XtoTXab[2].ToString("E5") + "\t//";
-                        for (int i = 1; i < strXtoTXLine.Length; i++)
-                            allLines[10] += strXtoTXLine[i];
-                        // X TO TY
-                        string[] strXtoTYLine = allLines[11].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        allLines[11] = XtoTYab[0].ToString("E5") + "\t" + XtoTYab[1].ToString("E5") + "\t" + XtoTYab[2].ToString("E5") + "\t//";
-                        for (int i = 1; i < strXtoTYLine.Length; i++)
-                            allLines[11] += strXtoTYLine[i];
-                        // X TO TZ
-                        string[] strXtoTZLine = allLines[12].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        allLines[12] = XtoTZab[0].ToString("E5") + "\t" + XtoTZab[1].ToString("E5") + "\t" + XtoTZab[2].ToString("E5") + "\t//";
-                        for (int i = 1; i < strXtoTZLine.Length; i++)
-                            allLines[12] += strXtoTZLine[i];
-
-                        wr = new StreamWriter(scaleNthetaFile);
-                        for (int i = 0; i < allLines.Length; i++)
-                        {
-                            wr.WriteLine(allLines[i]);
-                        }
-                        wr.Close();
-                    }
-                    break;
-
-                case "Y":
-                    mYCalAvgY1Y2pp = Math.Abs(stablizedData[0][7] - stablizedData[effLength - 1][7] + stablizedData[0][9] - stablizedData[effLength - 1][9]) / 2;
-                    mYCalY3pp = Math.Abs(stablizedData[0][11] - stablizedData[effLength - 1][11]);
-                    mEstimatedEastViewYscale = (mYCalAvgY1Y2pp + mZCalAvgY1Y2pp) / (mYCalY3pp + mZCalY3pp);
-
-                    //  Axis = 2 : Y scale 확인 및 저장
-                    //  SY vs Yavg ( = (Y4+Y5) / 2 ) 배열을 생성하여 LMS 의 a,b 를 구한다.
-                    //  데이터 개수가 N 개일 때
-                    //  LUTY_tmp[i] = a * SY[i] - ( Yavg[i] - b )
-                    //  LUTY[i] = ( LUTY_tmp[i - 1] + LUTY_tmp[i] + LUTY_tmp[i + 1] ) / 3 ; 0 < i < N-1
-                    //  LUTY[0] = ( 2 * LUTY_tmp[0] + LUTY_tmp[1]) / 3 ;
-                    //  LUTY[N-1] = ( 2 * LUTY_tmp[N-1] + LUTY_tmp[N-2]) / 3 ;
-                    for (int i = 0; i < effLength; i++)
-                    {
-                        sYY[i].Y = stablizedData[i][17];    //  Y 변위의 Displacement Sensor 측정값   from 6 axis stage
-                        sYY[i].X = stablizedData[i][1];
-
-                        sYtoX[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][0] - stablizedData[i][16]);    //  X - probe X     from 6 axis stage
-                        sYtoZ[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][2] - stablizedData[i][18]);   //  Z - probe Z     from 6 axis stage
-
-                        sYtoTX[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][3] - stablizedData[i][19]);   //  X - probe X from 6 axis stage
-                        sYtoTY[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][4] - stablizedData[i][20]);   //  Y - probe Y from 6 axis stage
-                        sYtoTZ[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][5] - stablizedData[i][21]);   //  Y - probe Y from 6 axis stage
-                    }
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sYY, effLength, ref YtoYab);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sYtoX, effLength, ref YtoXab);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sYtoZ, effLength, ref YtoZab);
-
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sYtoTX, effLength, ref YtoTXab);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sYtoTY, effLength, ref YtoTYab);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sYtoTZ, effLength, ref YtoTZab);
-
-                    lstr = "YY Scale\t" + YtoYab[0].ToString("E5") + ",\t" + YtoYab[1].ToString("E5") + ",\t" + YtoYab[2].ToString("E5") + "\r\n";
-                    lstr += "YtoX\t" + YtoXab[0].ToString("E5") + ",\t" + YtoXab[1].ToString("E5") + ",\t" + YtoXab[2].ToString("E5") + "\r\n";
-                    lstr += "YtoZ\t" + YtoZab[0].ToString("E5") + ",\t" + YtoZab[1].ToString("E5") + ",\t" + YtoZab[2].ToString("E5") + "\r\n";
-
-                    lstr += "YtoTX\t" + YtoTXab[0].ToString("E5") + ",\t" + YtoTXab[1].ToString("E5") + ",\t" + YtoTXab[2].ToString("E5") + "\r\n";
-                    lstr += "YtoTY\t" + YtoTYab[0].ToString("E5") + ",\t" + YtoTYab[1].ToString("E5") + ",\t" + YtoTYab[2].ToString("E5") + "\r\n";
-                    lstr += "YtoTZ\t" + YtoTZab[0].ToString("E5") + ",\t" + YtoTZab[1].ToString("E5") + ",\t" + YtoTZab[2].ToString("E5") + "\r\n";
-
-                    if (isAutoCalibrationEastView)
-                    {
-                        lstr = "EastViewYscale,\t" + mEstimatedEastViewYscale.ToString("F6") + "\r\n";
-                    }
-
-                    wr = new StreamWriter(AdminPathName + "YYLUT" + cameraID + ".csv");
-                    wr.Write(lstr);
-                    wr.Close();
-
-                    //////////////////////////////////////////////////////////////////////////////////                    
-                    if (mAutoCalibrationCount % 2 == 0)
-                    {
-                        string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
-                        StreamReader sr = new StreamReader(scaleNthetaFile);
-                        string allstr = sr.ReadToEnd();
-                        string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-
-                        sr.Close();
-                        if (isAutoCalibrationEastView)
-                        {
-                            // East View Sclae
-                            string[] strEastScaleLine = allLines[7].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            allLines[7] = mEstimatedEastViewYscale.ToString("E5") + "\t//";
-                            for (int i = 1; i < strEastScaleLine.Length; i++)
-                                allLines[7] += strEastScaleLine[i];
-                        }
-                        else
-                        {
-                            // Y
-                            string[] strYYscaleLine = allLines[2].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            allLines[2] = YtoYab[0].ToString("E5") + "\t" + YtoYab[1].ToString("E5") + "\t" + YtoYab[2].ToString("E5") + "\t//";
-                            for (int i = 1; i < strYYscaleLine.Length; i++)
-                                allLines[2] += strYYscaleLine[i];
-                            // Y TO X
-                            string[] strYtoXLine = allLines[13].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            allLines[13] = YtoXab[0].ToString("E5") + "\t" + YtoXab[1].ToString("E5") + "\t" + YtoXab[2].ToString("E5") + "\t//";
-                            for (int i = 1; i < strYtoXLine.Length; i++)
-                                allLines[13] += strYtoXLine[i];
-                            // Y TO Z
-                            string[] strYtoZLine = allLines[14].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            allLines[14] = YtoZab[0].ToString("E5") + "\t" + YtoZab[1].ToString("E5") + "\t" + YtoZab[2].ToString("E5") + "\t//";
-                            for (int i = 1; i < strYtoZLine.Length; i++)
-                                allLines[14] += strYtoZLine[i];
-                            // Y TO TX
-                            string[] strYtoTXLine = allLines[15].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            allLines[15] = YtoTXab[0].ToString("E5") + "\t" + YtoTXab[1].ToString("E5") + "\t" + YtoTXab[2].ToString("E5") + "\t//";
-                            for (int i = 1; i < strYtoTXLine.Length; i++)
-                                allLines[15] += strYtoTXLine[i];
-                            // Y TO TY
-                            string[] strYtoTYLine = allLines[16].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            allLines[16] = YtoTYab[0].ToString("E5") + "\t" + YtoTYab[1].ToString("E5") + "\t" + YtoTYab[2].ToString("E5") + "\t//";
-                            for (int i = 1; i < strYtoTYLine.Length; i++)
-                                allLines[16] += strYtoTYLine[i];
-                            // Y TO TZ
-                            string[] strYtoTZLine = allLines[17].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                            allLines[17] = YtoTZab[0].ToString("E5") + "\t" + YtoTZab[1].ToString("E5") + "\t" + YtoTZab[2].ToString("E5") + "\t//";
-                            for (int i = 1; i < strYtoTZLine.Length; i++)
-                                allLines[17] += strYtoTZLine[i];
-                        }
-
-                        wr = new StreamWriter(scaleNthetaFile);
-                        for (int i = 0; i < allLines.Length; i++)
-                        {
-                            wr.WriteLine(allLines[i]);
-                        }
-                        wr.Close();
-                    }
-                    break;
-
-                //  이하는 YLUTs , X Scale 적용한 후에 수행해야 함.
-                case "TX":
-                    //  Axis = 3 : TXLUT 의 경우 TX scale 확인 및 저장
-                    //  SY vs TX 배열을 생성하여 LMS 의 a,b 를 구한다.
-                    //  데이터 개수가 N 개일 때
-                    //  LUTY_tmp[i] = a * SY[i] - ( Yavg[i] - b )
-                    //  LUTY[i] = ( LUTY_tmp[i - 1] + LUTY_tmp[i] + LUTY_tmp[i + 1] ) / 3 ; 0 < i < N-1
-                    //  LUTY[0] = ( 2 * LUTY_tmp[0] + LUTY_tmp[1]) / 3 ;
-                    //  LUTY[N-1] = ( 2 * LUTY_tmp[N-1] + LUTY_tmp[N-2]) / 3 ;
-
-                    //  stablizedData[i][19] : TX   rad
-                    //  stablizedData[i][20] : TY   rad
-                    //  stablizedData[i][21] : TZ   rad
-
-                    for (int i = 0; i < effLength; i++)
-                    {
-                        sTXTX[i].Y = stablizedData[i][19]; // * RAD_To_MIN;    //  Tilt X 를 위한 Z 변위의 Displacement Sensor 측정값에서 CSH Z 변위를 소거된 값이어야 함
-                        sTXTX[i].X = stablizedData[i][3];
-
-                        sTXtoTY[i] = new FZMath.Point2D(sTXTX[i].X, stablizedData[i][4] - stablizedData[i][20]);   //  Y - probe Y from 6 axis stage
-                        sTXtoTZ[i] = new FZMath.Point2D(sTXTX[i].X, stablizedData[i][5] - stablizedData[i][21]);   //  Y - probe Y from 6 axis stage
-                    }
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sTXTX, effLength, ref TXtoTXab);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sTXtoTY, effLength, ref TXtoTYab);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sTXtoTZ, effLength, ref TXtoTZab);
-
-                    lstr += "TX Scale\t" + TXtoTXab[0].ToString("E5") + ",\t" + TXtoTXab[1].ToString("E5") + ",\t" + TXtoTXab[2].ToString("E5") + "\r\n";
-                    lstr += "TXtoTY\t" + TXtoTYab[0].ToString("E5") + ",\t" + TXtoTYab[1].ToString("E5") + ",\t" + TXtoTYab[2].ToString("E5") + "\r\n";
-                    lstr += "TXtoTZ\t" + TXtoTZab[0].ToString("E5") + ",\t" + TXtoTZab[1].ToString("E5") + ",\t" + TXtoTZab[2].ToString("E5") + "\r\n";
-
-                    wr = new StreamWriter(AdminPathName + "TXLUT" + cameraID + ".csv");
-                    wr.Write(lstr);
-                    wr.Close();
-
-                    if (mAutoCalibrationCount % 2 == 0)
-                    {
-                        string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
-                        StreamReader sr = new StreamReader(scaleNthetaFile);
-                        string allstr = sr.ReadToEnd();
-                        sr.Close();
-                        string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        // TX
-                        string[] strTXscaleLine = allLines[4].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        allLines[4] = TXtoTXab[0].ToString("E5") + "\t" + TXtoTXab[1].ToString("E5") + "\t" + TXtoTXab[2].ToString("E5") + "\t//";
-                        for (int i = 1; i < strTXscaleLine.Length; i++)
-                            allLines[4] += strTXscaleLine[i];
-                        // TX TO TY
-                        string[] strTXtoTYLine = allLines[23].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        allLines[23] = TXtoTYab[0].ToString("E5") + "\t" + TXtoTYab[1].ToString("E5") + "\t" + TXtoTYab[2].ToString("E5") + "\t//";
-                        for (int i = 1; i < strTXtoTYLine.Length; i++)
-                            allLines[23] += strTXtoTYLine[i];
-                        // TX TO TZ
-                        string[] strTXtoTZLine = allLines[24].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        allLines[24] = TXtoTZab[0].ToString("E5") + "\t" + TXtoTZab[1].ToString("E5") + "\t" + TXtoTZab[2].ToString("E5") + "\t//";
-                        for (int i = 1; i < strTXtoTZLine.Length; i++)
-                            allLines[24] += strTXtoTZLine[i];
-
-                        wr = new StreamWriter(scaleNthetaFile);
-                        for (int i = 0; i < allLines.Length; i++)
-                        {
-                            wr.WriteLine(allLines[i]);
-                        }
-                        wr.Close();
-                    }
-                    break;
-                case "TY":
-                    //  Axis = 4 : TYLUT 의 경우 TY scale 확인 및 저장
-                    //  SY vs TY 배열을 생성하여 LMS 의 a,b 를 구한다.
-                    //  데이터 개수가 N 개일 때
-                    //  LUTY_tmp[i] = a * SY[i] - ( Yavg[i] - b )
-                    //  LUTY[i] = ( LUTY_tmp[i - 1] + LUTY_tmp[i] + LUTY_tmp[i + 1] ) / 3 ; 0 < i < N-1
-                    //  LUTY[0] = ( 2 * LUTY_tmp[0] + LUTY_tmp[1]) / 3 ;
-                    //  LUTY[N-1] = ( 2 * LUTY_tmp[N-1] + LUTY_tmp[N-2]) / 3 ;
-                    for (int i = 0; i < effLength; i++)
-                    {
-                        sTYTY[i].Y = stablizedData[i][20]; // * RAD_To_MIN;    //  Tilt Y 를 위한 Z 변위의 Displacement Sensor 측정값에서 CSH Z 변위를 소거된 값이어야 함
-                        sTYTY[i].X = stablizedData[i][4];
-
-                        sTYtoTX[i] = new FZMath.Point2D(sTYTY[i].X, stablizedData[i][3] - stablizedData[i][19]);
-                        sTYtoTZ[i] = new FZMath.Point2D(sTYTY[i].X, stablizedData[i][5] - stablizedData[i][21]);
-                    }
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sTYTY, effLength, ref TYtoTYab);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sTYtoTX, effLength, ref TYtoTXab);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sTYtoTZ, effLength, ref TYtoTZab);
-
-                    lstr += "TY Scale\t" + TYtoTYab[0].ToString("E5") + ",\t" + TYtoTYab[1].ToString("E5") + ",\t" + TYtoTYab[2].ToString("E5") + "\r\n";
-                    lstr += "TYtoTX\t" + TYtoTXab[0].ToString("E5") + ",\t" + TYtoTXab[1].ToString("E5") + ",\t" + TYtoTXab[2].ToString("E5") + "\r\n";
-                    lstr += "TYtoTZ\t" + TYtoTZab[0].ToString("E5") + ",\t" + TYtoTZab[1].ToString("E5") + ",\t" + TYtoTZab[2].ToString("E5") + "\r\n";
-
-                    wr = new StreamWriter(AdminPathName + "TYLUT" + cameraID + ".csv");
-                    wr.Write(lstr);
-                    wr.Close();
-
-                    if (mAutoCalibrationCount % 2 == 0)
-                    {
-                        string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
-                        StreamReader sr = new StreamReader(scaleNthetaFile);
-                        string allstr = sr.ReadToEnd();
-                        sr.Close();
-                        string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        // TY
-                        string[] strTYscaleLine = allLines[5].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        allLines[5] = TYtoTYab[0].ToString("E5") + "\t" + TYtoTYab[1].ToString("E5") + "\t" + TYtoTYab[2].ToString("E5") + "\t//";
-                        for (int i = 1; i < strTYscaleLine.Length; i++)
-                            allLines[5] += strTYscaleLine[i];
-                        // TY TO TX
-                        string[] strTYtoTXLine = allLines[25].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        allLines[25] = TYtoTXab[0].ToString("E5") + "\t" + TYtoTXab[1].ToString("E5") + "\t" + TYtoTXab[2].ToString("E5") + "\t//";
-                        for (int i = 1; i < strTYtoTXLine.Length; i++)
-                            allLines[25] += strTYtoTXLine[i];
-                        // TY TO TZ
-                        string[] strTYtoTZLine = allLines[26].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        allLines[26] = TYtoTZab[0].ToString("E5") + "\t" + TYtoTZab[1].ToString("E5") + "\t" + TYtoTZab[2].ToString("E5") + "\t//";
-                        for (int i = 1; i < strTYtoTZLine.Length; i++)
-                            allLines[26] += strTYtoTZLine[i];
-
-                        wr = new StreamWriter(scaleNthetaFile);
-                        for (int i = 0; i < allLines.Length; i++)
-                        {
-                            wr.WriteLine(allLines[i]);
-                        }
-                        wr.Close();
-                    }
-                    break;
-                case "TZ":
-                    //  Axis = 4 : TYLUT 의 경우 TY scale 확인 및 저장
-                    //  SY vs TY 배열을 생성하여 LMS 의 a,b 를 구한다.
-                    //  데이터 개수가 N 개일 때
-                    //  LUTY_tmp[i] = a * SY[i] - ( Yavg[i] - b )
-                    //  LUTY[i] = ( LUTY_tmp[i - 1] + LUTY_tmp[i] + LUTY_tmp[i + 1] ) / 3 ; 0 < i < N-1
-                    //  LUTY[0] = ( 2 * LUTY_tmp[0] + LUTY_tmp[1]) / 3 ;
-                    //  LUTY[N-1] = ( 2 * LUTY_tmp[N-1] + LUTY_tmp[N-2]) / 3 ;
-                    for (int i = 0; i < effLength; i++)
-                    {
-                        sTZTZ[i].Y = stablizedData[i][21]; // * RAD_To_MIN;    //  Tilt Y 를 위한 Z 변위의 Displacement Sensor 측정값에서 CSH Z 변위를 소거된 값이어야 함
-                        sTZTZ[i].X = stablizedData[i][5];
-
-                        sTZtoTX[i] = new FZMath.Point2D(sTZTZ[i].X, stablizedData[i][3] - stablizedData[i][19]);
-                        sTZtoTY[i] = new FZMath.Point2D(sTZTZ[i].X, stablizedData[i][4] - stablizedData[i][20]);
-                    }
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sTZTZ, effLength, ref TZtoTZab);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sTZtoTX, effLength, ref TZtoTXab);
-                    m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sTZtoTY, effLength, ref TZtoTYab);
-
-                    lstr += "TZ Scale\t" + TZtoTZab[0].ToString("E5") + ",\t" + TZtoTZab[1].ToString("E5") + ",\t" + TZtoTZab[2].ToString("E5") + "\r\n";
-                    lstr += "TZtoTX\t" + TZtoTXab[0].ToString("E5") + ",\t" + TZtoTXab[1].ToString("E5") + ",\t" + TZtoTXab[2].ToString("E5") + "\r\n";
-                    lstr += "TZtoTY\t" + TZtoTYab[0].ToString("E5") + ",\t" + TZtoTYab[1].ToString("E5") + ",\t" + TZtoTYab[2].ToString("E5") + "\r\n";
-
-                    wr = new StreamWriter(AdminPathName + "TYLUT" + cameraID + ".csv");
-                    wr.Write(lstr);
-                    wr.Close();
-
-                    if (mAutoCalibrationCount % 2 == 0)
-                    {
-                        string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
-                        StreamReader sr = new StreamReader(scaleNthetaFile);
-                        string allstr = sr.ReadToEnd();
-                        sr.Close();
-                        string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        // TZ
-                        string[] strTZscaleLine = allLines[6].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        allLines[6] = TZtoTZab[0].ToString("E5") + "\t" + TZtoTZab[1].ToString("E5") + "\t" + TZtoTZab[2].ToString("E5") + "\t//";
-                        for (int i = 1; i < strTZscaleLine.Length; i++)
-                            allLines[6] += strTZscaleLine[i];
-                        // TZ TO TX
-                        string[] strTZtoTXLine = allLines[27].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        allLines[27] = TZtoTXab[0].ToString("E5") + "\t" + TZtoTXab[1].ToString("E5") + "\t" + TZtoTXab[2].ToString("E5") + "\t//";
-                        for (int i = 1; i < strTZtoTXLine.Length; i++)
-                            allLines[27] += strTZtoTXLine[i];
-                        // TZ TO TY
-                        string[] strTZtoTYLine = allLines[28].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        allLines[28] = TZtoTYab[0].ToString("E5") + "\t" + TZtoTYab[1].ToString("E5") + "\t" + TZtoTYab[2].ToString("E5") + "\t//";
-                        for (int i = 1; i < strTZtoTYLine.Length; i++)
-                            allLines[28] += strTZtoTYLine[i];
-
-                        wr = new StreamWriter(scaleNthetaFile);
-                        for (int i = 0; i < allLines.Length; i++)
-                        {
-                            wr.WriteLine(allLines[i]);
-                        }
-                        wr.Close();
-                    }
-                    break;
-                default:
-                    break;
-            }
-            if (InvokeRequired)
-                BeginInvoke((MethodInvoker)delegate
-                {
-                    tbCalibration.Text += lstr;
-                });
-            else
-                tbCalibration.Text += lstr;
-
-        }
+
+        //public void JH_SK_CreateLUTfromMeasuredData(double[][] measure, string axis, string cameraID, bool IsRemote = false)
+        //{
+        //    if (m__G.oCam[0].mFAL.mFZM == null)
+        //    {
+        //        MessageBox.Show("mFZM not loaded.");
+        //        return;
+        //    }
+
+        //    string AdminPathName = m__G.m_RootDirectory + "\\DoNotTouch\\Admin\\";
+        //    string DoNotTouchPathName = m__G.m_RootDirectory + "\\DoNotTouch\\";
+        //    if (!Directory.Exists(AdminPathName))
+        //        Directory.CreateDirectory(AdminPathName);
+
+        //    int fullLength = measure.Length;
+        //    StreamWriter wr = null;
+        //    //  measure[i] 에는 X,Y,Z,TX,TY,TZ,X1,Y1,X2,Y2, ... , X5,Y5, SZ, SX, SY, Stx, Sty 의 총 21개 데이터가 들어있다.
+
+        //    //  안정화 유효데이터를 추출한다.
+        //    //  각 유효Index 에서의 데이터배열을 별도 List 에 저장한다.
+
+        //    List<double[]> stablizedData = new List<double[]>();
+
+        //    int effLength = 0;
+        //    //double a = 0;
+        //    //double b = 0;
+        //    int[] effIndex = null;
+        //    FZMath.Point2D[] szy1 = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] szy2 = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] szy3 = new FZMath.Point2D[effLength];
+
+        //    FZMath.Point2D[] sZZ = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sXX = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sYY = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sTXTX = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sTYTY = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sTZTZ = new FZMath.Point2D[effLength];
+
+        //    FZMath.Point2D[] sXtoY = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sXtoZ = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sXtoTX = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sXtoTY = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sXtoTZ = new FZMath.Point2D[effLength];
+
+        //    FZMath.Point2D[] sYtoX = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sYtoZ = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sYtoTX = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sYtoTY = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sYtoTZ = new FZMath.Point2D[effLength];
+
+        //    FZMath.Point2D[] sZtoX = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sZtoY = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sZtoTX = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sZtoTY = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sZtoTZ = new FZMath.Point2D[effLength];
+
+        //    FZMath.Point2D[] sTXtoTY = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sTXtoTZ = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sTYtoTX = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sTYtoTZ = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sTZtoTX = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sTZtoTY = new FZMath.Point2D[effLength];
+
+        //    double[] XtoXab = new double[3];
+        //    double[] YtoYab = new double[3];
+        //    double[] ZtoZab = new double[3];
+        //    double[] TXtoTXab = new double[3];
+        //    double[] TYtoTYab = new double[3];
+        //    double[] TZtoTZab = new double[3];
+
+        //    double[] XtoYab = new double[3];
+        //    double[] XtoZab = new double[3];
+        //    double[] XtoTXab = new double[2];
+        //    double[] XtoTYab = new double[2];
+        //    double[] XtoTZab = new double[2];
+
+        //    double[] YtoXab = new double[3];
+        //    double[] YtoZab = new double[3];
+        //    double[] YtoTXab = new double[2];
+        //    double[] YtoTYab = new double[2];
+        //    double[] YtoTZab = new double[2];
+
+        //    double[] ZtoXab = new double[3];
+        //    double[] ZtoYab = new double[3];
+        //    double[] ZtoTXab = new double[3];
+        //    double[] ZtoTYab = new double[3];
+        //    double[] ZtoTZab = new double[3];
+
+        //    double[] TXtoTYab = new double[3];
+        //    double[] TXtoTZab = new double[3];
+
+        //    double[] TYtoTXab = new double[3];
+        //    double[] TYtoTZab = new double[3];
+
+        //    double[] TZtoTXab = new double[3];
+        //    double[] TZtoTYab = new double[3];
+
+        //    if (!IsRemote)
+        //    {
+        //        switch (axis)
+        //        {
+        //            case "Z":
+        //                effIndex = ExtractStablizedIndex(measure, 2);
+        //                break;
+
+        //            case "X":
+        //                effIndex = ExtractStablizedIndex(measure, 0);
+        //                break;
+        //            case "Y":
+        //                effIndex = ExtractStablizedIndex(measure, 1);
+        //                break;
+        //            case "TX":
+        //                effIndex = ExtractStablizedIndex(measure, 3);
+        //                break;
+        //            case "TY":
+        //                effIndex = ExtractStablizedIndex(measure, 4);
+        //                break;
+        //            default:
+        //                break;
+        //        }
+        //        effLength = effIndex.Length;
+
+        //        for (int i = 0; i < effLength; i++)
+        //        {
+        //            szy1[i] = new FZMath.Point2D();
+        //            szy2[i] = new FZMath.Point2D();
+        //            szy3[i] = new FZMath.Point2D();
+
+        //            sZZ[i] = new FZMath.Point2D();
+        //            sXX[i] = new FZMath.Point2D();
+        //            sYY[i] = new FZMath.Point2D();
+        //            sTXTX[i] = new FZMath.Point2D();
+        //            sTYTY[i] = new FZMath.Point2D();
+        //            sTZTZ[i] = new FZMath.Point2D();
+
+        //            sXtoTX[i] = new FZMath.Point2D();
+        //            sXtoTY[i] = new FZMath.Point2D();
+        //            sXtoTZ[i] = new FZMath.Point2D();
+        //            sYtoTX[i] = new FZMath.Point2D();
+        //            sYtoTY[i] = new FZMath.Point2D();
+        //            sYtoTZ[i] = new FZMath.Point2D();
+        //            sZtoTX[i] = new FZMath.Point2D();
+        //            sZtoTY[i] = new FZMath.Point2D();
+        //            sZtoTZ[i] = new FZMath.Point2D();
+
+        //            sTXtoTY[i] = new FZMath.Point2D();
+        //            sTXtoTZ[i] = new FZMath.Point2D();
+        //            sTYtoTX[i] = new FZMath.Point2D();
+        //            sTYtoTZ[i] = new FZMath.Point2D();
+        //            sTZtoTX[i] = new FZMath.Point2D();
+        //            sTZtoTY[i] = new FZMath.Point2D();
+        //        }
+
+        //        if (effLength == 0)
+        //        {
+        //            if (InvokeRequired)
+        //            {
+        //                BeginInvoke((MethodInvoker)delegate
+        //                {
+        //                    tbInfo.Text += "Stabilized data not found\r\n";
+        //                    tbInfo.SelectionStart = tbInfo.Text.Length;
+        //                    tbInfo.ScrollToCaret();
+        //                });
+        //            }
+        //            else
+        //            {
+        //                tbInfo.Text += "Stabilized data not found\r\n";
+        //                tbInfo.SelectionStart = tbInfo.Text.Length;
+        //                tbInfo.ScrollToCaret();
+        //            }
+        //            return;
+
+        //        }
+        //        for (int i = 0; i < effLength; i++)
+        //        {
+        //            double[] lstbData = new double[22];
+        //            for (int j = 0; j < 22; j++)
+        //                lstbData[j] = measure[effIndex[i]][j];
+
+        //            stablizedData.Add(lstbData);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        //  Remote or Auto Calibration
+        //        effLength = measure.Length;
+
+        //        szy1 = new FZMath.Point2D[effLength];
+        //        szy2 = new FZMath.Point2D[effLength];
+        //        szy3 = new FZMath.Point2D[effLength];
+
+        //        sZZ = new FZMath.Point2D[effLength];
+        //        sXX = new FZMath.Point2D[effLength];
+        //        sYY = new FZMath.Point2D[effLength];
+        //        sTXTX = new FZMath.Point2D[effLength];
+        //        sTYTY = new FZMath.Point2D[effLength];
+        //        sTZTZ = new FZMath.Point2D[effLength];
+
+        //        sXtoY = new FZMath.Point2D[effLength];
+        //        sXtoZ = new FZMath.Point2D[effLength];
+        //        sXtoTX = new FZMath.Point2D[effLength];
+        //        sXtoTY = new FZMath.Point2D[effLength];
+        //        sXtoTZ = new FZMath.Point2D[effLength];
+
+        //        sYtoX = new FZMath.Point2D[effLength];
+        //        sYtoZ = new FZMath.Point2D[effLength];
+        //        sYtoTX = new FZMath.Point2D[effLength];
+        //        sYtoTY = new FZMath.Point2D[effLength];
+        //        sYtoTZ = new FZMath.Point2D[effLength];
+
+        //        sZtoX = new FZMath.Point2D[effLength];
+        //        sZtoY = new FZMath.Point2D[effLength];
+        //        sZtoTX = new FZMath.Point2D[effLength];
+        //        sZtoTY = new FZMath.Point2D[effLength];
+        //        sZtoTZ = new FZMath.Point2D[effLength];
+
+        //        sTXtoTY = new FZMath.Point2D[effLength];
+        //        sTXtoTZ = new FZMath.Point2D[effLength];
+
+        //        sTYtoTX = new FZMath.Point2D[effLength];
+        //        sTYtoTZ = new FZMath.Point2D[effLength];
+
+        //        sTZtoTX = new FZMath.Point2D[effLength];
+        //        sTZtoTY = new FZMath.Point2D[effLength];
+
+        //        for (int i = 0; i < effLength; i++)
+        //        {
+        //            szy1[i] = new FZMath.Point2D();
+        //            szy2[i] = new FZMath.Point2D();
+        //            szy3[i] = new FZMath.Point2D();
+
+        //            sZZ[i] = new FZMath.Point2D();
+        //            sXX[i] = new FZMath.Point2D();
+        //            sYY[i] = new FZMath.Point2D();
+        //            sTXTX[i] = new FZMath.Point2D();
+        //            sTYTY[i] = new FZMath.Point2D();
+        //            sTZTZ[i] = new FZMath.Point2D();
+
+        //            sXtoY[i] = new FZMath.Point2D();
+        //            sXtoZ[i] = new FZMath.Point2D();
+        //            sXtoTX[i] = new FZMath.Point2D();
+        //            sXtoTY[i] = new FZMath.Point2D();
+        //            sXtoTZ[i] = new FZMath.Point2D();
+
+        //            sYtoX[i] = new FZMath.Point2D();
+        //            sYtoZ[i] = new FZMath.Point2D();
+        //            sYtoTX[i] = new FZMath.Point2D();
+        //            sYtoTY[i] = new FZMath.Point2D();
+        //            sYtoTZ[i] = new FZMath.Point2D();
+
+        //            sZtoX[i] = new FZMath.Point2D();
+        //            sZtoY[i] = new FZMath.Point2D();
+        //            sZtoTX[i] = new FZMath.Point2D();
+        //            sZtoTY[i] = new FZMath.Point2D();
+        //            sZtoTZ[i] = new FZMath.Point2D();
+
+        //            sTXtoTY[i] = new FZMath.Point2D();
+        //            sTXtoTZ[i] = new FZMath.Point2D();
+
+        //            sTYtoTX[i] = new FZMath.Point2D();
+        //            sTYtoTZ[i] = new FZMath.Point2D();
+
+        //            sTZtoTX[i] = new FZMath.Point2D();
+        //            sTZtoTY[i] = new FZMath.Point2D();
+        //        }
+
+        //        for (int i = 0; i < effLength; i++)
+        //            stablizedData.Add(measure[i]);
+        //    }
+
+        //    //////////////////////////////////////////////////////////////
+        //    //////////////////////////////////////////////////////////////
+        //    //  전체 데이터를 다 저장하는 파일을 하나 만들어야한다.
+        //    StreamWriter lwr = null;
+        //    double ProbeYtoSideViewPixel = Math.Sin(40 / 180 * Math.PI) / (5.5 / 0.3);
+
+        //    if (!IsRemote)
+        //    {
+        //        lwr = new StreamWriter(AdminPathName + "FullData.csv");
+        //        lwr.WriteLine("#,X,Y,Z,TX,TY,TZ,X1,Y1,X2,Y2,X3,Y3,X4,Y4,X5,Y5,pX,pY,pZ,pTX,pTY,pTZ,pY2");
+        //        int k = 0;
+        //        for (int i = 0; i < fullLength; i++)
+        //        {
+        //            string slstr = i.ToString() + ",";
+        //            for (int j = 0; j < 23; j++)
+        //                slstr += measure[i][j].ToString("F5") + ",";
+        //            if (i == effIndex[k])
+        //            {
+        //                slstr += "*";
+        //                k++;
+        //            }
+        //            lwr.WriteLine(slstr);
+        //            if (k == effLength)
+        //                break;
+        //        }
+        //        lwr.Close();
+        //    }
+
+        //    string calName = axis;
+        //    if (isAutoCalibrationEastView)
+        //    {
+        //        calName += "_EastView";
+        //    }
+
+        //    string strStabilizedFile = "";
+        //    if (mAutoCalibrationCount % 2 == 0)
+        //        strStabilizedFile = AdminPathName + "StabilizedData_" + calName + "_Before.csv";
+        //    else
+        //        strStabilizedFile = AdminPathName + "StabilizedData_" + calName + "_After.csv";
+
+        //    try
+        //    {
+        //        lwr = new StreamWriter(strStabilizedFile);
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Int64 lnow = (DateTime.Now.ToBinary()) % 1000000;
+        //        if (mAutoCalibrationCount % 2 == 0)
+        //            strStabilizedFile = AdminPathName + "StabilizedData_" + calName + "_Before" + lnow.ToString() + ".csv";
+        //        else
+        //            strStabilizedFile = AdminPathName + "StabilizedData_" + calName + "_After" + lnow.ToString() + ".csv";
+
+        //        lwr = new StreamWriter(strStabilizedFile);
+        //    }
+        //    if (lwr != null)
+        //    {
+        //        lwr.WriteLine("#,X,Y,Z,TX,TY,TZ,X1,Y1,X2,Y2,X3,Y3,X4,Y4,X5,Y5,pX,pY,pZ,pTX,pTY,pTZ,pY2");
+        //        for (int i = 0; i < effLength; i++)
+        //        {
+        //            string slstr = i.ToString() + ",";
+        //            for (int j = 0; j < 23; j++)
+        //            {
+        //                //if (j < 19 || j == 22)
+        //                slstr += stablizedData[i][j].ToString("F5") + ",";
+        //                //else
+        //                //{
+        //                //    //slstr += (RAD_To_MIN * stablizedData[i][j]).ToString("F5") + ",";
+        //                //    slstr += (stablizedData[i][j]).ToString("F5") + ",";
+        //                //}
+        //            }
+
+        //            lwr.WriteLine(slstr);
+        //        }
+        //        lwr.Close();
+        //    }
+
+        //    //////////////////////////////////////////////////////////////
+        //    //////////////////////////////////////////////////////////////
+
+        //    //  axis 따라서 List 에 저장된 데이터를 처리한다.
+        //    double[] p2ndCoef = new double[3];
+        //    double[] p2ndCoef2 = new double[3];
+        //    double[] p2ndCoef3 = new double[3];
+        //    int fovYoffset = GetROIY(0);
+        //    string lstr = "";
+        //    switch (axis)
+        //    {
+        //        case "Z":
+        //            //  axis == "Z" : YLUT 의 경우 
+        //            //  SZ vs Y1 배열을 생성하여 LMS 의 a,b 를 구한다.
+        //            //  데이터 개수가 N 개일 때
+        //            //  LUT1_tmp[i] = a * SZ[i] - ( Y1[i] - b )
+        //            //  LUT1[i] = ( LUT1_tmp[i - 1] + LUT1_tmp[i] + LUT1_tmp[i + 1] ) / 3 ; 0 < i < N-1
+        //            //  LUT1[0] = ( 2 * LUT1_tmp[0] + LUT1_tmp[1]) / 3 ;
+        //            //  LUT1[N-1] = ( 2 * LUT1_tmp[N-1] + LUT1_tmp[N-2]) / 3 ;
+
+        //            //  Z scale 도 여기서 구해야 한다. 현재 빠져있다. 2024.3.5
+
+        //            double a1 = 0;
+        //            double b1 = 0;
+        //            double a2 = 0;
+        //            double b2 = 0;
+        //            double a3 = 0;
+        //            double b3 = 0;
+
+        //            mZCalAvgY1Y2pp = Math.Abs(stablizedData[0][7] - stablizedData[effLength - 1][7] + stablizedData[0][9] - stablizedData[effLength - 1][9]) / 2;
+        //            mZCalY3pp = Math.Abs(stablizedData[0][11] - stablizedData[effLength - 1][11]);
+
+        //            //  stablizedData[i][16] : X
+        //            //  stablizedData[i][17] : Y
+        //            //  stablizedData[i][18] : Z
+        //            //  stablizedData[i][19] : TX   rad
+        //            //  stablizedData[i][20] : TY   rad
+        //            //  stablizedData[i][21] : TZ   rad
+
+        //            for (int i = 0; i < effLength; i++)
+        //            {
+        //                //szy1[i].X = ( stablizedData[i][16] + stablizedData[i][19] ) / 2;   //  ( Z1 + Z2 ) / 2
+        //                //szy1[i].Y = stablizedData[i][7] - stablizedData[i][18] * ProbeYtoSideViewPixel;
+        //                szy1[i].X = stablizedData[i][18];   //  Z from 6 axis stage
+        //                szy1[i].Y = stablizedData[i][7] - stablizedData[i][17] * ProbeYtoSideViewPixel; // Y1 - probe Y in pixel unit ; from 6 axis stage
+        //            }
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(szy1, effLength, ref a1, ref b1);
+        //            double[] LUT1_tmp = new double[effLength];
+        //            double[] LUT1 = new double[effLength];
+        //            for (int i = 0; i < effLength; i++)
+        //                LUT1_tmp[i] = a1 * szy1[i].X - (szy1[i].Y - b1);
+
+        //            for (int i = 1; i < effLength - 1; i++)
+        //                LUT1[i] = (LUT1_tmp[i - 1] + LUT1_tmp[i] + LUT1_tmp[i + 1]) / 3;
+
+        //            LUT1[0] = (2 * LUT1_tmp[0] + LUT1_tmp[1]) / 3;
+        //            LUT1[effLength - 1] = (2 * LUT1_tmp[effLength - 1] + LUT1_tmp[effLength - 2]) / 3;
+
+        //            //  SZ vs Y2 배열을 생성하여 LMS 의 a,b 를 구한다.
+        //            //  데이터 개수가 N 개일 때
+        //            //  LUT2_tmp[i] = a * SZ[i] - ( Y2[i] - b )
+        //            //  LUT2[i] = ( LUT2_tmp[i - 1] + LUT2_tmp[i] + LUT2_tmp[i + 1] ) / 3 ; 0 < i < N-1
+        //            //  LUT2[0] = ( 2 * LUT2_tmp[0] + LUT2_tmp[1]) / 3 ;
+        //            //  LUT2[N-1] = ( 2 * LUT2_tmp[N-1] + LUT2_tmp[N-2]) / 3 ;
+        //            for (int i = 0; i < effLength; i++)
+        //            {
+        //                //szy2[i].X = ( stablizedData[i][16] + stablizedData[i][19] ) / 2;   //  ( Z1 + Z2 ) / 2
+        //                //szy2[i].Y = stablizedData[i][9] - stablizedData[i][18] * ProbeYtoSideViewPixel;
+        //                szy2[i].X = stablizedData[i][18];   //  Z from 6 axis stage
+        //                szy2[i].Y = stablizedData[i][9] - stablizedData[i][17] * ProbeYtoSideViewPixel; // Y2 - probe Y in pixel unit ; from 6 axis stage
+        //            }
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(szy2, effLength, ref a2, ref b2);
+        //            double[] LUT2_tmp = new double[effLength];
+        //            double[] LUT2 = new double[effLength];
+        //            for (int i = 0; i < effLength; i++)
+        //                LUT2_tmp[i] = a2 * szy2[i].X - (szy2[i].Y - b2);
+
+        //            for (int i = 1; i < effLength - 1; i++)
+        //                LUT2[i] = (LUT2_tmp[i - 1] + LUT2_tmp[i] + LUT2_tmp[i + 1]) / 3;
+
+        //            LUT2[0] = (2 * LUT2_tmp[0] + LUT2_tmp[1]) / 3;
+        //            LUT2[effLength - 1] = (2 * LUT2_tmp[effLength - 1] + LUT2_tmp[effLength - 2]) / 3;
+
+        //            //  axis == 0 : YLUT 의 경우 Z scale 도 같이 저장
+        //            //  SZ vs Y3 배열을 생성하여 LMS 의 a,b 를 구한다.
+        //            //  데이터 개수가 N 개일 때
+        //            //  LUT3_tmp[i] = a * SZ[i] - ( Y3[i] - b )
+        //            //  LUT3[i] = ( LUT3_tmp[i - 1] + LUT3_tmp[i] + LUT3_tmp[i + 1] ) / 3 ; 0 < i < N-1
+        //            //  LUT3[0] = ( 2 * LUT3_tmp[0] + LUT3_tmp[1]) / 3 ;
+        //            //  LUT3[N-1] = ( 2 * LUT3_tmp[N-1] + LUT3_tmp[N-2]) / 3 ;
+        //            for (int i = 0; i < effLength; i++)
+        //            {
+        //                //szy3[i].X = ( stablizedData[i][16] + stablizedData[i][19] ) / 2;   //  ( Z1 + Z2 ) / 2
+        //                //szy3[i].Y = stablizedData[i][11] - stablizedData[i][18] * ProbeYtoSideViewPixel;
+        //                szy3[i].X = stablizedData[i][18];      //  Z from 6 axis stage
+        //                szy3[i].Y = stablizedData[i][11] - stablizedData[i][17] * ProbeYtoSideViewPixel; // Y3 - probe Y in pixel unit ; from 6 axis stage
+        //            }
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(szy3, effLength, ref a3, ref b3);
+        //            double[] LUT3_tmp = new double[effLength];
+        //            double[] LUT3 = new double[effLength];
+        //            for (int i = 0; i < effLength; i++)
+        //                LUT3_tmp[i] = a3 * szy3[i].X - (szy3[i].Y - b3);
+
+        //            for (int i = 1; i < effLength - 1; i++)
+        //                LUT3[i] = (LUT3_tmp[i - 1] + LUT3_tmp[i] + LUT3_tmp[i + 1]) / 3;
+
+        //            LUT3[0] = (2 * LUT3_tmp[0] + LUT3_tmp[1]) / 3;
+        //            LUT3[effLength - 1] = (2 * LUT3_tmp[effLength - 1] + LUT3_tmp[effLength - 2]) / 3;
+
+        //            //  Z scale
+        //            // 241206 YLUT 제거 후, Z scale 2차로 변경
+        //            for (int i = 0; i < effLength; i++)
+        //            {
+        //                sZZ[i].Y = stablizedData[i][18];        //  Z from 6 axis stage
+        //                sZZ[i].X = stablizedData[i][2];         //  Z 변위의 CSHead 측정값
+        //            }
+        //            //m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(szz, effLength, ref a, ref b);
+        //            //a = a * 0.9993; // 0.9992; // 헥사포드 Cal 변경
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sZZ, effLength, ref ZtoZab);
+
+        //            //a = (a - 1) * 0.4 + 1; 
+        //            //  YLUT 에 의한 Scale 보상이 있으므로 측정된 Scale 의 40% 만 보상해준다. 40% 는 실험적으로 확인됬으나,
+        //            //  정규 Calibration 시에는 얻어진 결과에 따라 Z Scale 을 직접 조정해줘야 할 것으로 예상.
+        //            //  Scale 만 조정해가면서 수차례 반복 필요
+        //            //  LUT 가 PP를 최소화하는 방식이 아니고 LMS 오차가 최소화되는 방향이므로 Z scale 수작업 조정 필요 
+
+
+        //            if (mAutoCalibrationCount % 2 == 0 && !isAutoCalibrationEastView)
+        //            {
+        //                string srcFile = AdminPathName + "YLUT" + cameraID + ".csv";
+        //                string destFile = DoNotTouchPathName + "YLUT" + cameraID + ".csv";
+        //                wr = new StreamWriter(srcFile);
+        //                wr.WriteLine("Y Index," + fovYoffset.ToString() + ",Z Scale," + ZtoZab[1].ToString());
+        //                wr.WriteLine("Y1," + a1.ToString() + ",Y2," + a2.ToString() + ",Y3," + a3.ToString());
+        //                for (int i = 0; i < effLength; i++)
+        //                {
+        //                    wr.WriteLine(szy1[i].Y.ToString() + "," + LUT1[i].ToString() + "," + szy2[i].Y.ToString() + "," + LUT2[i].ToString() + "," + szy3[i].Y.ToString() + "," + LUT3[i].ToString());
+        //                }
+        //                wr.Close();
+        //                System.IO.File.Copy(srcFile, destFile, true);
+        //            }
+
+        //            /////////////////////////////////////////////////////////////////////////////////
+        //            //  Z to X 계산
+        //            //  Z vs X - Xprobe , Z vs Y - Yprobe                 
+        //            for (int i = 0; i < effLength; i++)
+        //            {
+        //                //sZtoX[i] = new FZMath.Point2D(szy1[i].X, stablizedData[i][0] - stablizedData[i][17]);   //  X - probe X
+        //                //sZtoY[i] = new FZMath.Point2D(szy1[i].X, stablizedData[i][1] - stablizedData[i][18]);   //  Y - probe Y
+        //                sZtoX[i] = new FZMath.Point2D(sZZ[i].X, stablizedData[i][0] - stablizedData[i][16]);   //  X - probe X from 6 axis stage
+        //                sZtoY[i] = new FZMath.Point2D(sZZ[i].X, stablizedData[i][1] - stablizedData[i][17]);   //  Y - probe Y from 6 axis stage
+
+        //                sZtoTX[i] = new FZMath.Point2D(sZZ[i].X, stablizedData[i][3] - stablizedData[i][19]);   //  X - probe X from 6 axis stage
+        //                sZtoTY[i] = new FZMath.Point2D(sZZ[i].X, stablizedData[i][4] - stablizedData[i][20]);   //  Y - probe Y from 6 axis stage
+        //                sZtoTZ[i] = new FZMath.Point2D(sZZ[i].X, stablizedData[i][5] - stablizedData[i][21]);   //  Y - probe Y from 6 axis stage
+        //            }
+
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sZtoX, effLength, ref ZtoXab[0], ref ZtoXab[1]);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sZtoY, effLength, ref ZtoYab[0], ref ZtoYab[1]);
+
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sZtoTX, effLength, ref ZtoTXab[0], ref ZtoTXab[1]);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sZtoTY, effLength, ref ZtoTYab[0], ref ZtoTYab[1]);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sZtoTZ, effLength, ref ZtoTZab[0], ref ZtoTZab[1]);
+
+        //            if (!isAutoCalibrationEastView)
+        //            {
+        //                // ZtoX, ZtoY 수정
+        //                //double aZtoX = 0;
+        //                //double aZtoY = 0;
+        //                //m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sZtoX, effLength, ref aZtoX, ref b);
+        //                //m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sZtoY, effLength, ref aZtoY, ref b);
+        //                lstr = $"ZZ Scale\t{ZtoZab[0]:E5}\t{ZtoZab[1]:E5}\t{ZtoZab[2]:E5}\r\n";
+        //                lstr += $"ZtoX\t{ZtoXab[0]:E5}\r\n";
+        //                lstr += $"ZtoY\t{ZtoYab[0]:E5}\r\n";
+
+
+        //                if (mAutoCalibrationCount % 2 == 0)
+        //                {
+        //                    string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
+        //                    StreamReader sr = new StreamReader(scaleNthetaFile);
+        //                    string allstr = sr.ReadToEnd();
+        //                    sr.Close();
+        //                    string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    string[] strZscaleLine = allLines[2].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    allLines[2] = ZtoZab[0].ToString("E5") + "\t" + ZtoZab[1].ToString("E5") + "\t" + ZtoZab[2].ToString("E5") + "\t//";
+        //                    for (int i = 1; i < strZscaleLine.Length; i++)
+        //                        allLines[2] += strZscaleLine[i];
+
+        //                    string[] strZtoXLine = allLines[6].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    allLines[6] = ZtoXab[0].ToString("E5") + "\t//";
+        //                    for (int i = 1; i < strZtoXLine.Length; i++)
+        //                        allLines[6] += strZtoXLine[i];
+
+        //                    string[] strZtoYLine = allLines[7].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    allLines[7] = ZtoYab[0].ToString("E5") + "\t//";
+        //                    for (int i = 1; i < strZtoYLine.Length; i++)
+        //                        allLines[7] += strZtoYLine[i];
+
+        //                    wr = new StreamWriter(scaleNthetaFile);
+        //                    for (int i = 0; i < allLines.Length; i++)
+        //                    {
+        //                        wr.WriteLine(allLines[i]);
+        //                    }
+        //                    wr.Close();
+        //                }
+        //            }
+
+
+        //            //////////////////////////////////////////////////////////////////////////////////
+
+        //            break;
+        //        case "X":
+        //            //  Axis = 1 : X scale 확인 및 저장
+        //            //  SX vs Xavg ( = (X4+X5) / 2 ) 배열을 생성하여 LMS 의 a,b 를 구한다.
+        //            //  데이터 개수가 N 개일 때
+        //            //  LUTX_tmp[i] = a * SX[i] - ( Xavg[i] - b )
+        //            //  LUTX[i] = ( LUTX_tmp[i - 1] + LUTX_tmp[i] + LUTX_tmp[i + 1] ) / 3 ; 0 < i < N-1
+        //            //  LUTX[0] = ( 2 * LUTX_tmp[0] + LUTX_tmp[1]) / 3 ;
+        //            //  LUTX[N-1] = ( 2 * LUTX_tmp[N-1] + LUTX_tmp[N-2]) / 3 ;
+        //            for (int i = 0; i < effLength; i++)
+        //            {
+        //                sXX[i].Y = stablizedData[i][16];    //  X 변위의 Displacement Sensor 측정값   6 axis stage
+        //                sXX[i].X = stablizedData[i][0];     //  X 변위의 CSHead 측정값
+        //            }
+        //            //m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sXX, effLength, ref a, ref b);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sXX, effLength, ref XtoXab);  //  A[0]X^2 + A[1]X + A[2]
+
+        //            lstr = "XX Scale,\t" + XtoXab[0].ToString("E5") + ",\t" + XtoXab[1].ToString("E5") + ",\t" + XtoXab[2].ToString("E5") + "\r\n";
+
+        //            /////////////////////////////////////////////////////////////////////////////////
+        //            //  X to Y ／Ｚ　계산
+        //            //  X vs Y - Yprobe , X vs Z - Zprobe
+
+        //            for (int i = 0; i < effLength; i++)
+        //            {
+        //                //sXtoY[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][1] - stablizedData[i][18]);
+        //                //sXtoZ[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][2] - (stablizedData[i][16] + stablizedData[i][19]) / 2);
+        //                sXtoY[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][1] - stablizedData[i][17]);    //  Y - probe Y     from 6axis stage
+        //                sXtoZ[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][2] - stablizedData[i][18]);   //  Z - probe Z      from 6axis stage
+
+        //                sXtoTX[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][3] - stablizedData[i][19]);   //  X - probe X from 6 axis stage
+        //                sXtoTY[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][4] - stablizedData[i][20]);   //  Y - probe Y from 6 axis stage
+        //                sXtoTZ[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][5] - stablizedData[i][21]);   //  Y - probe Y from 6 axis stage
+        //            }
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sXtoY, effLength, ref XtoYab[0], ref XtoYab[1]);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sXtoZ, effLength, ref XtoZab);
+
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sXtoTX, effLength, ref XtoTXab[0], ref XtoTXab[1]);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sXtoTY, effLength, ref XtoTYab[0], ref XtoTYab[1]);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sXtoTZ, effLength, ref XtoTZab[0], ref XtoTZab[1]);
+
+        //            lstr += "XtoY,\t" + XtoYab[0].ToString("E5") + "\r\n";
+        //            lstr += "XtoZ,\t" + XtoZab[0].ToString("E5") + ",\t" + XtoZab[1].ToString("E5") + ",\t" + XtoZab[2].ToString("E5") + "\r\n";
+        //            lstr += "XtoTX,\t" + XtoTXab[0].ToString("E5") + "\r\n";
+
+        //            /////////////////////////////////////////////////////////////////////////////////
+        //            //  X to Y ／Ｚ　계산
+        //            //  X vs Y - Yprobe , X vs Z - Zprobe
+        //            //////FZMath.Point2D[] sXtoTX = new FZMath.Point2D[effLength];
+        //            //////for (int i = 0; i < effLength; i++)
+        //            //////{
+        //            //////    sXtoTX[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][3]);
+        //            //////}
+
+        //            wr = new StreamWriter(AdminPathName + "XXLUT" + cameraID + ".csv");
+        //            //for (int i = 0; i < effLength; i++)
+        //            //    lstr += sXtoZ[i].X.ToString("F4") + "," + sXtoZ[i].Y.ToString("F4") + "\r\n";
+        //            wr.Write(lstr);
+        //            wr.Close();
+
+        //            //////////////////////////////////////////////////////////////////////////////////
+        //            if (mAutoCalibrationCount % 2 == 0)
+        //            {
+        //                string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
+        //                StreamReader sr = new StreamReader(scaleNthetaFile);
+        //                string allstr = sr.ReadToEnd();
+        //                sr.Close();
+        //                string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                string[] strXXscaleLine = allLines[0].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                allLines[0] = XtoXab[0].ToString("E5") + "\t" + XtoXab[1].ToString("E5") + "\t" + XtoXab[2].ToString("E5") + "\t//";
+        //                for (int i = 1; i < strXXscaleLine.Length; i++)
+        //                    allLines[0] += strXXscaleLine[i];
+
+        //                string[] strXtoYLine = allLines[10].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                allLines[10] = XtoYab[0].ToString("E5") + "\t//";
+        //                for (int i = 1; i < strXtoYLine.Length; i++)
+        //                    allLines[10] += strXtoYLine[i];
+
+        //                string[] strXtoZLine = allLines[11].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                allLines[11] = XtoZab[0].ToString("E5") + "\t" + XtoZab[1].ToString("E5") + "\t" + XtoZab[2].ToString("E5") + "\t//";
+        //                for (int i = 1; i < strXtoZLine.Length; i++)
+        //                    allLines[11] += strXtoZLine[i];
+
+        //                string[] strXtoTXLine = allLines[13].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                allLines[13] = XtoTXab[0].ToString("E5") + "\t//";
+        //                for (int i = 1; i < strXtoTXLine.Length; i++)
+        //                    allLines[13] += strXtoTXLine[i];
+
+        //                wr = new StreamWriter(scaleNthetaFile);
+        //                for (int i = 0; i < allLines.Length; i++)
+        //                {
+        //                    wr.WriteLine(allLines[i]);
+        //                }
+        //                wr.Close();
+        //            }
+        //            break;
+
+        //        case "Y":
+        //            mYCalAvgY1Y2pp = Math.Abs(stablizedData[0][7] - stablizedData[effLength - 1][7] + stablizedData[0][9] - stablizedData[effLength - 1][9]) / 2;
+        //            mYCalY3pp = Math.Abs(stablizedData[0][11] - stablizedData[effLength - 1][11]);
+        //            mEstimatedEastViewYscale = (mYCalAvgY1Y2pp + mZCalAvgY1Y2pp) / (mYCalY3pp + mZCalY3pp);
+
+        //            //  Axis = 2 : Y scale 확인 및 저장
+        //            //  SY vs Yavg ( = (Y4+Y5) / 2 ) 배열을 생성하여 LMS 의 a,b 를 구한다.
+        //            //  데이터 개수가 N 개일 때
+        //            //  LUTY_tmp[i] = a * SY[i] - ( Yavg[i] - b )
+        //            //  LUTY[i] = ( LUTY_tmp[i - 1] + LUTY_tmp[i] + LUTY_tmp[i + 1] ) / 3 ; 0 < i < N-1
+        //            //  LUTY[0] = ( 2 * LUTY_tmp[0] + LUTY_tmp[1]) / 3 ;
+        //            //  LUTY[N-1] = ( 2 * LUTY_tmp[N-1] + LUTY_tmp[N-2]) / 3 ;
+        //            for (int i = 0; i < effLength; i++)
+        //            {
+        //                sYY[i].Y = stablizedData[i][17];    //  Y 변위의 Displacement Sensor 측정값   from 6 axis stage
+        //                sYY[i].X = stablizedData[i][1];
+        //            }
+        //            //m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sYY, effLength, ref a, ref b);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sYY, effLength, ref YtoYab);
+
+        //            lstr = "YY Scale,\t" + YtoYab[0].ToString("E5") + ",\t" + YtoYab[1].ToString("E5") + ",\t" + YtoYab[2].ToString("E5") + "\r\n";
+        //            /////////////////////////////////////////////////////////////////////////////////
+        //            //  X to Y ／Ｚ　계산
+        //            //  X vs Y - Yprobe , X vs Z - Zprobe
+
+        //            for (int i = 0; i < effLength; i++)
+        //            {
+        //                //sYtoX[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][0] - stablizedData[i][17]);    //  X - probe X
+        //                //sYtoZ[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][2] - (stablizedData[i][16] + stablizedData[i][19]) / 2);   //  Z - probe Z
+        //                sYtoX[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][0] - stablizedData[i][16]);    //  X - probe X     from 6 axis stage
+        //                sYtoZ[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][2] - stablizedData[i][18]);   //  Z - probe Z     from 6 axis stage
+
+        //                sYtoTX[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][3] - stablizedData[i][19]);   //  X - probe X from 6 axis stage
+        //                sYtoTY[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][4] - stablizedData[i][20]);   //  Y - probe Y from 6 axis stage
+        //                sYtoTZ[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][5] - stablizedData[i][21]);   //  Y - probe Y from 6 axis stage
+        //            }
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sYtoX, effLength, ref YtoXab[0], ref YtoXab[1]);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sYtoZ, effLength, ref YtoZab);
+
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sYtoTX, effLength, ref YtoTXab[0], ref YtoTXab[1]);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sYtoTY, effLength, ref YtoTYab[0], ref YtoTYab[1]);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sYtoTZ, effLength, ref YtoTZab[0], ref YtoTZab[1]);
+
+
+        //            lstr += "YtoX,\t" + YtoXab[0].ToString("E5") + "\r\n";
+        //            lstr += "YtoZ,\t" + YtoZab[0].ToString("E5") + ",\t" + YtoZab[1].ToString("E5") + ",\t" + YtoZab[2].ToString("E5") + "\r\n";
+        //            lstr += "YtoTX,\t" + YtoTXab[0].ToString("E5") + "\r\n";
+
+        //            if (isAutoCalibrationEastView)
+        //            {
+        //                lstr = "EastViewYscale,\t" + mEstimatedEastViewYscale.ToString("F6") + "\r\n";
+        //            }
+
+        //            wr = new StreamWriter(AdminPathName + "YYLUT" + cameraID + ".csv");
+        //            wr.Write(lstr);
+        //            wr.Close();
+
+        //            //////////////////////////////////////////////////////////////////////////////////                    
+        //            if (mAutoCalibrationCount % 2 == 0)
+        //            {
+        //                string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
+        //                StreamReader sr = new StreamReader(scaleNthetaFile);
+        //                string allstr = sr.ReadToEnd();
+        //                string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+
+        //                sr.Close();
+        //                if (isAutoCalibrationEastView)
+        //                {
+        //                    string[] strEastScaleLine = allLines[12].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    allLines[12] = mEstimatedEastViewYscale.ToString("E5") + "\t//";
+        //                    for (int i = 1; i < strEastScaleLine.Length; i++)
+        //                        allLines[12] += strEastScaleLine[i];
+        //                }
+        //                else
+        //                {
+        //                    string[] strYYscaleLine = allLines[1].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    allLines[1] = YtoYab[0].ToString("E5") + "\t" + YtoYab[1].ToString("E5") + "\t" + YtoYab[2].ToString("E5") + "\t//";
+        //                    for (int i = 1; i < strYYscaleLine.Length; i++)
+        //                        allLines[1] += strYYscaleLine[i];
+
+        //                    string[] strYtoXLine = allLines[8].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    allLines[8] = YtoXab[0].ToString("E5") + "\t//";
+        //                    for (int i = 1; i < strYtoXLine.Length; i++)
+        //                        allLines[8] += strYtoXLine[i];
+
+        //                    string[] strYtoZLine = allLines[9].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    allLines[9] = YtoZab[0].ToString("E5") + "\t" + YtoZab[1].ToString("E5") + "\t" + YtoZab[2].ToString("E5") + "\t//";
+        //                    for (int i = 1; i < strYtoZLine.Length; i++)
+        //                        allLines[9] += strYtoZLine[i];
+
+        //                    string[] strYtoTXLine = allLines[14].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    allLines[14] = YtoTXab[0].ToString("E5") + "\t//";
+        //                    for (int i = 1; i < strYtoTXLine.Length; i++)
+        //                        allLines[14] += strYtoTXLine[i];
+        //                }
+
+        //                wr = new StreamWriter(scaleNthetaFile);
+        //                for (int i = 0; i < allLines.Length; i++)
+        //                {
+        //                    wr.WriteLine(allLines[i]);
+        //                }
+        //                wr.Close();
+        //            }
+        //            break;
+
+        //        //  이하는 YLUTs , X Scale 적용한 후에 수행해야 함.
+        //        case "TX":
+        //            //  Axis = 3 : TXLUT 의 경우 TX scale 확인 및 저장
+        //            //  SY vs TX 배열을 생성하여 LMS 의 a,b 를 구한다.
+        //            //  데이터 개수가 N 개일 때
+        //            //  LUTY_tmp[i] = a * SY[i] - ( Yavg[i] - b )
+        //            //  LUTY[i] = ( LUTY_tmp[i - 1] + LUTY_tmp[i] + LUTY_tmp[i + 1] ) / 3 ; 0 < i < N-1
+        //            //  LUTY[0] = ( 2 * LUTY_tmp[0] + LUTY_tmp[1]) / 3 ;
+        //            //  LUTY[N-1] = ( 2 * LUTY_tmp[N-1] + LUTY_tmp[N-2]) / 3 ;
+
+        //            //  stablizedData[i][19] : TX   rad
+        //            //  stablizedData[i][20] : TY   rad
+        //            //  stablizedData[i][21] : TZ   rad
+
+        //            for (int i = 0; i < effLength; i++)
+        //            {
+        //                sTXTX[i].Y = stablizedData[i][19]; // RAD_To_MIN;    //  Tilt X 를 위한 Z 변위의 Displacement Sensor 측정값에서 CSH Z 변위를 소거된 값이어야 함
+        //                sTXTX[i].X = stablizedData[i][3];
+
+        //                sTXtoTY[i] = new FZMath.Point2D(sTXTX[i].X, stablizedData[i][4] - stablizedData[i][20]);   //  Y - probe Y from 6 axis stage
+        //                sTXtoTZ[i] = new FZMath.Point2D(sTXTX[i].X, stablizedData[i][5] - stablizedData[i][21]);   //  Y - probe Y from 6 axis stage
+        //            }
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sTXTX, effLength, ref TXtoTXab);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sTXtoTY, effLength, ref TXtoTYab[0], ref TXtoTYab[1]);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sTXtoTZ, effLength, ref TXtoTZab[0], ref TXtoTZab[1]);
+
+
+        //            lstr += "TX Scale,\t" + TXtoTXab[0].ToString("E5") + ",\t" + TXtoTXab[1].ToString("E5") + ",\t" + TXtoTXab[2].ToString("E5") + "\r\n";
+
+        //            wr = new StreamWriter(AdminPathName + "TXLUT" + cameraID + ".csv");
+        //            wr.WriteLine("TX Scale,\t" + TXtoTXab[0].ToString("E5") + ",\t" + TXtoTXab[1].ToString("E5") + ",\t" + TXtoTXab[2].ToString("E5") + "\r\n");
+        //            wr.Close();
+
+        //            if (mAutoCalibrationCount % 2 == 0)
+        //            {
+        //                string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
+        //                StreamReader sr = new StreamReader(scaleNthetaFile);
+        //                string allstr = sr.ReadToEnd();
+        //                sr.Close();
+        //                string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                string[] strTXscaleLine = allLines[4].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                allLines[4] = TXtoTXab[0].ToString("E5") + "\t" + TXtoTXab[1].ToString("E5") + "\t" + TXtoTXab[2].ToString("E5") + "\t//";
+        //                for (int i = 1; i < strTXscaleLine.Length; i++)
+        //                    allLines[4] += strTXscaleLine[i];
+
+        //                wr = new StreamWriter(scaleNthetaFile);
+        //                for (int i = 0; i < allLines.Length; i++)
+        //                {
+        //                    wr.WriteLine(allLines[i]);
+        //                }
+        //                wr.Close();
+        //            }
+        //            break;
+        //        case "TY":
+        //            //  Axis = 4 : TYLUT 의 경우 TY scale 확인 및 저장
+        //            //  SY vs TY 배열을 생성하여 LMS 의 a,b 를 구한다.
+        //            //  데이터 개수가 N 개일 때
+        //            //  LUTY_tmp[i] = a * SY[i] - ( Yavg[i] - b )
+        //            //  LUTY[i] = ( LUTY_tmp[i - 1] + LUTY_tmp[i] + LUTY_tmp[i + 1] ) / 3 ; 0 < i < N-1
+        //            //  LUTY[0] = ( 2 * LUTY_tmp[0] + LUTY_tmp[1]) / 3 ;
+        //            //  LUTY[N-1] = ( 2 * LUTY_tmp[N-1] + LUTY_tmp[N-2]) / 3 ;
+        //            for (int i = 0; i < effLength; i++)
+        //            {
+        //                sTYTY[i].Y = stablizedData[i][20];// * RAD_To_MIN;    //  Tilt Y 를 위한 Z 변위의 Displacement Sensor 측정값에서 CSH Z 변위를 소거된 값이어야 함
+        //                sTYTY[i].X = stablizedData[i][4];
+
+        //                sTYtoTX[i] = new FZMath.Point2D(sTYTY[i].X, stablizedData[i][3] - stablizedData[i][19]);
+        //                sTYtoTZ[i] = new FZMath.Point2D(sTYTY[i].X, stablizedData[i][5] - stablizedData[i][21]);
+        //            }
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sTYTY, effLength, ref TYtoTYab[0], ref TYtoTYab[1]);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sTYtoTX, effLength, ref TYtoTXab[0], ref TYtoTXab[1]);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(sTYtoTZ, effLength, ref TYtoTZab[0], ref TYtoTZab[1]);
+
+        //            lstr += "TY Scale,\t" + TYtoTYab[0].ToString("E5") + "\r\n";
+
+        //            wr = new StreamWriter(AdminPathName + "TYLUT" + cameraID + ".csv");
+        //            wr.WriteLine("TY Scale," + TYtoTYab[0].ToString());
+        //            wr.Close();
+
+        //            if (mAutoCalibrationCount % 2 == 0)
+        //            {
+        //                string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
+        //                StreamReader sr = new StreamReader(scaleNthetaFile);
+        //                string allstr = sr.ReadToEnd();
+        //                sr.Close();
+        //                string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                string[] strTYscaleLine = allLines[5].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                allLines[5] = TYtoTYab[0].ToString("E5") + "\t//";
+        //                for (int i = 1; i < strTYscaleLine.Length; i++)
+        //                    allLines[5] += strTYscaleLine[i];
+
+        //                wr = new StreamWriter(scaleNthetaFile);
+        //                for (int i = 0; i < allLines.Length; i++)
+        //                {
+        //                    wr.WriteLine(allLines[i]);
+        //                }
+        //                wr.Close();
+        //            }
+        //            break;
+        //        default:
+        //            break;
+        //    }
+        //    if (InvokeRequired)
+        //        BeginInvoke((MethodInvoker)delegate
+        //        {
+        //            tbCalibration.Text += lstr;
+        //        });
+        //    else
+        //        tbCalibration.Text += lstr;
+
+        //}
+
+        //public void CreateLUTfromMeasuredData(double[][] measure, string axis, string cameraID, bool IsRemote = false)
+        //{
+        //    if (m__G.oCam[0].mFAL.mFZM == null)
+        //    {
+        //        MessageBox.Show("mFZM not loaded.");
+        //        return;
+        //    }
+
+        //    string AdminPathName = m__G.m_RootDirectory + "\\DoNotTouch\\Admin\\";
+        //    string DoNotTouchPathName = m__G.m_RootDirectory + "\\DoNotTouch\\";
+        //    if (!Directory.Exists(AdminPathName))
+        //        Directory.CreateDirectory(AdminPathName);
+
+        //    int fullLength = measure.Length;
+        //    StreamWriter wr = null;
+        //    //  measure[i] 에는 X,Y,Z,TX,TY,TZ,X1,Y1,X2,Y2, ... , X5,Y5, SZ, SX, SY, Stx, Sty 의 총 21개 데이터가 들어있다.
+
+        //    //  안정화 유효데이터를 추출한다.
+        //    //  각 유효Index 에서의 데이터배열을 별도 List 에 저장한다.
+
+        //    List<double[]> stablizedData = new List<double[]>();
+
+        //    int effLength = 0;
+        //    int[] effIndex = null;
+        //    FZMath.Point2D[] szy1 = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] szy2 = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] szy3 = new FZMath.Point2D[effLength];
+
+        //    FZMath.Point2D[] sXX = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sYY = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sZZ = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sTXTX = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sTYTY = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sTZTZ = new FZMath.Point2D[effLength];
+
+        //    FZMath.Point2D[] sXtoY = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sXtoZ = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sXtoTX = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sXtoTY = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sXtoTZ = new FZMath.Point2D[effLength];
+
+        //    FZMath.Point2D[] sYtoX = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sYtoZ = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sYtoTX = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sYtoTY = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sYtoTZ = new FZMath.Point2D[effLength];
+
+        //    FZMath.Point2D[] sZtoX = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sZtoY = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sZtoTX = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sZtoTY = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sZtoTZ = new FZMath.Point2D[effLength];
+
+        //    FZMath.Point2D[] sTXtoTY = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sTXtoTZ = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sTYtoTX = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sTYtoTZ = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sTZtoTX = new FZMath.Point2D[effLength];
+        //    FZMath.Point2D[] sTZtoTY = new FZMath.Point2D[effLength];
+
+        //    double[] XtoXab = new double[3];
+        //    double[] YtoYab = new double[3];
+        //    double[] ZtoZab = new double[3];
+        //    double[] TXtoTXab = new double[3];
+        //    double[] TYtoTYab = new double[3];
+        //    double[] TZtoTZab = new double[3];
+
+        //    double[] XtoYab = new double[3];
+        //    double[] XtoZab = new double[3];
+        //    double[] XtoTXab = new double[3];
+        //    double[] XtoTYab = new double[3];
+        //    double[] XtoTZab = new double[3];
+
+        //    double[] YtoXab = new double[3];
+        //    double[] YtoZab = new double[3];
+        //    double[] YtoTXab = new double[3];
+        //    double[] YtoTYab = new double[3];
+        //    double[] YtoTZab = new double[3];
+
+        //    double[] ZtoXab = new double[3];
+        //    double[] ZtoYab = new double[3];
+        //    double[] ZtoTXab = new double[3];
+        //    double[] ZtoTYab = new double[3];
+        //    double[] ZtoTZab = new double[3];
+
+        //    double[] TXtoTYab = new double[3];
+        //    double[] TXtoTZab = new double[3];
+
+        //    double[] TYtoTXab = new double[3];
+        //    double[] TYtoTZab = new double[3];
+
+        //    double[] TZtoTXab = new double[3];
+        //    double[] TZtoTYab = new double[3];
+
+        //    if (!IsRemote)
+        //    {
+        //        switch (axis)
+        //        {
+        //            case "Z":
+        //                effIndex = ExtractStablizedIndex(measure, 2);
+        //                break;
+
+        //            case "X":
+        //                effIndex = ExtractStablizedIndex(measure, 0);
+        //                break;
+        //            case "Y":
+        //                effIndex = ExtractStablizedIndex(measure, 1);
+        //                break;
+        //            case "TX":
+        //                effIndex = ExtractStablizedIndex(measure, 3);
+        //                break;
+        //            case "TY":
+        //                effIndex = ExtractStablizedIndex(measure, 4);
+        //                break;
+        //            case "TZ":
+        //                effIndex = ExtractStablizedIndex(measure, 5);
+        //                break;
+        //            default:
+        //                break;
+        //        }
+        //        effLength = effIndex.Length;
+
+        //        for (int i = 0; i < effLength; i++)
+        //        {
+        //            szy1[i] = new FZMath.Point2D();
+        //            szy2[i] = new FZMath.Point2D();
+        //            szy3[i] = new FZMath.Point2D();
+
+        //            sXX[i] = new FZMath.Point2D();
+        //            sYY[i] = new FZMath.Point2D();
+        //            sZZ[i] = new FZMath.Point2D();
+        //            sTXTX[i] = new FZMath.Point2D();
+        //            sTYTY[i] = new FZMath.Point2D();
+        //            sTZTZ[i] = new FZMath.Point2D();
+
+        //            sXtoTX[i] = new FZMath.Point2D();
+        //            sXtoTY[i] = new FZMath.Point2D();
+        //            sXtoTZ[i] = new FZMath.Point2D();
+        //            sYtoTX[i] = new FZMath.Point2D();
+        //            sYtoTY[i] = new FZMath.Point2D();
+        //            sYtoTZ[i] = new FZMath.Point2D();
+        //            sZtoTX[i] = new FZMath.Point2D();
+        //            sZtoTY[i] = new FZMath.Point2D();
+        //            sZtoTZ[i] = new FZMath.Point2D();
+
+        //            sTXtoTY[i] = new FZMath.Point2D();
+        //            sTXtoTZ[i] = new FZMath.Point2D();
+        //            sTYtoTX[i] = new FZMath.Point2D();
+        //            sTYtoTZ[i] = new FZMath.Point2D();
+        //            sTZtoTX[i] = new FZMath.Point2D();
+        //            sTZtoTY[i] = new FZMath.Point2D();
+        //        }
+
+        //        if (effLength == 0)
+        //        {
+        //            if (InvokeRequired)
+        //            {
+        //                BeginInvoke((MethodInvoker)delegate
+        //                {
+        //                    tbInfo.Text += "Stabilized data not found\r\n";
+        //                    tbInfo.SelectionStart = tbInfo.Text.Length;
+        //                    tbInfo.ScrollToCaret();
+        //                });
+        //            }
+        //            else
+        //            {
+        //                tbInfo.Text += "Stabilized data not found\r\n";
+        //                tbInfo.SelectionStart = tbInfo.Text.Length;
+        //                tbInfo.ScrollToCaret();
+        //            }
+        //            return;
+
+        //        }
+        //        for (int i = 0; i < effLength; i++)
+        //        {
+        //            double[] lstbData = new double[22];
+        //            for (int j = 0; j < 22; j++)
+        //                lstbData[j] = measure[effIndex[i]][j];
+
+        //            stablizedData.Add(lstbData);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        //  Remote or Auto Calibration
+        //        effLength = measure.Length;
+
+        //        szy1 = new FZMath.Point2D[effLength];
+        //        szy2 = new FZMath.Point2D[effLength];
+        //        szy3 = new FZMath.Point2D[effLength];
+
+        //        sXX = new FZMath.Point2D[effLength];
+        //        sYY = new FZMath.Point2D[effLength];
+        //        sZZ = new FZMath.Point2D[effLength];
+        //        sTXTX = new FZMath.Point2D[effLength];
+        //        sTYTY = new FZMath.Point2D[effLength];
+        //        sTZTZ = new FZMath.Point2D[effLength];
+
+        //        sXtoY = new FZMath.Point2D[effLength];
+        //        sXtoZ = new FZMath.Point2D[effLength];
+        //        sXtoTX = new FZMath.Point2D[effLength];
+        //        sXtoTY = new FZMath.Point2D[effLength];
+        //        sXtoTZ = new FZMath.Point2D[effLength];
+
+        //        sYtoX = new FZMath.Point2D[effLength];
+        //        sYtoZ = new FZMath.Point2D[effLength];
+        //        sYtoTX = new FZMath.Point2D[effLength];
+        //        sYtoTY = new FZMath.Point2D[effLength];
+        //        sYtoTZ = new FZMath.Point2D[effLength];
+
+        //        sZtoX = new FZMath.Point2D[effLength];
+        //        sZtoY = new FZMath.Point2D[effLength];
+        //        sZtoTX = new FZMath.Point2D[effLength];
+        //        sZtoTY = new FZMath.Point2D[effLength];
+        //        sZtoTZ = new FZMath.Point2D[effLength];
+
+        //        sTXtoTY = new FZMath.Point2D[effLength];
+        //        sTXtoTZ = new FZMath.Point2D[effLength];
+
+        //        sTYtoTX = new FZMath.Point2D[effLength];
+        //        sTYtoTZ = new FZMath.Point2D[effLength];
+
+        //        sTZtoTX = new FZMath.Point2D[effLength];
+        //        sTZtoTY = new FZMath.Point2D[effLength];
+
+        //        for (int i = 0; i < effLength; i++)
+        //        {
+        //            szy1[i] = new FZMath.Point2D();
+        //            szy2[i] = new FZMath.Point2D();
+        //            szy3[i] = new FZMath.Point2D();
+
+        //            sXX[i] = new FZMath.Point2D();
+        //            sYY[i] = new FZMath.Point2D();
+        //            sZZ[i] = new FZMath.Point2D();
+        //            sTXTX[i] = new FZMath.Point2D();
+        //            sTYTY[i] = new FZMath.Point2D();
+        //            sTZTZ[i] = new FZMath.Point2D();
+
+        //            sXtoY[i] = new FZMath.Point2D();
+        //            sXtoZ[i] = new FZMath.Point2D();
+        //            sXtoTX[i] = new FZMath.Point2D();
+        //            sXtoTY[i] = new FZMath.Point2D();
+        //            sXtoTZ[i] = new FZMath.Point2D();
+
+        //            sYtoX[i] = new FZMath.Point2D();
+        //            sYtoZ[i] = new FZMath.Point2D();
+        //            sYtoTX[i] = new FZMath.Point2D();
+        //            sYtoTY[i] = new FZMath.Point2D();
+        //            sYtoTZ[i] = new FZMath.Point2D();
+
+        //            sZtoX[i] = new FZMath.Point2D();
+        //            sZtoY[i] = new FZMath.Point2D();
+        //            sZtoTX[i] = new FZMath.Point2D();
+        //            sZtoTY[i] = new FZMath.Point2D();
+        //            sZtoTZ[i] = new FZMath.Point2D();
+
+        //            sTXtoTY[i] = new FZMath.Point2D();
+        //            sTXtoTZ[i] = new FZMath.Point2D();
+
+        //            sTYtoTX[i] = new FZMath.Point2D();
+        //            sTYtoTZ[i] = new FZMath.Point2D();
+
+        //            sTZtoTX[i] = new FZMath.Point2D();
+        //            sTZtoTY[i] = new FZMath.Point2D();
+        //        }
+
+        //        for (int i = 0; i < effLength; i++)
+        //            stablizedData.Add(measure[i]);
+        //    }
+
+        //    //////////////////////////////////////////////////////////////
+        //    //////////////////////////////////////////////////////////////
+        //    //  전체 데이터를 다 저장하는 파일을 하나 만들어야한다.
+        //    StreamWriter lwr = null;
+        //    double ProbeYtoSideViewPixel = Math.Sin(40 / 180 * Math.PI) / (5.5 / 0.3);
+
+        //    if (!IsRemote)
+        //    {
+        //        lwr = new StreamWriter(AdminPathName + "FullData.csv");
+        //        lwr.WriteLine("#,X,Y,Z,TX,TY,TZ,X1,Y1,X2,Y2,X3,Y3,X4,Y4,X5,Y5,pX,pY,pZ,pTX,pTY,pTZ,pY2");
+        //        int k = 0;
+        //        for (int i = 0; i < fullLength; i++)
+        //        {
+        //            string slstr = i.ToString() + ",";
+        //            for (int j = 0; j < 23; j++)
+        //                slstr += measure[i][j].ToString("F5") + ",";
+        //            if (i == effIndex[k])
+        //            {
+        //                slstr += "*";
+        //                k++;
+        //            }
+        //            lwr.WriteLine(slstr);
+        //            if (k == effLength)
+        //                break;
+        //        }
+        //        lwr.Close();
+        //    }
+
+        //    string calName = axis;
+        //    if (isAutoCalibrationEastView)
+        //    {
+        //        calName += "_EastView";
+        //    }
+
+        //    string strStabilizedFile = "";
+        //    if (mAutoCalibrationCount % 2 == 0)
+        //        strStabilizedFile = AdminPathName + "StabilizedData_" + calName + "_Before.csv";
+        //    else
+        //        strStabilizedFile = AdminPathName + "StabilizedData_" + calName + "_After.csv";
+
+        //    try
+        //    {
+        //        lwr = new StreamWriter(strStabilizedFile);
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Int64 lnow = (DateTime.Now.ToBinary()) % 1000000;
+        //        if (mAutoCalibrationCount % 2 == 0)
+        //            strStabilizedFile = AdminPathName + "StabilizedData_" + calName + "_Before" + lnow.ToString() + ".csv";
+        //        else
+        //            strStabilizedFile = AdminPathName + "StabilizedData_" + calName + "_After" + lnow.ToString() + ".csv";
+
+        //        lwr = new StreamWriter(strStabilizedFile);
+        //    }
+        //    if (lwr != null)
+        //    {
+        //        lwr.WriteLine("#,X,Y,Z,TX,TY,TZ,X1,Y1,X2,Y2,X3,Y3,X4,Y4,X5,Y5,pX,pY,pZ,pTX,pTY,pTZ,pY2");
+        //        for (int i = 0; i < effLength; i++)
+        //        {
+        //            string slstr = i.ToString() + ",";
+        //            for (int j = 0; j < 23; j++)
+        //            {
+        //                //if (j < 19 || j == 22)
+        //                slstr += stablizedData[i][j].ToString("F5") + ",";
+        //                //else
+        //                //{
+        //                //    slstr += (RAD_To_MIN * stablizedData[i][j]).ToString("F5") + ",";
+        //                //}
+        //            }
+
+        //            lwr.WriteLine(slstr);
+        //        }
+        //        lwr.Close();
+        //    }
+
+        //    //////////////////////////////////////////////////////////////
+        //    //////////////////////////////////////////////////////////////
+
+        //    //  axis 따라서 List 에 저장된 데이터를 처리한다.
+        //    //double[] p2ndCoef = new double[3];
+        //    //double[] p2ndCoef2 = new double[3];
+        //    //double[] p2ndCoef3 = new double[3];
+        //    int fovYoffset = GetROIY(0);
+        //    string lstr = "";
+        //    switch (axis)
+        //    {
+        //        case "Z":
+        //            //  axis == "Z" : YLUT 의 경우 
+        //            //  SZ vs Y1 배열을 생성하여 LMS 의 a,b 를 구한다.
+        //            //  데이터 개수가 N 개일 때
+        //            //  LUT1_tmp[i] = a * SZ[i] - ( Y1[i] - b )
+        //            //  LUT1[i] = ( LUT1_tmp[i - 1] + LUT1_tmp[i] + LUT1_tmp[i + 1] ) / 3 ; 0 < i < N-1
+        //            //  LUT1[0] = ( 2 * LUT1_tmp[0] + LUT1_tmp[1]) / 3 ;
+        //            //  LUT1[N-1] = ( 2 * LUT1_tmp[N-1] + LUT1_tmp[N-2]) / 3 ;
+
+        //            //  Z scale 도 여기서 구해야 한다. 현재 빠져있다. 2024.3.5
+
+        //            double a1 = 0;
+        //            double b1 = 0;
+        //            double a2 = 0;
+        //            double b2 = 0;
+        //            double a3 = 0;
+        //            double b3 = 0;
+
+        //            mZCalAvgY1Y2pp = Math.Abs(stablizedData[0][7] - stablizedData[effLength - 1][7] + stablizedData[0][9] - stablizedData[effLength - 1][9]) / 2;
+        //            mZCalY3pp = Math.Abs(stablizedData[0][11] - stablizedData[effLength - 1][11]);
+
+        //            //  stablizedData[i][16] : X
+        //            //  stablizedData[i][17] : Y
+        //            //  stablizedData[i][18] : Z
+        //            //  stablizedData[i][19] : TX   rad
+        //            //  stablizedData[i][20] : TY   rad
+        //            //  stablizedData[i][21] : TZ   rad
+
+        //            for (int i = 0; i < effLength; i++)
+        //            {
+        //                //szy1[i].X = ( stablizedData[i][16] + stablizedData[i][19] ) / 2;   //  ( Z1 + Z2 ) / 2
+        //                //szy1[i].Y = stablizedData[i][7] - stablizedData[i][18] * ProbeYtoSideViewPixel;
+        //                szy1[i].X = stablizedData[i][18];   //  Z from 6 axis stage
+        //                szy1[i].Y = stablizedData[i][7] - stablizedData[i][17] * ProbeYtoSideViewPixel; // Y1 - probe Y in pixel unit ; from 6 axis stage
+        //            }
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(szy1, effLength, ref a1, ref b1);
+        //            double[] LUT1_tmp = new double[effLength];
+        //            double[] LUT1 = new double[effLength];
+        //            for (int i = 0; i < effLength; i++)
+        //                LUT1_tmp[i] = a1 * szy1[i].X - (szy1[i].Y - b1);
+
+        //            for (int i = 1; i < effLength - 1; i++)
+        //                LUT1[i] = (LUT1_tmp[i - 1] + LUT1_tmp[i] + LUT1_tmp[i + 1]) / 3;
+
+        //            LUT1[0] = (2 * LUT1_tmp[0] + LUT1_tmp[1]) / 3;
+        //            LUT1[effLength - 1] = (2 * LUT1_tmp[effLength - 1] + LUT1_tmp[effLength - 2]) / 3;
+
+        //            //  SZ vs Y2 배열을 생성하여 LMS 의 a,b 를 구한다.
+        //            //  데이터 개수가 N 개일 때
+        //            //  LUT2_tmp[i] = a * SZ[i] - ( Y2[i] - b )
+        //            //  LUT2[i] = ( LUT2_tmp[i - 1] + LUT2_tmp[i] + LUT2_tmp[i + 1] ) / 3 ; 0 < i < N-1
+        //            //  LUT2[0] = ( 2 * LUT2_tmp[0] + LUT2_tmp[1]) / 3 ;
+        //            //  LUT2[N-1] = ( 2 * LUT2_tmp[N-1] + LUT2_tmp[N-2]) / 3 ;
+        //            for (int i = 0; i < effLength; i++)
+        //            {
+        //                //szy2[i].X = ( stablizedData[i][16] + stablizedData[i][19] ) / 2;   //  ( Z1 + Z2 ) / 2
+        //                //szy2[i].Y = stablizedData[i][9] - stablizedData[i][18] * ProbeYtoSideViewPixel;
+        //                szy2[i].X = stablizedData[i][18];   //  Z from 6 axis stage
+        //                szy2[i].Y = stablizedData[i][9] - stablizedData[i][17] * ProbeYtoSideViewPixel; // Y2 - probe Y in pixel unit ; from 6 axis stage
+        //            }
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(szy2, effLength, ref a2, ref b2);
+        //            double[] LUT2_tmp = new double[effLength];
+        //            double[] LUT2 = new double[effLength];
+        //            for (int i = 0; i < effLength; i++)
+        //                LUT2_tmp[i] = a2 * szy2[i].X - (szy2[i].Y - b2);
+
+        //            for (int i = 1; i < effLength - 1; i++)
+        //                LUT2[i] = (LUT2_tmp[i - 1] + LUT2_tmp[i] + LUT2_tmp[i + 1]) / 3;
+
+        //            LUT2[0] = (2 * LUT2_tmp[0] + LUT2_tmp[1]) / 3;
+        //            LUT2[effLength - 1] = (2 * LUT2_tmp[effLength - 1] + LUT2_tmp[effLength - 2]) / 3;
+
+        //            //  axis == 0 : YLUT 의 경우 Z scale 도 같이 저장
+        //            //  SZ vs Y3 배열을 생성하여 LMS 의 a,b 를 구한다.
+        //            //  데이터 개수가 N 개일 때
+        //            //  LUT3_tmp[i] = a * SZ[i] - ( Y3[i] - b )
+        //            //  LUT3[i] = ( LUT3_tmp[i - 1] + LUT3_tmp[i] + LUT3_tmp[i + 1] ) / 3 ; 0 < i < N-1
+        //            //  LUT3[0] = ( 2 * LUT3_tmp[0] + LUT3_tmp[1]) / 3 ;
+        //            //  LUT3[N-1] = ( 2 * LUT3_tmp[N-1] + LUT3_tmp[N-2]) / 3 ;
+        //            for (int i = 0; i < effLength; i++)
+        //            {
+        //                //szy3[i].X = ( stablizedData[i][16] + stablizedData[i][19] ) / 2;   //  ( Z1 + Z2 ) / 2
+        //                //szy3[i].Y = stablizedData[i][11] - stablizedData[i][18] * ProbeYtoSideViewPixel;
+        //                szy3[i].X = stablizedData[i][18];      //  Z from 6 axis stage
+        //                szy3[i].Y = stablizedData[i][11] - stablizedData[i][17] * ProbeYtoSideViewPixel; // Y3 - probe Y in pixel unit ; from 6 axis stage
+        //            }
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS1stPoly(szy3, effLength, ref a3, ref b3);
+        //            double[] LUT3_tmp = new double[effLength];
+        //            double[] LUT3 = new double[effLength];
+        //            for (int i = 0; i < effLength; i++)
+        //                LUT3_tmp[i] = a3 * szy3[i].X - (szy3[i].Y - b3);
+
+        //            for (int i = 1; i < effLength - 1; i++)
+        //                LUT3[i] = (LUT3_tmp[i - 1] + LUT3_tmp[i] + LUT3_tmp[i + 1]) / 3;
+
+        //            LUT3[0] = (2 * LUT3_tmp[0] + LUT3_tmp[1]) / 3;
+        //            LUT3[effLength - 1] = (2 * LUT3_tmp[effLength - 1] + LUT3_tmp[effLength - 2]) / 3;
+
+        //            //  Z scale
+        //            for (int i = 0; i < effLength; i++)
+        //            {
+        //                sZZ[i].Y = stablizedData[i][18];        //  Z from 6 axis stage
+        //                sZZ[i].X = stablizedData[i][2];         //  Z 변위의 CSHead 측정값
+        //            }
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sZZ, effLength, ref ZtoZab);    // 2차로 변경
+        //            //ZtoZab[0] = ZtoZab[0] * 0.9993; // 0.9992; // 헥사포드 Cal 변경
+        //            //a = (a - 1) * 0.4 + 1; 
+        //            //  YLUT 에 의한 Scale 보상이 있으므로 측정된 Scale 의 40% 만 보상해준다. 40% 는 실험적으로 확인됬으나,
+        //            //  정규 Calibration 시에는 얻어진 결과에 따라 Z Scale 을 직접 조정해줘야 할 것으로 예상.
+        //            //  Scale 만 조정해가면서 수차례 반복 필요
+        //            //  LUT 가 PP를 최소화하는 방식이 아니고 LMS 오차가 최소화되는 방향이므로 Z scale 수작업 조정 필요 
+
+
+        //            if (mAutoCalibrationCount % 2 == 0 && !isAutoCalibrationEastView)
+        //            {
+        //                string srcFile = AdminPathName + "YLUT" + cameraID + ".csv";
+        //                string destFile = DoNotTouchPathName + "YLUT" + cameraID + ".csv";
+        //                wr = new StreamWriter(srcFile);
+        //                wr.WriteLine("Y Index," + fovYoffset.ToString() + ",Z Scale," + ZtoZab[1].ToString());
+        //                wr.WriteLine("Y1," + a1.ToString() + ",Y2," + a2.ToString() + ",Y3," + a3.ToString());
+        //                for (int i = 0; i < effLength; i++)
+        //                {
+        //                    wr.WriteLine(szy1[i].Y.ToString() + "," + LUT1[i].ToString() + "," + szy2[i].Y.ToString() + "," + LUT2[i].ToString() + "," + szy3[i].Y.ToString() + "," + LUT3[i].ToString());
+        //                }
+        //                wr.Close();
+        //                System.IO.File.Copy(srcFile, destFile, true);
+        //            }
+
+        //            /////////////////////////////////////////////////////////////////////////////////
+        //            //  Z to X 계산
+        //            //  Z vs X - Xprobe , Z vs Y - Yprobe
+        //            for (int i = 0; i < effLength; i++)
+        //            {
+        //                //sZtoX[i] = new FZMath.Point2D(szy1[i].X, stablizedData[i][0] - stablizedData[i][17]);   //  X - probe X
+        //                //sZtoY[i] = new FZMath.Point2D(szy1[i].X, stablizedData[i][1] - stablizedData[i][18]);   //  Y - probe Y
+        //                sZtoX[i] = new FZMath.Point2D(sZZ[i].X, stablizedData[i][0] - stablizedData[i][16]);   //  X - probe X from 6 axis stage
+        //                sZtoY[i] = new FZMath.Point2D(sZZ[i].X, stablizedData[i][1] - stablizedData[i][17]);   //  Y - probe Y from 6 axis stage
+        //                sZtoTX[i] = new FZMath.Point2D(sZZ[i].X, stablizedData[i][3] - stablizedData[i][19]);   //  X - probe X from 6 axis stage
+        //                sZtoTY[i] = new FZMath.Point2D(sZZ[i].X, stablizedData[i][4] - stablizedData[i][20]);   //  Y - probe Y from 6 axis stage
+        //                sZtoTZ[i] = new FZMath.Point2D(sZZ[i].X, stablizedData[i][5] - stablizedData[i][21]);   //  Y - probe Y from 6 axis stage
+        //            }
+
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sZtoX, effLength, ref ZtoXab);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sZtoY, effLength, ref ZtoYab);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sZtoTX, effLength, ref ZtoTXab);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sZtoTY, effLength, ref ZtoTYab);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sZtoTZ, effLength, ref ZtoTZab);
+
+        //            if (!isAutoCalibrationEastView)
+        //            {
+        //                lstr = "ZZ Scale\t" + ZtoZab[0].ToString("E5") + ",\r\n" + ZtoZab[1].ToString("E5") + ",\t" + ZtoZab[2].ToString("E5") + "\r\n";
+        //                lstr += "ZtoX\t" + ZtoXab[0].ToString("E5") + ",\t" + ZtoXab[1].ToString("E5") + ",\t" + ZtoXab[2].ToString("E5") + "\r\n";
+        //                lstr += "ZtoY\t" + ZtoYab[0].ToString("E5") + ",\t" + ZtoYab[1].ToString("E5") + ",\t" + ZtoYab[2].ToString("E5") + "\r\n";
+        //                lstr += "ZtoTX\t" + ZtoTXab[0].ToString("E5") + ",\t" + ZtoTXab[1].ToString("E5") + ",\t" + ZtoTXab[2].ToString("E5") + "\r\n";
+        //                lstr += "ZtoTY\t" + ZtoTYab[0].ToString("E5") + ",\t" + ZtoTYab[1].ToString("E5") + ",\t" + ZtoTYab[2].ToString("E5") + "\r\n";
+        //                lstr += "ZtoTZ\t" + ZtoTZab[0].ToString("E5") + ",\t" + ZtoTZab[1].ToString("E5") + ",\t" + ZtoTZab[2].ToString("E5") + "\r\n";
+
+        //                if (mAutoCalibrationCount % 2 == 0)
+        //                {
+        //                    string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
+        //                    StreamReader sr = new StreamReader(scaleNthetaFile);
+        //                    string allstr = sr.ReadToEnd();
+        //                    sr.Close();
+        //                    string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    // Z
+        //                    string[] strZscaleLine = allLines[3].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    allLines[3] = ZtoZab[0].ToString("E5") + "\t" + ZtoZab[1].ToString("E5") + "\t" + ZtoZab[2].ToString("E5") + "\t//";
+        //                    for (int i = 1; i < strZscaleLine.Length; i++)
+        //                        allLines[3] += strZscaleLine[i];
+        //                    // Z TO X
+        //                    string[] strZtoXLine = allLines[18].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    allLines[18] = ZtoXab[0].ToString("E5") + "\t" + ZtoXab[1].ToString("E5") + "\t" + ZtoXab[2].ToString("E5") + "\t//";
+        //                    for (int i = 1; i < strZtoXLine.Length; i++)
+        //                        allLines[18] += strZtoXLine[i];
+        //                    // Z TO Y
+        //                    string[] strZtoYLine = allLines[19].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    allLines[19] = ZtoYab[0].ToString("E5") + "\t" + ZtoYab[1].ToString("E5") + "\t" + ZtoYab[2].ToString("E5") + "\t//";
+        //                    for (int i = 1; i < strZtoYLine.Length; i++)
+        //                        allLines[19] += strZtoYLine[i];
+        //                    // Z TO TX
+        //                    string[] strZtoTXLine = allLines[20].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    allLines[20] = ZtoTXab[0].ToString("E5") + "\t" + ZtoTXab[1].ToString("E5") + "\t" + ZtoTXab[2].ToString("E5") + "\t//";
+        //                    for (int i = 1; i < strZtoTXLine.Length; i++)
+        //                        allLines[20] += strZtoTXLine[i];
+        //                    // Z TO TY
+        //                    string[] strZtoTYLine = allLines[21].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    allLines[21] = ZtoTYab[0].ToString("E5") + "\t" + ZtoTYab[1].ToString("E5") + "\t" + ZtoTYab[2].ToString("E5") + "\t//";
+        //                    for (int i = 1; i < strZtoTYLine.Length; i++)
+        //                        allLines[21] += strZtoTYLine[i];
+        //                    // Z TO TZ
+        //                    string[] strZtoTZLine = allLines[22].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    allLines[22] = ZtoTZab[0].ToString("E5") + "\t" + ZtoTZab[1].ToString("E5") + "\t" + ZtoTZab[2].ToString("E5") + "\t//";
+        //                    for (int i = 1; i < strZtoTZLine.Length; i++)
+        //                        allLines[22] += strZtoTZLine[i];
+
+        //                    wr = new StreamWriter(scaleNthetaFile);
+        //                    for (int i = 0; i < allLines.Length; i++)
+        //                    {
+        //                        wr.WriteLine(allLines[i]);
+        //                    }
+        //                    wr.Close();
+        //                }
+        //            }
+
+
+        //            //////////////////////////////////////////////////////////////////////////////////
+
+        //            break;
+        //        case "X":
+        //            //  Axis = 1 : X scale 확인 및 저장
+        //            //  SX vs Xavg ( = (X4+X5) / 2 ) 배열을 생성하여 LMS 의 a,b 를 구한다.
+        //            //  데이터 개수가 N 개일 때
+        //            //  LUTX_tmp[i] = a * SX[i] - ( Xavg[i] - b )
+        //            //  LUTX[i] = ( LUTX_tmp[i - 1] + LUTX_tmp[i] + LUTX_tmp[i + 1] ) / 3 ; 0 < i < N-1
+        //            //  LUTX[0] = ( 2 * LUTX_tmp[0] + LUTX_tmp[1]) / 3 ;
+        //            //  LUTX[N-1] = ( 2 * LUTX_tmp[N-1] + LUTX_tmp[N-2]) / 3 ;
+        //            for (int i = 0; i < effLength; i++)
+        //            {
+        //                sXX[i].Y = stablizedData[i][16];    //  X 변위의 Displacement Sensor 측정값   6 axis stage
+        //                sXX[i].X = stablizedData[i][0];     //  X 변위의 CSHead 측정값
+
+        //                sXtoY[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][1] - stablizedData[i][17]);    //  Y - probe Y     from 6axis stage
+        //                sXtoZ[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][2] - stablizedData[i][18]);   //  Z - probe Z      from 6axis stage
+
+        //                sXtoTX[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][3] - stablizedData[i][19]);   //  X - probe X from 6 axis stage
+        //                sXtoTY[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][4] - stablizedData[i][20]);   //  Y - probe Y from 6 axis stage
+        //                sXtoTZ[i] = new FZMath.Point2D(sXX[i].X, stablizedData[i][5] - stablizedData[i][21]);   //  Y - probe Y from 6 axis stage
+        //            }
+
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sXX, effLength, ref XtoXab);  //  A[0]X^2 + A[1]X + A[2]
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sXtoY, effLength, ref XtoYab);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sXtoZ, effLength, ref XtoZab);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sXtoTX, effLength, ref XtoTXab);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sXtoTY, effLength, ref XtoTYab);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sXtoTZ, effLength, ref XtoTZab);
+
+        //            lstr = "XX Scale\t" + XtoXab[0].ToString("E5") + ",\t" + XtoXab[1].ToString("E5") + ",\t" + XtoXab[2].ToString("E5") + "\r\n";
+        //            lstr += "XtoY\t" + XtoYab[0].ToString("E5") + ",\t" + XtoYab[1].ToString("E5") + ",\t" + XtoYab[2].ToString("E5") + "\r\n";
+        //            lstr += "XtoZ\t" + XtoZab[0].ToString("E5") + ",\t" + XtoZab[1].ToString("E5") + ",\t" + XtoZab[2].ToString("E5") + "\r\n";
+        //            lstr += "XtoTX\t" + XtoTXab[0].ToString("E5") + ",\t" + XtoTXab[1].ToString("E5") + ",\t" + XtoTXab[2].ToString("E5") + "\r\n";
+        //            lstr += "XtoTY\t" + XtoTYab[0].ToString("E5") + ",\t" + XtoTYab[1].ToString("E5") + ",\t" + XtoTYab[2].ToString("E5") + "\r\n";
+        //            lstr += "XtoTZ\t" + XtoTZab[0].ToString("E5") + ",\t" + XtoTZab[1].ToString("E5") + ",\t" + XtoTZab[2].ToString("E5") + "\r\n";
+
+        //            wr = new StreamWriter(AdminPathName + "XXLUT" + cameraID + ".csv");
+        //            wr.Write(lstr);
+        //            wr.Close();
+
+        //            //////////////////////////////////////////////////////////////////////////////////
+        //            if (mAutoCalibrationCount % 2 == 0)
+        //            {
+        //                string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
+        //                StreamReader sr = new StreamReader(scaleNthetaFile);
+        //                string allstr = sr.ReadToEnd();
+        //                sr.Close();
+        //                string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                // X
+        //                string[] strXXscaleLine = allLines[1].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                allLines[1] = XtoXab[0].ToString("E5") + "\t" + XtoXab[1].ToString("E5") + "\t" + XtoXab[2].ToString("E5") + "\t//";
+        //                for (int i = 1; i < strXXscaleLine.Length; i++)
+        //                    allLines[1] += strXXscaleLine[i];
+        //                // X TO Y
+        //                string[] strXtoYLine = allLines[8].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                allLines[8] = XtoYab[0].ToString("E5") + "\t" + XtoYab[1].ToString("E5") + "\t" + XtoYab[2].ToString("E5") + "\t//";
+        //                for (int i = 1; i < strXtoYLine.Length; i++)
+        //                    allLines[8] += strXtoYLine[i];
+        //                // X TO Z
+        //                string[] strXtoZLine = allLines[9].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                allLines[9] = XtoZab[0].ToString("E5") + "\t" + XtoZab[1].ToString("E5") + "\t" + XtoZab[2].ToString("E5") + "\t//";
+        //                for (int i = 1; i < strXtoZLine.Length; i++)
+        //                    allLines[9] += strXtoZLine[i];
+        //                // X TO TX
+        //                string[] strXtoTXLine = allLines[10].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                allLines[10] = XtoTXab[0].ToString("E5") + "\t" + XtoTXab[1].ToString("E5") + "\t" + XtoTXab[2].ToString("E5") + "\t//";
+        //                for (int i = 1; i < strXtoTXLine.Length; i++)
+        //                    allLines[10] += strXtoTXLine[i];
+        //                // X TO TY
+        //                string[] strXtoTYLine = allLines[11].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                allLines[11] = XtoTYab[0].ToString("E5") + "\t" + XtoTYab[1].ToString("E5") + "\t" + XtoTYab[2].ToString("E5") + "\t//";
+        //                for (int i = 1; i < strXtoTYLine.Length; i++)
+        //                    allLines[11] += strXtoTYLine[i];
+        //                // X TO TZ
+        //                string[] strXtoTZLine = allLines[12].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                allLines[12] = XtoTZab[0].ToString("E5") + "\t" + XtoTZab[1].ToString("E5") + "\t" + XtoTZab[2].ToString("E5") + "\t//";
+        //                for (int i = 1; i < strXtoTZLine.Length; i++)
+        //                    allLines[12] += strXtoTZLine[i];
+
+        //                wr = new StreamWriter(scaleNthetaFile);
+        //                for (int i = 0; i < allLines.Length; i++)
+        //                {
+        //                    wr.WriteLine(allLines[i]);
+        //                }
+        //                wr.Close();
+        //            }
+        //            break;
+
+        //        case "Y":
+        //            mYCalAvgY1Y2pp = Math.Abs(stablizedData[0][7] - stablizedData[effLength - 1][7] + stablizedData[0][9] - stablizedData[effLength - 1][9]) / 2;
+        //            mYCalY3pp = Math.Abs(stablizedData[0][11] - stablizedData[effLength - 1][11]);
+        //            mEstimatedEastViewYscale = (mYCalAvgY1Y2pp + mZCalAvgY1Y2pp) / (mYCalY3pp + mZCalY3pp);
+
+        //            //  Axis = 2 : Y scale 확인 및 저장
+        //            //  SY vs Yavg ( = (Y4+Y5) / 2 ) 배열을 생성하여 LMS 의 a,b 를 구한다.
+        //            //  데이터 개수가 N 개일 때
+        //            //  LUTY_tmp[i] = a * SY[i] - ( Yavg[i] - b )
+        //            //  LUTY[i] = ( LUTY_tmp[i - 1] + LUTY_tmp[i] + LUTY_tmp[i + 1] ) / 3 ; 0 < i < N-1
+        //            //  LUTY[0] = ( 2 * LUTY_tmp[0] + LUTY_tmp[1]) / 3 ;
+        //            //  LUTY[N-1] = ( 2 * LUTY_tmp[N-1] + LUTY_tmp[N-2]) / 3 ;
+        //            for (int i = 0; i < effLength; i++)
+        //            {
+        //                sYY[i].Y = stablizedData[i][17];    //  Y 변위의 Displacement Sensor 측정값   from 6 axis stage
+        //                sYY[i].X = stablizedData[i][1];
+
+        //                sYtoX[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][0] - stablizedData[i][16]);    //  X - probe X     from 6 axis stage
+        //                sYtoZ[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][2] - stablizedData[i][18]);   //  Z - probe Z     from 6 axis stage
+
+        //                sYtoTX[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][3] - stablizedData[i][19]);   //  X - probe X from 6 axis stage
+        //                sYtoTY[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][4] - stablizedData[i][20]);   //  Y - probe Y from 6 axis stage
+        //                sYtoTZ[i] = new FZMath.Point2D(sYY[i].X, stablizedData[i][5] - stablizedData[i][21]);   //  Y - probe Y from 6 axis stage
+        //            }
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sYY, effLength, ref YtoYab);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sYtoX, effLength, ref YtoXab);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sYtoZ, effLength, ref YtoZab);
+
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sYtoTX, effLength, ref YtoTXab);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sYtoTY, effLength, ref YtoTYab);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sYtoTZ, effLength, ref YtoTZab);
+
+        //            lstr = "YY Scale\t" + YtoYab[0].ToString("E5") + ",\t" + YtoYab[1].ToString("E5") + ",\t" + YtoYab[2].ToString("E5") + "\r\n";
+        //            lstr += "YtoX\t" + YtoXab[0].ToString("E5") + ",\t" + YtoXab[1].ToString("E5") + ",\t" + YtoXab[2].ToString("E5") + "\r\n";
+        //            lstr += "YtoZ\t" + YtoZab[0].ToString("E5") + ",\t" + YtoZab[1].ToString("E5") + ",\t" + YtoZab[2].ToString("E5") + "\r\n";
+
+        //            lstr += "YtoTX\t" + YtoTXab[0].ToString("E5") + ",\t" + YtoTXab[1].ToString("E5") + ",\t" + YtoTXab[2].ToString("E5") + "\r\n";
+        //            lstr += "YtoTY\t" + YtoTYab[0].ToString("E5") + ",\t" + YtoTYab[1].ToString("E5") + ",\t" + YtoTYab[2].ToString("E5") + "\r\n";
+        //            lstr += "YtoTZ\t" + YtoTZab[0].ToString("E5") + ",\t" + YtoTZab[1].ToString("E5") + ",\t" + YtoTZab[2].ToString("E5") + "\r\n";
+
+        //            if (isAutoCalibrationEastView)
+        //            {
+        //                lstr = "EastViewYscale,\t" + mEstimatedEastViewYscale.ToString("F6") + "\r\n";
+        //            }
+
+        //            wr = new StreamWriter(AdminPathName + "YYLUT" + cameraID + ".csv");
+        //            wr.Write(lstr);
+        //            wr.Close();
+
+        //            //////////////////////////////////////////////////////////////////////////////////                    
+        //            if (mAutoCalibrationCount % 2 == 0)
+        //            {
+        //                string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
+        //                StreamReader sr = new StreamReader(scaleNthetaFile);
+        //                string allstr = sr.ReadToEnd();
+        //                string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+
+        //                sr.Close();
+        //                if (isAutoCalibrationEastView)
+        //                {
+        //                    // East View Sclae
+        //                    string[] strEastScaleLine = allLines[7].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    allLines[7] = mEstimatedEastViewYscale.ToString("E5") + "\t//";
+        //                    for (int i = 1; i < strEastScaleLine.Length; i++)
+        //                        allLines[7] += strEastScaleLine[i];
+        //                }
+        //                else
+        //                {
+        //                    // Y
+        //                    string[] strYYscaleLine = allLines[2].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    allLines[2] = YtoYab[0].ToString("E5") + "\t" + YtoYab[1].ToString("E5") + "\t" + YtoYab[2].ToString("E5") + "\t//";
+        //                    for (int i = 1; i < strYYscaleLine.Length; i++)
+        //                        allLines[2] += strYYscaleLine[i];
+        //                    // Y TO X
+        //                    string[] strYtoXLine = allLines[13].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    allLines[13] = YtoXab[0].ToString("E5") + "\t" + YtoXab[1].ToString("E5") + "\t" + YtoXab[2].ToString("E5") + "\t//";
+        //                    for (int i = 1; i < strYtoXLine.Length; i++)
+        //                        allLines[13] += strYtoXLine[i];
+        //                    // Y TO Z
+        //                    string[] strYtoZLine = allLines[14].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    allLines[14] = YtoZab[0].ToString("E5") + "\t" + YtoZab[1].ToString("E5") + "\t" + YtoZab[2].ToString("E5") + "\t//";
+        //                    for (int i = 1; i < strYtoZLine.Length; i++)
+        //                        allLines[14] += strYtoZLine[i];
+        //                    // Y TO TX
+        //                    string[] strYtoTXLine = allLines[15].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    allLines[15] = YtoTXab[0].ToString("E5") + "\t" + YtoTXab[1].ToString("E5") + "\t" + YtoTXab[2].ToString("E5") + "\t//";
+        //                    for (int i = 1; i < strYtoTXLine.Length; i++)
+        //                        allLines[15] += strYtoTXLine[i];
+        //                    // Y TO TY
+        //                    string[] strYtoTYLine = allLines[16].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    allLines[16] = YtoTYab[0].ToString("E5") + "\t" + YtoTYab[1].ToString("E5") + "\t" + YtoTYab[2].ToString("E5") + "\t//";
+        //                    for (int i = 1; i < strYtoTYLine.Length; i++)
+        //                        allLines[16] += strYtoTYLine[i];
+        //                    // Y TO TZ
+        //                    string[] strYtoTZLine = allLines[17].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                    allLines[17] = YtoTZab[0].ToString("E5") + "\t" + YtoTZab[1].ToString("E5") + "\t" + YtoTZab[2].ToString("E5") + "\t//";
+        //                    for (int i = 1; i < strYtoTZLine.Length; i++)
+        //                        allLines[17] += strYtoTZLine[i];
+        //                }
+
+        //                wr = new StreamWriter(scaleNthetaFile);
+        //                for (int i = 0; i < allLines.Length; i++)
+        //                {
+        //                    wr.WriteLine(allLines[i]);
+        //                }
+        //                wr.Close();
+        //            }
+        //            break;
+
+        //        //  이하는 YLUTs , X Scale 적용한 후에 수행해야 함.
+        //        case "TX":
+        //            //  Axis = 3 : TXLUT 의 경우 TX scale 확인 및 저장
+        //            //  SY vs TX 배열을 생성하여 LMS 의 a,b 를 구한다.
+        //            //  데이터 개수가 N 개일 때
+        //            //  LUTY_tmp[i] = a * SY[i] - ( Yavg[i] - b )
+        //            //  LUTY[i] = ( LUTY_tmp[i - 1] + LUTY_tmp[i] + LUTY_tmp[i + 1] ) / 3 ; 0 < i < N-1
+        //            //  LUTY[0] = ( 2 * LUTY_tmp[0] + LUTY_tmp[1]) / 3 ;
+        //            //  LUTY[N-1] = ( 2 * LUTY_tmp[N-1] + LUTY_tmp[N-2]) / 3 ;
+
+        //            //  stablizedData[i][19] : TX   rad
+        //            //  stablizedData[i][20] : TY   rad
+        //            //  stablizedData[i][21] : TZ   rad
+
+        //            for (int i = 0; i < effLength; i++)
+        //            {
+        //                sTXTX[i].Y = stablizedData[i][19]; // * RAD_To_MIN;    //  Tilt X 를 위한 Z 변위의 Displacement Sensor 측정값에서 CSH Z 변위를 소거된 값이어야 함
+        //                sTXTX[i].X = stablizedData[i][3];
+
+        //                sTXtoTY[i] = new FZMath.Point2D(sTXTX[i].X, stablizedData[i][4] - stablizedData[i][20]);   //  Y - probe Y from 6 axis stage
+        //                sTXtoTZ[i] = new FZMath.Point2D(sTXTX[i].X, stablizedData[i][5] - stablizedData[i][21]);   //  Y - probe Y from 6 axis stage
+        //            }
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sTXTX, effLength, ref TXtoTXab);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sTXtoTY, effLength, ref TXtoTYab);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sTXtoTZ, effLength, ref TXtoTZab);
+
+        //            lstr += "TX Scale\t" + TXtoTXab[0].ToString("E5") + ",\t" + TXtoTXab[1].ToString("E5") + ",\t" + TXtoTXab[2].ToString("E5") + "\r\n";
+        //            lstr += "TXtoTY\t" + TXtoTYab[0].ToString("E5") + ",\t" + TXtoTYab[1].ToString("E5") + ",\t" + TXtoTYab[2].ToString("E5") + "\r\n";
+        //            lstr += "TXtoTZ\t" + TXtoTZab[0].ToString("E5") + ",\t" + TXtoTZab[1].ToString("E5") + ",\t" + TXtoTZab[2].ToString("E5") + "\r\n";
+
+        //            wr = new StreamWriter(AdminPathName + "TXLUT" + cameraID + ".csv");
+        //            wr.Write(lstr);
+        //            wr.Close();
+
+        //            if (mAutoCalibrationCount % 2 == 0)
+        //            {
+        //                string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
+        //                StreamReader sr = new StreamReader(scaleNthetaFile);
+        //                string allstr = sr.ReadToEnd();
+        //                sr.Close();
+        //                string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                // TX
+        //                string[] strTXscaleLine = allLines[4].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                allLines[4] = TXtoTXab[0].ToString("E5") + "\t" + TXtoTXab[1].ToString("E5") + "\t" + TXtoTXab[2].ToString("E5") + "\t//";
+        //                for (int i = 1; i < strTXscaleLine.Length; i++)
+        //                    allLines[4] += strTXscaleLine[i];
+        //                // TX TO TY
+        //                string[] strTXtoTYLine = allLines[23].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                allLines[23] = TXtoTYab[0].ToString("E5") + "\t" + TXtoTYab[1].ToString("E5") + "\t" + TXtoTYab[2].ToString("E5") + "\t//";
+        //                for (int i = 1; i < strTXtoTYLine.Length; i++)
+        //                    allLines[23] += strTXtoTYLine[i];
+        //                // TX TO TZ
+        //                string[] strTXtoTZLine = allLines[24].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                allLines[24] = TXtoTZab[0].ToString("E5") + "\t" + TXtoTZab[1].ToString("E5") + "\t" + TXtoTZab[2].ToString("E5") + "\t//";
+        //                for (int i = 1; i < strTXtoTZLine.Length; i++)
+        //                    allLines[24] += strTXtoTZLine[i];
+
+        //                wr = new StreamWriter(scaleNthetaFile);
+        //                for (int i = 0; i < allLines.Length; i++)
+        //                {
+        //                    wr.WriteLine(allLines[i]);
+        //                }
+        //                wr.Close();
+        //            }
+        //            break;
+        //        case "TY":
+        //            //  Axis = 4 : TYLUT 의 경우 TY scale 확인 및 저장
+        //            //  SY vs TY 배열을 생성하여 LMS 의 a,b 를 구한다.
+        //            //  데이터 개수가 N 개일 때
+        //            //  LUTY_tmp[i] = a * SY[i] - ( Yavg[i] - b )
+        //            //  LUTY[i] = ( LUTY_tmp[i - 1] + LUTY_tmp[i] + LUTY_tmp[i + 1] ) / 3 ; 0 < i < N-1
+        //            //  LUTY[0] = ( 2 * LUTY_tmp[0] + LUTY_tmp[1]) / 3 ;
+        //            //  LUTY[N-1] = ( 2 * LUTY_tmp[N-1] + LUTY_tmp[N-2]) / 3 ;
+        //            for (int i = 0; i < effLength; i++)
+        //            {
+        //                sTYTY[i].Y = stablizedData[i][20]; // * RAD_To_MIN;    //  Tilt Y 를 위한 Z 변위의 Displacement Sensor 측정값에서 CSH Z 변위를 소거된 값이어야 함
+        //                sTYTY[i].X = stablizedData[i][4];
+
+        //                sTYtoTX[i] = new FZMath.Point2D(sTYTY[i].X, stablizedData[i][3] - stablizedData[i][19]);
+        //                sTYtoTZ[i] = new FZMath.Point2D(sTYTY[i].X, stablizedData[i][5] - stablizedData[i][21]);
+        //            }
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sTYTY, effLength, ref TYtoTYab);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sTYtoTX, effLength, ref TYtoTXab);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sTYtoTZ, effLength, ref TYtoTZab);
+
+        //            lstr += "TY Scale\t" + TYtoTYab[0].ToString("E5") + ",\t" + TYtoTYab[1].ToString("E5") + ",\t" + TYtoTYab[2].ToString("E5") + "\r\n";
+        //            lstr += "TYtoTX\t" + TYtoTXab[0].ToString("E5") + ",\t" + TYtoTXab[1].ToString("E5") + ",\t" + TYtoTXab[2].ToString("E5") + "\r\n";
+        //            lstr += "TYtoTZ\t" + TYtoTZab[0].ToString("E5") + ",\t" + TYtoTZab[1].ToString("E5") + ",\t" + TYtoTZab[2].ToString("E5") + "\r\n";
+
+        //            wr = new StreamWriter(AdminPathName + "TYLUT" + cameraID + ".csv");
+        //            wr.Write(lstr);
+        //            wr.Close();
+
+        //            if (mAutoCalibrationCount % 2 == 0)
+        //            {
+        //                string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
+        //                StreamReader sr = new StreamReader(scaleNthetaFile);
+        //                string allstr = sr.ReadToEnd();
+        //                sr.Close();
+        //                string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                // TY
+        //                string[] strTYscaleLine = allLines[5].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                allLines[5] = TYtoTYab[0].ToString("E5") + "\t" + TYtoTYab[1].ToString("E5") + "\t" + TYtoTYab[2].ToString("E5") + "\t//";
+        //                for (int i = 1; i < strTYscaleLine.Length; i++)
+        //                    allLines[5] += strTYscaleLine[i];
+        //                // TY TO TX
+        //                string[] strTYtoTXLine = allLines[25].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                allLines[25] = TYtoTXab[0].ToString("E5") + "\t" + TYtoTXab[1].ToString("E5") + "\t" + TYtoTXab[2].ToString("E5") + "\t//";
+        //                for (int i = 1; i < strTYtoTXLine.Length; i++)
+        //                    allLines[25] += strTYtoTXLine[i];
+        //                // TY TO TZ
+        //                string[] strTYtoTZLine = allLines[26].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                allLines[26] = TYtoTZab[0].ToString("E5") + "\t" + TYtoTZab[1].ToString("E5") + "\t" + TYtoTZab[2].ToString("E5") + "\t//";
+        //                for (int i = 1; i < strTYtoTZLine.Length; i++)
+        //                    allLines[26] += strTYtoTZLine[i];
+
+        //                wr = new StreamWriter(scaleNthetaFile);
+        //                for (int i = 0; i < allLines.Length; i++)
+        //                {
+        //                    wr.WriteLine(allLines[i]);
+        //                }
+        //                wr.Close();
+        //            }
+        //            break;
+        //        case "TZ":
+        //            //  Axis = 4 : TYLUT 의 경우 TY scale 확인 및 저장
+        //            //  SY vs TY 배열을 생성하여 LMS 의 a,b 를 구한다.
+        //            //  데이터 개수가 N 개일 때
+        //            //  LUTY_tmp[i] = a * SY[i] - ( Yavg[i] - b )
+        //            //  LUTY[i] = ( LUTY_tmp[i - 1] + LUTY_tmp[i] + LUTY_tmp[i + 1] ) / 3 ; 0 < i < N-1
+        //            //  LUTY[0] = ( 2 * LUTY_tmp[0] + LUTY_tmp[1]) / 3 ;
+        //            //  LUTY[N-1] = ( 2 * LUTY_tmp[N-1] + LUTY_tmp[N-2]) / 3 ;
+        //            for (int i = 0; i < effLength; i++)
+        //            {
+        //                sTZTZ[i].Y = stablizedData[i][21]; // * RAD_To_MIN;    //  Tilt Y 를 위한 Z 변위의 Displacement Sensor 측정값에서 CSH Z 변위를 소거된 값이어야 함
+        //                sTZTZ[i].X = stablizedData[i][5];
+
+        //                sTZtoTX[i] = new FZMath.Point2D(sTZTZ[i].X, stablizedData[i][3] - stablizedData[i][19]);
+        //                sTZtoTY[i] = new FZMath.Point2D(sTZTZ[i].X, stablizedData[i][4] - stablizedData[i][20]);
+        //            }
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sTZTZ, effLength, ref TZtoTZab);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sTZtoTX, effLength, ref TZtoTXab);
+        //            m__G.oCam[0].mFAL.mFZM.mcLMS2ndPoly(sTZtoTY, effLength, ref TZtoTYab);
+
+        //            lstr += "TZ Scale\t" + TZtoTZab[0].ToString("E5") + ",\t" + TZtoTZab[1].ToString("E5") + ",\t" + TZtoTZab[2].ToString("E5") + "\r\n";
+        //            lstr += "TZtoTX\t" + TZtoTXab[0].ToString("E5") + ",\t" + TZtoTXab[1].ToString("E5") + ",\t" + TZtoTXab[2].ToString("E5") + "\r\n";
+        //            lstr += "TZtoTY\t" + TZtoTYab[0].ToString("E5") + ",\t" + TZtoTYab[1].ToString("E5") + ",\t" + TZtoTYab[2].ToString("E5") + "\r\n";
+
+        //            wr = new StreamWriter(AdminPathName + "TYLUT" + cameraID + ".csv");
+        //            wr.Write(lstr);
+        //            wr.Close();
+
+        //            if (mAutoCalibrationCount % 2 == 0)
+        //            {
+        //                string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + cameraID + ".txt";
+        //                StreamReader sr = new StreamReader(scaleNthetaFile);
+        //                string allstr = sr.ReadToEnd();
+        //                sr.Close();
+        //                string[] allLines = allstr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                // TZ
+        //                string[] strTZscaleLine = allLines[6].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                allLines[6] = TZtoTZab[0].ToString("E5") + "\t" + TZtoTZab[1].ToString("E5") + "\t" + TZtoTZab[2].ToString("E5") + "\t//";
+        //                for (int i = 1; i < strTZscaleLine.Length; i++)
+        //                    allLines[6] += strTZscaleLine[i];
+        //                // TZ TO TX
+        //                string[] strTZtoTXLine = allLines[27].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                allLines[27] = TZtoTXab[0].ToString("E5") + "\t" + TZtoTXab[1].ToString("E5") + "\t" + TZtoTXab[2].ToString("E5") + "\t//";
+        //                for (int i = 1; i < strTZtoTXLine.Length; i++)
+        //                    allLines[27] += strTZtoTXLine[i];
+        //                // TZ TO TY
+        //                string[] strTZtoTYLine = allLines[28].Split("//".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        //                allLines[28] = TZtoTYab[0].ToString("E5") + "\t" + TZtoTYab[1].ToString("E5") + "\t" + TZtoTYab[2].ToString("E5") + "\t//";
+        //                for (int i = 1; i < strTZtoTYLine.Length; i++)
+        //                    allLines[28] += strTZtoTYLine[i];
+
+        //                wr = new StreamWriter(scaleNthetaFile);
+        //                for (int i = 0; i < allLines.Length; i++)
+        //                {
+        //                    wr.WriteLine(allLines[i]);
+        //                }
+        //                wr.Close();
+        //            }
+        //            break;
+        //        default:
+        //            break;
+        //    }
+        //    if (InvokeRequired)
+        //        BeginInvoke((MethodInvoker)delegate
+        //        {
+        //            tbCalibration.Text += lstr;
+        //        });
+        //    else
+        //        tbCalibration.Text += lstr;
+
+        //}
 
         //public enum Axis { X, Y, Z, TX, TY, TZ }
 
@@ -8919,10 +10190,10 @@ namespace FZ4P
                     if (pictureBox2.InvokeRequired)
                         BeginInvoke((MethodInvoker)delegate
                         {
-                            pictureBox2.Image = BitmapConverter.ToBitmap(m__G.oCam[0].LoadCropImg(0));
+                            pictureBox2.Image = BitmapConverter.ToBitmap(m__G.oCam[0].LoadCropImgFromLive(0, m__G.oCam[0].mbDrawReference));
                         });
                     else
-                        pictureBox2.Image = BitmapConverter.ToBitmap(m__G.oCam[0].LoadCropImg(0));
+                        pictureBox2.Image = BitmapConverter.ToBitmap(m__G.oCam[0].LoadCropImgFromLive(0, m__G.oCam[0].mbDrawReference));
 
                     if (IsLiveCropStop)
                         break;
@@ -9086,7 +10357,7 @@ namespace FZ4P
         {
             //m__G.fGraph.mDriverIC.SocketTest(2, false);
             //m__G.fGraph.mDriverIC.SocketTest(0, false);
-            Thread.Sleep(300);
+            //Thread.Sleep(300);
 
             //m__G.fGraph.mDriverIC.SocketTest(1, false);
         }
@@ -9103,14 +10374,14 @@ namespace FZ4P
 
         private void SidePushloadBtn_Click(object sender, EventArgs e)
         {
-           //m__G.fGraph.mDriverIC.SocketTest(2, true);
+            //m__G.fGraph.mDriverIC.SocketTest(2, true);
         }
 
         private void BaseUpBtn_Click(object sender, EventArgs e)
         {
             //m__G.fGraph.mDriverIC.SocketTest(2, false);
             //m__G.fGraph.mDriverIC.SocketTest(0, false);
-            Thread.Sleep(300);
+            //Thread.Sleep(300);
 
             //m__G.fGraph.mDriverIC.SocketTest(1, true);
         }
@@ -9135,87 +10406,9 @@ namespace FZ4P
         }
 
         public int mAutoCalibrationCount = 0;
-        public bool mAutoCalibrationRun = false;
         public bool isAutoCalibrationEastView = false;
-
-        //private void btnAutoCal_Click(object sender, EventArgs e)
-        //{
-        //    if (!mAutoCalibrationRun)
-        //    {
-        //        mAutoCalibrationRun = true;
-        //        btnAutoCal.Text = "Stop Auto Calibration";
-        //    }
-        //    else
-        //    {
-        //        mAutoCalibrationRun = false;
-        //        btnAutoCal.Text = "Auto Cal Before-After";
-        //        return;
-        //    }
-
-        //    mAutoCalibrationCount = 0;
-        //    tbCalibration.Text = "";
-
-        //    isAutoCalibrationEastView = false;
-        //    if (rbCalEastView.Checked)
-        //    {
-        //        isAutoCalibrationEastView = true;
-
-        //        // East View에서 Z Oneway Stroke
-        //        double zOnewayStroke = 1750;
-        //        if (tbZMaxStroke.Text.Length > 1)
-        //            zOnewayStroke = double.Parse(tbZMaxStroke.Text);
-
-        //        // East View에서 Y Oneway Stroke
-        //        double yOnewayStroke = 1900;
-        //        if (tbMaxStroke.Text.Length > 1)
-        //            yOnewayStroke = double.Parse(tbMaxStroke.Text);
-
-        //        Task.Run(() =>
-        //        {
-        //            AutoCalibrationEastView(yOnewayStroke, zOnewayStroke);
-        //            mAutoCalibrationRun = false;
-        //            this.Invoke(new Action(() =>
-        //            {
-        //                btnAutoCal.Text = "Auto Cal Before-After";
-        //            }));
-        //        });
-
-        //    }
-        //    else
-        //    {
-        //        // Selected Aixs Translation
-        //        Axis axis;
-        //        if (rbCalZ.Checked)
-        //            axis = Axis.Z;
-        //        else if (rbCalX.Checked)
-        //            axis = Axis.X;
-        //        else if (rbCalY.Checked)
-        //            axis = Axis.Y;
-        //        else if (rbCalTX.Checked)
-        //            axis = Axis.TX;
-        //        else if (rbCalTY.Checked)
-        //            axis = Axis.TY;
-        //        else if (rbCalTZ.Checked)
-        //            axis = Axis.TZ;
-        //        else
-        //            return;
-
-        //        double onewayStroke = 1900;
-        //        if (tbMaxStroke.Text.Length > 1)
-        //            onewayStroke = double.Parse(tbMaxStroke.Text);
-
-        //        Task.Run(() =>
-        //        {
-        //            AutoCalibrationWrapperOld(axis, onewayStroke);
-        //            mAutoCalibrationRun = false;
-        //            this.Invoke(new Action(() =>
-        //            {
-        //                btnAutoCal.Text = "Auto Cal Before-After";
-        //            }));
-        //        });
-
-        //    }
-        //}
+        bool motorizedMeasurementRun = false;
+        bool motorizedMeasurementAbort = false;
 
         public void InitializeScaleNTheta()
         {
@@ -9553,7 +10746,7 @@ namespace FZ4P
         // 첫 Cal
         private void AutoCalibration()
         {
-            TextAppendTbInfo("Start auto calibration");
+            AddVsnLog("Start auto calibration");
 
             // ScaleNTheta 초기화 (EastViewScale은 유지)
             double eastViewYPscale = m__G.oCam[0].mFAL.mFZM.mEastviewYPscale;
@@ -9568,79 +10761,75 @@ namespace FZ4P
                                              ms_TZtoTXbyView, ms_TZtoTYbyView,
                                              ms_XJtoXbyView, ms_YJtoYbyView, ms_ZJtoZbyView,
                                              ms_TZtoZbyView);
-            TextAppendTbInfo("Reset all scales except for EastViewYP scale");
+            AddVsnLog("Reset all scales except for EastViewYP scale");
             SaveScaleNTheta();
 
 
             // OQC 
-            if (!mAutoCalibrationRun) return;
             AddVsnLog("Start to find CSHorg.");
             FindCSHorg();   // 엉뚱한 위치에서 FindPorg시작하는거 방지용
 
-            if (!mAutoCalibrationRun) return;
+            if (motorizedMeasurementAbort) return;
             AddVsnLog("Start to find Porg.");
             FindPorg();
 
-            if (!mAutoCalibrationRun) return;
+            if (motorizedMeasurementAbort) return;
             AddVsnLog("Start to find HCS Rotation Psi.");
             FindHCSrotationPsi();
 
-            if (!mAutoCalibrationRun) return;
-            AddVsnLog("Start to find X pivot.");
-            FindPivot(1);
-            if (!mAutoCalibrationRun) return;
-            AddVsnLog("Start to find Y pivot.");
-            FindPivot(2);
-            if (!mAutoCalibrationRun) return;
-            AddVsnLog("Start to find Z pivot.");
-            FindPivot(3);
+            for (int i = 1; i < 4; i++)
+            {
+                if (motorizedMeasurementAbort) return;
+                AddVsnLog($"Start to find {(Axis)(i - 1)} pivot.");
+                FindPivot(i);
+            }
             SavePivots();
 
 
-            if (!mAutoCalibrationRun) return;
+            if (motorizedMeasurementAbort) return;
             AddVsnLog("Start to find CSHorg, Reset Probe.");
             FindCSHorg(true);   // Probe 리셋
 
-            if (!mAutoCalibrationRun) return;
+            if (motorizedMeasurementAbort) return;
             AddVsnLog("Start to find Fidorg");
             FindFidorg();
 
             SaveOQCCondition();
 
             // 측정 시작
-            TextAppendTbInfo("Start baseline measurement");
+            AddVsnLog("Start baseline measurement");
             AxisCalibration(Axis.Z, 1750, false, true, false); // 1750
-            LoadScaleNTheta();
+            //LoadScaleNTheta();
             AxisCalibration(Axis.Y, 1900, false, true, false);  // 1900
-            LoadScaleNTheta();
+            //LoadScaleNTheta();
             AxisCalibration(Axis.X, 1900, false, true, false);  // 1900
-            LoadScaleNTheta();
+            //LoadScaleNTheta();
             AxisCalibration(Axis.TY, 200, false, true, false);
-            LoadScaleNTheta();
+            //LoadScaleNTheta();
             AxisCalibration(Axis.TX, 160, false, true, false);  // 160
-            LoadScaleNTheta();
+            //LoadScaleNTheta();
             AxisCalibration(Axis.TZ, 200, false, true, false);
-            TextAppendTbInfo("Finish  baseline measurement");
+            AddVsnLog("Finish  baseline measurement");
 
-            TextAppendTbInfo("Start verification measurement");
-            LoadScaleNTheta();
+            AddVsnLog("Start verification measurement");
+            //LoadScaleNTheta();
 
-            if (!mAutoCalibrationRun) return;
+            if (motorizedMeasurementAbort) return;
             AddVsnLog("Start to find X pivot.");
             FindPivot(1);
-            if (!mAutoCalibrationRun) return;
+            if (motorizedMeasurementAbort) return;
             AddVsnLog("Start to find Y pivot.");
             FindPivot(2);
-            if (!mAutoCalibrationRun) return;
+            if (motorizedMeasurementAbort) return;
             AddVsnLog("Start to find Z pivot.");
             FindPivot(3);
             SavePivots();
 
-            if (!mAutoCalibrationRun) return;
+            if (motorizedMeasurementAbort) return;
             AddVsnLog("Start to find CSHorg");
             FindCSHorg();
 
-            if (!mAutoCalibrationRun) return;
+            if (motorizedMeasurementAbort) return;
             AddVsnLog("Start to find Fidorg");
             FindFidorg();
 
@@ -9653,18 +10842,18 @@ namespace FZ4P
             AxisCalibration(Axis.TX, 160, true, false, false);
             AxisCalibration(Axis.TZ, 200, true, false, false);
 
-            TextAppendTbInfo("Finsh verification measurement");
-            TextAppendTbInfo("Finsh auto calibration");
+            AddVsnLog("Finsh verification measurement");
+            AddVsnLog("Finsh auto calibration");
         }
         private void ReAutoCalibration()
         {
             if (LoadScaleNTheta())
             {
-                TextAppendTbInfo($"Loaded scales");
+                AddVsnLog($"Loaded scales");
             }
             else
             {
-                TextAppendTbInfo($"Fail to load ScaleNTheta{m__G.mCamID0}");
+                AddVsnLog($"Fail to load ScaleNTheta{m__G.mCamID0}");
                 return;
             }
 
@@ -9683,7 +10872,7 @@ namespace FZ4P
             AxisCalibration(Axis.TX, 160, true, true, true);
             AxisCalibration(Axis.TZ, 200, true, true, true);
 
-            TextAppendTbInfo("End Cal");
+            AddVsnLog("End Cal");
         }
         private void EastViewCalibration(bool isRemote)
         {
@@ -9692,22 +10881,19 @@ namespace FZ4P
             double zOnewayStroke = 1750;
             double yOnewayStroke = 1900;
 
-            List<double[]> collectedData = new List<double[]>();
-            List<double[]> measuredData = null;
+            List<List<double[]>> stabilizedDataList = new List<List<double[]>>();
 
             // Z Translation
-            if (!mAutoCalibrationRun) return;
-            collectedData.Add(null);
-            measuredData = ScanAxis(Axis.Z, zOnewayStroke);
-            collectedData.AddRange(measuredData);
+            if (motorizedMeasurementAbort) return;
+            stabilizedDataList.Add(ScanAxis(Axis.Z, zOnewayStroke, 100));
 
             // Y Translation
-            if (!mAutoCalibrationRun) return;
-            collectedData.Add(null);
-            measuredData = ScanAxis(Axis.Y, yOnewayStroke);
-            collectedData.AddRange(measuredData);
+            if (motorizedMeasurementAbort) return;
+            //collectedData.Add(null);
+            stabilizedDataList.Add(ScanAxis(Axis.Y, yOnewayStroke, 100));
+            //collectedData.AddRange(measuredData);
 
-            RemoteEastViewYPCalibration(collectedData, isRemote);
+            CalculateESViewYPCalibration(stabilizedDataList, isRemote);
         }
         public void AxisCalibration(Axis axis, double onewayStrokeUm, bool isSingle, bool isRemote, bool isReCal)
         {
@@ -9716,42 +10902,42 @@ namespace FZ4P
             // isRecal = false, isRemote = true : 다른 위치에서 axis축 이동 5회 측정, scaleNtheta에 업데이트(scaleNthe 초기화 필요)
             // isRecal = false, isRemote = false : 다른 위치에서 axis축 이동 5회 측정
 
-            if (!mAutoCalibrationRun)
+            if (motorizedMeasurementAbort)
                 return;
 
-            TextAppendTbInfo($"Start {axis}-axis Measurement");
-            List<double[]> collectedData = new List<double[]>();
-            List<double[]> measuredData = null;
+            AddVsnLog($"Start {axis}-axis Measurement");
+            List<List<double[]>> stabilizedDataList = new List<List<double[]>>();
+            ;
             switch (axis)
             {
                 case Axis.X:
                     {
                         for (int i = 0; i < 5; i++)
                         {
-                            if (!mAutoCalibrationRun) break;
-                            collectedData.Add(null);
+                            if (motorizedMeasurementAbort) break;
+
+                            double step = 100;
 
                             switch (i)
                             {
                                 case 0:
-                                    measuredData = ScanAxis(axis, onewayStrokeUm);
+                                    stabilizedDataList.Add(ScanAxis(axis, onewayStrokeUm, step));
                                     break;
                                 case 1:
                                     // y 1000에서 x 이동하면서 측정
-                                    measuredData = ScanAxis(axis, onewayStrokeUm, Axis.Y, 900);    // 1000
+                                    stabilizedDataList.Add(ScanAxis(axis, onewayStrokeUm, step, Axis.Y, 900));    // 1000
                                     break;
                                 case 2:
-                                    measuredData = ScanAxis(axis, onewayStrokeUm, Axis.Y, -900);
+                                    stabilizedDataList.Add(ScanAxis(axis, onewayStrokeUm, step, Axis.Y, -900));
                                     break;
                                 case 3:
-                                    measuredData = ScanAxis(axis, onewayStrokeUm, Axis.Z, 900);    // 1000
+                                    stabilizedDataList.Add(ScanAxis(axis, onewayStrokeUm, step, Axis.Z, 900));    // 1000
                                     break;
                                 case 4:
                                     // z 1000에서 x 이동하면서 측정
-                                    measuredData = ScanAxis(axis, onewayStrokeUm, Axis.Z, -900);
+                                    stabilizedDataList.Add(ScanAxis(axis, onewayStrokeUm, step, Axis.Z, -900));
                                     break;
                             }
-                            collectedData.AddRange(measuredData);
                             if (isSingle) break;   // 재 Cal은 원점에서 x 이동만
                         }
                         break;
@@ -9760,32 +10946,32 @@ namespace FZ4P
                     {
                         for (int i = 0; i < 5; i++)
                         {
-                            if (!mAutoCalibrationRun) break;
-                            collectedData.Add(null);
+                            if (motorizedMeasurementAbort) break;
+
+                            double step = 100;
 
                             switch (i)
                             {
                                 case 0:
                                     // y 이동하면서 측정
-                                    measuredData = ScanAxis(axis, onewayStrokeUm);
+                                    stabilizedDataList.Add(ScanAxis(axis, onewayStrokeUm, step));
                                     break;
                                 case 1:
                                     // x 1000에서 y 이동하면서 측정
-                                    measuredData = ScanAxis(axis, onewayStrokeUm, Axis.X, 900);    // 1000
+                                    stabilizedDataList.Add(ScanAxis(axis, onewayStrokeUm, step, Axis.X, 900));    // 1000
                                     break;
                                 case 2:
                                     // x -1000에서 y 이동하면서 측정
-                                    measuredData = ScanAxis(axis, onewayStrokeUm, Axis.X, -900);
+                                    stabilizedDataList.Add(ScanAxis(axis, onewayStrokeUm, step, Axis.X, -900));
                                     break;
                                 case 3:
-                                    measuredData = ScanAxis(axis, 700, Axis.Z, 600);    // 700 600
+                                    stabilizedDataList.Add(ScanAxis(axis, 700, step, Axis.Z, 600));    // 700 600
                                     break;
                                 case 4:
                                     // z 1000에서 x 이동하면서 측정
-                                    measuredData = ScanAxis(axis, 700, Axis.Z, -600);
+                                    stabilizedDataList.Add(ScanAxis(axis, 700, step, Axis.Z, -600));
                                     break;
                             }
-                            collectedData.AddRange(measuredData);
                             if (isSingle) break;
                         }
                         break;
@@ -9794,33 +10980,33 @@ namespace FZ4P
                     {
                         for (int i = 0; i < 5; i++)
                         {
-                            if (!mAutoCalibrationRun) break;
-                            collectedData.Add(null);
+                            if (motorizedMeasurementAbort) break;
+
+                            double step = 100;
 
                             switch (i)
                             {
                                 case 0:
                                     // z 이동하면서 측정       
-                                    measuredData = ScanAxis(axis, onewayStrokeUm);
+                                    stabilizedDataList.Add(ScanAxis(axis, onewayStrokeUm, step));
                                     break;
                                 case 1:
                                     // x 1000에서 z 이동하면서 측정
-                                    measuredData = ScanAxis(axis, onewayStrokeUm, Axis.X, 900);    // 1000
+                                    stabilizedDataList.Add(ScanAxis(axis, onewayStrokeUm, step, Axis.X, 900));    // 1000
                                     break;
                                 case 2:
                                     // x -1000에서 z 이동하면서 측정
-                                    measuredData = ScanAxis(axis, onewayStrokeUm, Axis.X, -900);
+                                    stabilizedDataList.Add(ScanAxis(axis, onewayStrokeUm, step, Axis.X, -900));
                                     break;
                                 case 3:
                                     // y 600에서 z 이동하면서 측정
-                                    measuredData = ScanAxis(axis, 700, Axis.Y, 600);    // 600
+                                    stabilizedDataList.Add(ScanAxis(axis, 700, step, Axis.Y, 600));    // 600
                                     break;
                                 case 4:
                                     // y -600에서 z 이동하면서 측정
-                                    measuredData = ScanAxis(axis, 700, Axis.Y, -600);
+                                    stabilizedDataList.Add(ScanAxis(axis, 700, step, Axis.Y, -600));
                                     break;
                             }
-                            collectedData.AddRange(measuredData);
                             if (isSingle) break;
                         }
                         break;
@@ -9829,34 +11015,34 @@ namespace FZ4P
                 case Axis.TY:
                 case Axis.TZ:
                     {
-                        collectedData.Add(null);
-                        measuredData = ScanAxis(axis, onewayStrokeUm);
-                        collectedData.AddRange(measuredData);
+                        double step = 12;
+
+                        stabilizedDataList.Add(ScanAxis(axis, onewayStrokeUm, step));
                         break;
                     }
             }
-            TextAppendTbInfo($"End {axis}-axis Measurement");
-            RemoteAxisCalibration(axis, collectedData, isRemote, isReCal);
+            AddVsnLog($"End {axis}-axis Measurement");
+            RemoteAxisCalibration(axis, stabilizedDataList, isRemote, isReCal);
         }
-        public List<double[]> ScanAxis(Axis axis, double onewayStroke, Axis? axis2 = null, double posAxis2 = 0)
+        public List<double[]> ScanAxis(Axis axis, double onewayStroke, double step, Axis? axis2 = null, double posAxis2 = 0, int cntRepeat = 1)
         {
             List<double[]> measuredData = new List<double[]>();
 
             // Hexapod
-            if (!mAutoCalibrationRun) { return measuredData; }
+            if (motorizedMeasurementAbort) { return measuredData; }
             MotorSetSpeed6D(SpeedLevel.Normal);
             MotorMoveOriginHexapod();
             MotorSetPivot(0, 0, 0);
 
-            if (!mAutoCalibrationRun) { return measuredData; }
+            if (motorizedMeasurementAbort) { return measuredData; }
             mGageFullData.Clear();
             mCalibrationFullData.Clear();
-
-            //if (m__G.mGageCounter != null)
-            //    m__G.mGageCounter.OpenAllport(); // 250210 주석처리
+            mPrismTXTYTZ.Clear();
+            mStdevTXTYTZ.Clear();
+            //mProbeTZ.Clear();
 
             // 초기위치 (0,0,0)로 이동
-            if (!mAutoCalibrationRun) { return measuredData; }
+            if (motorizedMeasurementAbort) { return measuredData; }
 
             if (axis < Axis.TX)
             {
@@ -9875,6 +11061,7 @@ namespace FZ4P
                 //ChangePivotXYZ(pivotAxis);  //  저장
                 //MotorMoveOriginHexapod();
 
+
                 MotorSetPivot(mHexapodPivots[pivotAxis - 1].X, mHexapodPivots[pivotAxis - 1].Y, mHexapodPivots[pivotAxis - 1].Z);
                 MotorSetHCS(0, 0, -mHCSrotation.Z);
             }
@@ -9892,7 +11079,7 @@ namespace FZ4P
             if (axis2 != null && posAxis2 != 0)
             {
                 // axis2의 posAxis2로 이동
-                if (!mAutoCalibrationRun) { return measuredData; }
+                if (motorizedMeasurementAbort) { return measuredData; }
                 double orgPos2 = MotorCurPosAxis((Axis)axis2);
                 for (int i = 1; i < 4; i++)    // axis2 1/3씩 이동
                 {
@@ -9903,7 +11090,7 @@ namespace FZ4P
             }
 
             // axis  onewayStroke 1/3씩 이동
-            if (!mAutoCalibrationRun) { return measuredData; }
+            if (motorizedMeasurementAbort) { return measuredData; }
             double orgPos = MotorCurPosAxis(axis);
 
             double pos = orgPos - (onewayStroke) / 3;
@@ -9912,14 +11099,14 @@ namespace FZ4P
             Thread.Sleep(300);  // 스테이지 안정화 될때까지 기다리기
             SingleFindMark();   // 측정
 
-            if (!mAutoCalibrationRun) { return measuredData; }
+            if (motorizedMeasurementAbort) { return measuredData; }
             pos = orgPos - 2 * onewayStroke / 3;
             MotorMoveAbsAxis(axis, pos);
             Thread.Sleep(300);
             SingleFindMark();
 
             // backlash 제거
-            if (!mAutoCalibrationRun) { return measuredData; }
+            if (motorizedMeasurementAbort) { return measuredData; }
             if (axis < Axis.TX)
             {
                 pos = orgPos - onewayStroke - 300;
@@ -9930,8 +11117,7 @@ namespace FZ4P
             }
             MotorMoveAbsAxis(axis, pos);
             Thread.Sleep(200);
-            var gageData = m__G.mGageCounter.ReadPortAll();
-            if (!mAutoCalibrationRun) { return measuredData; }
+            if (motorizedMeasurementAbort) { return measuredData; }
             if (axis < Axis.TX)
             {
                 pos = orgPos - onewayStroke - 200;
@@ -9942,8 +11128,7 @@ namespace FZ4P
             }
             MotorMoveAbsAxis(axis, pos);
             Thread.Sleep(300);
-            gageData = m__G.mGageCounter.ReadPortAll();
-            if (!mAutoCalibrationRun) { return measuredData; }
+            if (motorizedMeasurementAbort) { return measuredData; }
             if (axis < Axis.TX)
             {
                 pos = orgPos - onewayStroke - 100;
@@ -9954,62 +11139,49 @@ namespace FZ4P
             }
             MotorMoveAbsAxis(axis, pos);
             Thread.Sleep(300);
-            gageData = m__G.mGageCounter.ReadPortAll();
 
             // 누적된 데이터 Clear
             mGageFullData.Clear();
             mCalibrationFullData.Clear();
+            mPrismTXTYTZ.Clear();
+            mStdevTXTYTZ.Clear();
+            //mProbeTZ.Clear();
 
             // 진짜 측정 시작
-            if (!mAutoCalibrationRun) { return measuredData; }
-            pos = orgPos - onewayStroke;
-            MotorMoveAbsAxis(axis, pos);
-            if (axis < Axis.TX)
-            {
-                Thread.Sleep(600);
-            }
-            else
-            {
-                Thread.Sleep(200);
-            }
-            SingleFindMark();
-
-            // X, Y, Z => 100um
-            double dStroke = 100; // 50um
-
-            if (axis < Axis.TX)
-            {
-                // X, Y, Z => 100um
-                dStroke = 100; // 50um
-            }
-            else
-            {
-                // TX, TY, TZ => min
-                dStroke = 12;  // 0.1 deg -> 6 min  // TX : 0.2 deg -> 12min
-            }
-
-            //double movingStroke = onewayStroke;
-            //while (movingStroke > -onewayStroke)
             double movingStroke = -onewayStroke;
-            while (movingStroke < onewayStroke)
+            pos = orgPos - onewayStroke;
+            while (movingStroke <= onewayStroke)
             {
-                if (!mAutoCalibrationRun)
+                if (motorizedMeasurementAbort)
                 {
                     measuredData = mCalibrationFullData.ToList();
                     return measuredData;
                 }
-                pos += dStroke;
-                movingStroke += dStroke;
+
                 MotorMoveAbsAxis(axis, pos);
                 if (axis < Axis.TX)
                 {
-                    Thread.Sleep(1000);
+                    Thread.Sleep(1000); // 1000
                 }
                 else
                 {
-                    Thread.Sleep(200);
-                };
-                SingleFindMark();
+                    Thread.Sleep(600);  // 200
+                }
+                ;
+
+                // SingleFindMark();
+
+                for (int cnt = 0; cnt < cntRepeat; cnt++)
+                {
+                    SingleFindMark();
+                    if (cntRepeat != 1)
+                    {
+                        Thread.Sleep(1000);
+                    }
+                }
+
+                pos += step;
+                movingStroke += step;
             }
             ////////////////////////////////////////////////////
             ////////////////////////////////////////////////////
@@ -10044,43 +11216,17 @@ namespace FZ4P
             // CSH 0,0,0 위치로 복귀
             MotorMoveOriginHexapod();
             MotorSetPivot(0, 0, 0);
-            MotorMoveAbs6D(mCSHorg.X, mCSHorg.Y, mCSHorg.Z, mPorg.TX, mPorg.TY, mPorg.TZ);
+            //MotorMoveAbs6D(mCSHorg.X, mCSHorg.Y, mCSHorg.Z, mPorg.TX, mPorg.TY, mPorg.TZ);
+            MotorMoveAbs6D(mCSHorg.X, mCSHorg.Y, mCSHorg.Z, 0, 0, 0);
 
             // 측정 데이터 반환
-            measuredData = mCalibrationFullData.ToList();
+            measuredData = mCalibrationFullData.ToList();   // mCalibrationFullData의 값을 measuredData에 복사해 넣어야해서 ToList()사용. 참조X
             return measuredData;
-
-            //// 결과 파일 저장
-            //StreamWriter wr = null;
-            //DateTime lnow = DateTime.Now;
-            //try
-            //{
-            //    wr = new StreamWriter($"C:\\CSHTest\\DoNotTouch\\Admin\\StabilizedData_{axis}{axis2}_{posAxis2}.csv");
-            //}
-            //catch (Exception e)
-            //{
-            //    wr = new StreamWriter($"C:\\CSHTest\\DoNotTouch\\Admin\\StabilizedData_{axis}{axis2}_{posAxis2}_{lnow:hhmmss}.csv");
-            //}
-            //double[][] stablizedData = mCalibrationFullData.ToArray();
-
-            //wr.WriteLine("#,X,Y,Z,TX,TY,TZ,X1,Y1,X2,Y2,X3,Y3,X4,Y4,X5,Y5,pX,pY,pZ,pTX,pTY,pTZ");
-            //for (int i = 0; i < stablizedData.Length; i++)
-            //{
-            //    string slstr = i.ToString() + ",";
-            //    for (int j = 0; j < 23; j++)
-            //    {
-            //        slstr += stablizedData[i][j].ToString("F5") + ",";
-            //    }
-
-            //    wr.WriteLine(slstr);
-            //}
-            //wr.Close();
         }
-        public void RemoteEastViewYPCalibration(List<double[]> collectedData, bool isRemote)
+        public void CalculateESViewYPCalibration(List<List<double[]>> stabilizedDataList, bool isRemote)
         {
-
-            var stabilizedDataList = SaveCalibrationData(collectedData, isRemote, "EastViewYP");
             if (stabilizedDataList == null || stabilizedDataList.Count == 0) return;
+            SaveMeasuredData(stabilizedDataList, $"EastViewYP_{(isRemote ? "Before" : "After")}");
 
             string DoNotTouchPathName = m__G.m_RootDirectory + "\\DoNotTouch\\";
             string lstr = "";
@@ -10100,20 +11246,30 @@ namespace FZ4P
 
 
             if (stabilizedDataList.Count < 2) return;
-            // Z
+            // Z drive
             List<double[]> stabilizedData = stabilizedDataList[0];
             int effLength = stabilizedData.Count;
+            // Ypp of the center of N-S Mark 
             mZCalAvgY1Y2pp = Math.Abs(stabilizedData[0][7] - stabilizedData[effLength - 1][7] + stabilizedData[0][9] - stabilizedData[effLength - 1][9]) / 2;
+            // Ypp of the E Mark
             mZCalY3pp = Math.Abs(stabilizedData[0][11] - stabilizedData[effLength - 1][11]);
-            // Y
+
+            // Y drive
             stabilizedData = stabilizedDataList[1];
             effLength = stabilizedData.Count;
+            // Ypp of the center of N-S Mark 
             mYCalAvgY1Y2pp = Math.Abs(stabilizedData[0][7] - stabilizedData[effLength - 1][7] + stabilizedData[0][9] - stabilizedData[effLength - 1][9]) / 2;
+            // Ypp of the E Mark
             mYCalY3pp = Math.Abs(stabilizedData[0][11] - stabilizedData[effLength - 1][11]);
 
+            //  eastSideViewAngle 는 ( Z 구동 시 [Ypp of E Mark] - [Ypp of the center of N-S Mark] ) - ( Y 구동 시 [Ypp of E Mark] - [Ypp of the center of N-S Mark] ) 
+            double eastSideViewAngle = (mZCalY3pp - mZCalAvgY1Y2pp) - (mYCalY3pp - mYCalAvgY1Y2pp);
             mEstimatedEastViewYscale = (mYCalAvgY1Y2pp + mZCalAvgY1Y2pp) / (mYCalY3pp + mZCalY3pp);
-            lstr = "EastViewYscale,\t" + mEstimatedEastViewYscale.ToString("F6") + "\r\n";
 
+            lstr = $"E-S View YP : {eastSideViewAngle:E5}\r\n";
+            lstr += "E-S View YP Scale\t" + mEstimatedEastViewYscale.ToString("E5") + "\r\n";
+
+            AddVsnLog(lstr);
 
             if (isRemote)
             {
@@ -10135,23 +11291,21 @@ namespace FZ4P
                     wr.WriteLine(allLines[i]);
                 }
                 wr.Close();
-                TextAppendTbInfo($"Scale factor updated in the file 'ScaleNTheta{camID0}'");
-            }
+                AddVsnLog($"Scale factor updated in the file 'ScaleNTheta{camID0}'");
 
-            if (InvokeRequired)
-                BeginInvoke((MethodInvoker)delegate
-                {
-                    tbCalibration.Text += lstr;
-                });
-            else
-                tbCalibration.Text += lstr;
+                LoadScaleNTheta();
+            }
         }
-        public void RemoteAxisCalibration(Axis axis, List<double[]> collectedData, bool IsRemote, bool IsRecal)
+        public void RemoteAxisCalibration(Axis axis, List<List<double[]>> stabilizedDataList, bool isRemote, bool IsRecal)
         {
-            var stabilizedDataList = SaveCalibrationData(collectedData, IsRemote, axis.ToString());
             if (stabilizedDataList == null || stabilizedDataList.Count == 0) return;
+            SaveMeasuredData(stabilizedDataList, $"{axis}_{(isRemote ? "Before" : "After")}");
+
+            List<double[]> stabilizedData = null;
+            int effLength = 0;
 
             string DoNotTouchPathName = m__G.m_RootDirectory + "\\DoNotTouch\\";
+
             string lstr = "";
 
             switch (axis)
@@ -10170,8 +11324,8 @@ namespace FZ4P
                 //  stablizedData[i][21] : TZ   
                 case Axis.X:
                     {
-                        List<double[]> stabilizedData = stabilizedDataList[0];
-                        int effLength = stabilizedData.Count;
+                        stabilizedData = stabilizedDataList[0];
+                        effLength = stabilizedData.Count;
 
                         var sXX = new FZMath.Point2D[effLength];
                         var sXtoY = new FZMath.Point2D[effLength];
@@ -10197,6 +11351,7 @@ namespace FZ4P
                             sZ[i] = stabilizedData[i][2];
                         }
 
+                        // Sclae 계수 변수
                         double[] XtoXab = new double[3];
                         double[] XtoYab = new double[3];
                         double[] XtoZab = new double[3];
@@ -10207,21 +11362,22 @@ namespace FZ4P
                         double Yavg = sY.Average();
                         double Zavg = sZ.Average();
 
+
                         if (IsRecal)
                         {
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sXX, effLength, ref XtoXab[1], ref XtoXab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sXtoY, effLength, ref XtoYab[1], ref XtoYab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sXtoZ, effLength, ref XtoZab[1], ref XtoZab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sXtoTX, effLength, ref XtoTXab[1], ref XtoTXab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sXtoTY, effLength, ref XtoTYab[1], ref XtoTYab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sXtoTZ, effLength, ref XtoTZab[1], ref XtoTZab[0]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sXX, effLength, ref XtoXab[1], ref XtoXab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sXtoY, effLength, ref XtoYab[1], ref XtoYab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sXtoZ, effLength, ref XtoZab[1], ref XtoZab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sXtoTX, effLength, ref XtoTXab[1], ref XtoTXab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sXtoTY, effLength, ref XtoTYab[1], ref XtoTYab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sXtoTZ, effLength, ref XtoTZab[1], ref XtoTZab[2]);
 
-                            lstr = "XX Scale\t" + XtoXab[1].ToString("E5") + "\r\n";
-                            lstr += "XtoY\t" + XtoYab[1].ToString("E5") + "\r\n";
-                            lstr += "XtoZ\t" + XtoZab[1].ToString("E5") + "\r\n";
-                            lstr += "XtoTX\t" + XtoTXab[1].ToString("E5") + "\r\n";
-                            lstr += "XtoTY\t" + XtoTYab[1].ToString("E5") + "\r\n";
-                            lstr += "XtoTZ\t" + XtoTZab[1].ToString("E5") + "\r\n";
+                            lstr = $"XX Scale : {XtoXab[1]:E5}\r\n";
+                            lstr += $"XtoY : {XtoYab[1]:E5}\r\n";
+                            lstr += $"XtoZ : {XtoZab[1]:E5}\r\n";
+                            lstr += $"XtoT : {XtoTXab[1]:E5}\r\n";
+                            lstr += $"XtoTY : {XtoTYab[1]:E5}\r\n";
+                            lstr += $"XtoTZ : {XtoTZab[1]:E5}\r\n";
 
                             for (int i = 0; i < 3; i++)
                             {
@@ -10250,9 +11406,9 @@ namespace FZ4P
                             m__G.oCam[0].mFAL.mFZM.mcLP2ndPoly(sXX, effLength, ref XtoXab);
                             m__G.oCam[0].mFAL.mFZM.mcLP2ndPoly(sXtoY, effLength, ref XtoYab);
                             m__G.oCam[0].mFAL.mFZM.mcLP2ndPoly(sXtoZ, effLength, ref XtoZab);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sXtoTX, effLength, ref XtoTXab[1], ref XtoTXab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sXtoTY, effLength, ref XtoTYab[1], ref XtoTYab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sXtoTZ, effLength, ref XtoTZab[1], ref XtoTZab[0]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sXtoTX, effLength, ref XtoTXab[1], ref XtoTXab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sXtoTY, effLength, ref XtoTYab[1], ref XtoTYab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sXtoTZ, effLength, ref XtoTZab[1], ref XtoTZab[2]);
 
                             lstr = "XX Scale\t" + XtoXab[0].ToString("E5") + ",\t" + XtoXab[1].ToString("E5") + ",\t" + XtoXab[2].ToString("E5") + "\r\n";
                             lstr += "XtoY\t" + XtoYab[0].ToString("E5") + ",\t" + XtoYab[1].ToString("E5") + ",\t" + XtoYab[2].ToString("E5") + "\r\n";
@@ -10327,11 +11483,12 @@ namespace FZ4P
                                 XJtoXab[1] = XZtoXab.Average();
                             }
 
-                            lstr += "XYtoX\t" + XJtoXab[0].ToString("E5") + ",\t" + "XZtoX\t" + XJtoXab[1].ToString("E5") + "\r\n";
+                            lstr += "XYtoX\t" + XJtoXab[0].ToString("E5") + "\r\n";
+                            lstr += "XZtoX\t" + XJtoXab[1].ToString("E5") + "\r\n";
                         }
 
                         // ScaleNTheta 업데이트
-                        if (IsRemote)
+                        if (isRemote)
                         {
                             string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + camID0 + ".txt";
                             StreamReader sr = new StreamReader(scaleNthetaFile);
@@ -10383,14 +11540,14 @@ namespace FZ4P
                                 wr.WriteLine(allLines[i]);
                             }
                             wr.Close();
-                            TextAppendTbInfo($"Scale factor updated in the file 'ScaleNTheta{camID0}'");
+                            AddVsnLog($"Scale factor updated in the file 'ScaleNTheta{camID0}'");
                         }
                         break;
                     }
                 case Axis.Y:
                     {
-                        List<double[]> stabilizedData = stabilizedDataList[0];
-                        int effLength = stabilizedData.Count;
+                        stabilizedData = stabilizedDataList[0];
+                        effLength = stabilizedData.Count;
 
                         var sYY = new FZMath.Point2D[effLength];
                         var sYtoX = new FZMath.Point2D[effLength];
@@ -10428,12 +11585,12 @@ namespace FZ4P
 
                         if (IsRecal)
                         {
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sYY, effLength, ref YtoYab[1], ref YtoYab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sYtoX, effLength, ref YtoXab[1], ref YtoXab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sYtoZ, effLength, ref YtoZab[1], ref YtoZab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sYtoTX, effLength, ref YtoTXab[1], ref YtoTXab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sYtoTY, effLength, ref YtoTYab[1], ref YtoTYab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sYtoTZ, effLength, ref YtoTZab[1], ref YtoTZab[0]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sYY, effLength, ref YtoYab[1], ref YtoYab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sYtoX, effLength, ref YtoXab[1], ref YtoXab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sYtoZ, effLength, ref YtoZab[1], ref YtoZab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sYtoTX, effLength, ref YtoTXab[1], ref YtoTXab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sYtoTY, effLength, ref YtoTYab[1], ref YtoTYab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sYtoTZ, effLength, ref YtoTZab[1], ref YtoTZab[2]);
 
                             lstr = "YY Scale\t" + YtoYab[1].ToString("E5") + "\r\n";
                             lstr += "YtoX\t" + YtoXab[1].ToString("E5") + "\r\n";
@@ -10469,9 +11626,9 @@ namespace FZ4P
                             m__G.oCam[0].mFAL.mFZM.mcLP2ndPoly(sYY, effLength, ref YtoYab);
                             m__G.oCam[0].mFAL.mFZM.mcLP2ndPoly(sYtoX, effLength, ref YtoXab);
                             m__G.oCam[0].mFAL.mFZM.mcLP2ndPoly(sYtoZ, effLength, ref YtoZab);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sYtoTX, effLength, ref YtoTXab[1], ref YtoTXab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sYtoTY, effLength, ref YtoTYab[1], ref YtoTYab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sYtoTZ, effLength, ref YtoTZab[1], ref YtoTZab[0]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sYtoTX, effLength, ref YtoTXab[1], ref YtoTXab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sYtoTY, effLength, ref YtoTYab[1], ref YtoTYab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sYtoTZ, effLength, ref YtoTZab[1], ref YtoTZab[2]);
 
                             lstr = "YY Scale\t" + YtoYab[0].ToString("E5") + ",\t" + YtoYab[1].ToString("E5") + ",\t" + YtoYab[2].ToString("E5") + "\r\n";
                             lstr += "YtoX\t" + YtoXab[0].ToString("E5") + ",\t" + YtoXab[1].ToString("E5") + ",\t" + YtoXab[2].ToString("E5") + "\r\n";
@@ -10547,11 +11704,12 @@ namespace FZ4P
                                 YJtoYab[1] = YZtoYab.Average();
                             }
 
-                            lstr += "YXtoY\t" + YJtoYab[0].ToString("E5") + ",\t" + "YZtoY\t" + YJtoYab[1].ToString("E5") + "\r\n";
+                            lstr += "YXtoY\t" + YJtoYab[0].ToString("E5") + "\r\n";
+                            lstr += "YZtoY\t" + YJtoYab[1].ToString("E5") + "\r\n";
                         }
 
                         // ScaleNTheta 업데이트
-                        if (IsRemote)
+                        if (isRemote)
                         {
                             string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + camID0 + ".txt";
                             StreamReader sr = new StreamReader(scaleNthetaFile);
@@ -10604,15 +11762,15 @@ namespace FZ4P
                                 wr.WriteLine(allLines[i]);
                             }
                             wr.Close();
-                            TextAppendTbInfo($"Scale factor updated in the file 'ScaleNTheta{camID0}'");
+                            AddVsnLog($"Scale factor updated in the file 'ScaleNTheta{camID0}'");
                         }
                         break;
                     }
                 case Axis.Z:
                     {
                         //  Z scale 구하기
-                        List<double[]> stabilizedData = stabilizedDataList[0];
-                        int effLength = stabilizedData.Count;
+                        stabilizedData = stabilizedDataList[0];
+                        effLength = stabilizedData.Count;
 
                         FZMath.Point2D[] sZZ = new FZMath.Point2D[effLength];
                         FZMath.Point2D[] sZtoX = new FZMath.Point2D[effLength];
@@ -10626,6 +11784,7 @@ namespace FZ4P
 
                         for (int i = 0; i < effLength; i++)
                         {
+
                             double x = stabilizedData[i][2];    // CSH Z 값
                             sZZ[i] = new FZMath.Point2D(x, stabilizedData[i][18]); // probe Z
                             sZtoX[i] = new FZMath.Point2D(x, stabilizedData[i][0] - stabilizedData[i][16]);   //  CSH X - probe X from 6 axis stage
@@ -10638,6 +11797,7 @@ namespace FZ4P
                             sY[i] = stabilizedData[i][1];
                         }
 
+                        // Scale 변수
                         double[] ZtoZab = new double[3];
                         double[] ZtoXab = new double[3];
                         double[] ZtoYab = new double[3];
@@ -10650,12 +11810,12 @@ namespace FZ4P
 
                         if (IsRecal)
                         {
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sZZ, effLength, ref ZtoZab[1], ref ZtoZab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sZtoX, effLength, ref ZtoXab[1], ref ZtoXab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sZtoY, effLength, ref ZtoYab[1], ref ZtoXab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sZtoTX, effLength, ref ZtoTXab[1], ref ZtoTXab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sZtoTY, effLength, ref ZtoTYab[1], ref ZtoTYab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sZtoTZ, effLength, ref ZtoTZab[1], ref ZtoTZab[0]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sZZ, effLength, ref ZtoZab[1], ref ZtoZab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sZtoX, effLength, ref ZtoXab[1], ref ZtoXab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sZtoY, effLength, ref ZtoYab[1], ref ZtoXab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sZtoTX, effLength, ref ZtoTXab[1], ref ZtoTXab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sZtoTY, effLength, ref ZtoTYab[1], ref ZtoTYab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sZtoTZ, effLength, ref ZtoTZab[1], ref ZtoTZab[2]);
 
                             lstr = "ZZ Scale\t" + ZtoZab[1].ToString("E5") + "\r\n";
                             lstr += "ZtoX\t" + ZtoXab[1].ToString("E5") + "\r\n";
@@ -10691,9 +11851,9 @@ namespace FZ4P
                             m__G.oCam[0].mFAL.mFZM.mcLP2ndPoly(sZZ, effLength, ref ZtoZab);
                             m__G.oCam[0].mFAL.mFZM.mcLP2ndPoly(sZtoX, effLength, ref ZtoXab);
                             m__G.oCam[0].mFAL.mFZM.mcLP2ndPoly(sZtoY, effLength, ref ZtoYab);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sZtoTX, effLength, ref ZtoTXab[1], ref ZtoTXab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sZtoTY, effLength, ref ZtoTYab[1], ref ZtoTYab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sZtoTZ, effLength, ref ZtoTZab[1], ref ZtoTZab[0]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sZtoTX, effLength, ref ZtoTXab[1], ref ZtoTXab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sZtoTY, effLength, ref ZtoTYab[1], ref ZtoTYab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sZtoTZ, effLength, ref ZtoTZab[1], ref ZtoTZab[2]);
 
                             lstr = "ZZ Scale\t" + ZtoZab[0].ToString("E5") + ",\r\n" + ZtoZab[1].ToString("E5") + ",\t" + ZtoZab[2].ToString("E5") + "\r\n";
                             lstr += "ZtoX\t" + ZtoXab[0].ToString("E5") + ",\t" + ZtoXab[1].ToString("E5") + ",\t" + ZtoXab[2].ToString("E5") + "\r\n";
@@ -10770,11 +11930,12 @@ namespace FZ4P
                                 ZJtoZab[1] = ZYtoZab.Average();
                             }
 
-                            lstr += "ZXtoZ\t" + ZJtoZab[0].ToString("E5") + ",\t" + "ZXtoZ\t" + ZJtoZab[1].ToString("E5") + "\r\n";
+                            lstr += "ZXtoZ\t" + ZJtoZab[0].ToString("E5") + "\r\n";
+                            lstr += "ZXtoZ\t" + ZJtoZab[1].ToString("E5") + "\r\n";
                         }
 
                         // ScaleNTheta 업데이트
-                        if (IsRemote)
+                        if (isRemote)
                         {
                             string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + camID0 + ".txt";
                             StreamReader sr = new StreamReader(scaleNthetaFile);
@@ -10826,15 +11987,15 @@ namespace FZ4P
                                 wr.WriteLine(allLines[i]);
                             }
                             wr.Close();
-                            TextAppendTbInfo($"Scale factor updated in the file 'ScaleNTheta{camID0}'");
+                            AddVsnLog($"Scale factor updated in the file 'ScaleNTheta{camID0}'");
                         }
                         break;
                     }
                 case Axis.TX:
                     {
                         //  TX scale 구하기
-                        List<double[]> stabilizedData = stabilizedDataList[0];
-                        int effLength = stabilizedData.Count;
+                        stabilizedData = stabilizedDataList[0];
+                        effLength = stabilizedData.Count;
 
                         var sTXTX = new FZMath.Point2D[effLength];
                         var sTXtoTY = new FZMath.Point2D[effLength];
@@ -10853,9 +12014,9 @@ namespace FZ4P
 
                         if (IsRecal)
                         {
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTXTX, effLength, ref TXtoTXab[1], ref TXtoTXab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTXtoTY, effLength, ref TXtoTYab[1], ref TXtoTYab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTXtoTZ, effLength, ref TXtoTZab[1], ref TXtoTZab[0]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTXTX, effLength, ref TXtoTXab[1], ref TXtoTXab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTXtoTY, effLength, ref TXtoTYab[1], ref TXtoTYab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTXtoTZ, effLength, ref TXtoTZab[1], ref TXtoTZab[2]);
 
                             lstr = "TX Scale\t" + TXtoTXab[1].ToString("E5") + "\r\n";
                             lstr += "TXtoTY\t" + TXtoTYab[1].ToString("E5") + "\r\n";
@@ -10882,8 +12043,8 @@ namespace FZ4P
                         else
                         {
                             m__G.oCam[0].mFAL.mFZM.mcLP2ndPoly(sTXTX, effLength, ref TXtoTXab);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTXtoTY, effLength, ref TXtoTYab[1], ref TXtoTYab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTXtoTZ, effLength, ref TXtoTZab[1], ref TXtoTZab[0]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTXtoTY, effLength, ref TXtoTYab[1], ref TXtoTYab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTXtoTZ, effLength, ref TXtoTZab[1], ref TXtoTZab[2]);
 
                             lstr = "TX Scale\t" + TXtoTXab[0].ToString("E5") + ",\t" + TXtoTXab[1].ToString("E5") + ",\t" + TXtoTXab[2].ToString("E5") + "\r\n";
                             lstr += "TXtoTY\t" + TXtoTYab[1].ToString("E5") + "\r\n";
@@ -10893,7 +12054,7 @@ namespace FZ4P
 
 
                         // ScaleNTheta 업데이트
-                        if (IsRemote)
+                        if (isRemote)
                         {
                             string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + camID0 + ".txt";
                             StreamReader sr = new StreamReader(scaleNthetaFile);
@@ -10923,15 +12084,15 @@ namespace FZ4P
                                 wr.WriteLine(allLines[i]);
                             }
                             wr.Close();
-                            TextAppendTbInfo($"Scale factor updated in the file 'ScaleNTheta{camID0}'");
+                            AddVsnLog($"Scale factor updated in the file 'ScaleNTheta{camID0}'");
                         }
                         break;
                     }
                 case Axis.TY:
                     {
                         //  TY scale 구하기
-                        List<double[]> stabilizedData = stabilizedDataList[0];
-                        int effLength = stabilizedData.Count;
+                        stabilizedData = stabilizedDataList[0];
+                        effLength = stabilizedData.Count;
 
                         var sTYTY = new FZMath.Point2D[effLength];
                         var sTYtoTX = new FZMath.Point2D[effLength];
@@ -10944,15 +12105,16 @@ namespace FZ4P
                             sTYtoTZ[i] = new FZMath.Point2D(sTYTY[i].X, stabilizedData[i][5] - stabilizedData[i][21]);
                         }
 
+
                         double[] TYtoTYab = new double[3];
                         double[] TYtoTXab = new double[3];
                         double[] TYtoTZab = new double[3];
 
                         if (IsRecal)
                         {
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTYTY, effLength, ref TYtoTYab[1], ref TYtoTYab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTYtoTX, effLength, ref TYtoTXab[1], ref TYtoTXab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTYtoTZ, effLength, ref TYtoTZab[1], ref TYtoTZab[0]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTYTY, effLength, ref TYtoTYab[1], ref TYtoTYab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTYtoTX, effLength, ref TYtoTXab[1], ref TYtoTXab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTYtoTZ, effLength, ref TYtoTZab[1], ref TYtoTZab[2]);
                             lstr = "TY Scale\t" + TYtoTYab[1].ToString("E5") + "\r\n";
                             lstr += "TYtoTX\t" + TYtoTXab[1].ToString("E5") + "\r\n";
                             lstr += "TYtoTZ\t" + TYtoTZab[1].ToString("E5") + "\r\n";
@@ -10978,8 +12140,8 @@ namespace FZ4P
                         else
                         {
                             m__G.oCam[0].mFAL.mFZM.mcLP2ndPoly(sTYTY, effLength, ref TYtoTYab);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTYtoTX, effLength, ref TYtoTXab[1], ref TYtoTXab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTYtoTZ, effLength, ref TYtoTZab[1], ref TYtoTZab[0]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTYtoTX, effLength, ref TYtoTXab[1], ref TYtoTXab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTYtoTZ, effLength, ref TYtoTZab[1], ref TYtoTZab[2]);
 
                             lstr = "TY Scale\t" + TYtoTYab[0].ToString("E5") + ",\t" + TYtoTYab[1].ToString("E5") + ",\t" + TYtoTYab[2].ToString("E5") + "\r\n";
                             lstr += "TYtoTX\t" + TYtoTXab[1].ToString("E5") + "\r\n";
@@ -10988,7 +12150,7 @@ namespace FZ4P
 
 
                         // ScaleNTheta 업데이트
-                        if (IsRemote)
+                        if (isRemote)
                         {
                             string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + camID0 + ".txt";
                             StreamReader sr = new StreamReader(scaleNthetaFile);
@@ -11018,7 +12180,7 @@ namespace FZ4P
                                 wr.WriteLine(allLines[i]);
                             }
                             wr.Close();
-                            TextAppendTbInfo($"Scale factor updated in the file 'ScaleNTheta{camID0}'");
+                            AddVsnLog($"Scale factor updated in the file 'ScaleNTheta{camID0}'");
 
                         }
                         break;
@@ -11026,8 +12188,8 @@ namespace FZ4P
                 case Axis.TZ:
                     {
                         //  TZ scale 구하기
-                        List<double[]> stabilizedData = stabilizedDataList[0];
-                        int effLength = stabilizedData.Count;
+                        stabilizedData = stabilizedDataList[0];
+                        effLength = stabilizedData.Count;
 
                         var sTZTZ = new FZMath.Point2D[effLength];
                         var sTZtoTX = new FZMath.Point2D[effLength];
@@ -11049,10 +12211,10 @@ namespace FZ4P
 
                         if (IsRecal)
                         {
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTZTZ, effLength, ref TZtoTZab[1], ref TZtoTZab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTZtoTX, effLength, ref TZtoTXab[1], ref TZtoTXab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTZtoTY, effLength, ref TZtoTYab[1], ref TZtoTYab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTZtoZ, effLength, ref TZtoZab[1], ref TZtoZab[0]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTZTZ, effLength, ref TZtoTZab[1], ref TZtoTZab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTZtoTX, effLength, ref TZtoTXab[1], ref TZtoTXab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTZtoTY, effLength, ref TZtoTYab[1], ref TZtoTYab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTZtoZ, effLength, ref TZtoZab[1], ref TZtoZab[2]);
 
                             lstr = "TZ Scale\t" + TZtoTZab[1].ToString("E5") + "\r\n";
                             lstr += "TZtoTX\t" + TZtoTXab[1].ToString("E5") + "\r\n";
@@ -11084,9 +12246,9 @@ namespace FZ4P
                         else
                         {
                             m__G.oCam[0].mFAL.mFZM.mcLP2ndPoly(sTZTZ, effLength, ref TZtoTZab);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTZtoTX, effLength, ref TZtoTXab[1], ref TZtoTXab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTZtoTY, effLength, ref TZtoTYab[1], ref TZtoTYab[0]);
-                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTZtoZ, effLength, ref TZtoZab[1], ref TZtoZab[0]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTZtoTX, effLength, ref TZtoTXab[1], ref TZtoTXab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTZtoTY, effLength, ref TZtoTYab[1], ref TZtoTYab[2]);
+                            m__G.oCam[0].mFAL.mFZM.mcLP1stPoly(sTZtoZ, effLength, ref TZtoZab[1], ref TZtoZab[2]);
 
                             lstr = "TZ Scale\t" + TZtoTZab[0].ToString("E5") + ",\t" + TZtoTZab[1].ToString("E5") + ",\t" + TZtoTZab[2].ToString("E5") + "\r\n";
                             lstr += "TZtoTX\t" + TZtoTXab[1].ToString("E5") + "\r\n";
@@ -11096,7 +12258,7 @@ namespace FZ4P
 
 
                         // ScaleNTheta 업데이트
-                        if (IsRemote)
+                        if (isRemote)
                         {
                             string scaleNthetaFile = DoNotTouchPathName + "ScaleNTheta" + camID0 + ".txt";
                             StreamReader sr = new StreamReader(scaleNthetaFile);
@@ -11133,28 +12295,62 @@ namespace FZ4P
                                 wr.WriteLine(allLines[i]);
                             }
                             wr.Close();
-                            TextAppendTbInfo($"Scale factor updated in the file 'ScaleNTheta{camID0}'");
+                            AddVsnLog($"Scale factor updated in the file 'ScaleNTheta{camID0}'");
                         }
                         break;
                     }
             }
 
-            if (InvokeRequired)
-                BeginInvoke((MethodInvoker)delegate
+            if (!isRemote)
+            {
+                // Error Range
+                stabilizedData = stabilizedDataList[0];
+                effLength = stabilizedData.Count;
+
+                double[] sEX = new double[effLength];
+                double[] sEY = new double[effLength];
+                double[] sEZ = new double[effLength];
+                double[] sETX = new double[effLength];
+                double[] sETY = new double[effLength];
+                double[] sETZ = new double[effLength];
+
+                for (int i = 0; i < effLength; i++)
                 {
-                    tbCalibration.Text += lstr;
-                });
+                    sEX[i] = stabilizedData[i][0] - stabilizedData[i][16];
+                    sEY[i] = stabilizedData[i][1] - stabilizedData[i][17];
+                    sEZ[i] = stabilizedData[i][2] - stabilizedData[i][18];
+                    sETX[i] = stabilizedData[i][3] - stabilizedData[i][19];
+                    sETY[i] = stabilizedData[i][4] - stabilizedData[i][20];
+                    sETZ[i] = stabilizedData[i][5] - stabilizedData[i][21];
+                }
+
+                double eX = sEX.Max() - sEX.Min();
+                double eY = sEY.Max() - sEY.Min();
+                double eZ = sEZ.Max() - sEZ.Min();
+                double eTX = sETX.Max() - sETX.Min();
+                double eTY = sETY.Max() - sETY.Min();
+                double eTZ = sETZ.Max() - sETZ.Min();
+
+                AddVsnLog("ERROR Range");
+                AddVsnLog("eX\teY\teZ\teTX\teTY\teTZ");
+                AddVsnLog($"{eX:F5}\t{eY:F5}\t{eZ:F5}\t{eTX:F5}\t{eTY:F5}\t{eTZ:F5}");
+            }
             else
-                tbCalibration.Text += lstr;
+            {
+                LoadScaleNTheta();
+            }
+
+            AddVsnLog(lstr);
         }
-        public List<List<double[]>> SaveCalibrationData(List<double[]> collectedData, bool IsRemote, string axis)
+        public void SaveMeasuredData(List<List<double[]>> stabilizedDataList, string fileName)
         {
-            if (collectedData == null || collectedData.Count == 0) return null;
+            // if (collectedData == null || collectedData.Count == 0) return null;
+            if (stabilizedDataList == null || stabilizedDataList.Count == 0) return;
 
             if (m__G.oCam[0].mFAL.mFZM == null)
             {
                 MessageBox.Show("mFZM not loaded.");
-                return null;
+                return;
             }
 
             string AdminPathName = m__G.m_RootDirectory + "\\DoNotTouch\\Admin\\";
@@ -11162,65 +12358,138 @@ namespace FZ4P
                 Directory.CreateDirectory(AdminPathName);
 
             // 결과 파일 저장
-            string strStabilizedFile = $"{AdminPathName}StabilizedData_{axis}_{camID0}_";
-            if (IsRemote)
-            {
-                strStabilizedFile += "Before.csv";
-            }
-            else
-            {
-                strStabilizedFile += "After.csv";
-            }
+            string strStabilizedFile = $"{AdminPathName}StabilizedData_{camID0}_{fileName}_{DateTime.Now:yyMMdd_HHmmss}.csv";
 
-            StreamWriter lwr = null;
-            try
-            {
-                lwr = new StreamWriter(strStabilizedFile);
-            }
-            catch
-            {
-                strStabilizedFile = strStabilizedFile.Replace(".csv", $"_{DateTime.Now:yyMMdd_HHmmss}.csv");
-                lwr = new StreamWriter(strStabilizedFile);
-            }
-            if (lwr == null) return null;
+            StreamWriter lwr = new StreamWriter(strStabilizedFile);
 
-            List<List<double[]>> stabilizedDataList = new List<List<double[]>>();
-            List<double[]> measuredData = null;
-
-            for (int i = 0; i < collectedData.Count; i++)
+            //List<List<double[]>> stabilizedDataList = new List<List<double[]>>();         
+            //double[] lPrismTXTYTZ = new double[3];
+            double[] lProbePrismTXTYTZ = new double[3];
+            double[] lErrorPrismTXTYTZ = new double[3];
+            for (int i = 0; i < stabilizedDataList.Count; i++)
             {
-                if (collectedData[i] == null)
+                List<double[]> stabilizedData = stabilizedDataList[i];
+                if (stabilizedData != null)
                 {
-                    if (measuredData != null)
+                    if (!m__G.m_bPrismCS)
+                        lwr.WriteLine("#,X,Y,Z,TX,TY,TZ,X1,Y1,X2,Y2,X3,Y3,X4,Y4,X5,Y5,pX,pY,pZ,pTX,pTY,pTZ,eX,eY,eZ,eTX,eTY,eTZ"); //, ,pTY1_0,pTY2_0,pTY1_1,pTY2_1,pTY1_2,TY2_2,pZ_1,pZ2_2,pTX_0,pTX_1,pTX_2");
+                    else
+                        lwr.WriteLine("#,X,Y,Z,TX,TY,TZ,X1,Y1,X2,Y2,X3,Y3,X4,Y4,X5,Y5,pX,pY,pZ,pTX,pTY,pTZ,eX,eY,eZ,eTX,eTY,eTZ,prismTX,prismTY,prismTZ,pprismTX,pprismTY,pprismTZ,epTX,epTY,epTZ,stdTX,stdTY,stdTZ,stdpTX,stdpTY,stdpTZ"); //, ,pTY1_0,pTY2_0,pTY1_1,pTY2_1,pTY1_2,TY2_2,pZ_1,pZ2_2,pTX_0,pTX_1,pTX_2");
+
+                    for (int j = 0; j < stabilizedData.Count; j++)
                     {
-                        stabilizedDataList.Add(measuredData);
+
+                        string slstr = j.ToString() + "," +
+                                   string.Join(",", stabilizedData[j].Take(22)
+                                   .Select(x => x.ToString("F5"))) + ",";
+
+                        slstr += (stabilizedData[j][0] - stabilizedData[j][16]).ToString("F5") + "," +
+                                 (stabilizedData[j][1] - stabilizedData[j][17]).ToString("F5") + "," +
+                                 (stabilizedData[j][2] - stabilizedData[j][18]).ToString("F5") + "," +
+                                 (stabilizedData[j][3] - stabilizedData[j][19]).ToString("F5") + "," +
+                                 (stabilizedData[j][4] - stabilizedData[j][20]).ToString("F5") + "," +
+                                 (stabilizedData[j][5] - stabilizedData[j][21]).ToString("F5") + ",";
+
+                        if (m__G.m_bPrismCS)
+                        {
+                            lProbePrismTXTYTZ = m__G.oCam[0].mFAL.mFZM.ConvertTXTYTZofCSHtoPrism(stabilizedData[j][19], stabilizedData[j][20], stabilizedData[j][21], true, true);
+                            lProbePrismTXTYTZ[1] = stabilizedData[j][19];   //  원래 있어야하는 코드
+
+                            lErrorPrismTXTYTZ[0] = mPrismTXTYTZ[j][0] - lProbePrismTXTYTZ[0];
+                            lErrorPrismTXTYTZ[1] = mPrismTXTYTZ[j][1] - lProbePrismTXTYTZ[1];  //  CSH_Prism_TY - Probe_TX
+                            lErrorPrismTXTYTZ[2] = mPrismTXTYTZ[j][2] - lProbePrismTXTYTZ[2];
+
+                            slstr += mPrismTXTYTZ[j][0].ToString("F5") + "," + mPrismTXTYTZ[j][1].ToString("F5") + "," + mPrismTXTYTZ[j][2].ToString("F5") + "," +
+                                     lProbePrismTXTYTZ[0].ToString("F5") + "," + lProbePrismTXTYTZ[1].ToString("F5") + "," + lProbePrismTXTYTZ[2].ToString("F5") + "," +
+                                     lErrorPrismTXTYTZ[0].ToString("F5") + "," + lErrorPrismTXTYTZ[1].ToString("F5") + "," + lErrorPrismTXTYTZ[2].ToString("F5");// + "," +
+                                                                                                                                                                 //mStdevTXTYTZ[j][0].ToString("F5") + "," + mStdevTXTYTZ[j][1].ToString("F5") + "," + mStdevTXTYTZ[j][2].ToString("F5") + "," +
+                                                                                                                                                                 //mStdevTXTYTZ[j][3].ToString("F5") + "," + mStdevTXTYTZ[j][4].ToString("F5") + "," + mStdevTXTYTZ[j][5].ToString("F5") + ",";
+                        }
+
+                        //slstr += "," + string.Join(",", stabilizedData[j].Skip(22)
+                        //               .Select(x => x.ToString("F5")));
+
+                        lwr.WriteLine(slstr);
                     }
+                }
+            }
 
-                    measuredData = new List<double[]>();
-                    lwr.WriteLine("#,X,Y,Z,TX,TY,TZ,X1,Y1,X2,Y2,X3,Y3,X4,Y4,X5,Y5,pX,pY,pZ,pTX,pTY,pTZ,PTX,PTY1,PTY2,eX,eY,eZ,eTX,eTY,eTZ");
-                }
-                else
-                {
-                    measuredData.Add(collectedData[i]);
-                    string slstr = i.ToString() + "," + string.Join(",", collectedData[i].Select((x) => x.ToString("F5"))) + ",";
-                    slstr += (collectedData[i][0] - collectedData[i][16]).ToString("F5") + "," +
-                             (collectedData[i][1] - collectedData[i][17]).ToString("F5") + "," +
-                             (collectedData[i][2] - collectedData[i][18]).ToString("F5") + "," +
-                             (collectedData[i][3] - collectedData[i][19]).ToString("F5") + "," +
-                             (collectedData[i][4] - collectedData[i][20]).ToString("F5") + "," +
-                             (collectedData[i][5] - collectedData[i][21]).ToString("F5");
-                    lwr.WriteLine(slstr);
-                }
-            }
-            if (measuredData.Count != 0)
-            {
-                stabilizedDataList.Add(measuredData);
-            }
             lwr.Close();
-
-            return stabilizedDataList;
         }
+        public void AppendMeasuredData(List<List<double[]>> stabilizedDataList, string fileName)
+        {
+            // if (collectedData == null || collectedData.Count == 0) return null;
+            if (stabilizedDataList == null || stabilizedDataList.Count == 0) return;
 
+            if (m__G.oCam[0].mFAL.mFZM == null)
+            {
+                MessageBox.Show("mFZM not loaded.");
+                return;
+            }
+
+            string AdminPathName = m__G.m_RootDirectory + "\\DoNotTouch\\Admin\\";
+            if (!Directory.Exists(AdminPathName))
+                Directory.CreateDirectory(AdminPathName);
+
+            // 결과 파일 저장
+            string strStabilizedFile = $"{AdminPathName}StabilizedData_{camID0}_{fileName}.csv";
+
+            string slstr = "";
+            if (!File.Exists(strStabilizedFile))
+            {
+                if (!m__G.m_bPrismCS)
+                    slstr += "#,X,Y,Z,TX,TY,TZ,X1,Y1,X2,Y2,X3,Y3,X4,Y4,X5,Y5,pX,pY,pZ,pTX,pTY,pTZ,eX,eY,eZ,eTX,eTY,eTZ\r\n";
+                else
+                    slstr += "#,X,Y,Z,TX,TY,TZ,X1,Y1,X2,Y2,X3,Y3,X4,Y4,X5,Y5,pX,pY,pZ,pTX,pTY,pTZ,eX,eY,eZ,eTX,eTY,eTZ,prismTX,prismTY,prismTZ,pprismTX,pprismTY,pprismTZ,epTX,epTY,epTZ\r\n";
+            }
+
+            double[] lProbePrismTXTYTZ = new double[3];
+            double[] lErrorPrismTXTYTZ = new double[3];
+            for (int i = 0; i < stabilizedDataList.Count; i++)
+            {
+                List<double[]> stabilizedData = stabilizedDataList[i];
+                if (stabilizedData != null)
+                {
+                    for (int j = 0; j < stabilizedData.Count; j++)
+                    {
+                        slstr += j.ToString() + "," +
+                                   string.Join(",", stabilizedData[j].Take(22)
+                                   .Select(x => x.ToString("F5"))) + ",";
+
+                        slstr += (stabilizedData[j][0] - stabilizedData[j][16]).ToString("F5") + "," +
+                                 (stabilizedData[j][1] - stabilizedData[j][17]).ToString("F5") + "," +
+                                 (stabilizedData[j][2] - stabilizedData[j][18]).ToString("F5") + "," +
+                                 (stabilizedData[j][3] - stabilizedData[j][19]).ToString("F5") + "," +
+                                 (stabilizedData[j][4] - stabilizedData[j][20]).ToString("F5") + "," +
+                                 (stabilizedData[j][5] - stabilizedData[j][21]).ToString("F5") + ",";
+
+                        if (m__G.m_bPrismCS)
+                        {
+                            lProbePrismTXTYTZ = m__G.oCam[0].mFAL.mFZM.ConvertTXTYTZofCSHtoPrism(stabilizedData[j][19], stabilizedData[j][20], stabilizedData[j][21], true, true);
+                            lProbePrismTXTYTZ[1] = stabilizedData[j][19];   //  원래 있어야하는 코드
+
+                            lErrorPrismTXTYTZ[0] = mPrismTXTYTZ[j][0] - lProbePrismTXTYTZ[0];
+                            lErrorPrismTXTYTZ[1] = mPrismTXTYTZ[j][1] - lProbePrismTXTYTZ[1];  //  CSH_Prism_TY - Probe_TX
+                            lErrorPrismTXTYTZ[2] = mPrismTXTYTZ[j][2] - lProbePrismTXTYTZ[2];
+
+                            slstr += mPrismTXTYTZ[j][0].ToString("F5") + "," + mPrismTXTYTZ[j][1].ToString("F5") + "," + mPrismTXTYTZ[j][2].ToString("F5") + "," +
+                                     lProbePrismTXTYTZ[0].ToString("F5") + "," + lProbePrismTXTYTZ[1].ToString("F5") + "," + lProbePrismTXTYTZ[2].ToString("F5") + "," +
+                                     lErrorPrismTXTYTZ[0].ToString("F5") + "," + lErrorPrismTXTYTZ[1].ToString("F5") + "," + lErrorPrismTXTYTZ[2].ToString("F5") + ",";
+
+                            if (j == 0)
+                            {
+                                slstr += DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + ",";
+                            }
+
+                        }
+
+                        slstr += "\r\n";
+                    }
+                }
+            }
+            File.AppendAllText(strStabilizedFile, slstr);
+
+        }
 
         public bool mbMotorizedStage = false;
 
@@ -11318,10 +12587,10 @@ namespace FZ4P
         {
             MotorMoveHome6D();
             MotorSetPivot(0, 0, 0);
-            string hexPosFile = m__G.m_RootDirectory + "\\DoNotTouch\\Admin\\HexPos.csv";
-            double[] HexCurPos = MotorCurPosHexapod();
-            string strHexCurPos = $"After Home,{HexCurPos[0]},{HexCurPos[1]},{HexCurPos[2]},{HexCurPos[3]},{HexCurPos[4]},{HexCurPos[5]}\n";
-            File.AppendAllText(hexPosFile, strHexCurPos);
+            //string hexPosFile = m__G.m_RootDirectory + "\\DoNotTouch\\Admin\\HexPos.csv";
+            //double[] HexCurPos = MotorCurPosHexapod();
+            //string strHexCurPos = $"After Home,{HexCurPos[0]},{HexCurPos[1]},{HexCurPos[2]},{HexCurPos[3]},{HexCurPos[4]},{HexCurPos[5]}\n";
+            //File.AppendAllText(hexPosFile, strHexCurPos);
         }
 
         private void groupBox2_Enter(object sender, EventArgs e)
@@ -11528,7 +12797,7 @@ namespace FZ4P
             wr.Close();
 
 
-            tbVMEstTime.Text = (mVMPts6d.Length).ToString() + " points.";
+            tbVsnLog.Text = (mVMPts6d.Length).ToString() + " points.";
         }
 
         public void ApplyVolumetricMeasure()
@@ -11562,9 +12831,9 @@ namespace FZ4P
             tpList[14] = new double[7] { 1000, 700, 0, 0, 0, 0, 0 };
             tpList[15] = new double[7] { 900, 700, 0, 0, 0, 0, 0 };
             tpList[16] = new double[7] { 800, 700, -50, -25, 0, 25, 50 };
-            tpList[17] = new double[7] { 400, 700, 76, 38, 0, -38, -76 };
+            tpList[17] = new double[7] { 400, 700, -76, -38, 0, 38, 76 };
             tpList[18] = new double[7] { 0, 700, -100, -50, 0, 50, 100 };
-            tpList[19] = new double[7] { -400, 700, 76, 38, 0, -38, -76 };
+            tpList[19] = new double[7] { -400, 700, -76, -38, 0, 38, 76 };
             tpList[20] = new double[7] { -800, 700, -50, -25, 0, 25, 50 };
 
             //tpList[0] = new double[7] { -900, -700, 0, 0, 0, 0, 0 };
@@ -11705,7 +12974,7 @@ namespace FZ4P
             wr.Close();
 
 
-            tbVMEstTime.Text = (mVMPts6d.Length).ToString() + " points.";
+            tbVsnLog.Text += "\r\n" + (mVMPts6d.Length).ToString() + " points.";
         }
         public void ApplyVolumetricMeasure3step()
         {
@@ -11986,25 +13255,56 @@ namespace FZ4P
             wr.Close();
 
 
-            tbVMEstTime.Text = (mVMPts6d.Length).ToString() + " points.";
+            tbVsnLog.Text = (mVMPts6d.Length).ToString() + " points.";
         }
 
-        private void button14_Click(object sender, EventArgs e)
+        private CancellationTokenSource volumetricCts;
+
+        private async void button14_Click(object sender, EventArgs e)
         {
-            mbStopVolumetricMeasure = false;
-            Task.Run(() => VolumetricMeasure());
+            if (motorizedMeasurementRun) return;
+            motorizedMeasurementRun = true;
 
+            tbVsnLog.Text = "⚠ Volumetric measurement is in progress.\r\nTo perform other tasks, please click 'Stop V-measure'.";
+            tbVsnLog.ForeColor = Color.Red;
+            tbVsnLog.Font = new Font("Segoe UI", 13, FontStyle.Bold);
+            tbVsnLog.TextAlign = HorizontalAlignment.Center;
+
+            volumetricCts = new CancellationTokenSource();
+            var token = volumetricCts.Token;
+
+            try
+            {
+                //await Task.Run(() => VolumetricMeasure(), token);
+                while (!token.IsCancellationRequested)
+                {
+                    await Task.Run(() => VolumetricMeasure(), token);
+                    await Task.Delay(600000, token);   // 7200000 : 2시간
+                }
+            }
+            catch (Exception ex)
+            {
+                AddVsnLog($"failed: {ex.Message}");
+            }
+            finally
+            {
+                motorizedMeasurementRun = false;
+                motorizedMeasurementAbort = false;
+
+                tbVsnLog.Text = "✅ Volumetric measurement has been stopped.";
+                tbVsnLog.ForeColor = Color.LemonChiffon;
+                tbVsnLog.Font = new Font("맑은 고딕", 9, FontStyle.Regular);
+                tbVsnLog.TextAlign = HorizontalAlignment.Left;
+            }
         }
-
-        public bool mbStopVolumetricMeasure = false;
 
         public Point3d[] mHexapodPivots = new Point3d[3];
         public Point2d mHexapodHplane = new Point2d();  //  TX by degree, TY by degree
 
         public void InitializeHexpodPivot()
         {
-            mHexapodPivots[0] = new Point3d(0, 1.439438857, 14.10421867); //  TX PIVOT
-            mHexapodPivots[1] = new Point3d(-0.019249611, 0, 14.03564737); //  TY PIVOT
+            mHexapodPivots[0] = new Point3d(0, 1.439438857, -14.10421867); //  TX PIVOT
+            mHexapodPivots[1] = new Point3d(-0.019249611, 0, -14.03564737); //  TY PIVOT
             mHexapodPivots[2] = new Point3d(0.096426953, 0.384410326, 0);  //  TZ PIVOT
         }
         public void LoadHexpodPivots()
@@ -12051,17 +13351,19 @@ namespace FZ4P
             //    m__G.mGageCounter.OpenAllport();
 
             mCalibrationFullData.Clear();
-
+            mStdevTXTYTZ.Clear();
+            mPrismTXTYTZ.Clear();
+            //mProbeTZ.Clear();
             LoadScaleNTheta();
             MotorMoveOriginHexapod();
             MotorSetPivot(0, 0, 0);
-            if (LoadOQCcondition())
-            {
-                //MotorMoveAbs6D(mCSHorg.X, mCSHorg.Y, mCSHorg.Z, mPorg.TX, mPorg.TY, mPorg.TZ);  //  Move TX (arcmin)
-                MotorMoveAbs6D(mCSHorg.X, mCSHorg.Y, mCSHorg.Z, 0, 0, 0);  //  Move TX (arcmin)
-            }
-            else
-                MotorMoveHome6D();
+            //if (LoadOQCcondition())
+            //{
+            //    //MotorMoveAbs6D(mCSHorg.X, mCSHorg.Y, mCSHorg.Z, mPorg.TX, mPorg.TY, mPorg.TZ);  //  Move TX (arcmin)
+            //    MotorMoveAbs6D(mCSHorg.X, mCSHorg.Y, mCSHorg.Z, 0, 0, 0);  //  Move TX (arcmin)
+            //}
+            //else
+            //    MotorMoveHome6D();
 
             double[] orgPos = MotorCurPos6D();
 
@@ -12094,27 +13396,29 @@ namespace FZ4P
             AddVsnLog("Test Points : " + imax.ToString());
             int measuredPointCount = 0;
             string VMfileName = m__G.m_RootDirectory + "\\DoNotTouch\\Admin\\VM" + fullCnt.ToString() + ".csv";
-            StreamWriter wr = new StreamWriter("C:\\B7WideTest\\DoNotTouch\\Admin\\X_Vrfy.csv");
+            StreamWriter wr = new StreamWriter("C:\\6AxisTester\\DoNotTouch\\Admin\\X_Vrfy.csv");
             wr.Close();
 
             int LastPivot = 0;
-            //FindPivot(1);
 
-            FindPivot(1);
-            FindPivot(2);
-            FindPivot(3);
+            FindCSHorg(true);
+
+            for (int iPivotAxis = 1; iPivotAxis < 4; iPivotAxis++)
+            {
+                if (motorizedMeasurementAbort) return;
+                AddVsnLog($"Start to find {(Axis)(iPivotAxis - 1)} pivot.");
+                FindPivot(iPivotAxis);
+            }
             SavePivots();
-
             FindCSHorg();
             FindFidorg();
-
             SaveOQCCondition();
-
-
 
             mCalibrationFullData.Clear();
             mGageFullData.Clear();
-
+            mPrismTXTYTZ.Clear();
+            mStdevTXTYTZ.Clear();
+            //mProbeTZ.Clear();
             mCalibrationFullData.Clear();
             mGageFullData.Clear();
             double[][] lTXdata = null;
@@ -12124,8 +13428,9 @@ namespace FZ4P
 
             while (true)
             {
-                if (mbStopVolumetricMeasure)
+                if (motorizedMeasurementAbort)
                     break;
+
                 Ycommand = mVMPts6d[i].Y + orgPos[1];
 
                 ////MotorMoveAbs6D( mVMPts6d[i].X  + mCSHorg.X,
@@ -12154,18 +13459,18 @@ namespace FZ4P
                     MotorSetPivot(0, 0, 0);
                     //HexapodRotate(mPorg.TX, mPorg.TY, mPorg.TZ);
                     bPivotChanged = true;
-                    string hexPosFile = m__G.m_RootDirectory + "\\DoNotTouch\\Admin\\HexPos.csv";
-                    HexCurPos = MotorCurPosHexapod();
-                    File.AppendAllText(hexPosFile, i + ","
-                                     + mVMPts6d[i].X.ToString("F3") + "," + mVMPts6d[i].Y.ToString("F3") + "," + mVMPts6d[i].Z.ToString("F3") + ","
-                                     + mVMPts6d[i].TX.ToString("F3") + "," + mVMPts6d[i].TY.ToString("F3") + "," + mVMPts6d[i].TZ.ToString("F3") + ","
-                                     + HexCurPos[0].ToString("F3") + "," + HexCurPos[1].ToString("F3") + "," + HexCurPos[2].ToString("F3") + ","
-                                     + HexCurPos[3].ToString("F3") + "," + HexCurPos[4].ToString("F3") + "," + HexCurPos[5].ToString("F3") + "," + "\r\n");
+                    // string hexPosFile = m__G.m_RootDirectory + "\\DoNotTouch\\Admin\\HexPos.csv";
+                    // HexCurPos = MotorCurPosHexapod();
+                    //File.AppendAllText(hexPosFile, i + ","
+                    //                 + mVMPts6d[i].X.ToString("F3") + "," + mVMPts6d[i].Y.ToString("F3") + "," + mVMPts6d[i].Z.ToString("F3") + ","
+                    //                 + mVMPts6d[i].TX.ToString("F3") + "," + mVMPts6d[i].TY.ToString("F3") + "," + mVMPts6d[i].TZ.ToString("F3") + ","
+                    //                 + HexCurPos[0].ToString("F3") + "," + HexCurPos[1].ToString("F3") + "," + HexCurPos[2].ToString("F3") + ","
+                    //                 + HexCurPos[3].ToString("F3") + "," + HexCurPos[4].ToString("F3") + "," + HexCurPos[5].ToString("F3") + "," + "\r\n");
 
-                    if (Math.Abs(HexCurPos[0]) > 1 || Math.Abs(HexCurPos[1]) > 1 || Math.Abs(HexCurPos[2]) > 1)
-                    {
-                        int changed = 0;
-                    }
+                    //if (Math.Abs(HexCurPos[0]) > 1 || Math.Abs(HexCurPos[1]) > 1 || Math.Abs(HexCurPos[2]) > 1)
+                    //{
+                    //    int changed = 0;
+                    //}
                 }
                 else
                 {
@@ -12181,7 +13486,10 @@ namespace FZ4P
 
                 }
 
-                Thread.Sleep(400);  //  동작 완료 후 측정 확보위해 600msec 필수
+                //250114 Probe TZ 튀는 현상 발생 -> 측정시간 확보 400 -> 600으로 늘림.
+                //Thread.Sleep(400);  //  동작 완료 후 측정 확보위해 600msec 필수
+                Thread.Sleep(600);
+
                 //if (YcommandOld != Ycommand)
                 //    Thread.Sleep(400);  //  동작 완료 후 측정 확보위해 600msec 필수
                 YcommandOld = Ycommand;
@@ -12204,7 +13512,11 @@ namespace FZ4P
                 }
 
                 if (mVMPts6d[i].pivotAxis > -10)
+                {
                     SingleFindMark(IsSave);
+                    //int cntData = mCalibrationFullData.Count;
+                    // mCalibrationFullData[]
+                }
 
                 //if (bPivotChanged)
                 //{
@@ -12281,46 +13593,76 @@ namespace FZ4P
             if (lTXdata != null)
                 mCalibrationFullData.InsertRange(0, lTXdata);
             string fileName = m__G.m_RootDirectory + "\\DoNotTouch\\Admin\\";
-            double[][] stablizedData = mCalibrationFullData.ToArray();  //  um, min
+            double[][] stabilizedData = mCalibrationFullData.ToArray();  //  um, min
             double ProbeYtoSideViewPixel = Math.Sin(40 / 180 * Math.PI) / (5.5 / 0.3);
+
+            //double[] lPrismTXTYTZ = new double[3];
+            double[] lProbePrismTXTYTZ = new double[3];
+            double[] lErrorPrismTXTYTZ = new double[3];
 
             StreamWriter lwr = null;
             DateTime lnow = DateTime.Now;
             try
             {
-                lwr = new StreamWriter(fileName + "VolumetrixMeasure" + fullCnt.ToString() + ".csv");
+                lwr = new StreamWriter(fileName + "VolumetrixMeasure" + fullCnt.ToString() + "_" + m__G.mCamID0 + "_" + lnow.ToString("yyMMddHH") + ".csv");
             }
             catch (Exception e)
             {
-                lwr = new StreamWriter(fileName + "VolumetrixMeasure" + fullCnt.ToString() + "_" + lnow.ToString("hhmmss") + ".csv");
+                lwr = new StreamWriter(fileName + "VolumetrixMeasure" + fullCnt.ToString() + "_" + m__G.mCamID0 + "_" + lnow.ToString("hhmmss") + ".csv");
             }
-            lwr.WriteLine("#,X,Y,Z,TX,TY,TZ,X1,Y1,X2,Y2,X3,Y3,X4,Y4,X5,Y5,pX,pY,pZ,pTX,pTY,pTZ,eX,eY,eZ,eTX,eTY,eTZ");
+
+            if (!m__G.m_bPrismCS)
+                lwr.WriteLine("#,X,Y,Z,TX,TY,TZ,X1,Y1,X2,Y2,X3,Y3,X4,Y4,X5,Y5,pX,pY,pZ,pTX,pTY,pTZ,eX,eY,eZ,eTX,eTY,eTZ");
+            else
+                lwr.WriteLine("#,X,Y,Z,TX,TY,TZ,X1,Y1,X2,Y2,X3,Y3,X4,Y4,X5,Y5,pX,pY,pZ,pTX,pTY,pTZ,eX,eY,eZ,eTX,eTY,eTZ,prismTX,prismTY,prismTZ,pprismTX,pprismTY,pprismTZ,epTX,epTY,epTZ,stdTX,stdTY,stdTZ,stdpTX,stdpTY,stdpTZ"); //, ,pTY1_0,pTY2_0,pTY1_1,pTY2_1,pTY1_2,TY2_2,pZ_1,pZ2_2,pTX_0,pTX_1,pTX_2");
+
+
+
             for (i = 0; i < fullCnt; i++)
             {
                 string slstr = i.ToString() + ",";
+
+                //lPrismTXTYTZ = m__G.oCam[0].mFAL.mFZM.ConvertTXTYTZofCSHtoPrism(stabilizedData[i][3], stabilizedData[i][4], stabilizedData[i][5], true);
+                //stabilizedData[i][3] = lPrismTXTYTZ[1];
+
                 for (int j = 0; j < 22; j++)
                 {
                     //if (j > 5 && j < 16)
                     //    continue;
                     if (j < 16)
-                        slstr += stablizedData[i][j].ToString("F5") + ",";  //  stablizedData[i][19 ~ 21] Probe TX, TY, TZ 가 radian 으로 제공될 때
+                        slstr += stabilizedData[i][j].ToString("F5") + ",";  //  stablizedData[i][19 ~ 21] Probe TX, TY, TZ 가 radian 으로 제공될 때
                     else
-                        slstr += (stablizedData[i][j] - mCSHorgProbe6D[j - 16]).ToString("F5") + ",";  //  stablizedData[i][19 ~ 21] Probe TX, TY, TZ 가 radian 으로 제공될 때
+                        slstr += (stabilizedData[i][j] - mCSHorgProbe6D[j - 16]).ToString("F5") + ",";  //  stablizedData[i][19 ~ 21] Probe TX, TY, TZ 가 radian 으로 제공될 때
 
                 }
-                slstr += (stablizedData[i][0] - stablizedData[i][16]).ToString("F5") + "," +
-                         (stablizedData[i][1] - stablizedData[i][17]).ToString("F5") + "," +
-                         (stablizedData[i][2] - stablizedData[i][18]).ToString("F5") + "," +
-                         (stablizedData[i][3] - stablizedData[i][19]).ToString("F5") + "," +
-                         (stablizedData[i][4] - stablizedData[i][20]).ToString("F5") + "," +
-                         (stablizedData[i][5] - stablizedData[i][21]).ToString("F5");
+                slstr += (stabilizedData[i][0] - (stabilizedData[i][16] - mCSHorgProbe6D[0])).ToString("F5") + "," +
+                         (stabilizedData[i][1] - (stabilizedData[i][17] - mCSHorgProbe6D[1])).ToString("F5") + "," +
+                         (stabilizedData[i][2] - (stabilizedData[i][18] - mCSHorgProbe6D[2])).ToString("F5") + "," +
+                         (stabilizedData[i][3] - (stabilizedData[i][19] - mCSHorgProbe6D[3])).ToString("F5") + "," +
+                         (stabilizedData[i][4] - (stabilizedData[i][20] - mCSHorgProbe6D[4])).ToString("F5") + "," +
+                         (stabilizedData[i][5] - (stabilizedData[i][21] - mCSHorgProbe6D[5])).ToString("F5") + ",";
+
+                if (m__G.m_bPrismCS)
+                {
+                    lProbePrismTXTYTZ = m__G.oCam[0].mFAL.mFZM.ConvertTXTYTZofCSHtoPrism(stabilizedData[i][19], stabilizedData[i][20], stabilizedData[i][21], true, true);
+                    lProbePrismTXTYTZ[1] = stabilizedData[i][19];   //  PrismTY == ProbeTX
+
+                    lErrorPrismTXTYTZ[0] = mPrismTXTYTZ[i][0] - lProbePrismTXTYTZ[0];
+                    lErrorPrismTXTYTZ[1] = mPrismTXTYTZ[i][1] - lProbePrismTXTYTZ[1];  //  CSH_Prism_TY - Probe_TX
+                    lErrorPrismTXTYTZ[2] = mPrismTXTYTZ[i][2] - lProbePrismTXTYTZ[2];
+
+                    slstr += mPrismTXTYTZ[i][0].ToString("F5") + "," + mPrismTXTYTZ[i][1].ToString("F5") + "," + mPrismTXTYTZ[i][2].ToString("F5") + "," +
+                             lProbePrismTXTYTZ[0].ToString("F5") + "," + lProbePrismTXTYTZ[1].ToString("F5") + "," + lProbePrismTXTYTZ[2].ToString("F5") + "," +
+                             lErrorPrismTXTYTZ[0].ToString("F5") + "," + lErrorPrismTXTYTZ[1].ToString("F5") + "," + lErrorPrismTXTYTZ[2].ToString("F5") + "," +
+                             mStdevTXTYTZ[i][0].ToString("F5") + "," + mStdevTXTYTZ[i][1].ToString("F5") + "," + mStdevTXTYTZ[i][2].ToString("F5") + "," +
+                             mStdevTXTYTZ[i][3].ToString("F5") + "," + mStdevTXTYTZ[i][4].ToString("F5") + "," + mStdevTXTYTZ[i][5].ToString("F5") + ",";
+                }
+
+                //slstr += $"{mProbeTZ[i][0]:F5},{mProbeTZ[i][1]:F5},";
+
                 lwr.WriteLine(slstr);
             }
             lwr.Close();
-
-            //if (m__G.mGageCounter != null)
-            //    m__G.mGageCounter.CloseAllport(); // 250210 주석처리
-
         }
 
         public void ClearHexapodPivots()
@@ -12334,20 +13676,20 @@ namespace FZ4P
             mCalibrationFullData.Clear();
             mHexapodPivots[axis - 1] = new Point3d(0, 0, 0);
 
-            // 원점으로 이동
-            //MotorMoveHome6D();
+            // Home(CSHorg)으로 이동
+            MotorMoveHome6D();
+            SingleFindMark(true);
 
             // 헥사포드 Origin 위치로 이동
+            MotorMoveOriginHexapod();
+            MotorSetPivot(0, 0, 0);
+            Thread.Sleep(500);
             SingleFindMark(true);
             double[] orgPos = MotorCurPos6D();
-            MotorMoveOriginHexapod();
-            Thread.Sleep(500);
-            orgPos = MotorCurPos6D();
 
-            SingleFindMark(true);
-            MotorMoveAbs6D(orgPos[0], orgPos[1], orgPos[2], orgPos[3], orgPos[4], orgPos[5]); //  -244.1   // -30
-            Thread.Sleep(500);
-            SingleFindMark(true);
+            //MotorMoveAbs6D(orgPos[0], orgPos[1], orgPos[2], orgPos[3], orgPos[4], orgPos[5]); //  -244.1   // -30
+            //Thread.Sleep(500);
+            //SingleFindMark(true);
 
             double[] curPos = null;
             Point3d lPivot = new Point3d();
@@ -12380,7 +13722,7 @@ namespace FZ4P
                         lPivot = new Point3d();
                         for (int i = 0; i < 5; i++)
                         {
-                            MotorMoveAbs6D(orgPos[0], orgPos[1], orgPos[2], orgPos[3] + tagetPos[i], orgPos[4], orgPos[5]); //  -244.1   // -30
+                            MotorMoveAbsAxis((Axis)(axis + 2), orgPos[3] + tagetPos[i]);
                             if (i < 4)
                             {
                                 if (i == 1 || i == 2 || i == 3)
@@ -12405,7 +13747,7 @@ namespace FZ4P
 
 
                         RX = new double[2, 2];
-                        m__G.mFAL.mFZM.RotationZ2x2(angle * MIN_To_RAD, ref RX);  //  
+                        m__G.mFAL.mFZM.RotationZ2x2(angle * MIN_To_RAD, ref RX);  //  2차원 회전행렬
                         RX0_X1 = new double[2];
                         m__G.mFAL.mFZM.MatrixCross(ref RX, ref X0, ref RX0_X1, 2);
                         RX0_X1[0] -= X1[0];
@@ -12475,16 +13817,16 @@ namespace FZ4P
                         lPivot.Y += mHexapodPivots[0].Y - (resPivot[0] - X0[0]);
                         lPivot.Z += mHexapodPivots[0].Z + (resPivot[1] - X0[1]);
 
-                        mHexapodPivots[0] = new Point3d(orgPos[0], lPivot.Y / 3, lPivot.Z / 3);
+                        //mHexapodPivots[0] = new Point3d(orgPos[0], lPivot.Y / 3, lPivot.Z / 3);
+                        mHexapodPivots[0] = new Point3d(0, lPivot.Y / 3, lPivot.Z / 3); // 250616
+                        mHexapodPivots[0].X = Math.Abs(mHexapodPivots[0].X) > 4000 ? 4000 * Math.Sign(mHexapodPivots[0].X) : mHexapodPivots[0].X;
+                        mHexapodPivots[0].Y = Math.Abs(mHexapodPivots[0].Y) > 4000 ? 4000 * Math.Sign(mHexapodPivots[0].Y) : mHexapodPivots[0].Y;
 
                         ///////////////////////////////////////////////////////////////////
                         // 피봇 변경 후 채즉청
                         MotorMoveOriginHexapod();
                         Thread.Sleep(200);
                         MotorSetPivot(mHexapodPivots[0].X, mHexapodPivots[0].Y, mHexapodPivots[0].Z);
-                        //HexCurPos = MotorCurPosHexapod();
-                        //strHexCurPos = $"After Motor Set Pivot X,{HexCurPos[0]},{HexCurPos[1]},{HexCurPos[2]},{HexCurPos[3]},{HexCurPos[4]},{HexCurPos[5]}\n";
-                        //File.AppendAllText(hexPosFile, strHexCurPos);
                         Thread.Sleep(10);
                         //  출발 피봇이 가까와지니 오차가 줄어들기는 함.
                         //  1회차에서 
@@ -12598,7 +13940,10 @@ namespace FZ4P
                         lPivot.X += mHexapodPivots[1].X + (resPivot[0] - X0[0]);
                         lPivot.Z += mHexapodPivots[1].Z + (resPivot[1] - X0[1]);
 
-                        mHexapodPivots[1] = new Point3d(lPivot.X / 3, orgPos[1], lPivot.Z / 3);
+                        //mHexapodPivots[1] = new Point3d(lPivot.X / 3, orgPos[1], lPivot.Z / 3);
+                        mHexapodPivots[1] = new Point3d(lPivot.X / 3, 0, lPivot.Z / 3);
+                        mHexapodPivots[1].X = Math.Abs(mHexapodPivots[1].X) > 4000 ? 4000 * Math.Sign(mHexapodPivots[1].X) : mHexapodPivots[1].X;
+                        mHexapodPivots[1].Y = Math.Abs(mHexapodPivots[1].Y) > 4000 ? 4000 * Math.Sign(mHexapodPivots[1].Y) : mHexapodPivots[1].Y;
 
                         ///////////////////////////////////////////////////////////////////
                         // 피봇 변경 후 채즉청
@@ -12714,7 +14059,10 @@ namespace FZ4P
                         lPivot.X += mHexapodPivots[2].X + (resPivot[0] - X0[0]); //  dy 에 영향 준다.
                         lPivot.Y += mHexapodPivots[2].Y - (resPivot[1] - X0[1]); //  dx 에 영향 준다.
 
-                        mHexapodPivots[2] = new Point3d(lPivot.X / 3, lPivot.Y / 3, orgPos[2]);
+                        //mHexapodPivots[2] = new Point3d(lPivot.X / 3, lPivot.Y / 3, orgPos[2]);
+                        mHexapodPivots[2] = new Point3d(lPivot.X / 3, lPivot.Y / 3, -14000);
+                        mHexapodPivots[2].X = Math.Abs(mHexapodPivots[2].X) > 4000 ? 4000 * Math.Sign(mHexapodPivots[2].X) : mHexapodPivots[2].X;
+                        mHexapodPivots[2].Y = Math.Abs(mHexapodPivots[2].Y) > 4000 ? 4000 * Math.Sign(mHexapodPivots[2].Y) : mHexapodPivots[2].Y;
 
                         ///////////////////////////////////////////////////////////////////
                         // 피봇 변경 후 채즉청
@@ -13001,7 +14349,13 @@ namespace FZ4P
 
         private void button15_Click(object sender, EventArgs e)
         {
-            mbStopVolumetricMeasure = true;
+            if (motorizedMeasurementAbort) return;
+            motorizedMeasurementAbort = true;
+            volumetricCts?.Cancel();
+            tbVsnLog.Text = "✅ Volumetric measurement is stopping...";
+            tbVsnLog.ForeColor = Color.LemonChiffon;
+            tbVsnLog.Font = new Font("맑은 고딕", 9, FontStyle.Regular);
+            tbVsnLog.TextAlign = HorizontalAlignment.Left;
         }
 
         public VolumetricTP[] Generate3dTrajectory(double pitchX, double pitchY, double pitchZ, double xFullRange, double yFullRange, double zFullRange)
@@ -13186,53 +14540,6 @@ namespace FZ4P
         private void button17_Click(object sender, EventArgs e)
         {
             Task.Run(() => FindOQCcondition());
-        }
-
-        private void button13_Click(object sender, EventArgs e)
-        {
-            //if (m__G.mGageCounter != null)
-            //    m__G.mGageCounter.OpenAllport(); // 250210 주석처리
-
-
-            int axis = -1;
-            if (rbCalTX.Checked)
-            {
-                axis = 0;
-            }
-            else if (rbCalTY.Checked)
-            {
-                axis = 1;
-
-            }
-            else if (rbCalTZ.Checked)
-            {
-                axis = 2;
-            }
-
-            if (axis == -1) { return; }
-
-            string lstr = "No\tX\tY\tZ\r\n";
-            for (int i = 0; i < 11; i++)
-            {
-                var pivot = FindPivot(axis + 1);
-                if (i != 0)
-                {
-                    lstr += $"{i}\t{pivot.X}\t{pivot.Y}\t{pivot.Z}\r\n";
-                }
-            }
-            lstr += "No\tX\tY\tZ\r\n";
-            for (int i = 0; i < 11; i++)
-            {
-                var pivot = FindPivot(axis + 1);
-                if (i != 0)
-                {
-                    lstr += $"{i}\t{pivot.X}\t{pivot.Y}\t{pivot.Z}\r\n";
-                }
-            }
-
-            //if (m__G.mGageCounter != null)
-            //    m__G.mGageCounter.CloseAllport(); // 250210 주석처리
-            tbCalibration.Text = lstr;
         }
 
         /// <summary>
@@ -13492,6 +14799,8 @@ namespace FZ4P
 
         public void FindCSHorg(bool resetProbe = false)
         {
+            if (motorizedMeasurementAbort) return;
+
             //  TX, TY, TZ command 로 (Porg.TX, Porg.TY, 0)  를 적용한 상태에서
             //  CSHorg 로서 CSHead 의 X, Y, Z 측정값이 (0,0,0)  이 되는 XYZ stage 의 위치값을 찾아 저장한다.  --> stage command 값 - 따라서 반복편차 있음.
             //  CSHead 로 측정된  TX, TY, TZ 를 저장하고 Set TX, TY, TZ Zero 한다.
@@ -13499,7 +14808,6 @@ namespace FZ4P
             mGageFullData.Clear();
 
             //MotorMoveHome6D();
-
             // 동작전 Hexapod 기본설정
             MotorSetSpeed6D(SpeedLevel.Normal);
             MotorMoveOriginHexapod();
@@ -13527,6 +14835,7 @@ namespace FZ4P
             int itrCnt = 0;
             while (itrCnt < 10)
             {
+                if (motorizedMeasurementAbort) return;
                 //MotorMoveAbs6D(orgPos[0] + Xnext, orgPos[1] + Ynext, orgPos[2] + Znext, mPorg.TX, mPorg.TY, mPorg.TZ);  //  Move (mm , arcmin)
                 MotorMoveAbs6D(orgPos[0] + Xnext, orgPos[1] + Ynext, orgPos[2] + Znext, 0, 0, 0);  //  Move (mm , arcmin)
                 Thread.Sleep(600);
@@ -13716,7 +15025,7 @@ namespace FZ4P
                     //MotorMoveAbs6D(mCSHorg.X, mCSHorg.Y, mCSHorg.Z, orgPos[3] + tagetPos[i], orgPos[4], orgPos[5]); //  -244.1   // -30
                     MotorXYZ(mCSHorg.X, mCSHorg.Y, mCSHorg.Z);
                     HexapodRotate(orgPos[3] + tagetPos[i], orgPos[4], orgPos[5]);
-                    if (i < 4)
+                    if (i < 5)  // 4    // 마지막 0일때도 SingleFindMark를 해야 다음 마크가 잡힘
                     {
                         if (i == 1 || i == 2 || i == 3)
                             Thread.Sleep(400);
@@ -13738,7 +15047,7 @@ namespace FZ4P
             mFidorg.Y = Y / 4;   // 5회 평균
 
             //  점검
-            mbFigorgLoaded = true;
+            // mbFigorgLoaded = true;   // mFidorg.X 찾을때는 Load해서 Z 보정되면 안됨.
             mCalibrationFullData.Clear();
             mGageFullData.Clear();
             //for (int i = 0; i < 5; i++)
@@ -13800,7 +15109,7 @@ namespace FZ4P
                     //MotorMoveAbs6D(mCSHorg.X, mCSHorg.Y, mCSHorg.Z, orgPos[3], orgPos[4] + tagetPos[i], orgPos[5]); //  -244.1   // -30
                     MotorXYZ(mCSHorg.X, mCSHorg.Y, mCSHorg.Z);
                     HexapodRotate(orgPos[3], orgPos[4] + tagetPos[i], orgPos[5]);
-                    if (i < 4)
+                    if (i < 5)  // 4    // 마지막 0일때도 SingleFindMark를 해야 다음 마크가 잡힘
                     {
                         if (i == 1 || i == 3)
                             Thread.Sleep(400);
@@ -13820,7 +15129,7 @@ namespace FZ4P
                 dZdownSum += Ldown;
                 X += (Lup + Ldown) / 2;
             }
-            mFidorg.X = X / 5;   // 5회 반복 평균,
+            mFidorg.X = X / 4;  //5;   // 5회 반복 평균,
             mFidorg.Z = 0;
 
             //  점검
@@ -13851,6 +15160,7 @@ namespace FZ4P
             //    }
             //}
             MotorMoveOriginHexapod();
+            MotorSetPivot(0, 0, 0);
             //HexCurPos = MotorCurPosHexapod();
             //strHexCurPos = $"After FindFidorg,{HexCurPos[0]},{HexCurPos[1]},{HexCurPos[2]},{HexCurPos[3]},{HexCurPos[4]},{HexCurPos[5]}\n";
             //File.AppendAllText(hexPosFile, strHexCurPos);
@@ -13883,6 +15193,7 @@ namespace FZ4P
         public double ProbeZcompensationForTXTY(double px, double py, double pz, double pTXrad, double pTYrad)
         {
             double resZ = 0;
+            //double resZold = 0;
 
             if (!mbFigorgLoaded)
                 //return resZ;
@@ -13890,7 +15201,9 @@ namespace FZ4P
 
             //  mCSHorgProbe 에서 Probe 값을 (0,0,0) 으로 리셋하지 않고 그 이후로도 Probe 값을 리셋하지 않는 경우
             //  즉 mCSHorg 를 찾기 전에 Probe 값을 리셋하고 이후로는 Probe 값을 리셋하지 않는 경우 다음 식 적용
-            double curX = -px - mCSHorgProbe.X + mFidorg.X;   //  um
+            //double curXold = - px - mCSHorgProbe.X + mFidorg.X;   //  um   //  수정 전
+            //double curX = (px - mCSHorgProbe.X) + mFidorg.X;   //  um    //  수정 후
+            double curX = -(px - mCSHorgProbe.X) + mFidorg.X;   //  um    //  수정 후
             double curY = py - mCSHorgProbe.Y + mFidorg.Y;   //  um
 
             //  mCSHorgProbe 에서 Probe 값을 (0,0,0) 으로 리셋했고 그 이후에 mFidorg 를 측정했으므로 mFidorg 로부터 현재위치까지의 거리는 다음 식이 맞다.
@@ -13898,10 +15211,19 @@ namespace FZ4P
             //double curY = py + mFidorg.Y;   //  um
 
             double pT = Math.Sqrt(pTXrad * pTXrad + pTYrad * pTYrad);
-            resZ -= Math.Sin(pTYrad) * curX;
-            resZ -= Math.Sin(pTXrad) * curY;
+
+            //resZ -= Math.Sin(pTYrad) * curX;
+            //resZ -= Math.Sin(pTXrad) * curY;
+
+            resZ -= Math.Tan(pTYrad) * curX;
+            resZ -= Math.Tan(pTXrad) * curY;
             resZ += 1510 * (1 / Math.Cos(pT) - 1);
 
+            //resZold -= Math.Sin(pTYrad) * curXold;
+            //resZold -= Math.Sin(pTXrad) * curY;
+            //resZold += 1510 * (1 / Math.Cos(pT) - 1);
+
+            //return resZold + pz;
             return resZ + pz;
         }
         public Point3d XYZcompensationAboutZPivots(Point3d ProbeXYZ, double TXrad, double TYrad)
@@ -14340,16 +15662,35 @@ namespace FZ4P
                 wr.WriteLine($"{mFidorg.X:F7}\t{mFidorg.Y:F7}\t{mFidorg.Z:F7}");
             }
         }
-        private void button20_Click(object sender, EventArgs e)
+        private async void btnFindCSHorg_Click(object sender, EventArgs e)
         {
-            LoadOQCcondition();
-            //if (m__G.mGageCounter != null)
-            //    m__G.mGageCounter.OpenAllport(); // 250210 주석처리
-            FindCSHorg();
-            //if (m__G.mGageCounter != null)
-            //    m__G.mGageCounter.CloseAllport(); // 250210 주석처리
+            if (motorizedMeasurementRun)
+            {
+                motorizedMeasurementAbort = true;
+                btnFindCSHorg.Enabled = false;
+                return;
+            }
 
-            SaveCSHorg();
+            motorizedMeasurementRun = true;
+            btnFindCSHorg.Text = "Stop";
+
+            try
+            {
+                LoadOQCcondition();
+                await Task.Run(() => { FindCSHorg(); });
+                SaveCSHorg();
+            }
+            catch (Exception ex)
+            {
+                AddVsnLog($"failed: {ex.Message}");
+            }
+            finally
+            {
+                motorizedMeasurementRun = false;
+                motorizedMeasurementAbort = false;
+                btnFindCSHorg.Enabled = true;
+                btnFindCSHorg.Text = "Find CSHorg";
+            }
         }
 
         private void button21_Click(object sender, EventArgs e)
@@ -14357,23 +15698,7 @@ namespace FZ4P
             PivotRepeatability();
         }
 
-        private void AddVsnLog(string lstr)
-        {
-            if (tbVsnLog.InvokeRequired)
-                BeginInvoke((MethodInvoker)delegate
-                {
-                    tbVsnLog.Text += lstr + "\r\n";
-                    tbVsnLog.SelectionStart = tbVsnLog.Text.Length;
-                    tbVsnLog.ScrollToCaret();
-                });
-            else
-            {
-                tbVsnLog.Text += lstr + "\r\n";
-                tbVsnLog.SelectionStart = tbVsnLog.Text.Length;
-                tbVsnLog.ScrollToCaret();
-            }
 
-        }
         private void FindOQCcondition()
         {
             m__G.mDoingStatus = "FindOQCcondition";
@@ -14530,26 +15855,28 @@ namespace FZ4P
         {
             if (cbBench.Checked)
             {
-                //PogoPinUnloadBtn.Show();
-                //PogoPinloadBtn.Show();
-                //SidePushUnloadBtn.Show();
-                //SidePushloadBtn.Show();
-                //BaseDownBtn.Show();
-                //BaseUpBtn.Show();
+                PogoPinUnloadBtn.Show();
+                PogoPinloadBtn.Show();
+                SidePushUnloadBtn.Show();
+                SidePushloadBtn.Show();
+                BaseDownBtn.Show();
+                BaseUpBtn.Show();
             }
             else
             {
-                //PogoPinUnloadBtn.Hide();
-                //PogoPinloadBtn.Hide();
-                //SidePushUnloadBtn.Hide();
-                //SidePushloadBtn.Hide();
-                //BaseDownBtn.Hide();
-                //BaseUpBtn.Hide();
+                PogoPinUnloadBtn.Hide();
+                PogoPinloadBtn.Hide();
+                SidePushUnloadBtn.Hide();
+                SidePushloadBtn.Hide();
+                BaseDownBtn.Hide();
+                BaseUpBtn.Hide();
             }
         }
 
         private void FVision_Shown(object sender, EventArgs e)
         {
+            //InitMasterZeroList();
+            //MasterList.SelectedIndex = GetMasterZeroIndex();
         }
 
         private void button13_Click_1(object sender, EventArgs e)
@@ -14557,346 +15884,406 @@ namespace FZ4P
             LoadOQCcondition();
         }
 
-        private void btnScan_Click(object sender, EventArgs e)
+        private async void btnScan_Click(object sender, EventArgs e)
         {
-            if (!mAutoCalibrationRun)
+            if (motorizedMeasurementRun)
             {
-                mAutoCalibrationRun = true;
-                btnScan.Text = "Stop Scan";
-            }
-            else
-            {
-                mAutoCalibrationRun = false;
-                btnScan.Text = "Start Scan";
+                motorizedMeasurementAbort = true;
+                btnScan.Enabled = false;
                 return;
             }
 
-            Axis axis;
-            if (rbCalZ.Checked)
-                axis = Axis.Z;
-            else if (rbCalX.Checked)
-                axis = Axis.X;
-            else if (rbCalY.Checked)
-                axis = Axis.Y;
-            else if (rbCalTZ.Checked)
-                axis = Axis.TZ;
-            else if (rbCalTX.Checked)
-                axis = Axis.TX;
-            else if (rbCalTY.Checked)
-                axis = Axis.TY;
-            else
-                return;
+            motorizedMeasurementRun = true;
+            btnScan.Text = "Stop";
 
-            double onewayStroke;
-            if (tbMaxStroke.Text.Length > 1)
+            try
             {
-                onewayStroke = double.Parse(tbMaxStroke.Text);
+                if (cboAxis.SelectedItem != null &&
+                    double.TryParse(tbMaxStroke.Text, out double onewayStroke) &&
+                    double.TryParse(tbStep.Text, out double step) &&
+                    onewayStroke * 2 >= step)
+                {
+                    Axis axis = (Axis)cboAxis.SelectedItem;
+
+                    if (LoadOQCcondition() == false)
+                    {
+                        MessageBox.Show("Fail to Load OQC Condition");
+                    }
+
+                    await Task.Run(() =>
+                    {
+                        if (motorizedMeasurementAbort) return;
+                        AddVsnLog("Start to find CSHorg");
+                        FindCSHorg();
+
+                        for (int i = 1; i < 4; i++)
+                        {
+                            if (motorizedMeasurementAbort) return;
+                            AddVsnLog($"Start to find {(Axis)(i - 1)} pivot.");
+                            FindPivot(i); //    FindPivot(1) 여기 있으나 없으나 Z 오차 변화 없음
+                        }
+
+                        AddVsnLog("Start to find CSHorg");
+                        FindCSHorg(true);
+
+                        if (motorizedMeasurementAbort) return;
+                        AddVsnLog("Start to find Fidorg");
+                        FindFidorg();
+
+                        SaveOQCCondition();
+
+                        // 측정
+                        var stabilizedDataList = new List<List<double[]>> { ScanAxis(axis, onewayStroke, step) };
+                        SaveMeasuredData(stabilizedDataList, $"{axis}_Scan");
+                    });
+                }
+                else
+                {
+                    MessageBox.Show("Please check the axis, stroke, and step values.", "Input Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
-            else
-                return;
-
-
-            Task.Run(() =>
+            catch (Exception ex)
             {
+                AddVsnLog($"failed: {ex.Message}");
+            }
+            finally
+            {
+                motorizedMeasurementRun = false;
+                motorizedMeasurementAbort = false;
+                btnScan.Enabled = true;
+                btnScan.Text = "Scan";
+            }
 
-                if (LoadOQCcondition() == false)
-                {
-                    MessageBox.Show("Fail to Load OQC Condition");
-                }
-                if (LoadPivotXYZ() == false)
-                {
-                    MessageBox.Show("Fail to Load Pivot");
-                }
 
-                FindCSHorg();
-                FindFidorg();
-                SaveOQCCondition();
-
-                if (axis == Axis.TX)
-                {
-                    AddVsnLog("Start to find X pivot.");
-                    FindPivot(1); //    FindPivot(1) 여기 있으나 없으나 Z 오차 변화 없음
-                }
-                else if (axis == Axis.TY)
-                {
-                    AddVsnLog("Start to find Y pivot.");
-                    FindPivot(2); //    FindPivot(1) 여기 있으나 없으나 Z 오차 변화 
-                }
-                else if (axis == Axis.TZ)
-                {
-                    AddVsnLog("Start to find Z pivot.");
-                    FindPivot(3); //    FindPivot(1) 여기 있으나 없으나 Z 오차 변화 
-                }
-
-                //if (m__G.mGageCounter != null)
-                //    m__G.mGageCounter.CloseAllport();// 250210 주석처리
-
-                AxisCalibration(axis, onewayStroke, true, false, false);
-                mAutoCalibrationRun = false;
-                this.Invoke(new Action(() =>
-                {
-                    btnScan.Text = "Start scan";
-                }));
-            });
         }
 
-        private void btnAutoCal_Click(object sender, EventArgs e)
+        private async void btnAutoCal_Click(object sender, EventArgs e)
         {
-            if (!mAutoCalibrationRun)
+            if (motorizedMeasurementRun)
             {
-                mAutoCalibrationRun = true;
-                btnAutoCal.Text = "Stop Cal";
+                motorizedMeasurementAbort = true;
+                btnAutoCal.Enabled = false;
+                return;
             }
-            else
+
+            motorizedMeasurementRun = true;
+            btnAutoCal.Text = "Stop";
+
+            AddVsnLog("Start East-Side View YP Calibration");
+
+            try
             {
-                mAutoCalibrationRun = false;
+                await Task.Run(() =>
+                {
+                    AutoCalibration();
+                });
+            }
+            catch (Exception ex)
+            {
+                AddVsnLog($"failed: {ex.Message}");
+            }
+            finally
+            {
+                motorizedMeasurementRun = false;
+                motorizedMeasurementAbort = false;
+                btnAutoCal.Enabled = true;
                 btnAutoCal.Text = "Auto Cal";
+            }
+        }
+        private async void btnEastView_Click(object sender, EventArgs e)
+        {
+            if (motorizedMeasurementRun)
+            {
+                motorizedMeasurementAbort = true;
+                btnEastView.Enabled = false;
                 return;
             }
 
-            tbCalibration.Text = "";
+            motorizedMeasurementRun = true;
+            btnEastView.Text = "Stop";
 
-            Task.Run(() =>
+            AddVsnLog("Start East-Side View YP Calibration");
+
+            try
             {
-                AutoCalibration();
-                mAutoCalibrationRun = false;
-                this.Invoke(new Action(() =>
+                await Task.Run(() =>
                 {
-                    btnAutoCal.Text = "Auto Cal";
-                }));
-            });
-        }
-        private void btnEastView_Click(object sender, EventArgs e)
-        {
-            if (!mAutoCalibrationRun)
-            {
-                mAutoCalibrationRun = true;
-                btnEastView.Text = "Stop Cal";
+                    InitializeScaleNTheta();
+                    m__G.oCam[0].mFAL.mFZM.SetScales(ms_scaleX, ms_scaleY, ms_scaleZ, ms_scaleTX, ms_scaleTY, ms_scaleTZ, ms_EastViewYPscale,
+                                                     ms_XtoYbyView, ms_XtoZbyView, ms_XtoTXbyView, ms_XtoTYbyView, ms_XtoTZbyView,
+                                                     ms_YtoXbyView, ms_YtoZbyView, ms_YtoTXbyView, ms_YtoTYbyView, ms_YtoTZbyView,
+                                                     ms_ZtoXbyView, ms_ZtoYbyView, ms_ZtoTXbyView, ms_ZtoTYbyView, ms_ZtoTZbyView,
+                                                     ms_TXtoTYbyView, ms_TXtoTZbyView,
+                                                     ms_TYtoTXbyView, ms_TYtoTZbyView,
+                                                     ms_TZtoTXbyView, ms_TZtoTYbyView,
+                                                     ms_XJtoXbyView, ms_YJtoYbyView, ms_ZJtoZbyView,
+                                                     ms_TZtoZbyView);
+                    AddVsnLog("Reset scales");
+                    SaveScaleNTheta();
+
+                    AddVsnLog("Find CSHorg");
+                    FindCSHorg(true);
+
+                    AddVsnLog("Start baseline measurement");
+                    EastViewCalibration(true);
+                    AddVsnLog("Finish  baseline measurement");
+                    LoadScaleNTheta();
+                    AddVsnLog("Start verification measurement");
+                    EastViewCalibration(false);
+                    AddVsnLog("Finsh verification measurement");
+                    AddVsnLog("Finish east-side view calibration");
+                });
+
             }
-            else
+            catch (Exception ex)
             {
-                mAutoCalibrationRun = false;
+                AddVsnLog($"failed: {ex.Message}");
+            }
+            finally
+            {
+                motorizedMeasurementRun = false;
+                motorizedMeasurementAbort = false;
+                btnEastView.Enabled = true;
                 btnEastView.Text = "EastView";
-                return;
             }
 
-            tbCalibration.Text = "";
 
-            TextAppendTbInfo("Start east-side view calibration");
+            //Button clickedButton = sender as Button;
 
-            Task.Run(() =>
-            {
-                InitializeScaleNTheta();
-                m__G.oCam[0].mFAL.mFZM.SetScales(ms_scaleX, ms_scaleY, ms_scaleZ, ms_scaleTX, ms_scaleTY, ms_scaleTZ, ms_EastViewYPscale,
-                                                 ms_XtoYbyView, ms_XtoZbyView, ms_XtoTXbyView, ms_XtoTYbyView, ms_XtoTZbyView,
-                                                 ms_YtoXbyView, ms_YtoZbyView, ms_YtoTXbyView, ms_YtoTYbyView, ms_YtoTZbyView,
-                                                 ms_ZtoXbyView, ms_ZtoYbyView, ms_ZtoTXbyView, ms_ZtoTYbyView, ms_ZtoTZbyView,
-                                                 ms_TXtoTYbyView, ms_TXtoTZbyView,
-                                                 ms_TYtoTXbyView, ms_TYtoTZbyView,
-                                                 ms_TZtoTXbyView, ms_TZtoTYbyView,
-                                                 ms_XJtoXbyView, ms_YJtoYbyView, ms_ZJtoZbyView,
-                                                 ms_TZtoZbyView);
-                TextAppendTbInfo("Reset scales");
-                SaveScaleNTheta();
+            //if (!mAutoCalibrationRun)
+            //{
+            //    mAutoCalibrationRun = true;
+            //    btnEastView.Text = "Stop";
+            //    // 나머지 버튼 비활성화
+            //    foreach (var btn in CalBtnGroup)
+            //    {
+            //        btn.Enabled = (btn == clickedButton);
+            //    }
 
-                //if (m__G.mGageCounter != null)
-                //    m__G.mGageCounter.OpenAllport(); // 250210 주석처리
 
-                FindCSHorg(true);
+            //    btnEastView.Text = "EastView";
+            //    // 모두 다시 활성화
+            //    foreach (var btn in CalBtnGroup)
+            //    {
+            //        btn.Enabled = true;
+            //    }
+            //}
+            //else
+            //{
+            //    mAutoCalibrationRun = false;
 
-                //if (m__G.mGageCounter != null)
-                //    m__G.mGageCounter.CloseAllport();// 250210 주석처리
-
-                TextAppendTbInfo("Start baseline measurement");
-                EastViewCalibration(true);
-                TextAppendTbInfo("Finish  baseline measurement");
-                LoadScaleNTheta();
-                TextAppendTbInfo("Start verification measurement");
-                EastViewCalibration(false);
-                TextAppendTbInfo("Finsh verification measurement");
-                TextAppendTbInfo("Finish east-side view calibration");
-                // ReAutoCalibration();
-                mAutoCalibrationRun = false;
-                this.Invoke(new Action(() =>
-                {
-                    btnEastView.Text = "EastView";
-                }));
-            });
-
+            //}
 
         }
 
-
-
-        private void TextAppendTbInfo(string sInfo)
+        private void AddTbInfo(string lstr)
         {
-            sInfo += "\r\n";
-
             if (tbVsnLog.InvokeRequired)
                 BeginInvoke((MethodInvoker)delegate
                 {
-                    tbVsnLog.Text += sInfo;
+                    tbInfo.Text += lstr + "\r\n";
+                    tbInfo.SelectionStart = tbInfo.Text.Length;
+                    tbInfo.ScrollToCaret();
                 });
             else
-                tbVsnLog.Text += sInfo;
+            {
+                tbInfo.Text += lstr + "\r\n";
+                tbInfo.SelectionStart = tbInfo.Text.Length;
+                tbInfo.ScrollToCaret();
+            }
         }
+
+        private void AddVsnLog(string lstr)
+        {
+            if (tbVsnLog.InvokeRequired)
+                BeginInvoke((MethodInvoker)delegate
+                {
+                    tbVsnLog.Text += lstr + "\r\n";
+                    tbVsnLog.SelectionStart = tbVsnLog.Text.Length;
+                    tbVsnLog.ScrollToCaret();
+                });
+            else
+            {
+                tbVsnLog.Text += lstr + "\r\n";
+                tbVsnLog.SelectionStart = tbVsnLog.Text.Length;
+                tbVsnLog.ScrollToCaret();
+            }
+
+        }
+
+        private void SettbUnCalibratedInfoVisible(bool visible)
+        {
+            tbUncalibratedInfo.BeginInvoke(new Action(() => { tbUncalibratedInfo.Visible = visible; }));
+        }
+
+
 
         private void FVision_FormClosed(object sender, FormClosedEventArgs e)
         {
 
         }
 
-        private void btnCheckStrokeRange_Click(object sender, EventArgs e)
+        private async void btnRangeTest_Click(object sender, EventArgs e)
         {
-            if (!mAutoCalibrationRun)
+            if (motorizedMeasurementRun)
             {
-                mAutoCalibrationRun = true;
-            }
-            else
-            {
-                mAutoCalibrationRun = false;
+                motorizedMeasurementAbort = true;
+                btnRangeTest.Enabled = false;
                 return;
             }
 
-            Task.Run(() =>
+            motorizedMeasurementRun = true;
+            btnRangeTest.Text = "Stop";
+
+            try
             {
-                // Stroke 범위 내에서 측정 가능한지 확인
-                FindCSHorg();
-                // X
-                if (!mAutoCalibrationRun) return;
-                double[] orgPos = MotorCurPos6D();
-                for (int i = 0; i < 5; i++)
+                await Task.Run(() =>
                 {
-                    switch (i)
+                    // Stroke 범위 내에서 측정 가능한지 확인
+                    FindCSHorg();
+                    // X
+                    double[] orgPos = MotorCurPos6D();
+                    for (int i = 0; i < 5; i++)
                     {
-                        case 0:
-                            break;
-                        case 1:
-                            MotorMoveAbsAxis(Axis.Y, orgPos[1] + 900);
-                            break;
-                        case 2:
-                            MotorMoveAbsAxis(Axis.Y, orgPos[1] - 900);
-                            break;
-                        case 3:
-                            MotorMoveAbsAxis(Axis.Z, orgPos[2] + 800);
-                            break;
-                        case 4:
-                            MotorMoveAbsAxis(Axis.Z, orgPos[2] - 800);
-                            break;
-                    }
-                    SingleFindMark();
-                    MotorMoveAbsAxis(Axis.X, orgPos[0] + 1900);
-                    SingleFindMark();
-                    MotorMoveAbsAxis(Axis.X, orgPos[0]);
-                    SingleFindMark();
-                    MotorMoveAbsAxis(Axis.X, orgPos[0] - 1900);
-                    SingleFindMark();
-                    MotorMoveAbsAxis(Axis.X, orgPos[0]);
-                    SingleFindMark();
+                        if (motorizedMeasurementAbort) return;
 
-                    MotorMoveAbs6D(orgPos[0], orgPos[1], orgPos[2], orgPos[3], orgPos[4], orgPos[5]);
-                }
-                // Y
-                if (!mAutoCalibrationRun) return;
-                for (int i = 0; i < 5; i++)
-                {
-                    switch (i)
-                    {
-                        case 1:
-                            MotorMoveAbsAxis(Axis.X, orgPos[0] + 900);
-                            break;
-                        case 2:
-                            MotorMoveAbsAxis(Axis.X, orgPos[0] - 900);
-                            break;
-                        case 3:
-                            MotorMoveAbsAxis(Axis.Z, orgPos[2] + 600);
-                            break;
-                        case 4:
-                            MotorMoveAbsAxis(Axis.Z, orgPos[2] - 600);
-                            break;
-                    }
-                    switch (i)
-                    {
-                        case 0:
-                        case 1:
-                        case 2:
-                            SingleFindMark();
-                            MotorMoveAbsAxis(Axis.Y, orgPos[1] + 1900);
-                            SingleFindMark();
-                            MotorMoveAbsAxis(Axis.Y, orgPos[1]);
-                            SingleFindMark();
-                            MotorMoveAbsAxis(Axis.Y, orgPos[1] - 1900);
-                            SingleFindMark();
-                            MotorMoveAbsAxis(Axis.Y, orgPos[1]);
-                            SingleFindMark();
-                            break;
-                        case 3:
-                        case 4:
-                            SingleFindMark();
-                            MotorMoveAbsAxis(Axis.Y, orgPos[1] + 700);
-                            SingleFindMark();
-                            MotorMoveAbsAxis(Axis.Y, orgPos[1]);
-                            SingleFindMark();
-                            MotorMoveAbsAxis(Axis.Y, orgPos[1] - 700);
-                            SingleFindMark();
-                            MotorMoveAbsAxis(Axis.Y, orgPos[1]);
-                            SingleFindMark();
-                            break;
-                    }
-                    MotorMoveAbs6D(orgPos[0], orgPos[1], orgPos[2], orgPos[3], orgPos[4], orgPos[5]);
-                }
-                // Z
-                if (!mAutoCalibrationRun) return;
-                for (int i = 0; i < 5; i++)
-                {
-                    switch (i)
-                    {
-                        case 1:
-                            MotorMoveAbsAxis(Axis.X, orgPos[0] + 900);
-                            break;
-                        case 2:
-                            MotorMoveAbsAxis(Axis.X, orgPos[0] - 900);
-                            break;
-                        case 3:
-                            MotorMoveAbsAxis(Axis.Y, orgPos[1] + 600);
-                            break;
-                        case 4:
-                            MotorMoveAbsAxis(Axis.Y, orgPos[1] - 600);
-                            break;
-                    }
-                    switch (i)
-                    {
-                        case 0:
-                        case 1:
-                        case 2:
-                            SingleFindMark();
-                            MotorMoveAbsAxis(Axis.Z, orgPos[2] + 1750);
-                            SingleFindMark();
-                            MotorMoveAbsAxis(Axis.Z, orgPos[2]);
-                            SingleFindMark();
-                            MotorMoveAbsAxis(Axis.Z, orgPos[2] - 1750);
-                            SingleFindMark();
-                            MotorMoveAbsAxis(Axis.Z, orgPos[2]);
-                            SingleFindMark();
-                            break;
-                        case 3:
-                        case 4:
-                            SingleFindMark();
-                            MotorMoveAbsAxis(Axis.Z, orgPos[2] + 700);
-                            SingleFindMark();
-                            MotorMoveAbsAxis(Axis.Z, orgPos[2]);
-                            SingleFindMark();
-                            MotorMoveAbsAxis(Axis.Z, orgPos[2] - 700);
-                            SingleFindMark();
-                            MotorMoveAbsAxis(Axis.Z, orgPos[2]);
-                            SingleFindMark();
-                            break;
-                    }
-                    MotorMoveAbs6D(orgPos[0], orgPos[1], orgPos[2], orgPos[3], orgPos[4], orgPos[5]);
-                }
+                        switch (i)
+                        {
+                            case 0:
+                                break;
+                            case 1:
+                                MotorMoveAbsAxis(Axis.Y, orgPos[1] + 900);
+                                break;
+                            case 2:
+                                MotorMoveAbsAxis(Axis.Y, orgPos[1] - 900);
+                                break;
+                            case 3:
+                                MotorMoveAbsAxis(Axis.Z, orgPos[2] + 800);
+                                break;
+                            case 4:
+                                MotorMoveAbsAxis(Axis.Z, orgPos[2] - 800);
+                                break;
+                        }
+                        // 이미지 저장
+                        double[] curpos = MotorCurPos6D();
+                        string fileName = $"{m__G.m_RootDirectory}\\Result\\RawData\\Image\\RangeTest_X{curpos[0]}_Y{curpos[1]}_Z{curpos[2]}.bmp";
+                        m__G.oCam[0].SaveGrabbedImage(1, fileName);
+                        SingleFindMark();
 
-                mAutoCalibrationRun = false;
-            });
+                        double[] targetPos = new double[] { 950, 1900, 0, -950, -1900, 0 };
+
+                        foreach (double pos in targetPos)
+                        {
+                            if (motorizedMeasurementAbort) return;
+
+                            MotorMoveAbsAxis(Axis.X, orgPos[0] + pos);
+                            SingleFindMark();
+
+                            // 이미지 저장
+                            curpos = MotorCurPos6D();
+                            fileName = $"{m__G.m_RootDirectory}\\Result\\RawData\\Image\\RangeTest_X{curpos[0]}_Y{curpos[1]}_Z{curpos[2]}.bmp";
+                            m__G.oCam[0].SaveGrabbedImage(1, fileName);
+                        }
+
+                        MotorMoveAbs6D(orgPos[0], orgPos[1], orgPos[2], orgPos[3], orgPos[4], orgPos[5]);
+                    }
+                    // Y
+                    for (int i = 0; i < 5; i++)
+                    {
+                        if (motorizedMeasurementAbort) return;
+
+                        switch (i)
+                        {
+                            case 1:
+                                MotorMoveAbsAxis(Axis.X, orgPos[0] + 900);
+                                break;
+                            case 2:
+                                MotorMoveAbsAxis(Axis.X, orgPos[0] - 900);
+                                break;
+                            case 3:
+                                MotorMoveAbsAxis(Axis.Z, orgPos[2] + 600);
+                                break;
+                            case 4:
+                                MotorMoveAbsAxis(Axis.Z, orgPos[2] - 600);
+                                break;
+                        }
+                        SingleFindMark();
+
+                        List<double> targetPos;
+                        if (i < 3)
+                        {
+                            targetPos = new List<double> { 950, 1900, 0, -950, -1900, 0 };
+                        }
+                        else
+                        {
+                            targetPos = new List<double> { 700, 0, -700, 0 };
+                        }
+
+                        foreach (double pos in targetPos)
+                        {
+                            if (motorizedMeasurementAbort) return;
+
+                            MotorMoveAbsAxis(Axis.Y, orgPos[1] + pos);
+                            SingleFindMark();
+                        }
+
+                        MotorMoveAbs6D(orgPos[0], orgPos[1], orgPos[2], orgPos[3], orgPos[4], orgPos[5]);
+                    }
+                    // Z
+                    for (int i = 0; i < 5; i++)
+                    {
+                        if (motorizedMeasurementAbort) return;
+
+                        switch (i)
+                        {
+                            case 1:
+                                MotorMoveAbsAxis(Axis.X, orgPos[0] + 900);
+                                break;
+                            case 2:
+                                MotorMoveAbsAxis(Axis.X, orgPos[0] - 900);
+                                break;
+                            case 3:
+                                MotorMoveAbsAxis(Axis.Y, orgPos[1] + 600);
+                                break;
+                            case 4:
+                                MotorMoveAbsAxis(Axis.Y, orgPos[1] - 600);
+                                break;
+                        }
+                        SingleFindMark();
+
+                        List<double> targetPos;
+                        if (i < 3)
+                        {
+                            targetPos = new List<double> { 800, 1750, 0, -800, -1750, 0 };
+                        }
+                        else
+                        {
+                            targetPos = new List<double> { 700, 0, -700, 0 };
+                        }
+
+                        foreach (double pos in targetPos)
+                        {
+                            if (motorizedMeasurementAbort) return;
+
+                            MotorMoveAbsAxis(Axis.Z, orgPos[2] + pos);
+                            SingleFindMark();
+                        }
+
+                        MotorMoveAbs6D(orgPos[0], orgPos[1], orgPos[2], orgPos[3], orgPos[4], orgPos[5]);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                AddVsnLog($"failed: {ex.Message}");
+            }
+            finally
+            {
+                motorizedMeasurementRun = false;
+                motorizedMeasurementAbort = false;
+                btnRangeTest.Enabled = true;
+                btnRangeTest.Text = "Range Test";
+            }
         }
 
         private void FVision_FormClosing(object sender, FormClosingEventArgs e)
@@ -14910,185 +16297,864 @@ namespace FZ4P
                 }
             }
         }
-        public string ScanName = "";
+
+        private void btnAddMaster_Click(object sender, EventArgs e)
+        {
+            //if (MasterList.Items.Count >= 3) { return; }
+            SaveTXTYZeroOffset(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, true);
+            InitMasterZeroList();
+            MasterList.SelectedIndex = GetMasterZeroCount() - 1;
+        }
+
+        private void MasterList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (MasterList.SelectedItem == null) return;
+            string selectedItem = MasterList.SelectedItem.ToString();
+            int index = MasterList.SelectedIndex;
+            if (index == 0)
+                SetMasterZeroIndex(0);
+            else
+                SetMasterZeroIndex(3);
+
+            txtMsaterNum.Text = GetMasterZeroIndex().ToString();
+        }
+
+        private void btnDeleteMaster_Click(object sender, EventArgs e)
+        {
+            if (MasterList.SelectedItem == null || MasterList.Items.Count <= 0) return;
+            string filename = m__G.m_RootDirectory + "\\DoNotTouch\\OffsetZero\\" + MasterList.SelectedItem.ToString();
+            File.Delete(filename);
+            InitMasterZeroList();
+            MasterList.SelectedIndex = GetMasterZeroCount() - 1;
+        }
+
+        private void FVision_VisibleChanged(object sender, EventArgs e)
+        {
+            if (Visible)
+            {
+                InitMasterZeroList();
+                //MasterList.SelectedIndex = GetMasterZeroIndex();
+            }
+        }
+
+        private async void btnRepeatTest_Click(object sender, EventArgs e)
+        {
+            if (motorizedMeasurementRun)
+            {
+                motorizedMeasurementAbort = true;
+                btnRepeatTest.Enabled = false;
+                return;
+            }
+
+            motorizedMeasurementRun = true;
+            btnRepeatTest.Text = "Stop";
+
+            try
+            {
+                if (cboAxis.SelectedItem != null &&
+                double.TryParse(tbMaxStroke.Text, out double onewayStroke) &&
+                double.TryParse(tbStep.Text, out double step) &&
+                (onewayStroke * 2 >= step))
+                {
+                    Axis axis = (Axis)cboAxis.SelectedItem;
+
+                    if (LoadOQCcondition() == false)
+                    {
+                        MessageBox.Show("Fail to Load OQC Condition");
+                    }
+
+                    await Task.Run(() =>
+                    {
+                        //for(int cnt = 0; cnt < 5;cnt++)
+                        //{
+                        if (motorizedMeasurementAbort) return;
+                        AddVsnLog("Start to find CSHorg");
+                        FindCSHorg();
+
+                        if (motorizedMeasurementAbort) return;
+                        AddVsnLog("Start to find Fidorg");
+                        FindFidorg();
+
+                        SaveOQCCondition();
+
+                        for (int i = 1; i < 4; i++)
+                        {
+                            if (motorizedMeasurementAbort) return;
+                            AddVsnLog($"Start to find {(Axis)(i - 1)} pivot.");
+                            FindPivot(i); //    FindPivot(1) 여기 있으나 없으나 Z 오차 변화 없음
+                        }
+
+                        var stabilizedData = ScanAxis(axis, onewayStroke, step, null, 0, 20);
+                        var stabilizedDataList = new List<List<double[]>> { stabilizedData };
+                        SaveMeasuredData(stabilizedDataList, $"{axis}_Repeat"); // _{cnt+1}");
+                        //}
+                    });
+                }
+                else
+                {
+                    MessageBox.Show("Please check the axis, stroke, and step values.", "Input Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                AddVsnLog($"failed: {ex.Message}");
+            }
+            finally
+            {
+                motorizedMeasurementRun = false;
+                motorizedMeasurementAbort = false;
+                btnRepeatTest.Enabled = true;
+                btnRepeatTest.Text = "Repeat Test";
+            }
+        }
+
+        private void cboAxis_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Axis axis = (Axis)cboAxis.SelectedItem;
+
+            switch (axis)
+            {
+                case Axis.X:
+                case Axis.Y:
+                    {
+                        tbMaxStroke.Text = "1900";
+                        tbStep.Text = "100";
+                        break;
+                    }
+                case Axis.Z:
+                    {
+                        tbMaxStroke.Text = "1750";
+                        tbStep.Text = "100";
+                        break;
+                    }
+                case Axis.TX:
+                    {
+                        tbMaxStroke.Text = "16";
+                        tbStep.Text = "12";
+                        break;
+                    }
+                case Axis.TY:
+                case Axis.TZ:
+                    {
+                        tbMaxStroke.Text = "200";
+                        tbStep.Text = "12";
+                        break;
+                    }
+            }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            cbContinuosMode.Checked = false;
+
+            FindCarrierToDummyShift();
+
+            CameraReset(2, true);
+        }
+
+        public double[] mPhiThetaPsi = new double[3];
+        private void btnApplyEulerAngle_Click(object sender, EventArgs e)
+        {
+            double sX = double.Parse(tbEulerSX.Text);   // um
+            double sY = double.Parse(tbEulerSY.Text);   // um
+            double sZ = double.Parse(tbEulerSZ.Text);   // um
+
+            if (Math.Abs(sY) > Math.Abs(sX) && Math.Abs(sY) > Math.Abs(sZ))
+            {
+                mPhiThetaPsi[0] = -Math.Atan(sZ / sY);
+                mPhiThetaPsi[1] = 0;
+                mPhiThetaPsi[2] = -Math.Atan(-sX / sY);
+            }
+            else if (Math.Abs(sX) > Math.Abs(sY) && Math.Abs(sX) > Math.Abs(sZ))
+            {
+                mPhiThetaPsi[0] = 0;
+                mPhiThetaPsi[1] = -Math.Atan(-sZ / sX);
+                mPhiThetaPsi[2] = -Math.Atan(sY / sX);
+            }
+            else if (Math.Abs(sZ) > Math.Abs(sY) && Math.Abs(sZ) > Math.Abs(sX))
+            {
+                mPhiThetaPsi[0] = -Math.Atan(-sY / sZ);
+                mPhiThetaPsi[1] = -Math.Atan(sX / sZ);
+                mPhiThetaPsi[2] = 0;
+            }
+            tbEulerPhi.Text = (mPhiThetaPsi[0] * 180 / Math.PI).ToString("F2");
+            tbEulerTheta.Text = (mPhiThetaPsi[1] * 180 / Math.PI).ToString("F2");
+            tbEulerPsi.Text = (mPhiThetaPsi[2] * 180 / Math.PI).ToString("F2");
+
+            m__G.oCam[0].mFAL.SetEulerAngle(mPhiThetaPsi);
+            string eulerFile = m__G.m_RootDirectory + "\\DoNotTouch\\EulerAngle" + camID0 + ".txt";
+            StreamWriter wr = new StreamWriter(eulerFile);
+            wr.WriteLine(mPhiThetaPsi[0].ToString("F8"));
+            wr.WriteLine(mPhiThetaPsi[1].ToString("F8"));
+            wr.WriteLine(mPhiThetaPsi[2].ToString("F8"));
+            wr.Close();
+
+
+
+            //  Debugging : Verification
+            //double[,] EulerR = new double[3,3];
+            //m__G.oCam[0].mFAL.mFZM.RotationEuler(mPhiThetaPsi[0], mPhiThetaPsi[1], mPhiThetaPsi[2], ref EulerR);
+            //double[] curPos = new double[3] ;
+            //curPos[0] = sX;
+            //curPos[1] = sY;
+            //curPos[2] = sZ;
+
+            //double[] RotatedCurPos = new double[3] { 0,0,0 };
+            //m__G.oCam[0].mFAL.mFZM.MatrixCross(ref EulerR, ref curPos, ref RotatedCurPos,3);
+
+            //tbVsnLog.Text = RotatedCurPos[0].ToString("F2") + "\t" + RotatedCurPos[1].ToString("F1") + "\t" + RotatedCurPos[2].ToString("F1") + "\r\n";
+            //tbVsnLog.SelectionStart = tbVsnLog.Text.Length;
+            //tbVsnLog.ScrollToCaret();
+        }
+        public void UpdateEulerAngle()
+        {
+            tbEulerPhi.Text = (mPhiThetaPsi[0] * 180 / Math.PI).ToString("F2");
+            tbEulerTheta.Text = (mPhiThetaPsi[1] * 180 / Math.PI).ToString("F2");
+            tbEulerPsi.Text = (mPhiThetaPsi[2] * 180 / Math.PI).ToString("F2");
+        }
+
+        public string mDataFile100 = "";
+        private CancellationTokenSource prism45Cts;
+
+        private async void btn45Test_Click(object sender, EventArgs e)
+        {
+            if (motorizedMeasurementRun)
+            {
+                prism45Cts?.Cancel();
+                motorizedMeasurementAbort = true;
+                btn45Test.Enabled = false;
+                return;
+            }
+
+            motorizedMeasurementRun = true;
+            btn45Test.Text = "Stop";
+
+            try
+            {
+                TimeSpan targetTime = new TimeSpan(8, 0, 0);   // 오전 8시
+                DateTime now = DateTime.Now;
+                DateTime todayTarget = DateTime.Today.Add(targetTime);
+
+                // 이미 목표 시각이 지났으면 내일로 넘김
+                if (now > todayTarget)
+                    todayTarget = todayTarget.AddDays(1);
+
+                TimeSpan waitTime = todayTarget - now;
+
+                prism45Cts = new CancellationTokenSource();
+                var token = prism45Cts.Token;
+
+                // 시간 예약 해제
+                //await Task.Delay(waitTime, token);
+
+                await Task.Run(() =>
+                {
+                    if (motorizedMeasurementAbort) return;
+                    AddVsnLog("Start to find CSHorg");
+                    FindCSHorg();
+
+                    for (int i = 1; i < 4; i++)
+                    {
+                        if (motorizedMeasurementAbort) return;
+                        AddVsnLog($"Start to find {(Axis)(i - 1)} pivot.");
+                        FindPivot(i);
+                    }
+                    SavePivots();
+
+                    if (motorizedMeasurementAbort) return;
+                    AddVsnLog("Start to find CSHorg");
+                    FindCSHorg(true);
+
+                    if (motorizedMeasurementAbort) return;
+                    AddVsnLog("Start to find Fidorg");
+                    FindFidorg();
+
+                    SaveOQCCondition();
+
+
+                    for (int iAxis = 3; iAxis < 6; iAxis++)
+                    {
+                        if (motorizedMeasurementAbort) return;
+                        AddVsnLog($"Start to find PrismCS {(Axis)(iAxis)} Rotation");
+                        FindPrismCSRotation((Axis)iAxis);
+                        // FindPrismCSPivot((Axis)iAxis);
+                    }
+
+                    MotorMoveAbs6D(mCSHorg.X, mCSHorg.Y, mCSHorg.Z, 0, 0, 0);
+                    GrabInitalMark();
+                    AddVsnLog("Start to Measure");
+
+                    // 측정
+                    for (int i = 3; i < 6; i++)
+                    {
+                        mDataFile100 = "";
+                        Axis axis = (Axis)i;
+                        Axis prismAxis = Axis.TX;
+                        switch (axis)
+                        {
+                            case Axis.TX:
+                                prismAxis = Axis.TY;
+                                break;
+                            case Axis.TY:
+                                prismAxis = Axis.TZ;
+                                break;
+
+                            case Axis.TZ:
+                                prismAxis = Axis.TX;
+                                break;
+                        }
+                        mDataFile100 = $"PrismDrv_{prismAxis}_{DateTime.Now:yyMMdd_HHmmss}";
+
+                        // MotorSetPivot(PrismCSPivots[i-3].X, PrismCSPivots[i - 3].Y, PrismCSPivots[i - 3].Z);
+                        MotorSetPivot(mHexapodPivots[i - 3].X, mHexapodPivots[i - 3].Y, mHexapodPivots[i - 3].Z + 6565);
+                        MotorSetHCS(PrismCSRotations[i - 3].X, PrismCSRotations[i - 3].Y, PrismCSRotations[i - 3].Z);
+
+                        for (int repeatN = 0; repeatN < 100; repeatN++)   // 100회
+                        {
+                            double onewayStroke = 3.0 * 60;
+                            double step = 0.01 * 60;    // 0.01
+
+                            mGageFullData.Clear();
+                            mCalibrationFullData.Clear();
+                            mPrismTXTYTZ.Clear();
+                            mStdevTXTYTZ.Clear();
+
+                            if (motorizedMeasurementAbort) return;
+                            double orgPos = MotorCurPosAxis(axis);
+                            Thread.Sleep(300);
+                            mAutoCalibrationIndex = 0;
+                            SingleFindMark();
+
+                            double[] targetPositions = new double[] { -(onewayStroke) / 3, -(onewayStroke) * 2 / 3, -onewayStroke - 15, -onewayStroke - 10, -onewayStroke - 5 };
+                            foreach (double targetPos in targetPositions)
+                            {
+                                if (motorizedMeasurementAbort) return;
+                                MotorMoveAbsAxis(axis, targetPos);
+                                Thread.Sleep(300);
+                                SingleFindMark();
+                            }
+
+                            // 누적된 데이터 Clear
+                            mGageFullData.Clear();
+                            mCalibrationFullData.Clear();
+                            mPrismTXTYTZ.Clear();
+                            mStdevTXTYTZ.Clear();
+
+                            // 측정 시작
+                            double movingStroke = -onewayStroke;
+                            double pos = orgPos - onewayStroke;
+
+                            while (movingStroke <= onewayStroke)
+                            {
+                                if (motorizedMeasurementAbort) return;
+                                MotorMoveAbsAxis(axis, pos);
+                                Thread.Sleep(300);
+                                SingleFindMark();
+
+                                pos += step;
+                                movingStroke += step;
+                            }
+                            MotorMoveAbsAxis(axis, orgPos); // 헥사포드 복귀
+
+                            // Data
+                            var stabilizedDataList = new List<List<double[]>> { mCalibrationFullData.ToList() };
+                            AppendMeasuredData(stabilizedDataList, mDataFile100);
+                        }
+
+                        // 한 축 측정완료시 rawData 메일 전송
+                        //string attachFilePath = $"{m__G.m_RootDirectory}\\DoNotTouch\\Admin\\StabilizedData_{camID0}_{mDataFile100}.csv";
+                        //CWilliamEmailer.SendMailToWilliam($"Prism45 {prismAxis}축 구동측정", "Mail Test", attachFilePath);
+                    }
+
+                    MotorSetPivot(0, 0, 0);
+
+                }, token);
+            }
+            catch (Exception ex)
+            {
+                AddVsnLog($"Failed: {ex.Message}");
+            }
+            finally
+            {
+                motorizedMeasurementRun = false;
+                motorizedMeasurementAbort = false;
+                btn45Test.Enabled = true;
+                btn45Test.Text = "Prism45 Test";
+            }
+        }
+
+        private async void FindPrism45Pivot_Click(object sender, EventArgs e)
+        {
+            if (motorizedMeasurementRun)
+            {
+                motorizedMeasurementAbort = true;
+                btnFindPrism45Pivot.Enabled = false;
+                return;
+            }
+
+            motorizedMeasurementRun = true;
+            btnFindPrism45Pivot.Text = "Stop";
+
+
+            try
+            {
+                await Task.Run(() =>
+                {
+                    if (motorizedMeasurementAbort) return;
+                    //AddVsnLog("Start to find CSHorg");
+                    //FindCSHorg();
+
+                    LoadPivotXYZ();
+                    //for (int i = 1; i < 4; i++)
+                    //{
+                    //    if (motorizedMeasurementAbort) return;
+                    //    AddVsnLog($"Start to find {(Axis)(i - 1)} pivot.");
+                    //    FindPivot(i);
+                    //}
+                    //SavePivots();
+
+                    AddVsnLog("Start to find CSHorg");
+                    FindCSHorg(true);
+
+                    //if (motorizedMeasurementAbort) return;
+                    //AddVsnLog("Start to find Fidorg");
+                    //FindFidorg();
+
+                    //SaveOQCCondition();
+
+                    for (int iAxis = (int)Axis.TX; iAxis <= (int)Axis.TZ; iAxis++)
+                    {
+                        if (motorizedMeasurementAbort) return;
+                        AddVsnLog($"Start to locate Axis of {(Axis)(iAxis)} Rotation");
+                        FindPrismCSRotation((Axis)iAxis);
+                        AddVsnLog($"Start to locate COR of {(Axis)(iAxis)} Rotation");
+                        FindPrismCSPivot((Axis)iAxis);  //  "Find Prism45 Pivot" 버튼에서 호출
+                    }
+
+                });
+            }
+            catch (Exception ex)
+            {
+                AddVsnLog($"Failed: {ex.Message}");
+
+            }
+            finally
+            {
+                motorizedMeasurementRun = false;
+                motorizedMeasurementAbort = false;
+                btnFindPrism45Pivot.Enabled = true;
+                btnFindPrism45Pivot.Text = "Find Prism45 Pivot";
+            }
+        }
+
+        public Point3d[] PrismCSRotations = new Point3d[3];
+        public Point3d[] PrismCSPivots = new Point3d[3];
+
+
+
+        public void FindPrismCSRotation(Axis axis)
+        {
+            FindCSHorg();
+
+            if (motorizedMeasurementAbort) return;
+
+            List<double> targetList = new List<double>();
+            double stroke = 3.0;
+            double temp = -stroke;
+
+            while (temp <= stroke)
+            {
+                targetList.Add(temp);
+                temp += 0.5;
+            }
+
+            int m = targetList.Count;
+            int n = 3;
+            // 회전축 방향 벡터
+            double[] normal0 = new double[n];   // 기준 법선 벡터
+            double[] normalm = new double[n];   // 실제 법선 벡터
+            double[] normal1 = new double[n];   // 설정 법선 벡터
+
+            double rad45 = 45 * Math.PI / 180;
+            switch (axis)
+            {
+                case Axis.TX:   //  Prism Y == CSH X == Hexapod X
+                    normal0 = new double[] { 1, 0, 0 };
+                    break;
+
+                case Axis.TY:   //  Prism Z == CSH (0, 1 , -1) == Hexapod (0, 1 , -1) 
+                    normal0 = new double[] { 0, Math.Cos(rad45), -Math.Sin(rad45) };
+                    break;
+
+                case Axis.TZ:   //  Prism X == CSH (0, 1 , 1) == Hexapod (0, 1 , 1) 
+                    normal0 = new double[] { 0, Math.Cos(rad45), Math.Sin(rad45) };
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(axis), axis, "지원하지 않는 axis입니다.");
+            }
+            normal1 = new double[] { normal0[0], normal0[1], normal0[2] };
+
+            // 디버깅
+
+            List<Point3d> fullNormal1 = new List<Point3d>();   // 법선
+            List<Point3d> fullArcmin = new List<Point3d>();   // 설정할 벡터
+            List<Point3d> fullNormalm = new List<Point3d>();   // 설정할 벡터 -> 각도
+            List<Point3d[]> fullApoints = new List<Point3d[]>();
+            List<double> fullErrors = new List<double>();
+
+            // 행렬 A
+            double[,] A = new double[m, n];
+
+            int itrCnt = 0;
+            while (itrCnt++ < 15)
+            {
+                if (motorizedMeasurementAbort) return;
+
+                double txRad;
+                double tyRad;
+                double tzRad;
+
+                switch (axis)
+                {
+                    case Axis.TX:
+                        {
+                            txRad = 0;
+                            tyRad = Math.Atan2(-normal1[2], Math.Sqrt(1 - normal1[2] * normal1[2])); // Y / X
+                            tzRad = Math.Atan2(normal1[1], normal1[0]);  // Z
+                            break;
+                        }
+
+                    case Axis.TY:
+                        {
+                            txRad = Math.Atan2(normal1[2], Math.Sqrt(1 - normal1[2] * normal1[2]));
+                            tyRad = 0;
+                            tzRad = Math.Atan2(-normal1[0], normal1[1]);
+                            break;
+                        }
+
+                    case Axis.TZ:
+                        {
+                            txRad = Math.Atan2(-normal1[1], Math.Sqrt(1 - normal1[1] * normal1[1]));     // Y
+                            tyRad = Math.Atan2(normal1[0], normal1[2]); // X / Z
+                            tzRad = 0;
+                            break;
+                        }
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(axis), axis, "지원하지 않는 axis입니다.");
+                }
+
+                double txArcmin = -(txRad * 180.0 / Math.PI * 60.0);
+                double tyArcmin = -(tyRad * 180.0 / Math.PI * 60.0);
+                double tzArcmin = -(tzRad * 180.0 / Math.PI * 60.0);
+
+                MotorSetPivot(mHexapodPivots[(int)(axis - 3)].X, mHexapodPivots[(int)(axis - 3)].Y, mHexapodPivots[(int)(axis - 3)].Z + 6565);
+                // 축 각도 설정
+                MotorSetHCS(txArcmin, tyArcmin, tzArcmin);
+                PrismCSRotations[(int)(axis - 3)] = new Point3d(txArcmin, tyArcmin, tzArcmin);
+
+                // 디버깅
+                fullNormal1.Add(new Point3d(normal1[0], normal1[1], normal1[2]));
+                fullArcmin.Add(new Point3d(-txArcmin, -tyArcmin, -tzArcmin));
+
+                //
+
+                mCalibrationFullData.Clear();
+                mGageFullData.Clear();
+
+                double orgPos = MotorCurPosAxis(axis);
+
+                foreach (var target in targetList)
+                {
+                    MotorMoveAbsAxis(axis, orgPos + target * 60);
+                    Thread.Sleep(500);
+                    SingleFindMark();
+                }
+                MotorMoveAbsAxis(axis, orgPos);
+
+                // bZero
+                double[] bZero = new double[m];
+
+                // M 행렬: [x, y, z, 1]
+                Point3d[] Apoints = new Point3d[m];
+                var M = Matrix<double>.Build.Dense(m, 4);
+                for (int i = 0; i < m; i++)
+                {
+                    M[i, 0] = mCalibrationFullData[i][0];   // um
+                    M[i, 1] = mCalibrationFullData[i][1];   // um
+                    M[i, 2] = mCalibrationFullData[i][2];   // um
+                    M[i, 3] = 1.0;
+                    Apoints[i] = new Point3d(M[i, 0], M[i, 1], M[i, 2]);
+                }
+                fullApoints.Add(Apoints);
+                // SVD 수행
+                var svd = M.Svd(true);
+                MathNet.Numerics.LinearAlgebra.Vector<double> plane = svd.VT.Row(svd.VT.RowCount - 1);
+
+                // 정규화 (optional)
+                var normal = plane.SubVector(0, 3);
+                plane = plane / normal.L2Norm();
+                normalm = new double[] { plane[0], plane[1], plane[2] };
+                double L = Math.Sqrt(normalm[0] * normalm[0] + normalm[1] * normalm[1] + normalm[2] * normalm[2]);
+
+                //////for (int i = 0; i < m; i++)
+                //////{
+                //////    //  기존  ax + by + cz + 1 = 0;
+                //////    //A[i, 0] = mCalibrationFullData[i][0];   // um
+                //////    //A[i, 1] = mCalibrationFullData[i][1];   // um
+                //////    //A[i, 2] = mCalibrationFullData[i][2];   // um
+
+                //////    //bZero[i] = -1.0;
+
+                //////    //  수정식 z = ax + by + d
+                //////    A[i, 0] = mCalibrationFullData[i][0];   // um
+                //////    A[i, 1] = mCalibrationFullData[i][1];   // um
+                //////    A[i, 2] = 1;   // um
+
+                //////    bZero[i] = mCalibrationFullData[i][2];
+
+                //////}
+
+                //////// 디버깅
+                //////fullApoints.Add(Apoints);
+                ////////
+
+                //////// 평면방정식(a, b, c, d)를 구함 ( Least Squares 방식)
+                //////double[,] AT = new double[n, m];
+                //////m__G.mFAL.mFZM.MatrixTranspose(A, ref AT, n, m);
+
+                //////double[,] AT_A_Inverse = new double[n, n];
+                //////m__G.mFAL.mFZM.MatrixCross(ref AT, ref A, ref AT_A_Inverse, n, m);
+                //////m__G.mFAL.mFZM.InverseU(ref AT_A_Inverse, n);
+
+                //////double[] AT_bZero = new double[n];
+                //////m__G.mFAL.mFZM.MatrixCross(ref AT, ref bZero, ref AT_bZero, n, m);
+
+                //////// 법선벡터 기존
+                ////////normalm = new double[n];
+                ////////m__G.mFAL.mFZM.MatrixCross(ref AT_A_Inverse, ref AT_bZero, ref normalm, n);
+
+                //////// 법선벡터 수정식
+                //////double[] normalVector = new double[n];
+                //////m__G.mFAL.mFZM.MatrixCross(ref AT_A_Inverse, ref AT_bZero, ref normalVector, n);
+                //////normalm = new double[3] { normalVector[0], normalVector[1], -1 };
+
+                //////double L = Math.Sqrt(normalm[0] * normalm[0] + normalm[1] * normalm[1] + normalm[2] * normalm[2]);
+                //////normalm = new double[] { normalm[0] / L, normalm[1] / L, normalm[2] / L };
+
+                // 두 벡터의 내적 계산
+                double dot = normal0[0] * normalm[0] + normal0[1] * normalm[1] + normal0[2] * normalm[2];
+                // 방향이 반대이면 내적이 < 0 → 뒤집어야 함
+                if (dot < 0)
+                {
+                    for (int i = 0; i < 3; i++)
+                        normalm[i] *= -1;  // 방향 반전
+                }
+                //  방향 오차 계산 ( arcmin )
+                double errNmin = Math.Asin(Math.Sqrt((normal0[0] - normalm[0]) * (normal0[0] - normalm[0]) + (normal0[1] - normalm[1]) * (normal0[1] - normalm[1]) + (normal0[2] - normalm[2]) * (normal0[2] - normalm[2])) / 2) * 180 * 60 / Math.PI; //  min
+                fullErrors.Add(errNmin);
+                // 디버깅
+                fullNormalm.Add(new Point3d(normalm[0], normalm[1], normalm[2]));
+                //
+                // 벡터 차: N0 - Nm
+                double[] delta = new double[n];
+                for (int i = 0; i < n; i++)
+                {
+                    delta[i] = normal0[i] - normalm[i];
+                }
+
+                // 오차 0.1deg  이하
+                if (errNmin < 6)
+                    break;
+
+                for (int i = 0; i < n; i++)
+                {
+                    if (errNmin > 40)
+                        normal1[i] += 0.5 * delta[i];
+                    else if (errNmin > 10)
+                        normal1[i] += 0.25 * delta[i];
+                    else
+                        normal1[i] += 0.15 * delta[i];
+                }
+
+                L = Math.Sqrt(normal1[0] * normal1[0] + normal1[1] * normal1[1] + normal1[2] * normal1[2]);
+                normal1 = new double[] { normal1[0] / L, normal1[1] / L, normal1[2] / L };
+            }
+
+            MotorSetPivot(0, 0, 0);
+
+            string strStabilizedFile = $"C:\\6AxisTester\\DoNotTouch\\Admin\\normal.csv";
+            //  Reset File
+            //StreamWriter wr = new StreamWriter(strStabilizedFile);
+            //wr.Close();
+
+            string slstr = $"Normal1,X,Y,Z,Arcmin,X,Y,Z,Normalm,X,Y,Z,,,,,Error(min)\r\n";
+            for (int i = 0; i < fullNormal1.Count; i++)
+            {
+                slstr += $"{i},{fullNormal1[i].X:F7},{fullNormal1[i].Y:F7},{fullNormal1[i].Z:F7}," +
+                         $"{i},{fullArcmin[i].X:F7},{fullArcmin[i].Y:F7},{fullArcmin[i].Z:F7}," +
+                         $"{i},{fullNormalm[i].X:F7},{fullNormalm[i].Y:F7},{fullNormalm[i].Z:F7},,,,,{fullErrors[i]:F7}\r\n";
+            }
+
+            slstr += "A,X,Y,Z\r\n";
+            for (int i = 0; i < fullApoints.Count; i++)
+            {
+                for (int j = 0; j < fullApoints[i].Length; j++)
+                {
+                    slstr += $"{j},{fullApoints[i][j].X:F7},{fullApoints[i][j].Y:F7},{fullApoints[i][j].Z:F7}\r\n";
+
+                }
+            }
+            File.AppendAllText(strStabilizedFile, slstr);
+        }
+
+        public void FindPrismCSPivot(Axis axis)
+        {
+            FindCSHorg();
+
+            double offsetPivot = 6565;
+            List<double> targetList = new List<double>();
+            double stroke = 3.0;
+            double temp = -stroke;
+
+            while (temp <= stroke)
+            {
+                targetList.Add(temp);
+                temp += 0.5;
+            }
+            int m = targetList.Count;
+            int n = 3;
+
+            double[] normalm = new double[n];   // 실제 법선 벡터
+
+            // 행렬 A
+            double[,] A = new double[m, n];
+            Point3d pivot = new Point3d(mHexapodPivots[(int)(axis - 3)].X, mHexapodPivots[(int)(axis - 3)].Y, mHexapodPivots[(int)(axis - 3)].Z + offsetPivot);
+
+            // 디버깅                       
+            List<Point3d> fullPivot = new List<Point3d>();
+            List<Point3d> fullCircle = new List<Point3d>();
+            List<Point3d[]> fullApoints = new List<Point3d[]>();
+            List<Point3d> fullNormalm = new List<Point3d>();   // 설정할 벡터 -> 각도
+            List<double> fullErrors = new List<double>();
+            List<double> fullRadius = new List<double>();
+
+            bool isVert = false;
+            int itrCnt = 0;
+            while (itrCnt++ < 10)
+            {
+                if (motorizedMeasurementAbort) return;
+                mCalibrationFullData.Clear();
+                mGageFullData.Clear();
+
+                MotorSetPivot(pivot.X, pivot.Y, pivot.Z);
+                PrismCSPivots[(int)(axis - 3)] = new Point3d(pivot.X, pivot.Y, pivot.Z);
+                // 디버깅
+                fullPivot.Add(pivot);
+                //
+                MotorSetHCS(PrismCSRotations[(int)(axis - 3)].X, PrismCSRotations[(int)(axis - 3)].Y, PrismCSRotations[(int)(axis - 3)].Z);
+
+                double orgPos = MotorCurPosAxis(axis);
+
+                foreach (var target in targetList)
+                {
+                    MotorMoveAbsAxis(axis, orgPos + target * 60);
+                    Thread.Sleep(500);
+                    SingleFindMark();
+                }
+                MotorMoveAbsAxis(axis, orgPos);
+
+                // bZero
+                Point3d[] Apoints = new Point3d[m];
+                double[,] ApointsM = new double[m, 3];
+                var M = Matrix<double>.Build.Dense(m, 4);
+                for (int i = 0; i < m; i++)
+                {
+                    M[i, 0] = mCalibrationFullData[i][0];   // um
+                    M[i, 1] = mCalibrationFullData[i][1];   // um
+                    M[i, 2] = mCalibrationFullData[i][2];   // um
+                    ApointsM[i, 0] = mCalibrationFullData[i][0];   // um
+                    ApointsM[i, 1] = mCalibrationFullData[i][1];   // um
+                    ApointsM[i, 2] = mCalibrationFullData[i][2];   // um
+                    M[i, 3] = 1.0;
+                    Apoints[i] = new Point3d(M[i, 0], M[i, 1], M[i, 2]);
+                }
+                fullApoints.Add(Apoints);
+
+                normalm = new double[3];
+                double[] directCircle = m__G.mFAL.mFZM.PseudoCircle(ApointsM, ref normalm);
+
+                fullNormalm.Add(new Point3d(normalm[0], normalm[1], normalm[2]));
+                fullCircle.Add(new Point3d(directCircle[0], directCircle[1], directCircle[2]));
+
+                // center
+                Point3d center0;
+                switch (axis)
+                {
+                    case Axis.TX:
+                        center0 = new Point3d(0, 0, offsetPivot);
+                        break;
+
+                    case Axis.TY:
+                        center0 = new Point3d(0, offsetPivot / 2, offsetPivot / 2);
+                        break;
+                    case Axis.TZ:
+                        center0 = new Point3d(0, -offsetPivot / 2, offsetPivot / 2);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(axis), axis, "지원하지 않는 axis입니다.");
+                }
+
+                double h = center0.X - directCircle[0];
+                double k = center0.Y - directCircle[1];
+                double l = center0.Z - directCircle[2];
+                double r = directCircle[3];
+                fullRadius.Add(r);
+
+                double errPos = Math.Sqrt(h * h + k * k + l * l);
+                fullErrors.Add(errPos);
+
+                if (!isVert)
+                {
+                    if (errPos <= 30 || itrCnt == 10)
+                    {
+                        isVert = true;
+                        itrCnt = 6;
+                    }
+                    else
+                    {
+                        pivot = new Point3d(pivot.X + h * 0.4, pivot.Y + k * 0.4, pivot.Z + l * 0.4);
+                    }
+                }
+            }
+
+            string strStabilizedFile = $"C:\\6AxisTester\\DoNotTouch\\Admin\\circle.csv";
+            //StreamWriter wr = new StreamWriter(strStabilizedFile);
+            //wr.Close();
+
+            string slstr = $"Pivot, X, Y, Z, Circle, X, Y, Z,Normalm,,,,,Radius(um),,,Error(um) \r\n";
+            for (int i = 0; i < fullPivot.Count; i++)
+            {
+                slstr += $"{i},{fullPivot[i].X:F7},{fullPivot[i].Y:F7},{fullPivot[i].Z:F7}," +
+                         $"{i},{fullCircle[i].X:F7},{fullCircle[i].Y:F7},{fullCircle[i].Z:F7}," +
+                         $"{i},{fullNormalm[i].X:F7},{fullNormalm[i].Y:F7},{fullNormalm[i].Z:F7},,{fullRadius[i]:F7},,,{fullErrors[i]:F7}," + "\r\n";
+            }
+            slstr += "A,X,Y,Z\r\n";
+            for (int i = 0; i < fullApoints.Count; i++)
+            {
+                for (int j = 0; j < fullApoints[i].Length; j++)
+                {
+                    slstr += $"{j},{fullApoints[i][j].X:F7},{fullApoints[i][j].Y:F7},{fullApoints[i][j].Z:F7}\r\n";
+                }
+            }
+            File.AppendAllText(strStabilizedFile, slstr);
+        }
+
         private void Radio_CheckedChanged(object sender, EventArgs e)
         {
             System.Windows.Forms.RadioButton bt = (System.Windows.Forms.RadioButton)sender;
 
             ScanName = bt.Text;
-        }
-
-        private void button13_Click_2(object sender, EventArgs e)
-        {
-            m__G.oCam[0].GrabB();
-        }
-
-        private void btnInitialTilt_Click(object sender, EventArgs e)
-        {
-            SaveTXTYZeroOffset(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, true);
-        }
-
-        private void btnSetMasterTilt_Click(object sender, EventArgs e)
-        {
-            if (!bLiveFindMark && !bThreadManualFindMarks)
-            {
-                MessageBox.Show("This button is only available in 'Live with Marks' or 'Grab to Find Marks'", "Notice", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            m__G.mDoingStatus = "Checking Vision";
-            m__G.mDoingStatus = "IDLE";
-
-            // 250326 Live with Mark에서만 가능 -> Grab to Find Mark에서도 가능으로 변경
-            // 모두 SetOffSet, SignTXTY 리셋하고 GrabToFindMark나 LivewithMark를 다시 찍고 그결과로 OFFSET 값을 구하기. 로 변경
-
-            double orgMasterX = double.Parse(tbMasterX.Text);   // um
-            double orgMasterY = double.Parse(tbMasterY.Text);   // um
-            double orgMasterZ = double.Parse(tbMasterZ.Text);   // um
-            double orgMasterTx = double.Parse(tbMasterTX.Text); // min
-            double orgMasterTy = double.Parse(tbMasterTY.Text); // min
-            double orgMasterTz = double.Parse(tbMasterTZ.Text); // min
-
-            // 현재 SetSignTXTY의 부호 고려. SignTX가 - 일때 사용자가 tbMasterTX.Text에 n을 입력하면 singn 초기화 값 기준인 orgMasterX -n으로 적용해야함.
-            if (m__G.m_bXTiltReverse)
-            {
-                orgMasterTx *= -1;
-            }
-
-            if (m__G.m_bYTiltReverse)
-            {
-                orgMasterTy *= -1;
-            }
-
-            // offset, sign 초기화
-            m__G.oCam[0].mFAL.mFZM.SetTXTYOffset(0, 0, 0, 0, 0, 0);
-            m__G.oCam[0].mFAL.mFZM.SetSignTXTY(false, false);
-
-
-            int cntData = mCalibrationFullData.Count;
-
-            while (mCalibrationFullData.Count <= cntData)
-            {
-                Thread.Sleep(200);
-            }
-
-            int lastIdx = mCalibrationFullData.Count - 1;
-            double[] lastData = mCalibrationFullData[lastIdx];
-
-            double lx = lastData[0];
-            double ly = lastData[1];
-            double lz = lastData[2];
-            double ltx = lastData[3];
-            double lty = lastData[4];
-            double ltz = lastData[5];
-
-            ////  ltx, lty, ltz 는 측정값 (min)
-            ////  masterTx, masterTy, masterTz  는 부호반전을 고려한 희망하는 값    (min)
-            ////  orgMasterTx, orgMasterTy, orgMasterTz 는 희망하는 값  (min)
-            SaveTXTYZeroOffset(lx, ly, lz, ltx, lty, ltz, orgMasterX, orgMasterY, orgMasterZ, orgMasterTx, orgMasterTy, orgMasterTz, true);
-            m__G.oCam[0].mFAL.mFZM.SetSignTXTY(m__G.m_bXTiltReverse, m__G.m_bYTiltReverse);
-
-
-
-            //DrawMarkPositions();
-
-            //m__G.oCam[0].GrabB(1);
-
-            //string fname = m__G.m_RootDirectory + "\\Result\\RawData\\Image\\SetZeroGrab.bmp";
-            //m__G.oCam[0].SaveImageBuf(fname);
-
-            //m__G.oCam[0].GrabB(2);
-            //m__G.oCam[0].GrabB(3);
-            //m__G.oCam[0].GrabB(4);
-            //m__G.oCam[0].GrabB(5);
-
-            //m__G.oCam[0].mFAL.LoadFMICandidate();
-            //m__G.oCam[0].mFAL.BackupFMI();
-
-            // X, Y, Z 추가 25.03.25
-            //double lx = 0;
-            //double ly = 0;
-            //double lz = 0;  
-            //double ltx = 0;
-            //double lty = 0;
-            //double ltz = 0;
-
-            //MessageBox.Show("Call SetTXTYOffset 1");
-            // m__G.oCam[0].mFAL.mFZM.SetTXTYOffset(0, 0, 0, 0, 0, 0);
-            // m__G.oCam[0].mFAL.mFZM.SetSignTXTY(false, false);
-
-            //for (int i = 1; i < 6; i++)
-            //{
-            //    FindMarks(i);
-
-            //    lx += m__G.oCam[0].mC_pX[i]; /** 5.5 / Global.LensMag;    //  Pixel to um*/
-            //    ly += m__G.oCam[0].mC_pY[i]; /** 5.5 / Global.LensMag;    //  Pixel to um*/
-            //    lz += m__G.oCam[0].mC_pZ[i]; /** 5.5 / Global.LensMag;    //  Pixel to um*/
-            //    ltx += m__G.oCam[0].mC_pTX[i];// radian  // * 180 * 60 / Math.PI;    //  radian to min
-            //    lty += m__G.oCam[0].mC_pTY[i];// radian  // * 180 * 60 / Math.PI;    //  radian to min
-            //    ltz += m__G.oCam[0].mC_pTZ[i];// radian  // * 180 * 60 / Math.PI;    //  radian to min
-            //}
-
-            //lx = lx / 5;
-            //ly = ly / 5;
-            //lz = lz / 5;
-            //ltx = ltx / 5;
-            //lty = lty / 5;
-            //ltz = ltz / 5;
-
-            //double masterTx = 0;
-            //double masterTy = 0;
-            //double masterTz = 0;
-
-            //double orgMasterX = double.Parse(tbMasterX.Text);
-            //double orgMasterY = double.Parse(tbMasterY.Text);
-            //double orgMasterZ = double.Parse(tbMasterZ.Text);
-            //double orgMasterTx = double.Parse(tbMasterTX.Text);
-            //double orgMasterTy = double.Parse(tbMasterTY.Text);
-            //double orgMasterTz = double.Parse(tbMasterTZ.Text);
-
-            //masterTz = orgMasterTz;
-            //try
-            //{
-            //    if (m__G.m_bXTiltReverse)
-            //        masterTx = -orgMasterTx;
-            //    else
-            //        masterTx = orgMasterTx;
-            //}
-            //catch (Exception err)
-            //{
-            //    tbMasterTX.Text = "0";
-            //}
-            //try
-            //{
-            //    if (m__G.m_bYTiltReverse)
-            //        masterTy = -orgMasterTy;
-            //    else
-            //        masterTy = orgMasterTy;
-            //}
-            //catch (Exception err)
-            //{
-            //    tbMasterTY.Text = "0";
-            //}
-
-            ////if (m__G.m_bXTiltReverse)
-            ////    masterTx = -masterTx;
-            ////if (m__G.m_bXTiltReverse)
-            ////    masterTy = -masterTy;
-
-            ////  ltx, lty, ltz 는 측정값 (radian)
-            ////  masterTx, masterTy, masterTz  는 부호반전을 고려한 희망하는 값    (min)  
-            ////  orgMasterTx, orgMasterTy, orgMasterTz 는 희망하는 값  (min)
-            //SaveTXTYZeroOffset(lx, ly, lz, ltx, lty, ltz, masterTx, masterTy, masterTz, orgMasterX, orgMasterY, orgMasterZ, orgMasterTx, orgMasterTy, orgMasterTz);
-            //m__G.oCam[0].mFAL.mFZM.SetSignTXTY(m__G.m_bXTiltReverse, m__G.m_bYTiltReverse);
-
-            //m__G.oCam[0].mFAL.RecoverFromBackupFMI();
-
-        }
-
-        private void button2_Click_1(object sender, EventArgs e)
-        {
-           
         }
     }
 }

@@ -989,7 +989,7 @@ namespace FZ4P
             this.Name = "F_Main";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "B7Wide_24061701";
+            this.Text = "6AxisTester_25082901";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.F_Main_FormClosing);
             this.Load += new System.EventHandler(this.F_Main_Load);
             ((System.ComponentModel.ISupportInitialize)(this.SpecGrid)).EndInit();

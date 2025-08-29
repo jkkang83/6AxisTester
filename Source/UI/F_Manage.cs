@@ -492,7 +492,25 @@ namespace FZ4P
             STATIC.DrvIC.OISOn(0, "X", true);
             STATIC.DrvIC.OISOn(0, "Y", true);
         }
+        public byte[] sDataBuff = null;
+        public int RunNum = 1;
+        public string CheckResultFolder()
+        {
+            DateTime dt = DateTime.Now;
+            string resDirectory = STATIC.BaseDir + dt.Year + "\\" + dt.Month + "\\" + dt.Day + "\\";
+            if (!Directory.Exists(resDirectory))
+                Directory.CreateDirectory(resDirectory);
+            return resDirectory;
+        }
+        public string GetLotName()
+        {
 
-     
+            //return tbLotName.Text;
+            return "";
+        }
+        public void SettbUncalibratedInfoVisible(bool visible)
+        {
+            //tbUncalibratedInfo.BeginInvoke(new Action(() => { tbUncalibratedInfo.Visible = visible; }));
+        }
     }
 }

@@ -27,7 +27,7 @@ namespace FZ4P
 
         public static event EventHandler StateChange = null;
 
-        public static string BaseDir = "C:\\B7WideTest\\";
+        public static string BaseDir = "C:\\6AxisTester\\";
         public static string RootDir = BaseDir + "\\DoNotTouch\\";
         public static string DataDir = BaseDir + "\\Data\\";
         public static string UserScriptDir = BaseDir + "\\DriverIC\\FW\\";

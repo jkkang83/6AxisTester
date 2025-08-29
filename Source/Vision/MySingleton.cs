@@ -88,9 +88,9 @@ namespace FZ4P
         public string mMOTID = "";
         public string mDoingStatus = "IDLE";
         public int mIDLEcount = 0;
-        public int mMaxThread = 22; // 13700K : 18, 12700 : 16
+        public int mMaxThread = 20; // 13700K : 18, 12700 : 16
         public int mMonitoringTestSet = 129;
-        public const double LensMag = 0.30;// FZ4P
+        public const double LensMag = 0.30;// CSH030Ex
         //public const int mMergeImgWidth = 750;
         //public const int mMergeImgHeight = 440;
         public const int mMergeImgWidth = 780;
@@ -119,7 +119,7 @@ namespace FZ4P
         //-------------------------------------------------------------------------------------------------------------
         private Global()
         {
-            m_RootDirectory = "C:\\B7WideTest";
+            m_RootDirectory = STATIC.BaseDir;
             //string src = "";
             string sLotDir = m_RootDirectory + "\\DoNotTouch";
             //string destine = "";
@@ -155,7 +155,7 @@ namespace FZ4P
             sLotDir = m_RootDirectory + "\\Package";
             string sLotDirFW = m_RootDirectory + "\\Package" + "\\FW";
             string sLotDirPreFW = m_RootDirectory + "\\Package" + "\\PreFW";
-            
+
 
             if (!Directory.Exists(sLotDir))
                 Directory.CreateDirectory(sLotDir);
@@ -164,16 +164,16 @@ namespace FZ4P
             if (!Directory.Exists(sLotDirPreFW))
                 Directory.CreateDirectory(sLotDirPreFW);
 
-           
+
             string DestFile = m_RootDirectory + "\\DriverIC\\FW";
-           
+
             string[] lFWfile = new string[2] { "", "" };
 
             int nameIndex = sLotDirFW.Length;
             string[] lBinArray = Directory.GetFiles(sLotDirFW, "*.bin");
             for (int i = 0; i < lBinArray.Length; i++)
             {
-               
+
                 FileInfo fInfo = new FileInfo(lBinArray[i]);
                 DestFile = m_RootDirectory + "\\DriverIC\\FW" + lBinArray[i].Substring(nameIndex);   //  32K FW                                                                                                     //MessageBox.Show(DestFile);
                 string FilePath = m_RootDirectory + "\\DoNotTouch\\" + "FWupdateFileName.txt";
@@ -308,12 +308,12 @@ namespace FZ4P
                 lwriter = new StreamWriter(mSystemLogFile);
                 lwriter.Close();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 MessageBox.Show(e.ToString());
             }
-           
-            
+
+
         }
 
         public void wrSytemLog(string msg)
@@ -432,7 +432,7 @@ namespace FZ4P
             AF_ATT2_MAX,
             AF_INVDR,
             AF_EPA_MIN,
-            AF_EPA_MAX, 
+            AF_EPA_MAX,
             ZOOM1_Amp_Gain, //  23
             ZOOM2_Amp_Gain,
             ZOOM1_Offset,
@@ -483,22 +483,22 @@ namespace FZ4P
             AF_2ndOvershoot,
             AF_2ndStepStroke,
             AF_SettlingTime,
-            AF_Overshoot,        
-            AF_StepStroke,       
-            AF_SettlingTime2,    
-            AF_Overshoot2,       
-            AF_StepStroke2,      
-            AF_SettlingTime3,    
-            AF_Overshoot3,       
-            AF_StepStroke3,      
-            AF_SettlingTime4,    
-            AF_Overshoot4,       
-            AF_StepStroke4,      
-            AF_SettlingTime5,    
-            AF_Overshoot5,       
-            AF_StepStroke5,      
-            AF_SettlingTime6,    
-            AF_Overshoot6,       
+            AF_Overshoot,
+            AF_StepStroke,
+            AF_SettlingTime2,
+            AF_Overshoot2,
+            AF_StepStroke2,
+            AF_SettlingTime3,
+            AF_Overshoot3,
+            AF_StepStroke3,
+            AF_SettlingTime4,
+            AF_Overshoot4,
+            AF_StepStroke4,
+            AF_SettlingTime5,
+            AF_Overshoot5,
+            AF_StepStroke5,
+            AF_SettlingTime6,
+            AF_Overshoot6,
             AF_StepStroke6,
             AF_SettlingTime7,
             AF_Overshoot7,
@@ -979,7 +979,7 @@ namespace FZ4P
 
         };
         public int sNUM_TESTCONDITION = 11;
-        public string[,] mTestCondition = new string[11, 5] {  
+        public string[,] mTestCondition = new string[11, 5] {
                                                                     { "I2C" ,    "I2C Clock"    ,"400","KHz","true"},
                                                                     { ""    ,    "Slave Addr"   ,"0","Hex","true"},
                                                                     { "Grab Control"    ,    "Grab Time Limit"    ,"10","sec","true"},
@@ -1099,7 +1099,7 @@ namespace FZ4P
         public int m_CLAFPeakTimeIndex = 0;
         public int m_AFPeakTimeIndex = 0;
         public int m_L3PeakTimeIndex = 0;
-        public string m_RootDirectory = "C:\\B7WideTest";
+        public string m_RootDirectory = STATIC.BaseDir;
         public string[] m_FWVersion = new string[4];
 
         //  20170703    Camera Default ROI Definition
@@ -1119,7 +1119,7 @@ namespace FZ4P
         public bool m_bWriteResultToDriverIC = false;
         public bool m_bUpdateHallCalData = false;
         public bool m_bScreenCapture = false;
-        public bool m_bSaveRawData = false;
+        public bool m_bSaveRawData = true;
         public bool m_bSafeSensor = false;
         public bool m_bXTiltReverse = false;
         public bool m_bYTiltReverse = false;
@@ -1132,13 +1132,16 @@ namespace FZ4P
         public bool m_bTYDirReverse = false;
         public bool m_bXDirReverse = false;
         public bool m_bYDirReverse = false;
-        public bool m_bFastMode = false;
-        public bool m_bSuperFastMode = false;
+        public bool m_bEulerRotation = false;
+        public bool m_bPrismCS = false;
         public bool m_bUserZeroSet = false;
+        public bool m_bDebugMode = false;
+        public bool m_bSaveImage = false;
+        public int m_SaveImageCount = 0;
 
         public bool m_bSwap = false;
 
-        public bool[] m_ChannelOn = new bool[4] {true, true, true, true};
+        public bool[] m_ChannelOn = new bool[4] { true, true, true, true };
         public bool[] m_ChannelEff = new bool[4] { false, false, false, false };
         public string sModelName = "";
 
@@ -1169,15 +1172,15 @@ namespace FZ4P
             string lSystemName = "M_SYSTEM_SOLIOS";
             if (grabberType == 2)
                 lSystemName = "M_SYSTEM_RADIENTEVCL";
-            
+
             bool res = true;
             if (!IsSwap)
             {
-                res = oCam[0].Init(mVROI[0], mHROI, mVROIstep, 0, lSystemName, 0, 0, mDcfFilePathC);
+                res = oCam[0].Init(mVROI[0], mHROI, mVROIstep, 0, lSystemName, 0, 0, mDcfFilePathT);
             }
             else
             {
-                res = oCam[0].Init(mVROI[0], mHROI, mVROIstep, 0, lSystemName, 1, 0, mDcfFilePathC);
+                res = oCam[0].Init(mVROI[0], mHROI, mVROIstep, 0, lSystemName, 1, 0, mDcfFilePathT);
             }
             mFAL = oCam[0].mFAL;
             return res;
@@ -1196,7 +1199,7 @@ namespace FZ4P
         //-------------------------------------------------------------------------------------------------------------
         public void CloseVision()
         {
-            if(oCam[0] != null)
+            if (oCam[0] != null)
             {
                 if (oCam[0].IsInit == true)
                     oCam[0].Free();

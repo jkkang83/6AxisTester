@@ -25,7 +25,7 @@ namespace MotorizedStage_SK_PI
         private readonly object _axisLock = new object();
 
         private CancellationTokenSource _cancelTokenSource;
-        public event EventHandler<string> Logged = null; 
+        public event EventHandler<string> Logged = null;
         public event EventHandler<bool> OnConnectionChange = null;
         public event EventHandler<AxisStatus[]> OnStatusChanged = null;
 
@@ -107,8 +107,8 @@ namespace MotorizedStage_SK_PI
             }
 
         }
-        
-        public async Task<bool> MoveAsync(Axis [] axes, double[] positions, bool isAbsolute)
+
+        public async Task<bool> MoveAsync(Axis[] axes, double[] positions, bool isAbsolute)
         {
             try
             {
@@ -116,7 +116,7 @@ namespace MotorizedStage_SK_PI
                 {
                     throw new Exception("Move Command: The length of 'axes' must match the length of 'positions'.");
                 }
-                
+
                 foreach (Axis axis in axes)
                 {
                     if (!_axes.Contains(axis))
@@ -147,7 +147,7 @@ namespace MotorizedStage_SK_PI
                 return false;
             }
         }
-        
+
         public bool JogRun(Axis axis, bool dir)
         {
             try
@@ -243,7 +243,7 @@ namespace MotorizedStage_SK_PI
                 {
                     throw new Exception($"Move Origin Command is not ready");
                 }
-            
+
 
                 WriteRead(_MoveOrigin(axes, originCmd), out string rCmd);
 
@@ -303,7 +303,7 @@ namespace MotorizedStage_SK_PI
                 return false;
             }
         }
-        
+
         public async Task<bool> StopEmergencyAsync()
         {
             try
@@ -374,7 +374,7 @@ namespace MotorizedStage_SK_PI
                 }
                 lock (_axisLock)
                 {
-                   return _statuses.Select(status => status.Position).ToArray();
+                    return _statuses.Select(status => status.Position).ToArray();
                 }
             }
             catch (Exception ex)
@@ -429,16 +429,16 @@ namespace MotorizedStage_SK_PI
                     return false;
                 }
             }
-        }       
+        }
 
         private async Task WaitForReadyAsync()
-        { 
-            while(true)
+        {
+            while (true)
             {
                 UpdateMovingStatus();
 
                 if (!IsMoving) return;
-                
+
                 await Task.Delay(10);
             }
         }
@@ -449,7 +449,7 @@ namespace MotorizedStage_SK_PI
             {
                 try
                 {
-                    await Task.Delay(100,token);
+                    await Task.Delay(100, token);
                     UpdateGeneralStatus();
                 }
                 catch (OperationCanceledException)
@@ -473,7 +473,7 @@ namespace MotorizedStage_SK_PI
             UpdateAlarmsLimits(out int[] alarms, out bool[] isPosLimits, out bool[] isNegLimits);
             UpdateStatuses(positions, isMovings, alarms, isPosLimits, isNegLimits);
         }
-        
+
         private void UpdateMovingStatus()
         {
             //--Current Position--//
@@ -495,7 +495,7 @@ namespace MotorizedStage_SK_PI
 
                 if (string.IsNullOrWhiteSpace(rCmd))
                     throw new Exception("Failed to retrieve Position.");
-                
+
                 string[] strSpeeds = rCmd.Split(',');
                 speeds[i] = double.Parse(strSpeeds[1]);
             }
@@ -561,7 +561,7 @@ namespace MotorizedStage_SK_PI
                         isChanged = true;
                     }
                 }
-            
+
 
                 if (isChanged)
                 {
@@ -676,7 +676,7 @@ namespace MotorizedStage_SK_PI
                 lock (_serialLock)
                 {
                     _serialPort.WriteLine(cmd);
-                    while(true)
+                    while (true)
                     {
                         try
                         {
@@ -737,7 +737,7 @@ namespace MotorizedStage_SK_PI
         {
             int[] iPositions = new int[axes.Length];
 
-            for(int i=0; i<axes.Length; i++)
+            for (int i = 0; i < axes.Length; i++)
             {
                 if (axes[i] < Axis.TY) // X, Y, Z
                 {
@@ -747,7 +747,7 @@ namespace MotorizedStage_SK_PI
                     //}
                     //else
                     //{
-                        iPositions[i] = (int)(positions[i] * 100);
+                    iPositions[i] = (int)(positions[i] * 100);
                     //}
                 }
                 else
@@ -755,7 +755,7 @@ namespace MotorizedStage_SK_PI
                     iPositions[i] = (int)(positions[i] / 60 * 10000);
                 }
             }
-       
+
             string cmd;
             if (isAbsolute)
                 cmd = "A:";
@@ -833,7 +833,7 @@ namespace MotorizedStage_SK_PI
         // Stop
         private string _Stop(Axis[] axes, bool[] valueArray)
         {
-            
+
             string cmd = "L:";
             foreach (Axis axis in Enum.GetValues(typeof(Axis)))
             {
@@ -892,7 +892,7 @@ namespace MotorizedStage_SK_PI
             else
             {
                 return "";
-            }  
+            }
         }
         #endregion
     }
