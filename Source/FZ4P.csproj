@@ -1,0 +1,244 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{26750997-64CE-4A91-988A-CBA18CC2A08B}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>FZ4P</RootNamespace>
+    <AssemblyName>FZ4P</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>fz_icon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetZone>LocalIntranet</TargetZone>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>false</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="alglibnet2">
+      <HintPath>..\lib\alglibnet2.dll</HintPath>
+    </Reference>
+    <Reference Include="Basler.Pylon, Version=1.2.0.0, Culture=neutral, PublicKeyToken=e389355f398382ab, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files\Basler\pylon 8\Development\Assemblies\Basler.Pylon\x64\Basler.Pylon.dll</HintPath>
+    </Reference>
+    <Reference Include="dln.net">
+      <HintPath>..\lib\dln.net.dll</HintPath>
+    </Reference>
+    <Reference Include="Matrox.MatroxImagingLibrary">
+      <HintPath>C:\Program Files\Matrox Imaging\MIL\MIL.NET\Matrox.MatroxImagingLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenCvSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=6adad1e807fea099, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenCvSharp4.4.5.5.20211231\lib\netstandard2.0\OpenCvSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenCvSharp.Extensions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=6adad1e807fea099, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenCvSharp4.Extensions.4.5.5.20211231\lib\netstandard2.0\OpenCvSharp.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.6.1\lib\net462\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing.Common, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Drawing.Common.9.0.3\lib\net462\System.Drawing.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Memory, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.6.3\lib\net462\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.6.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.6.1\lib\net462\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.1.2\lib\net462\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Forms.DataVisualization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Motion\AxisStatus.cs" />
+    <Compile Include="Motion\F_Motion_SK_PI.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Motion\F_Motion_SK_PI.Designer.cs">
+      <DependentUpon>F_Motion_SK_PI.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Motion\PI_GCS2.cs" />
+    <Compile Include="Motion\PI_Motion.cs" />
+    <Compile Include="Motion\SK_Motion.cs" />
+    <Compile Include="Process\PROCESSParam.cs" />
+    <Compile Include="Process\PROCESS.cs" />
+    <Compile Include="DriverIc\DLN.cs" />
+    <Compile Include="DriverIc\AK73XX.cs" />
+    <Compile Include="Process\RECIPE.cs" />
+    <Compile Include="Process\STATICS.cs" />
+    <Compile Include="UI\F_Start.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\F_Start.Designer.cs">
+      <DependentUpon>F_Start.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\F_TestItems.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\F_TestItems.Designer.cs">
+      <DependentUpon>F_TestItems.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\F_Main.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\F_Main.Designer.cs">
+      <DependentUpon>F_Main.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\F_Manage.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\F_Manage.Designer.cs">
+      <DependentUpon>F_Manage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UI\F_Vision.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\F_Vision.Designer.cs">
+      <DependentUpon>F_Vision.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Vision\MyMatrox.cs" />
+    <Compile Include="Vision\MyMicroLibrary.cs" />
+    <Compile Include="Vision\MySingleton.cs" />
+    <EmbeddedResource Include="Motion\F_Motion_SK_PI.resx">
+      <DependentUpon>F_Motion_SK_PI.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\F_Start.resx">
+      <DependentUpon>F_Start.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\F_TestItems.resx">
+      <DependentUpon>F_TestItems.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\F_Main.resx">
+      <DependentUpon>F_Main.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\F_Manage.resx">
+      <DependentUpon>F_Manage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\F_Vision.resx">
+      <DependentUpon>F_Vision.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="packages.config" />
+    <None Include="Properties\app.manifest" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FAutoLearn\FAutoLearn.csproj">
+      <Project>{39752b05-88c4-4608-a3dc-695d165b7a94}</Project>
+      <Name>FAutoLearn</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MOTSimulator\MOTSimulator.csproj">
+      <Project>{ffb2e2ca-02d4-43f1-87df-9a8169531781}</Project>
+      <Name>MOTSimulator</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="fz_icon.ico" />
+    <None Include="Image\BtnYP.png" />
+    <None Include="Image\BtnYN.png" />
+    <None Include="Image\BtnRP.png" />
+    <None Include="Image\BtnRN.png" />
+    <None Include="Image\BtnMP.png" />
+    <None Include="Image\BtnMN.png" />
+    <None Include="Image\BtnMK.png" />
+    <None Include="Image\BtnLightBlueP.png" />
+    <None Include="Image\BtnLightBlueN.png" />
+    <None Include="Image\BtnKP.png" />
+    <None Include="Image\BtnKN.png" />
+    <None Include="Image\BtnGP.png" />
+    <None Include="Image\BtnGN.png" />
+    <None Include="Image\BtnDRP.png" />
+    <None Include="Image\BtnDRN.png" />
+    <None Include="Image\BtnDOP.png" />
+    <None Include="Image\BtnDON.png" />
+    <None Include="Image\BtnDBP.png" />
+    <None Include="Image\BtnDBN.png" />
+    <None Include="Image\BtnDarkGP.png" />
+    <None Include="Image\BtnDarkGN.png" />
+    <None Include="Image\BtnDarkBP.png" />
+    <None Include="Image\BtnDarkBN.png" />
+    <None Include="Image\BtnCP.png" />
+    <None Include="Image\BtnCN.png" />
+    <None Include="Image\BtnBP.png" />
+    <None Include="Image\BtnBN.png" />
+    <None Include="Image\BtnAP.png" />
+    <None Include="Image\BtnAN.png" />
+    <None Include="Image\ArrU2.png" />
+    <None Include="Image\ArrU.png" />
+    <None Include="Image\ArrR2.png" />
+    <None Include="Image\ArrR.png" />
+    <None Include="Image\ArrL2.png" />
+    <None Include="Image\ArrL.png" />
+    <None Include="Image\ArrD2.png" />
+    <None Include="Image\ArrD.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

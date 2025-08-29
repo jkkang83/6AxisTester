@@ -1,0 +1,170 @@
+Change Slave Addr	AF Scan
+Sub1 Test Result Flag Check	1
+OIS Test Result Flag Check	2
+FW Version	77
+Time To Settle	25
+Delay to Final Pos.	30
+Moving Avg. Time	2
+Drv AF Step	100
+Drv X Step	100
+Drv Y Step	100
+Drv Step Interval	100
+Margin To Neg. Stop	0.1
+Margin To Pos. Stop	-0.1
+Drv Code Min	8
+Drv Code Max	4088
+Cross Axis Offset	2048
+Plot Range	2048
+Code Range	1560
+Stroke Range	500
+Drv Code Min	8
+Drv Code Max	4088
+Cross Axis Offset	2048
+Cross Axis Cntl	1
+Plot Range	2048
+Code Range	2048
+Stroke Range	330
+Drv Code Min	8
+Drv Code Max	4088
+Cross Axis Offset	2048
+Drv Code Min	8
+Drv Code Max	4088
+Cross Axis Offset	2048
+Cross Axis Cntl	1
+Plot Range	2048
+Code Range	2048
+Stroke Range	330
+X code	2048
+Y1 code	2048
+Y2 code	2048
+Hall Cal Cntl	1
+Hall Cal Mode	1
+Hall Cal Count	1
+X Hall Range Thr	18000
+Y Hall Range Thr	18000
+Delay_1	250
+Delay_2	100
+Delay_3	280
+X Code Min	0
+X Code Max	8190
+X Code Mid	0
+Y Code Min	0
+Y Code Max	8190
+Y Code Mid	0
+Delay	100
+Move Step	128
+Start Code	0
+End Code	4000
+Move Delay	40
+OIS EPA Cntl	1
+X EPA Cut Bottom	0
+X EPA Cut Top	0
+Y1 EPA Cut Bottom	0
+Y1 EPA Cut Top	700
+Y2 EPA Cut Bottom	0
+Y2 EPA Cut Top	700
+EPA Bottom Target	1.9
+EPA Top Target	1.9
+EPA Bottom Spec	1.7
+EPA Top Spec	1.7
+EPA Step	0.5
+EPA Option	0
+Step Code for Settling	1600
+Offset for Settling	7200
+Settling under	0.1
+Settling under	5.0
+Cross Offset	8192
+Step Code for Settling	1600
+Offset for Settling	7200
+Settling under	0.1
+Settling under	5.0
+Cross Offset	8192
+Aging Loop	20
+Aging Interval	50
+Aging Min X	0
+Aging Max X	8192
+Aging Mid X	4095
+Aging Min Y	0
+Aging Max Y	8192
+Aging Mid Y	4095
+Loop	1
+Step	5
+Delay	10
+X Gain TH	0
+Y Gain TH	0
+Loop 2nd	1
+Step 2nd	5
+Delay 2nd	10
+X Gain TH 2nd	0
+Y Gain TH 2nd	0
+Chirp from	250
+Chirp to	100
+Drv Amplitude	75
+Chirp from 2nd	250
+Chirp to 2nd	100
+Drv Amplitude 2nd	75
+Drv Offset	8192
+Chirp from	250
+Chirp to	100
+Drv Amplitude	75
+Chirp from 2nd	250
+Chirp to 2nd	100
+Drv Amplitude 2nd	75
+Drv Offset	8192
+Loop	1
+Step	5
+Delay	10
+X Chirp to	100
+X Chirp from	400
+Y Chirp to	100
+Y Chirp from	400
+X Drv Amplitude	60
+Y Drv Amplitude	60
+X Amp	60
+Y Amp	60
+SIN THD	150
+SIN CNT ERR	1
+SIN FREQ	5
+SIN AMP	58
+SIN CYCL	18
+SIN AXIS	0
+RNG THD	20
+RNG STVT	90
+RNG METM	100
+RNG WSEC	50
+RNG AXIS	0
+X Range	8000
+Y Range	8000
+Target Intercept	0.8
+Target Diagonal	0.5
+count	1000
+Time	1
+Target X	4095
+Target Y	4095
+Initial Delay	1000
+Read Interval	10
+Sampling	100
+Target X	8192
+Target Y	8192
+Gain Factor X	512
+Gain Factor Y	512
+Gain Option	0
+MaxCode	1023
+MidCode	512
+MinCode	0
+Loop Count	5
+Delay	60
+Driving Reverse	0
+Driving Mode	0
+X Target Stroke	1.2
+Y Target Stroke	1.2
+Points	120
+Step Delay	10
+I2C Clock	400
+Slave Addr	61
+Hall Cal Time Lmt	20
+FW Write Interval	10
+Repeat Test	1
+ExposureTime	500
+LEDCurrentL	2.68
+LEDCurrentR	2.7

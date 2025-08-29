@@ -1,0 +1,155 @@
+FW Download SEM	Hall Calibration SEM	Scan AF-Zoom
+Drv Step Interval	100
+EPA Step Interval	100
+Wait Before Scan	300
+Wait Before Scan 2	500
+Drv Step	150
+Drv Code Start	8192
+Drv Code End	16383
+Measuring Range Start	2000
+Measuring Range End	14383
+Drv Code Min	9000
+Drv Code Max	14000
+Drv Code Start	8200
+Drv Code End	0
+Measuring Range Start	14383
+Measuring Range End	2000
+Drv Code Min	2000
+Drv Code Max	8000
+Plot Range Min	0
+Plot Range Max	16383
+Measuring Range Start	1500
+Measuring Range End	14883
+AF Delay Code	2000
+Linearity Step	256
+User ZeroSet	0
+Settling Cnt	0
+Settling Repeat	1
+AF Inf Cut	10
+AF Macro Cut	10
+Zoom Inf Cut	10
+Zoom TTL	6650
+Tolerance	20
+Cut Option	1
+Start	8000
+Mid	7000
+Final	9000
+Settling under	5.0
+Settling under	5.0
+Cross Offset	8200
+Start	8000
+Mid	7000
+Final	9000
+Settling under	5.0
+Settling under	5.0
+Cross Offset	8200
+Step Code for Settling	200
+Offset for Settling	8200
+Settling under	10.0
+Settling under	10.0
+Cross Offset	8200
+Step Code for Settling	400
+Offset for Settling	8200
+Settling under	10.0
+Settling under	10.0
+Cross Offset	8200
+Step Code for Settling	600
+Offset for Settling	8200
+Settling under	10.0
+Settling under	10.0
+Cross Offset	8200
+Step Code for Settling	800
+Offset for Settling	8200
+Settling under	10.0
+Settling under	10.0
+Cross Offset	8200
+Step Code for Settling	1000
+Offset for Settling	8200
+Settling under	10.0
+Settling under	10.0
+Cross Offset	8200
+Step Code for Settling	1200
+Offset for Settling	8200
+Settling under	10.0
+Settling under	10.0
+Cross Offset	8200
+Step Code for Settling	1400
+Offset for Settling	8200
+Settling under	10.0
+Settling under	10.0
+Cross Offset	8200
+Step Code for Settling	1600
+Offset for Settling	8200
+Settling under	10.0
+Settling under	10.0
+Cross Offset	8200
+Step Code for Settling	200
+Offset for Settling	8200
+Settling under	10.0
+Settling under	10.0
+Cross Offset	8200
+Step Code for Settling	1000
+Offset for Settling	8200
+Settling under	10.0
+Settling under	10.0
+Cross Offset	8200
+Step Code for Settling	0
+Offset for Settling	0
+Settling under	0.0
+Settling under	0.0
+Cross Offset	0
+Step Code for Settling	0
+Offset for Settling	0
+Settling under	0.0
+Settling under	0.0
+Cross Offset	0
+Step Code for Settling	0
+Offset for Settling	0
+Settling under	0.0
+Settling under	0.0
+Cross Offset	0
+Step Code for Settling	0
+Offset for Settling	0
+Settling under	0.0
+Settling under	0.0
+Cross Offset	0
+Step Code for Settling	0
+Offset for Settling	0
+Settling under	0.0
+Settling under	0.0
+Cross Offset	0
+Step Code for Settling	0
+Offset for Settling	0
+Settling under	0.0
+Settling under	0.0
+Cross Offset	0
+Aging Loop	10
+Aging Interval	100
+Aging Current	1023
+Step	10
+2nd GainCross	-3
+Chirp from	10
+Chirp to	200
+Drv Amplitude	15
+Drv Offset	0
+Cross Axis Offset	16000
+Chirp from	10
+Chirp to	200
+Drv Amplitude	15
+Drv Offset	0
+Cross Axis Offset	0
+Circle TH	200
+Circle Err Cnt	0
+Circle Freq	5
+Circle Deg	1
+Circle Cycle	2
+OSC Enable	1
+OSC Thr	100
+OSC Err Time	100
+OSC Position	80
+Save	1
+I2C Clock	500
+Slave Addr	59
+Hall Cal Time Lmt	10
+FW Write Interval	10
+Repeat Test	1
