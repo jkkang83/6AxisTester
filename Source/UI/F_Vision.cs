@@ -1,12 +1,16 @@
 ﻿using Basler.Pylon;
 using FAutoLearn;
 using MathNet.Numerics.LinearAlgebra;
+using Matrox.MatroxImagingLibrary;
+
 //using MyEmailer;
 //using MathNet.Numerics.LinearAlgebra;
 using Microsoft.Win32;
 using MotorizedStage_SK_PI;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
+using OpenCvSharp.Flann;
+
 //using OpenCvSharp;
 using S2System.Vision;
 using System;
@@ -22,6 +26,7 @@ using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using static alglib;
 
 //using static alglib;
@@ -4163,7 +4168,7 @@ namespace FZ4P
             if (!bHaltLive)
                 GrabHalt();
 
-            cbContinuosMode.Checked = false;
+            //cbContinuosMode.Checked = false;
             cbSaveNthImg.Checked = false;
             IsLiveCropStop = true;
             bThreadManualFindMarks = false;
@@ -4177,6 +4182,7 @@ namespace FZ4P
             //{
             //    MyOwner.ShowOperatorMode();
             //}
+            BufferInit();
             STATIC.State = (int)STATIC.STATE.Manage;
         }
 
@@ -4400,6 +4406,8 @@ namespace FZ4P
                 m__G.oCam[0].DrawClear();
             }
 
+            m__G.oCam[0].ReplayBuftoCommon(ScanName, imgIndex);
+
             m__G.oCam[0].mTrgBufLength = m__G.oCam[0].mTargetTriggerCount;
             //tbVsnLog.Text += "Target Length = " + m__G.oCam[0].mTrgBufLength.ToString();
             m__G.oCam[0].DispCommonImage(imgIndex);
@@ -4570,7 +4578,8 @@ namespace FZ4P
                 MessageBox.Show("Input Correct Image Number, Then Retry.");
                 return;
             }
-
+            for(int i = 0; i < imgIndex; i++)
+                m__G.oCam[0].ReplayBuftoCommon(ScanName, i);
             string strtmp = "";
             tbInfo.Text = "";
             if (tbMaxThread.Text.Length > 0)
@@ -17155,6 +17164,19 @@ namespace FZ4P
             System.Windows.Forms.RadioButton bt = (System.Windows.Forms.RadioButton)sender;
 
             ScanName = bt.Text;
+
+            switch (ScanName)
+            {
+                case "AF Scan":
+                    tbImgNumber.Text = m__G.oCam[0].AFRelayCnt.ToString();
+                    break;
+                case "OIS X Scan":
+                    tbImgNumber.Text = m__G.oCam[0].XRelayCnt.ToString();
+                    break;
+                case "OIS Y Scan":
+                    tbImgNumber.Text = m__G.oCam[0].YRelayCnt.ToString();
+                    break;
+            }
         }
     }
 }
