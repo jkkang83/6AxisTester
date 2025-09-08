@@ -1,4 +1,4 @@
-Hall Calibration	AF Scan
+AF Scan	OIS X Scan	OIS Y Scan
 Drv AF Step	128
 Drv X Step	200
 Drv Y Step	200
@@ -62,11 +62,11 @@ Y2 Ex EPA Top	300
 Loop	1
 Step	5
 Delay	10
-X Chirp from	200
-X Chirp to	100
+X Chirp from	900
+X Chirp to	400
 X Drv Amplitude	60
-Y Chirp from	200
-Y Chirp to	70
+Y Chirp from	900
+Y Chirp to	400
 Y Drv Amplitude	60
 Loop	1
 Step	5

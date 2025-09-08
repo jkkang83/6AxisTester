@@ -1,11 +1,11 @@
-Hall Calibration	AF Scan
+Hall Calibration	AF Scan	OIS X Scan	OIS Y Scan	AF Settling
 Drv AF Step	128
 Drv X Step	200
 Drv Y Step	200
 Drv Step Interval AF	40
 Drv Step Interval X	50
 Drv Step Interval Y	50
-Drv Code Min	128
+Drv Code Min	8
 Drv Code Max	3968
 Cross Axis Cntl	1
 Cross Axis Offset X	2048
@@ -25,10 +25,10 @@ Cross Axis Offset Af	2048
 Plot Range	2048
 Code Range	2048
 Stroke Range	500
-Drv Code Min	48
-Drv Code Max	4048
-Drv Code Min	48
-Drv Code Max	4048
+Drv Code Min	8
+Drv Code Max	4088
+Drv Code Min	8
+Drv Code Max	4088
 Cross Axis Cntl	1
 Cross Axis Offset	2048
 Cross Axis Cntl Af	1

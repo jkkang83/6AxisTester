@@ -1,12 +1,12 @@
-Hall Calibration	AF Scan
+Hall Calibration	AF Scan	OIS X Scan	OIS Y Scan
 Drv AF Step	128
 Drv X Step	200
 Drv Y Step	200
 Drv Step Interval AF	40
 Drv Step Interval X	50
 Drv Step Interval Y	50
-Drv Code Min	128
-Drv Code Max	3968
+Drv Code Min	8
+Drv Code Max	4088
 Cross Axis Cntl	1
 Cross Axis Offset X	2048
 Cross Axis Offset Y	2048
@@ -25,10 +25,10 @@ Cross Axis Offset Af	2048
 Plot Range	2048
 Code Range	2048
 Stroke Range	500
-Drv Code Min	48
-Drv Code Max	4048
-Drv Code Min	48
-Drv Code Max	4048
+Drv Code Min	8
+Drv Code Max	4088
+Drv Code Min	8
+Drv Code Max	4088
 Cross Axis Cntl	1
 Cross Axis Offset	2048
 Cross Axis Cntl Af	1
@@ -62,18 +62,18 @@ Y2 Ex EPA Top	300
 Loop	1
 Step	5
 Delay	10
-X Chirp from	200
-X Chirp to	100
-X Drv Amplitude	60
-Y Chirp from	200
-Y Chirp to	70
-Y Drv Amplitude	60
+X Chirp from	250
+X Chirp to	50
+X Drv Amplitude	75
+Y Chirp from	250
+Y Chirp to	50
+Y Drv Amplitude	75
 Loop	1
 Step	5
 Delay	10
-X Chirp from	1000
+X Chirp from	400
 X Chirp to	100
-X Drv Amplitude	30
+X Drv Amplitude	60
 Y Chirp from	400
 Y Chirp to	100
 Y Drv Amplitude	60
@@ -101,7 +101,7 @@ Max Wait after Last Trigger	1000
 Triggered Grab Image Count	10000
 Raw Gain	35
 Gamma	1
-ExposureTime	130
+ExposureTime	73
 Edge Band	7
 LEDCurrentL	2.7
 LEDCurrentR	2.7

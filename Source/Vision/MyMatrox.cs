@@ -118,13 +118,13 @@ namespace S2System.Vision
         public static int allocatedSysNum = 0;
         public static int MAX_DEFAULT_GRAB_COUNT = 2;                     // 
 
-        public static int MAX_TRGGRAB_COUNT = 10000;                     // max 1000Frame/sec * 5sec = 5000
-        public static int MAX_TRGGRAB_6000 = 6050;                     // max 1000Frame/sec * 5sec = 5000
-        public static int MAX_TRGGRAB_2500 = 2550;                     // max 1000Frame/sec * 5sec = 5000
-        public static int MAX_TRGGRAB_1000 = 1050;                     // max 1000Frame/sec * 5sec = 5000
-        public static int MAX_TRGGRAB_500 = 550;                     // max 1000Frame/sec * 5sec = 5000
-        public static int MAX_TRGGRAB_200 = 250;                     // max 1000Frame/sec * 5sec = 5000
-        public static int MAX_TRGGRAB_50 = 100;                     // max 1000Frame/sec * 5sec = 5000
+        public static int MAX_TRGGRAB_COUNT = 2500;                     // max 1000Frame/sec * 5sec = 5000
+        public static int MAX_TRGGRAB_6000 = 2500;                     // max 1000Frame/sec * 5sec = 5000
+        public static int MAX_TRGGRAB_2500 = 2500;                     // max 1000Frame/sec * 5sec = 5000
+        public static int MAX_TRGGRAB_1000 = 1000;                     // max 1000Frame/sec * 5sec = 5000
+        public static int MAX_TRGGRAB_500 = 500;                     // max 1000Frame/sec * 5sec = 5000
+        public static int MAX_TRGGRAB_200 = 200;                     // max 1000Frame/sec * 5sec = 5000
+        public static int MAX_TRGGRAB_50 = 50;                     // max 1000Frame/sec * 5sec = 5000
         public static int MAX_GRAB_COUNT = 1000;                     // max 1000Frame/sec * 5sec = 5000
         public string mMatroxMsg = "";
 
@@ -540,7 +540,7 @@ namespace S2System.Vision
                 else
                     break;
             }
-            for (int n = 0; n < MAX_TRGGRAB_1000; n++)
+            for (int n = 0; n < MAX_GRAB_COUNT; n++)
             {
                 MIL.MbufAlloc2d(milSystem, nSizeX, nSizeY, 8, MIL.M_IMAGE + MIL.M_GRAB + MIL.M_NON_PAGED + MIL.M_PROC, ref milAFRelay[n]);
                 MIL.MbufAlloc2d(milSystem, nSizeX, nSizeY, 8, MIL.M_IMAGE + MIL.M_GRAB + MIL.M_NON_PAGED + MIL.M_PROC, ref milXRelay[n]);

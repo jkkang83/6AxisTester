@@ -1,41 +1,41 @@
-Hall Calibration	AF Scan
-Drv AF Step	128
+AF Scan	OIS X Scan	OIS Y Scan	Servo Decenter
+Drv AF Step	40
 Drv X Step	200
 Drv Y Step	200
 Drv Step Interval AF	40
 Drv Step Interval X	50
 Drv Step Interval Y	50
-Drv Code Min	128
-Drv Code Max	3968
+Drv Code Min	8
+Drv Code Max	4088
 Cross Axis Cntl	1
 Cross Axis Offset X	2048
 Cross Axis Offset Y	2048
 Plot Range	2048
 Code Range	2048
-Stroke Range	500
+Stroke Range	200
 Standby Code	2048
-Jump Step Code	2688
+Jump Step Code	2400
 Settling Criteria	0.05
-Drv Code Min	8
-Drv Code Max	4088
+Drv Code Min	0
+Drv Code Max	4096
 Cross Axis Cntl	1
 Cross Axis Offset	2048
 Cross Axis Cntl Af	1
 Cross Axis Offset Af	2048
 Plot Range	2048
 Code Range	2048
-Stroke Range	500
-Drv Code Min	48
-Drv Code Max	4048
-Drv Code Min	48
-Drv Code Max	4048
+Stroke Range	200
+Drv Code Min	0
+Drv Code Max	4096
+Drv Code Min	0
+Drv Code Max	4096
 Cross Axis Cntl	1
 Cross Axis Offset	2048
 Cross Axis Cntl Af	1
 Cross Axis Offset Af	2048
 Plot Range	2048
 Code Range	2048
-Stroke Range	500
+Stroke Range	200
 Cross Axis Cntl Af	1
 Cross Axis Offset Af	2048
 Cross Axis Cntl Af	1
@@ -60,13 +60,16 @@ Y1 Ex EPA Top	300
 Y2 Ex EPA Bottom	300
 Y2 Ex EPA Top	300
 Loop	1
-Step	5
+Step	10
 Delay	10
-X Chirp from	200
-X Chirp to	100
+AF Chirp from	200
+AF Chirp to	10
+AF Drv Amplitude	60
+X Chirp from	600
+X Chirp to	450
 X Drv Amplitude	60
-Y Chirp from	200
-Y Chirp to	70
+Y Chirp from	530
+Y Chirp to	430
 Y Drv Amplitude	60
 Loop	1
 Step	5
@@ -91,9 +94,9 @@ RNG METM	100
 RNG WSEC	50
 RNG AXIS	0
 MaxCode	1023
-MidCode	512
-MinCode	0
-Loop Count	1
+MidCode	0
+MinCode	-1023
+Loop Count	100
 Delay	60
 I2C Clock	400
 Grab Time Limit	10
