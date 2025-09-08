@@ -47,7 +47,7 @@ namespace FZ4P
         public DLN Dln { get { return STATIC.Dln; } }
         public Process Process { get { return STATIC.Process; } }
         public Condition Condition { get { return STATIC.Rcp.Condition; } }
-
+        public Option Option { get { return STATIC.Rcp.Option; } }
         public Global m__G;
         private Camera[] BaslerCam = new Camera[2];
         public F_Main MyOwner = null;
@@ -4516,14 +4516,29 @@ namespace FZ4P
             NthMeasure(imgIndex, bAccu, isShow);
 
             FindResult result = new FindResult();
-            result.cx[0] = m__G.oCam[0].mC_pX[imgIndex] * umscale;
-            result.cy[0] = m__G.oCam[0].mC_pY[imgIndex] * umscale;
-            result.cz[0] = m__G.oCam[0].mC_pZ[imgIndex] * umscale;
-            result.tx[0] = m__G.oCam[0].mC_pTX[imgIndex] * minscale;
-            result.ty[0] = m__G.oCam[0].mC_pTY[imgIndex] * minscale;
-            result.tz[0] = m__G.oCam[0].mC_pTZ[imgIndex] * minscale;
-            result.cy1[0] = result.cy[0] + result.tz[0] * mTZtoY1Y2;
-            result.cy2[0] = result.cy[0] - result.tz[0] * mTZtoY1Y2;
+            if(Option.XYPosReverse)
+            {
+                result.cy[0] = m__G.oCam[0].mC_pX[imgIndex] * umscale;
+                result.cx[0] = m__G.oCam[0].mC_pY[imgIndex] * umscale;
+                result.cz[0] = m__G.oCam[0].mC_pZ[imgIndex] * umscale;
+                result.ty[0] = m__G.oCam[0].mC_pTX[imgIndex] * minscale;
+                result.tx[0] = m__G.oCam[0].mC_pTY[imgIndex] * minscale;
+                result.tz[0] = m__G.oCam[0].mC_pTZ[imgIndex] * minscale;
+                result.cy1[0] = result.cy[0] + result.tz[0] * mTZtoY1Y2;
+                result.cy2[0] = result.cy[0] - result.tz[0] * mTZtoY1Y2;
+            }
+            else
+            {
+                result.cx[0] = m__G.oCam[0].mC_pX[imgIndex] * umscale;
+                result.cy[0] = m__G.oCam[0].mC_pY[imgIndex] * umscale;
+                result.cz[0] = m__G.oCam[0].mC_pZ[imgIndex] * umscale;
+                result.tx[0] = m__G.oCam[0].mC_pTX[imgIndex] * minscale;
+                result.ty[0] = m__G.oCam[0].mC_pTY[imgIndex] * minscale;
+                result.tz[0] = m__G.oCam[0].mC_pTZ[imgIndex] * minscale;
+                result.cy1[0] = result.cy[0] + result.tz[0] * mTZtoY1Y2;
+                result.cy2[0] = result.cy[0] - result.tz[0] * mTZtoY1Y2;
+            }
+
             return result;
         }
         private void radioButton10Step_CheckedChanged(object sender, EventArgs e)

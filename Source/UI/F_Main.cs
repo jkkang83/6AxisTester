@@ -456,13 +456,13 @@ namespace FZ4P
             for (int i = 0; i < Option.Param.Count; i++)
             {
                 int width = 0;
-                int hCal = 40 * i;
+                int hCal = 30 * i;
 
                 CheckBox Chk = new CheckBox
                 {
                     Text = Option.Param[i][0].ToString(),
                     Checked = Convert.ToBoolean(Option.Param[i][1]),
-                    Font = new Font("Calibri", 12, FontStyle.Bold),
+                    Font = new Font("Calibri", 11, FontStyle.Bold),
                     ForeColor = Color.DarkBlue,
                     Location = new Point(300 + width, 30 + hCal),
                     AutoSize = true,

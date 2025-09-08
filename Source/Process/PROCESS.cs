@@ -1025,6 +1025,7 @@ namespace FZ4P
                 errMsg[ch] = string.Format("Reset EPA Error");
                 m_ChannelOn[ch] = false;
             }
+
             if (!m_ChannelOn[ch]) return;
             if (!DrvIC.HallCalibration(ch, Condition.HallCalMode))
             {
@@ -1851,6 +1852,7 @@ namespace FZ4P
                 code.Add(curPos);
                 curPos += step;
             } while (curPos < max);
+            if( max >= 4095) max = 4095;
             code.Add(max);
             //code.Add(max);
             //code.Add(max);

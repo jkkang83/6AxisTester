@@ -1281,6 +1281,7 @@ namespace FZ4P
         public bool AFDirReverse;
         public bool XDirReverse;
         public bool YDirReverse;
+        public bool XYPosReverse;
 
         public Option()
         {
@@ -1295,6 +1296,7 @@ namespace FZ4P
             Param.Add(new object[] { "AF Direction Reversal", false });
             Param.Add(new object[] { "X Direction Reversal", false });
             Param.Add(new object[] { "Y Direction Reversal", false });
+            Param.Add(new object[] { "XY Position Reversal", false });
 
             if (!File.Exists(FilePath)) Save();
 
@@ -1317,6 +1319,7 @@ namespace FZ4P
             if (readArry.Length > index) AFDirReverse = SetParam(readArry[index], index++);
             if (readArry.Length > index) XDirReverse = SetParam(readArry[index], index++);
             if (readArry.Length > index) YDirReverse = SetParam(readArry[index], index++);
+            if (readArry.Length > index) XYPosReverse = SetParam(readArry[index], index++);
 
             sr.Close();
         }
