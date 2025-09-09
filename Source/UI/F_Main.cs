@@ -150,7 +150,8 @@ namespace FZ4P
 
         private void TcpConn_OnStatus(bool isCon)
         {
-            throw new NotImplementedException();
+            if (isCon) label3.BackColor = Color.YellowGreen;
+            else label3.BackColor = Color.Red;
         }
         object ReceiveLock = new object();
         private void TcpConn_OnReceive(List<string> data)

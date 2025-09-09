@@ -38,7 +38,9 @@ namespace FZ4P
             this.lblDefaultModel = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
             this.lbxModelFiles = new System.Windows.Forms.ListBox();
+            this.label2 = new System.Windows.Forms.Label();
             this.lblStartModel = new System.Windows.Forms.Label();
+            this.MCtypeList = new System.Windows.Forms.ListBox();
             this.ModelList = new System.Windows.Forms.ListBox();
             this.MCNumber = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -96,8 +98,7 @@ namespace FZ4P
             this.SaveCondition = new System.Windows.Forms.Button();
             this.OpenCondition = new System.Windows.Forms.Button();
             this.RecipeFileName = new System.Windows.Forms.TextBox();
-            this.MCtypeList = new System.Windows.Forms.ListBox();
-            this.label2 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.SpecGrid)).BeginInit();
             this.ModelGroup.SuspendLayout();
             this.panel4.SuspendLayout();
@@ -210,6 +211,17 @@ namespace FZ4P
             this.lbxModelFiles.TabIndex = 237;
             this.lbxModelFiles.SelectedIndexChanged += new System.EventHandler(this.lbxModelFiles_SelectedIndexChanged);
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.ForeColor = System.Drawing.Color.MediumBlue;
+            this.label2.Location = new System.Drawing.Point(61, 321);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(78, 23);
+            this.label2.TabIndex = 236;
+            this.label2.Text = "MC Type";
+            // 
             // lblStartModel
             // 
             this.lblStartModel.AutoSize = true;
@@ -220,6 +232,17 @@ namespace FZ4P
             this.lblStartModel.Size = new System.Drawing.Size(62, 23);
             this.lblStartModel.TabIndex = 236;
             this.lblStartModel.Text = "Model";
+            // 
+            // MCtypeList
+            // 
+            this.MCtypeList.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.MCtypeList.ForeColor = System.Drawing.Color.MediumBlue;
+            this.MCtypeList.FormattingEnabled = true;
+            this.MCtypeList.ItemHeight = 19;
+            this.MCtypeList.Location = new System.Drawing.Point(139, 321);
+            this.MCtypeList.Name = "MCtypeList";
+            this.MCtypeList.Size = new System.Drawing.Size(130, 61);
+            this.MCtypeList.TabIndex = 235;
             // 
             // ModelList
             // 
@@ -671,6 +694,7 @@ namespace FZ4P
             // panel2
             // 
             this.panel2.BackColor = System.Drawing.Color.Silver;
+            this.panel2.Controls.Add(this.label3);
             this.panel2.Controls.Add(this.ToVision);
             this.panel2.Controls.Add(this.ToOperator);
             this.panel2.Location = new System.Drawing.Point(0, 0);
@@ -945,27 +969,14 @@ namespace FZ4P
             this.RecipeFileName.Text = "Recipe File Name";
             this.RecipeFileName.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
-            // MCtypeList
+            // label3
             // 
-            this.MCtypeList.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.MCtypeList.ForeColor = System.Drawing.Color.MediumBlue;
-            this.MCtypeList.FormattingEnabled = true;
-            this.MCtypeList.ItemHeight = 19;
-            this.MCtypeList.Location = new System.Drawing.Point(139, 321);
-            this.MCtypeList.Name = "MCtypeList";
-            this.MCtypeList.Size = new System.Drawing.Size(130, 61);
-            this.MCtypeList.TabIndex = 235;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.ForeColor = System.Drawing.Color.MediumBlue;
-            this.label2.Location = new System.Drawing.Point(61, 321);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(78, 23);
-            this.label2.TabIndex = 236;
-            this.label2.Text = "MC Type";
+            this.label3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.label3.Location = new System.Drawing.Point(805, 11);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(158, 20);
+            this.label3.TabIndex = 121;
+            this.label3.Text = "label3";
             // 
             // F_Main
             // 
@@ -1076,6 +1087,7 @@ namespace FZ4P
         private System.Windows.Forms.Label lblDefaultModel;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ListBox MCtypeList;
+        private System.Windows.Forms.Label label3;
     }
 }
 

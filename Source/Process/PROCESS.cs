@@ -119,6 +119,7 @@ namespace FZ4P
                 ChartTop.Add(new ChartList("Stroke", i));
                 ChartBtm.Add(new ChartList("Tilt", i));
 
+                InfoBtn.Add(new InfoButton()); //test
                 InfoBtn.Add(new InfoButton());
                 ViewLog.Add(new LogText());
             }

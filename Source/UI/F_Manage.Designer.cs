@@ -309,7 +309,7 @@ namespace FZ4P
             this.ToAdmin.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.ToAdmin.Font = new System.Drawing.Font("Calibri", 18F, System.Drawing.FontStyle.Bold);
             this.ToAdmin.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.ToAdmin.Location = new System.Drawing.Point(2, 0);
+            this.ToAdmin.Location = new System.Drawing.Point(161, 0);
             this.ToAdmin.Name = "ToAdmin";
             this.ToAdmin.Size = new System.Drawing.Size(475, 45);
             this.ToAdmin.TabIndex = 179;
@@ -324,9 +324,9 @@ namespace FZ4P
             this.ToVision.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.ToVision.Font = new System.Drawing.Font("Calibri", 18F, System.Drawing.FontStyle.Bold);
             this.ToVision.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.ToVision.Location = new System.Drawing.Point(478, 0);
+            this.ToVision.Location = new System.Drawing.Point(635, 0);
             this.ToVision.Name = "ToVision";
-            this.ToVision.Size = new System.Drawing.Size(477, 45);
+            this.ToVision.Size = new System.Drawing.Size(320, 45);
             this.ToVision.TabIndex = 178;
             this.ToVision.Text = "Vision";
             this.ToVision.UseVisualStyleBackColor = false;
