@@ -33,9 +33,14 @@ namespace FZ4P
             Y1OriginAddr = 0x0E;
             Y2OriginAddr = 0x4E;
 
-            AFSlaveAddr = 0x0C;
-            XSlaveAddr = 0x0E;
-            Y1SlaveAddr = 0x4E;
+            //AFSlaveAddr = 0x0C;
+            //XSlaveAddr = 0x0E;
+            //Y1SlaveAddr = 0x4E;
+            //Y2SlaveAddr = 0x6C;
+            //FRA_Addr = 0x14;
+            AFSlaveAddr = 0x28;
+            XSlaveAddr = 0x70;
+            Y1SlaveAddr = 0x30;
             Y2SlaveAddr = 0x6C;
             FRA_Addr = 0x14;
         }
@@ -1309,38 +1314,90 @@ namespace FZ4P
 
             if (name.Contains("AF"))
             {
-                if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0x00, buff)) return false;
+                if (!Dln.WriteArray(ch, AFSlaveAddr, 0x00, buff)) return false;
             }
-            else if(name.Contains("X"))
+            else if (name.Contains("X"))
             {
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0x00, buff)) return false;
+                if (!Dln.WriteArray(ch, XSlaveAddr, 0x00, buff)) return false;
             }
             else if (name.Contains("Y1"))
             {
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x00, buff)) return false;
+                if (!Dln.WriteArray(ch, Y1SlaveAddr, 0x00, buff)) return false;
             }
             else if (name.Contains("Y2"))
             {
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x00, buff)) return false;
+                if (!Dln.WriteArray(ch, Y2SlaveAddr, 0x00, buff)) return false;
             }
             else if (name.Contains("Y"))
             {
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x00, buff)) return false;
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x00, buff)) return false;
+                if (!Dln.WriteArray(ch, Y1SlaveAddr, 0x00, buff)) return false;
+                // if (!Dln.WriteArray(ch, Y2SlaveAddr, 0x00, buff)) return false;
+            }
+            return true;
+        }
+        public bool Move_13bit(int ch, string name, int pos, bool openLoop = false)
+        {
+            int data = pos << 3;
+            byte[] buff = new byte[2] { (byte)(data >> 8), (byte)(data % 256) };
+
+            if (name.Contains("AF"))
+            {
+                if (!Dln.WriteArray(ch, AFSlaveAddr, 0x00, buff)) return false;
+            }
+            else if (name.Contains("X"))
+            {
+                if (!Dln.WriteArray(ch, XSlaveAddr, 0x00, buff)) return false;
+            }
+            else if (name.Contains("Y1"))
+            {
+                if (!Dln.WriteArray(ch, Y1SlaveAddr, 0x00, buff)) return false;
+            }
+            else if (name.Contains("Y2"))
+            {
+                if (!Dln.WriteArray(ch, Y2SlaveAddr, 0x00, buff)) return false;
+            }
+            else if (name.Contains("Y"))
+            {
+                if (!Dln.WriteArray(ch, Y1SlaveAddr, 0x00, buff)) return false;
+                if (!Dln.WriteArray(ch, Y2SlaveAddr, 0x00, buff)) return false;
             }
             return true;
         }
         public int ReadHall(int ch, string name)
         {
             int addr = 0x00;
-            if (name.Contains("AF")) addr = AFSlaveAddr;           
-            else if (name.Contains("X"))  addr = XSlaveAddr;          
+            if (name.Contains("AF")) addr = AFSlaveAddr;
+            else if (name.Contains("X")) addr = XSlaveAddr;
             else if (name.Contains("Y1")) addr = Y1SlaveAddr;
             else if (name.Contains("Y2")) addr = Y2SlaveAddr;
 
             byte[] data = new byte[2];
-            Dln.ReadArray(ch, addr, 1, 0x84, data);
+            Dln.ReadArray(ch, addr, 0x84, data);
             return ((data[0] << 8) + data[1]) >> 4;
+        }
+        public int ReadHall_Openloop(int ch, string name)
+        {
+            int addr = 0x00;
+            if (name.Contains("AF")) addr = AFSlaveAddr;
+            else if (name.Contains("X")) addr = XSlaveAddr;
+            else if (name.Contains("Y1")) addr = Y1SlaveAddr;
+            else if (name.Contains("Y2")) addr = Y2SlaveAddr;
+
+            byte[] data = new byte[2];
+            Dln.ReadArray(ch, addr, 0x80, data);
+            return ((data[0] << 8) + data[1]) >> 4;
+        }
+        public int ReadHall_13bit(int ch, string name)
+        {
+            int addr = 0x00;
+            if (name.Contains("AF")) addr = AFSlaveAddr;
+            else if (name.Contains("X")) addr = XSlaveAddr;
+            else if (name.Contains("Y1")) addr = Y1SlaveAddr;
+            else if (name.Contains("Y2")) addr = Y2SlaveAddr;
+
+            byte[] data = new byte[2];
+            Dln.ReadArray(ch, addr, 0x84, data);
+            return ((data[0] << 8) + data[1]) >> 3;
         }
         public bool FRA_Single(int ch, string name, int amp, List<double> freq, ref List<double> gain, ref List<double> phase)
         {

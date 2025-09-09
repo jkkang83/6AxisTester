@@ -208,7 +208,7 @@ namespace FZ4P
         {
             Process.RepeatRun = 1;
             Process.m_StrIndex[0] = textBox1.Text;
-            Process.m_StrIndex[1] = textBox2.Text;
+         //   Process.m_StrIndex[1] = textBox2.Text;
             Process.ClearChart();
             foreach (var l in Process.ViewLog) l.Clear();
             Process.RunTest();

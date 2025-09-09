@@ -111,6 +111,8 @@
     <Compile Include="Motion\PI_GCS2.cs" />
     <Compile Include="Motion\PI_Motion.cs" />
     <Compile Include="Motion\SK_Motion.cs" />
+    <Compile Include="Process\AFLinCompCoef.cs" />
+    <Compile Include="Process\OISLinCompCoef.cs" />
     <Compile Include="Process\PROCESSParam.cs" />
     <Compile Include="Process\PROCESS.cs" />
     <Compile Include="DriverIc\DLN.cs" />

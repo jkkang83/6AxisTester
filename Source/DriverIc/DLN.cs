@@ -29,6 +29,7 @@ namespace FZ4P
         private bool IsSwitch = false;
         public bool m_bOccupied = false;
         public bool[] IsLoad = new bool[2] { false, false };
+        object I2cLock = new object();
         public DLN()
         {
             if (!Init()) return;
@@ -166,8 +167,13 @@ namespace FZ4P
                 DLNgpio[portID] = DLNdevice[i].Gpio;
             }
 
-            //DLNgpio[0].Pins[8].ConditionMetThreadSafe += SWEventHandler; ;
-            //DLNgpio[0].Pins[8].SetEventConfiguration(Dln.Gpio.EventType.LevelHigh, 50);
+            DLNgpio[2].Pins[9].Enabled = true;
+            DLNgpio[2].Pins[9].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+            DLNgpio[2].Pins[9].OutputValue = 1;
+            DLNgpio[2].Pins[9].PulldownEnabled = true;
+
+            DLNgpio[1].Pins[8].ConditionMetThreadSafe += SWEventHandler; ;
+            DLNgpio[1].Pins[8].SetEventConfiguration(Dln.Gpio.EventType.LevelHigh, 50);
 
             //DLNgpio[0].Pins[9].ConditionMetThreadSafe += SafeEventHandler;
             //DLNgpio[0].Pins[9].SetEventConfiguration(Dln.Gpio.EventType.LevelLow, 50);
@@ -319,6 +325,23 @@ namespace FZ4P
                 m_bOccupied = false;
             }
         }
+        public void PowerOnOff(int port, bool IsOn = true)
+        {
+            if (IsOn)
+            {
+                DLNgpio[2].Pins[9].Direction = 1;
+                //   DLNgpio[0].Pins[31].OutputValue = 1;
+                //DLNgpio[port * 2].Pins[9].OutputValue = 1;
+                //DLNgpio[port * 2].Pins[31].OutputValue = 1;
+            }
+            else
+            {
+                DLNgpio[2].Pins[9].Direction = 0;
+                // DLNgpio[0].Pins[31].OutputValue = 0;
+                //DLNgpio[port * 2].Pins[9].OutputValue = 0;
+                //DLNgpio[port * 2].Pins[31].OutputValue = 0;
+            }
+        }
         public double GetCurrent(int ch, int mode)
         {
             double res = 0;
@@ -345,18 +368,37 @@ namespace FZ4P
             m_bOccupied = true;
             try
             {
-                if(Process.IsVirtual)
+                if (Process.IsVirtual)
                 {
                     m_bOccupied = false;
                     return true;
                 }
-                if (DLNi2c[ch+1] != null) DLNi2c[ch + 1].Write(slaveAddr, memCnt, memAddr, data);
+                if (DLNi2c[ch + 1] != null) DLNi2c[ch + 1].Write(slaveAddr, memCnt, memAddr, data);
                 m_bOccupied = false;
                 return true;
             }
             catch
             {
                 m_bOccupied = false;
+                return false;
+            }
+        }
+        public bool WriteArray(int ch, int slaveAddr, int memAddr, byte[] data)
+        {
+
+            try
+            {
+                if (Process.IsVirtual) return true;
+                lock (I2cLock)
+                {
+                    if (DLNi2c[ch + 1] != null) DLNi2c[ch + 1].Write(slaveAddr, 1, memAddr, data);
+                }
+
+                return true;
+            }
+            catch
+            {
+
                 return false;
             }
         }
@@ -381,6 +423,25 @@ namespace FZ4P
             catch
             {
                 m_bOccupied = false;
+                return false;
+            }
+        }
+        public bool ReadArray(int ch, int slaveAddr, int memAddr, byte[] data)
+        {
+
+            try
+            {
+                if (Process.IsVirtual) return true;
+                lock (I2cLock)
+                {
+                    if (DLNi2c[ch + 1] != null) DLNi2c[ch + 1].Read(slaveAddr, 1, memAddr, data);
+                }
+
+                return true;
+            }
+            catch
+            {
+
                 return false;
             }
         }

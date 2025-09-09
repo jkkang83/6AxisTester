@@ -1637,12 +1637,50 @@ namespace S2System.Vision
 
             //MIL.MbufClear(milImageDisp, 0);  //
             MIL.MdigGrab(milDigitizer, milCommonImageGrab[i]);    //
-            //MIL.MdigGrabWait(milDigitizer, MIL.M_GRAB_FRAME_END); //   카메라 없을 경우 에러남. 에러 처리 필요. 
+         //   MIL.MdigGrabWait(milDigitizer, MIL.M_GRAB_FRAME_END); //   카메라 없을 경우 에러남. 에러 처리 필요. 
 
             //MIL.MbufCopy(milCommonImageGrab[i], milImageDisp);
 
             OnGrab = false;
             //            MIL.MbufCopy(milXstepImageGrab[0], milImageDisp);
+        }
+        public void GrabName(string name, int i = 0)
+        {
+            if (IsLiveA == true)
+            {
+                HaltA();
+                Thread.Sleep(1);
+            }
+
+            while (OnGrab)
+            {
+                Thread.Sleep(1);
+            }
+            OnGrab = true;
+
+            switch (name)
+            {
+                case "AF Scan":
+                case "AF Settling":
+                    MIL.MdigGrab(milDigitizer, milAFRelay[i]);
+                    break;
+                case "OIS X Scan":
+                    MIL.MdigGrab(milDigitizer, milXRelay[i]);
+                    break;
+                case "OIS Y Scan":
+                    MIL.MdigGrab(milDigitizer, milYRelay[i]);
+                    break;
+                case "OIS Matrix Scan":
+                    MIL.MdigGrab(milDigitizer, milCommonImageGrab6000[i]);
+                    break;
+                case "OIS X Linearity Comp":
+                    MIL.MdigGrab(milDigitizer, milXLinRelay[i]);
+                    break;
+                case "OIS Y Linearity Comp":
+                    MIL.MdigGrab(milDigitizer, milYLinRelay[i]);
+                    break;
+            }
+            OnGrab = false;
         }
         public void GrabB(int i = 0, bool autoTest = false)
         {

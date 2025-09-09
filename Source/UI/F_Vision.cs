@@ -4352,7 +4352,7 @@ namespace FZ4P
             ChangeFiducialMark(0);
 
 
-            string strtmp = NthMeasure(imgIndex);
+            string strtmp = NthMeasure(imgIndex, ScanName);
 
             strtmp += "\r\n" + imgIndex.ToString() + "\t";
             for (int i = 0; i < 12; i++)
@@ -4380,7 +4380,7 @@ namespace FZ4P
             tbImgNumber.Text = nextFrame.ToString();
         }
 
-        public string NthMeasure(int imgIndex, bool bAccu = false, bool isShow = false)
+        public string NthMeasure(int imgIndex, string name, bool bAccu = false, bool isShow = false)
         {
             //if ((m__G.fGraph.mAF_FrameCount-1) < imgIndex) return;
 
@@ -4406,7 +4406,7 @@ namespace FZ4P
                 m__G.oCam[0].DrawClear();
             }
 
-            m__G.oCam[0].ReplayBuftoCommon(ScanName, imgIndex);
+            m__G.oCam[0].ReplayBuftoCommon(name, imgIndex);
 
             m__G.oCam[0].mTrgBufLength = m__G.oCam[0].mTargetTriggerCount;
             //tbVsnLog.Text += "Target Length = " + m__G.oCam[0].mTrgBufLength.ToString();
@@ -4507,13 +4507,13 @@ namespace FZ4P
             m__G.mFAL.mCandidateIndex = 0;
             ChangeFiducialMark(0);
 
-            if (name == "") m__G.oCam[0].ReplayBuftoCommon(ScanName, imgIndex);
-            else m__G.oCam[0].ReplayBuftoCommon(name, imgIndex);
+            //if (name == "") m__G.oCam[0].ReplayBuftoCommon(ScanName, imgIndex);
+            //else m__G.oCam[0].ReplayBuftoCommon(name, imgIndex);
 
             m__G.oCam[0].mFAL.LoadFMICandidate();
             m__G.oCam[0].mFAL.BackupFMI();
 
-            NthMeasure(imgIndex, bAccu, isShow);
+            NthMeasure(imgIndex, name, bAccu, isShow);
 
             FindResult result = new FindResult();
             if(Option.XYPosReverse)
@@ -5042,7 +5042,7 @@ namespace FZ4P
                 m__G.oCam[0].mFAL.BackupFMI();
             }
 
-            string strtmp = NthMeasure(imgIndex);
+            string strtmp = NthMeasure(imgIndex, ScanName);
             strtmp += "\r\n" + imgIndex.ToString() + "\t";
             for (int i = 0; i < 12; i++)
             {
@@ -7593,7 +7593,7 @@ namespace FZ4P
 
                 m__G.oCam[0].PrepareFineCOG();
                 m__G.oCam[0].mFAL.mbGetHistogram = true;
-                NthMeasure(0);
+                NthMeasure(0, "");
                 FindIDmark(lCropImg);
                 SetMasterZeroIndex(mMarkID);
                 //txtMsaterNum.Text = mMarkID.ToString();
