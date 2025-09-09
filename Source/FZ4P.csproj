@@ -119,6 +119,7 @@
     <Compile Include="DriverIc\AK73XX.cs" />
     <Compile Include="Process\RECIPE.cs" />
     <Compile Include="Process\STATICS.cs" />
+    <Compile Include="Process\TCPComm.cs" />
     <Compile Include="UI\F_Start.cs">
       <SubType>Form</SubType>
     </Compile>

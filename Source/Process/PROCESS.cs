@@ -1432,7 +1432,7 @@ namespace FZ4P
             {
                 Dln.ReadArray(ch, addr, 0x00 + i, rbuf);
                 data[i] = rbuf[0];
-                Thread.Sleep(1);
+                
             }
             for (int i = 0; i < 16; i++)
             {
