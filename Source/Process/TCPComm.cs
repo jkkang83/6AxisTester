@@ -576,21 +576,21 @@ namespace FZ4P
             try
             {
                 sMessage = sMessage.TrimEnd('\0');
-                if (sMessage[0] == (char)36)
+                if (sMessage[0] == (char)2)
                 {
                     sendMessage = sMessage;
-                    if (sMessage[sMessage.Length - 1] == (char)13)
+                    if (sMessage[sMessage.Length - 1] == (char)3)
                     {
-                        List<string> splitStr = sendMessage.Split((char)36).ToList();
+                        List<string> splitStr = sendMessage.Split((char)3).ToList();
                         splitStr.RemoveAt(0);
                         OnReceive?.Invoke(splitStr.ToList());
                     }
 
                 }
-                else if (sMessage[sMessage.Length - 1] == (char)13)
+                else if (sMessage[sMessage.Length - 1] == (char)3)
                 {
                     sendMessage += sMessage;
-                    List<string> splitStr = sendMessage.Split((char)36).ToList();
+                    List<string> splitStr = sendMessage.Split((char)3).ToList();
                     splitStr.RemoveAt(0);
                     OnReceive?.Invoke(splitStr.ToList());
                 }
@@ -616,7 +616,7 @@ namespace FZ4P
         }
         public void SendMessage(string s)
         {
-            string str = (char)36 + s + (char)13;
+            string str = (char)2 + s + (char)3;
             conn.SendMessage(str);
         }
     }

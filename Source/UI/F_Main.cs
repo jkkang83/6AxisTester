@@ -160,12 +160,12 @@ namespace FZ4P
             {
                 for (int j = 0; j < data.Count; j++)
                 {
-                    if (data.Contains("Res"))
+                    if (data[j].Contains("Res"))
                     {
                         string[] split = data[j].Split('.');
                         STATIC.fManage.SetInforViewOnComm(split[1]);
                     }
-                    else if(data.Contains("Clear"))
+                    else if (data[j].Contains("Clear"))
                     {
                         STATIC.fManage.SafeControlViewOnComm();
                     }
@@ -204,6 +204,7 @@ namespace FZ4P
             {
                 Process.LEDs_All_On(0, false);
             }
+            if (Model.MCType != "Normal") STATIC.TcpConn.disconnect();
         }
         private void InitCondition(bool isClear = true)
         {
