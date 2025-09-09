@@ -554,16 +554,16 @@ namespace FZ4P
             conn.ReceiveEvent += Conn_ReceiveEvent;
 
         }
-        //public void connect(int port)
-        //{
-        //    disconnect();
-        //    conn = MySocketServerClass.CreateServerSocket(port, SocketInterface.TypeOfString.UTF8);
-        //    conn.StartSocket();
-        //    conn.ConnectedEvent += Conn_ConnectedEvent;
-        //    conn.DisconnectedEvent += Conn_DisconnectedEvent;
-        //    conn.ReceiveEvent += Conn_ReceiveEvent;
+        public void connect(string ip, int port)
+        {
+            disconnect();
+            conn = MySocketClientClass.CreateClientSocket(ip ,port, SocketInterface.TypeOfString.UTF8);
+            conn.StartSocket();
+            conn.ConnectedEvent += Conn_ConnectedEvent;
+            conn.DisconnectedEvent += Conn_DisconnectedEvent;
+            conn.ReceiveEvent += Conn_ReceiveEvent;
 
-        //}
+        }
 
         public void disconnect()
         {

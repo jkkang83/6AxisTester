@@ -42,8 +42,6 @@ namespace FZ4P
             this.ModelList = new System.Windows.Forms.ListBox();
             this.MCNumber = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
-            this.label18 = new System.Windows.Forms.Label();
-            this.ICList = new System.Windows.Forms.ListBox();
             this.SupplierList = new System.Windows.Forms.ListBox();
             this.label17 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
@@ -98,6 +96,8 @@ namespace FZ4P
             this.SaveCondition = new System.Windows.Forms.Button();
             this.OpenCondition = new System.Windows.Forms.Button();
             this.RecipeFileName = new System.Windows.Forms.TextBox();
+            this.MCtypeList = new System.Windows.Forms.ListBox();
+            this.label2 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.SpecGrid)).BeginInit();
             this.ModelGroup.SuspendLayout();
             this.panel4.SuspendLayout();
@@ -150,12 +150,12 @@ namespace FZ4P
             this.ModelGroup.Controls.Add(this.lblDefaultModel);
             this.ModelGroup.Controls.Add(this.button1);
             this.ModelGroup.Controls.Add(this.lbxModelFiles);
+            this.ModelGroup.Controls.Add(this.label2);
             this.ModelGroup.Controls.Add(this.lblStartModel);
+            this.ModelGroup.Controls.Add(this.MCtypeList);
             this.ModelGroup.Controls.Add(this.ModelList);
             this.ModelGroup.Controls.Add(this.MCNumber);
             this.ModelGroup.Controls.Add(this.label4);
-            this.ModelGroup.Controls.Add(this.label18);
-            this.ModelGroup.Controls.Add(this.ICList);
             this.ModelGroup.Controls.Add(this.SupplierList);
             this.ModelGroup.Controls.Add(this.label17);
             this.ModelGroup.Controls.Add(this.label1);
@@ -215,7 +215,7 @@ namespace FZ4P
             this.lblStartModel.AutoSize = true;
             this.lblStartModel.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblStartModel.ForeColor = System.Drawing.Color.MediumBlue;
-            this.lblStartModel.Location = new System.Drawing.Point(70, 340);
+            this.lblStartModel.Location = new System.Drawing.Point(70, 275);
             this.lblStartModel.Name = "lblStartModel";
             this.lblStartModel.Size = new System.Drawing.Size(62, 23);
             this.lblStartModel.TabIndex = 236;
@@ -227,7 +227,7 @@ namespace FZ4P
             this.ModelList.ForeColor = System.Drawing.Color.MediumBlue;
             this.ModelList.FormattingEnabled = true;
             this.ModelList.ItemHeight = 19;
-            this.ModelList.Location = new System.Drawing.Point(139, 340);
+            this.ModelList.Location = new System.Drawing.Point(139, 275);
             this.ModelList.Name = "ModelList";
             this.ModelList.Size = new System.Drawing.Size(130, 42);
             this.ModelList.TabIndex = 235;
@@ -251,27 +251,6 @@ namespace FZ4P
             this.label4.Size = new System.Drawing.Size(69, 23);
             this.label4.TabIndex = 233;
             this.label4.Text = "MC No.";
-            // 
-            // label18
-            // 
-            this.label18.AutoSize = true;
-            this.label18.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label18.Location = new System.Drawing.Point(45, 282);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(79, 23);
-            this.label18.TabIndex = 231;
-            this.label18.Text = "Driver IC";
-            // 
-            // ICList
-            // 
-            this.ICList.BackColor = System.Drawing.Color.LightCyan;
-            this.ICList.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ICList.FormattingEnabled = true;
-            this.ICList.ItemHeight = 19;
-            this.ICList.Location = new System.Drawing.Point(139, 282);
-            this.ICList.Name = "ICList";
-            this.ICList.Size = new System.Drawing.Size(130, 42);
-            this.ICList.TabIndex = 232;
             // 
             // SupplierList
             // 
@@ -966,6 +945,28 @@ namespace FZ4P
             this.RecipeFileName.Text = "Recipe File Name";
             this.RecipeFileName.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
+            // MCtypeList
+            // 
+            this.MCtypeList.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.MCtypeList.ForeColor = System.Drawing.Color.MediumBlue;
+            this.MCtypeList.FormattingEnabled = true;
+            this.MCtypeList.ItemHeight = 19;
+            this.MCtypeList.Location = new System.Drawing.Point(139, 321);
+            this.MCtypeList.Name = "MCtypeList";
+            this.MCtypeList.Size = new System.Drawing.Size(130, 61);
+            this.MCtypeList.TabIndex = 235;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.ForeColor = System.Drawing.Color.MediumBlue;
+            this.label2.Location = new System.Drawing.Point(61, 321);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(78, 23);
+            this.label2.TabIndex = 236;
+            this.label2.Text = "MC Type";
+            // 
             // F_Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
@@ -1052,8 +1053,6 @@ namespace FZ4P
         private System.Windows.Forms.ListBox ModelList;
         private System.Windows.Forms.TextBox MCNumber;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label label18;
-        private System.Windows.Forms.ListBox ICList;
         private System.Windows.Forms.ListBox SupplierList;
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.Label label1;
@@ -1075,6 +1074,8 @@ namespace FZ4P
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.ListBox lbxModelFiles;
         private System.Windows.Forms.Label lblDefaultModel;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.ListBox MCtypeList;
     }
 }
 

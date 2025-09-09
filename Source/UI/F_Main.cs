@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -134,6 +135,41 @@ namespace FZ4P
 
             STATIC.fStart.Invoke(new MethodInvoker(STATIC.fStart.Close));
 
+
+            if(Model.MCType != "Normal")
+            {
+                STATIC.TcpConn.OnReceive += TcpConn_OnReceive;
+                STATIC.TcpConn.OnStatus += TcpConn_OnStatus;
+                if (Model.MCType == "Master")
+                    STATIC.TcpConn.connect(5000);
+                else
+                    STATIC.TcpConn.connect("192.168.100.2", 5000);
+            }
+            
+        }
+
+        private void TcpConn_OnStatus(bool isCon)
+        {
+            throw new NotImplementedException();
+        }
+        object ReceiveLock = new object();
+        private void TcpConn_OnReceive(List<string> data)
+        {
+            lock (ReceiveLock)
+            {
+                for (int j = 0; j < data.Count; j++)
+                {
+                    if (data.Contains("Res"))
+                    {
+                        string[] split = data[j].Split('.');
+                        STATIC.fManage.SetInforViewOnComm(split[1]);
+                    }
+                    else if(data.Contains("Clear"))
+                    {
+                        STATIC.fManage.SafeControlViewOnComm();
+                    }
+                }
+            }
         }
 
         public string mFile4ModelFileList = "ModelFileList.txt";
@@ -493,15 +529,15 @@ namespace FZ4P
                 SupplierList.Items.Add(Model.SupplierList[i]);
             SupplierList.SelectedItem = Model.Supplier;
 
-            ICList.Items.Clear();
-            for (int i = 0; i < Model.ICList.Count; i++)
-                ICList.Items.Add(Model.ICList[i]);
-            ICList.SelectedItem = Model.DriverIC;
-
             ModelList.Items.Clear();
             for (int i = 0; i < Model.ModelList.Count; i++)
                 ModelList.Items.Add(Model.ModelList[i]);
             ModelList.SelectedItem = Model.ModelName;
+
+            MCtypeList.Items.Clear();
+            for (int i = 0; i < Model.MCTypeList.Count; i++)
+                MCtypeList.Items.Add(Model.MCTypeList[i]);
+            MCtypeList.SelectedItem = Model.MCType;
         }
         private void InitScripPath()
         {
@@ -598,8 +634,9 @@ namespace FZ4P
             Model.ProductLine = ProductLine.Text;
             if (SupplierList.SelectedItem != null) Model.Supplier = SupplierList.SelectedItem.ToString();
             Model.MCNumber = MCNumber.Text;
-            if (ICList.SelectedItem != null) Model.DriverIC = ICList.SelectedItem.ToString();
+            
             if (ModelList.SelectedItem != null) Model.ModelName = ModelList.SelectedItem.ToString();
+            if (MCtypeList.SelectedItem != null) Model.MCType = MCtypeList.SelectedItem.ToString();
             Model.Save();
 
             InitModel();

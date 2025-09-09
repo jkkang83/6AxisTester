@@ -59,7 +59,15 @@ namespace FZ4P
 
         private void Process_RunEnd(object sender, int e)
         {
+
             SafeControlView(RunProgress, false);
+            if(Model.MCType == "Slave")
+            {
+                string s = Process.errMsg[0] == "" ? "PASS" : Process.errMsg[0];
+                STATIC.TcpConn.SendMessage($"Res.{s}");
+
+            }
+
             if (InvokeRequired)
             {
                 BeginInvoke((MethodInvoker)delegate
@@ -125,6 +133,8 @@ namespace FZ4P
             if (Process.ChannelCnt > 1) Process.ShowDataResultsInit(1);
 
             SafeControlView(RunProgress, true);
+            if (Model.MCType == "Slave")
+                STATIC.TcpConn.SendMessage("Clear");
         }
 
         private void BindingUI()
@@ -144,12 +154,20 @@ namespace FZ4P
                 Process.ChartBtm[i].C.Location = new Point(3 + 478 * i, 400);
                 Controls.Add(Process.ChartBtm[i].C);
             }
-            for (int i = 0; i < Process.InfoBtn.Count; i++)
+            for (int i = 0; i < 2; i++)
             {
                 Process.InfoBtn[i].btn.Location = new Point(3 + 478 * i, 291);
                 Controls.Add(Process.InfoBtn[i].btn);
                 Process.InfoBtn[i].btn.BringToFront();
             }
+            //for (int i = 0; i < Process.InfoBtn.Count; i++)
+            //{
+            //    Process.InfoBtn[i].btn.Location = new Point(3 + 478 * i, 291);
+            //    Controls.Add(Process.InfoBtn[i].btn);
+            //    Process.InfoBtn[i].btn.BringToFront();
+            //}
+
+
             p_Result.Controls.Add(Process.ResultDataGrid);
             Process.InitResultData();
             //Process.ResultDataGrid.CellMouseDoubleClick += new DataGridViewCellMouseEventHandler(ResultDataGrid_CellMouseDoubleClick);
@@ -353,6 +371,62 @@ namespace FZ4P
 
         }
 
+        public void SetInforViewOnComm(string msg)
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke((MethodInvoker)delegate
+                {
+                    if (msg == "PASS" || msg == "pass")
+                    {
+                        Process.InfoBtn[1].btn.Text = msg;
+                        Process.InfoBtn[1].btn.Font = new Font("Malgun Gothic", 60, FontStyle.Bold);
+                        Process.InfoBtn[1].btn.ForeColor = Color.Cyan;
+                    }
+                    else
+                    {
+                        Process.InfoBtn[1].btn.Text = msg;
+                        Process.InfoBtn[1].btn.Font = new Font("Malgun Gothic", 24, FontStyle.Bold);
+                        Process.InfoBtn[1].btn.ForeColor = Color.OrangeRed;
+                    }
+                });
+            }
+            else
+            {
+                if (msg == "PASS" || msg == "pass")
+                {
+                    Process.InfoBtn[1].btn.Text = msg;
+                    Process.InfoBtn[1].btn.Font = new Font("Malgun Gothic", 60, FontStyle.Bold);
+                    Process.InfoBtn[1].btn.ForeColor = Color.Cyan;
+                }
+                else
+                {
+                    Process.InfoBtn[1].btn.Text = msg;
+                    Process.InfoBtn[1].btn.Font = new Font("Malgun Gothic", 24, FontStyle.Bold);
+                    Process.InfoBtn[1].btn.ForeColor = Color.OrangeRed;
+                }
+            }
+
+
+           
+          
+
+        }
+        public void SafeControlViewOnComm()
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke((MethodInvoker)delegate
+                {
+                    Process.InfoBtn[1].btn.Hide();
+                });
+            }
+            else
+            {
+                Process.InfoBtn[1].btn.Hide();
+            }
+        }
+
         private void SetSampleNumber_Click(object sender, EventArgs e)
         {
             int NewNum = Convert.ToInt32(NewSampleNumber.Text);
@@ -474,13 +548,7 @@ namespace FZ4P
             IsTestOn = false;
         }
 
-        private void button2_Click_1(object sender, EventArgs e)
-        {
-            bestpos = Convert.ToInt32(tbBestpos.Text);
-            STATIC.DrvIC.OISOn(0, "AF", true);
-            STATIC.DrvIC.Move(0, "AF", bestpos);
-        }
-
+     
         private void button3_Click_1(object sender, EventArgs e)
         {
 

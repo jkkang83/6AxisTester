@@ -1165,9 +1165,9 @@ namespace FZ4P
         public string TesterNo;
         public string ProductLine;
         public string Supplier;
-        public string MCNumber;
-        public string DriverIC;
+        public string MCNumber;       
         public string ModelName;
+        public string MCType;
         private string lotID;
         public string LotID
         {
@@ -1184,9 +1184,10 @@ namespace FZ4P
         public List<string> List = new List<string>();
 
         public List<string> MakerList = new List<string>();
-        public List<string> ICList = new List<string>();
+      
         public List<string> ModelList = new List<string>();
         public List<string> SupplierList = new List<string>();
+        public List<string> MCTypeList = new List<string>();
 
 
         public bool IsLotChanged = false;
@@ -1202,10 +1203,11 @@ namespace FZ4P
             SupplierList.Add("Optrontech");
             SupplierList.Add("Crystal Optics");
 
-            ICList.Add("AK7314");
-            ICList.Add("AK7323D");
-
             ModelList.Add("SO1C31");
+
+            MCTypeList.Add("Normal");
+            MCTypeList.Add("Master");
+            MCTypeList.Add("Slave");
 
             Read();
         }
@@ -1242,8 +1244,8 @@ namespace FZ4P
             List.Add(ProductLine);
             List.Add(Supplier);
             List.Add(MCNumber);
-            List.Add(DriverIC);
             List.Add(ModelName);
+            List.Add(MCType);
             List.Add(LotID);
             List.Add(OperatorName);
             STATIC.SetTextLine(FilePath, List);
@@ -1259,8 +1261,8 @@ namespace FZ4P
             ProductLine = List[index++];
             Supplier = List[index++];
             MCNumber = List[index++];
-            DriverIC = List[index++];
             ModelName = List[index++];
+            MCType = List[index++];
             LotID = List[index++];
             OperatorName = List[index++];
         }

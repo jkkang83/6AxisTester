@@ -10,7 +10,7 @@ namespace FZ4P
         public static FVision fVision = new FVision();
         public static F_Manage fManage = new F_Manage();
         public static F_Start fStart = new F_Start();
-
+        public static HandlerConnection TcpConn = new HandlerConnection();
 
         public enum STATE
         {
