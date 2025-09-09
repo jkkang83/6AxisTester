@@ -30,10 +30,10 @@ namespace FZ4P
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(F_Manage));
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Title title1 = new System.Windows.Forms.DataVisualization.Charting.Title();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Title title3 = new System.Windows.Forms.DataVisualization.Charting.Title();
             this.lblRepeatLoadingUnloading = new System.Windows.Forms.Label();
             this.RepeatRunCnt = new System.Windows.Forms.TextBox();
             this.CurrentRunCnt = new System.Windows.Forms.TextBox();
@@ -81,6 +81,9 @@ namespace FZ4P
             this.textBox2 = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
+            this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
+            this.lbMCtype = new System.Windows.Forms.Label();
+            this.lbMcConstatus = new System.Windows.Forms.Label();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.p_Result.SuspendLayout();
@@ -88,6 +91,7 @@ namespace FZ4P
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.YieldChart)).BeginInit();
             this.ModelGroup.SuspendLayout();
+            this.tableLayoutPanel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // lblRepeatLoadingUnloading
@@ -309,9 +313,9 @@ namespace FZ4P
             this.ToAdmin.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.ToAdmin.Font = new System.Drawing.Font("Calibri", 18F, System.Drawing.FontStyle.Bold);
             this.ToAdmin.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.ToAdmin.Location = new System.Drawing.Point(161, 0);
+            this.ToAdmin.Location = new System.Drawing.Point(309, 0);
             this.ToAdmin.Name = "ToAdmin";
-            this.ToAdmin.Size = new System.Drawing.Size(475, 45);
+            this.ToAdmin.Size = new System.Drawing.Size(320, 37);
             this.ToAdmin.TabIndex = 179;
             this.ToAdmin.Text = "Admin Mode";
             this.ToAdmin.UseVisualStyleBackColor = false;
@@ -326,7 +330,7 @@ namespace FZ4P
             this.ToVision.ForeColor = System.Drawing.Color.WhiteSmoke;
             this.ToVision.Location = new System.Drawing.Point(635, 0);
             this.ToVision.Name = "ToVision";
-            this.ToVision.Size = new System.Drawing.Size(320, 45);
+            this.ToVision.Size = new System.Drawing.Size(320, 37);
             this.ToVision.TabIndex = 178;
             this.ToVision.Text = "Vision";
             this.ToVision.UseVisualStyleBackColor = false;
@@ -624,48 +628,48 @@ namespace FZ4P
             this.YieldChart.AllowDrop = true;
             this.YieldChart.BackImageAlignment = System.Windows.Forms.DataVisualization.Charting.ChartImageAlignmentStyle.Center;
             this.YieldChart.BorderlineColor = System.Drawing.Color.Black;
-            chartArea1.BackColor = System.Drawing.Color.Transparent;
-            chartArea1.Name = "ChartArea1";
-            chartArea1.ShadowColor = System.Drawing.Color.White;
-            this.YieldChart.ChartAreas.Add(chartArea1);
-            legend1.Alignment = System.Drawing.StringAlignment.Center;
-            legend1.BackColor = System.Drawing.Color.Transparent;
-            legend1.BackSecondaryColor = System.Drawing.Color.Transparent;
-            legend1.BorderColor = System.Drawing.Color.Transparent;
-            legend1.BorderWidth = 0;
-            legend1.DockedToChartArea = "ChartArea1";
-            legend1.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Bottom;
-            legend1.Font = new System.Drawing.Font("맑은 고딕", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            legend1.IsTextAutoFit = false;
-            legend1.Name = "Legend1";
-            legend1.Position.Auto = false;
-            legend1.Position.Height = 25F;
-            legend1.Position.Width = 98F;
-            legend1.Position.Y = 75F;
-            legend1.ShadowColor = System.Drawing.Color.White;
-            legend1.TitleBackColor = System.Drawing.Color.Transparent;
-            legend1.TitleFont = new System.Drawing.Font("Calibri", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.YieldChart.Legends.Add(legend1);
+            chartArea3.BackColor = System.Drawing.Color.Transparent;
+            chartArea3.Name = "ChartArea1";
+            chartArea3.ShadowColor = System.Drawing.Color.White;
+            this.YieldChart.ChartAreas.Add(chartArea3);
+            legend3.Alignment = System.Drawing.StringAlignment.Center;
+            legend3.BackColor = System.Drawing.Color.Transparent;
+            legend3.BackSecondaryColor = System.Drawing.Color.Transparent;
+            legend3.BorderColor = System.Drawing.Color.Transparent;
+            legend3.BorderWidth = 0;
+            legend3.DockedToChartArea = "ChartArea1";
+            legend3.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Bottom;
+            legend3.Font = new System.Drawing.Font("맑은 고딕", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            legend3.IsTextAutoFit = false;
+            legend3.Name = "Legend1";
+            legend3.Position.Auto = false;
+            legend3.Position.Height = 25F;
+            legend3.Position.Width = 98F;
+            legend3.Position.Y = 75F;
+            legend3.ShadowColor = System.Drawing.Color.White;
+            legend3.TitleBackColor = System.Drawing.Color.Transparent;
+            legend3.TitleFont = new System.Drawing.Font("Calibri", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.YieldChart.Legends.Add(legend3);
             this.YieldChart.Location = new System.Drawing.Point(480, 682);
             this.YieldChart.Name = "YieldChart";
-            series1.ChartArea = "ChartArea1";
-            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Pie;
-            series1.Legend = "Legend1";
-            series1.Name = "Series5";
-            this.YieldChart.Series.Add(series1);
+            series3.ChartArea = "ChartArea1";
+            series3.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Pie;
+            series3.Legend = "Legend1";
+            series3.Name = "Series5";
+            this.YieldChart.Series.Add(series3);
             this.YieldChart.Size = new System.Drawing.Size(436, 276);
             this.YieldChart.TabIndex = 255;
             this.YieldChart.Text = "YieldChart";
-            title1.Alignment = System.Drawing.ContentAlignment.TopLeft;
-            title1.BackColor = System.Drawing.Color.Transparent;
-            title1.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            title1.Name = "Title1";
-            title1.Position.Auto = false;
-            title1.Position.Height = 8F;
-            title1.Position.Width = 55F;
-            title1.Text = "Yield";
-            title1.TextStyle = System.Windows.Forms.DataVisualization.Charting.TextStyle.Shadow;
-            this.YieldChart.Titles.Add(title1);
+            title3.Alignment = System.Drawing.ContentAlignment.TopLeft;
+            title3.BackColor = System.Drawing.Color.Transparent;
+            title3.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            title3.Name = "Title1";
+            title3.Position.Auto = false;
+            title3.Position.Height = 8F;
+            title3.Position.Width = 55F;
+            title3.Text = "Yield";
+            title3.TextStyle = System.Windows.Forms.DataVisualization.Charting.TextStyle.Shadow;
+            this.YieldChart.Titles.Add(title3);
             this.YieldChart.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.YieldChart_MouseDoubleClick);
             // 
             // ModelGroup
@@ -731,11 +735,51 @@ namespace FZ4P
             this.label5.TabIndex = 191;
             this.label5.Text = "SPL 1";
             // 
+            // tableLayoutPanel2
+            // 
+            this.tableLayoutPanel2.ColumnCount = 2;
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 80F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel2.Controls.Add(this.lbMcConstatus, 1, 0);
+            this.tableLayoutPanel2.Controls.Add(this.lbMCtype, 0, 0);
+            this.tableLayoutPanel2.Location = new System.Drawing.Point(7, 3);
+            this.tableLayoutPanel2.Name = "tableLayoutPanel2";
+            this.tableLayoutPanel2.RowCount = 1;
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(296, 33);
+            this.tableLayoutPanel2.TabIndex = 257;
+            // 
+            // lbMCtype
+            // 
+            this.lbMCtype.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
+            this.lbMCtype.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lbMCtype.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lbMCtype.Font = new System.Drawing.Font("Arial", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbMCtype.ForeColor = System.Drawing.Color.Yellow;
+            this.lbMCtype.Location = new System.Drawing.Point(3, 0);
+            this.lbMCtype.Name = "lbMCtype";
+            this.lbMCtype.Size = new System.Drawing.Size(230, 33);
+            this.lbMCtype.TabIndex = 0;
+            this.lbMCtype.Text = "Normal";
+            this.lbMCtype.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lbMcConstatus
+            // 
+            this.lbMcConstatus.BackColor = System.Drawing.Color.Red;
+            this.lbMcConstatus.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.lbMcConstatus.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lbMcConstatus.Location = new System.Drawing.Point(239, 0);
+            this.lbMcConstatus.Name = "lbMcConstatus";
+            this.lbMcConstatus.Size = new System.Drawing.Size(54, 33);
+            this.lbMcConstatus.TabIndex = 1;
+            this.lbMcConstatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // F_Manage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1920, 1080);
+            this.Controls.Add(this.tableLayoutPanel2);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.textBox1);
@@ -770,6 +814,7 @@ namespace FZ4P
             this.tableLayoutPanel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.YieldChart)).EndInit();
             this.ModelGroup.ResumeLayout(false);
+            this.tableLayoutPanel2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -823,5 +868,8 @@ namespace FZ4P
         private System.Windows.Forms.Button TestStartBtn;
         private System.Windows.Forms.Button TestStopBtn;
         private System.Windows.Forms.TextBox TestCountText;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
+        private System.Windows.Forms.Label lbMcConstatus;
+        private System.Windows.Forms.Label lbMCtype;
     }
 }

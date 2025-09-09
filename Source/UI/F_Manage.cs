@@ -55,8 +55,39 @@ namespace FZ4P
             TestStopBtn.Visible = Process.IsVirtual;
             TestCountText.Visible = Process.IsVirtual;
 
-        }
 
+            if (Model.MCType == "Master") lbMCtype.Text = "PORT 1";
+            else if (Model.MCType == "Slave") { lbMCtype.Text = "PORT 2"; }
+            else lbMCtype.Text = "Normal";
+
+        }
+        public void SetConStatus(bool isCon)
+        {
+            if (isCon) 
+            {
+                if (InvokeRequired)
+                {
+                    BeginInvoke((MethodInvoker)delegate
+                    {
+                        lbMcConstatus.BackColor = Color.YellowGreen;
+                    });
+                }
+                else
+                    lbMcConstatus.BackColor = Color.YellowGreen;
+            }
+            else
+            {
+                if (InvokeRequired)
+                {
+                    BeginInvoke((MethodInvoker)delegate
+                    {
+                        lbMcConstatus.BackColor = Color.Red;
+                    });
+                }
+                else
+                    lbMcConstatus.BackColor = Color.Red;
+            }
+        }
         private void Process_RunEnd(object sender, int e)
         {
 
@@ -389,6 +420,7 @@ namespace FZ4P
                         Process.InfoBtn[1].btn.Font = new Font("Malgun Gothic", 24, FontStyle.Bold);
                         Process.InfoBtn[1].btn.ForeColor = Color.OrangeRed;
                     }
+                    Process.InfoBtn[1].btn.Show();
                 });
             }
             else
@@ -398,13 +430,16 @@ namespace FZ4P
                     Process.InfoBtn[1].btn.Text = msg;
                     Process.InfoBtn[1].btn.Font = new Font("Malgun Gothic", 60, FontStyle.Bold);
                     Process.InfoBtn[1].btn.ForeColor = Color.Cyan;
+
                 }
                 else
                 {
                     Process.InfoBtn[1].btn.Text = msg;
                     Process.InfoBtn[1].btn.Font = new Font("Malgun Gothic", 24, FontStyle.Bold);
                     Process.InfoBtn[1].btn.ForeColor = Color.OrangeRed;
+                    
                 }
+                Process.InfoBtn[1].btn.Show();
             }
 
 

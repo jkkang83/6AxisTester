@@ -172,7 +172,7 @@ namespace FZ4P
             DLNgpio[2].Pins[9].OutputValue = 1;
             DLNgpio[2].Pins[9].PulldownEnabled = true;
 
-            DLNgpio[1].Pins[8].ConditionMetThreadSafe += SWEventHandler; ;
+            DLNgpio[1].Pins[8].ConditionMetThreadSafe += SWEventHandler;
             DLNgpio[1].Pins[8].SetEventConfiguration(Dln.Gpio.EventType.LevelHigh, 50);
 
             //DLNgpio[0].Pins[9].ConditionMetThreadSafe += SafeEventHandler;
@@ -194,13 +194,13 @@ namespace FZ4P
         {
             if (e.Value == 1 && !IsSwitch)
             {
-                DLNgpio[0].Pins[8].SetEventConfiguration(Dln.Gpio.EventType.LevelLow, 50);
+                DLNgpio[1].Pins[8].SetEventConfiguration(Dln.Gpio.EventType.LevelLow, 50);
                 IsSwitch = true;
                 SwitchOn?.Invoke(null, EventArgs.Empty);
             }
             else if (e.Value == 0 && IsSwitch)
             {
-                DLNgpio[0].Pins[8].SetEventConfiguration(Dln.Gpio.EventType.LevelHigh, 50);
+                DLNgpio[1].Pins[8].SetEventConfiguration(Dln.Gpio.EventType.LevelHigh, 50);
                 IsSwitch = false;
             }
         }

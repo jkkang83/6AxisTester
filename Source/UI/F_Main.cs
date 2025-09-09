@@ -150,8 +150,7 @@ namespace FZ4P
 
         private void TcpConn_OnStatus(bool isCon)
         {
-            if (isCon) label3.BackColor = Color.YellowGreen;
-            else label3.BackColor = Color.Red;
+            STATIC.fManage.SetConStatus(isCon);
         }
         object ReceiveLock = new object();
         private void TcpConn_OnReceive(List<string> data)
@@ -162,7 +161,9 @@ namespace FZ4P
                 {
                     if (data[j].Contains("Res"))
                     {
+
                         string[] split = data[j].Split('.');
+                        
                         STATIC.fManage.SetInforViewOnComm(split[1]);
                     }
                     else if (data[j].Contains("Clear"))

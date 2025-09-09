@@ -581,8 +581,15 @@ namespace FZ4P
                     sendMessage = sMessage;
                     if (sMessage[sMessage.Length - 1] == (char)3)
                     {
-                        List<string> splitStr = sendMessage.Split((char)3).ToList();
+                        List<string> splitStr = sendMessage.Split((char)2).ToList();
                         splitStr.RemoveAt(0);
+                        for (int i = 0; i < splitStr.Count; i++)
+                        {
+                            if (splitStr[i].Contains((char)3))
+                            {
+                                splitStr[i] = splitStr[i].Replace(((char)3).ToString(), string.Empty);
+                            }
+                        }
                         OnReceive?.Invoke(splitStr.ToList());
                     }
 
@@ -590,8 +597,15 @@ namespace FZ4P
                 else if (sMessage[sMessage.Length - 1] == (char)3)
                 {
                     sendMessage += sMessage;
-                    List<string> splitStr = sendMessage.Split((char)3).ToList();
+                    List<string> splitStr = sendMessage.Split((char)2).ToList();
                     splitStr.RemoveAt(0);
+                    for (int i = 0; i < splitStr.Count; i++)
+                    {
+                        if (splitStr[i].Contains((char)3))
+                        {
+                            splitStr[i] = splitStr[i].Replace(((char)3).ToString(), string.Empty);
+                        }
+                    }
                     OnReceive?.Invoke(splitStr.ToList());
                 }
                 else { sendMessage += sMessage; }
