@@ -272,22 +272,22 @@ namespace FZ4P
                 if (id == 1)
                 {
                     byte[] datas = { left_side[0], bufferH, bufferL[0] };
-                    DLNi2c[ch].Write(lDACaddr, datas); // diolan(0,1기준) 1번에서  LED control
+                    lock (I2cLock) DLNi2c[ch].Write(lDACaddr, datas); // diolan(0,1기준) 1번에서  LED control
                 }
                 else if (id == 2)
                 {
                     byte[] datas = { left_center[0], bufferH, bufferL[0] };
-                    DLNi2c[ch].Write(lDACaddr, datas); // diolan(0,1기준) 1번에서  LED control
+                    lock (I2cLock) DLNi2c[ch].Write(lDACaddr, datas); // diolan(0,1기준) 1번에서  LED control
                 }
                 else if (id == 3)
                 {
                     byte[] datas = { right_side[0], bufferH, bufferL[0] };
-                    DLNi2c[ch].Write(lDACaddr, datas); // diolan(0,1기준) 1번에서  LED control
+                    lock (I2cLock) DLNi2c[ch].Write(lDACaddr, datas); // diolan(0,1기준) 1번에서  LED control
                 }
                 else if (id == 4)
                 {
                     byte[] datas = { right_center[0], bufferH, bufferL[0] };
-                    DLNi2c[ch].Write(lDACaddr, datas); // diolan(0,1기준) 1번에서  LED control
+                    lock (I2cLock) DLNi2c[ch].Write(lDACaddr, datas); // diolan(0,1기준) 1번에서  LED control
                 }
                 m_bOccupied = false;
             }
@@ -299,22 +299,22 @@ namespace FZ4P
                     if (id == 1)
                     {
                         byte[] datas = { left_side[0], bufferH, bufferL[0] };
-                        DLNi2c[ch].Write(lDACaddr, datas); // diolan(0,1기준) 1번에서  LED control
+                        lock (I2cLock) DLNi2c[ch].Write(lDACaddr, datas); // diolan(0,1기준) 1번에서  LED control
                     }
                     else if (id == 2)
                     {
                         byte[] datas = { left_center[0], bufferH, bufferL[0] };
-                        DLNi2c[ch].Write(lDACaddr, datas); // diolan(0,1기준) 1번에서  LED control
+                        lock (I2cLock) DLNi2c[ch].Write(lDACaddr, datas); // diolan(0,1기준) 1번에서  LED control
                     }
                     else if (id == 3)
                     {
                         byte[] datas = { right_side[0], bufferH, bufferL[0] };
-                        DLNi2c[ch].Write(lDACaddr, datas); // diolan(0,1기준) 1번에서  LED control
+                        lock (I2cLock) DLNi2c[ch].Write(lDACaddr, datas); // diolan(0,1기준) 1번에서  LED control
                     }
                     else if (id == 4)
                     {
                         byte[] datas = { right_center[0], bufferH, bufferL[0] };
-                        DLNi2c[ch].Write(lDACaddr, datas); // diolan(0,1기준) 1번에서  LED control
+                        lock (I2cLock) DLNi2c[ch].Write(lDACaddr, datas); // diolan(0,1기준) 1번에서  LED control
                     }
                 }
                 catch
@@ -329,14 +329,14 @@ namespace FZ4P
         {
             if (IsOn)
             {
-                DLNgpio[2].Pins[9].Direction = 1;
+                lock (I2cLock) DLNgpio[2].Pins[9].Direction = 1;
                 //   DLNgpio[0].Pins[31].OutputValue = 1;
                 //DLNgpio[port * 2].Pins[9].OutputValue = 1;
                 //DLNgpio[port * 2].Pins[31].OutputValue = 1;
             }
             else
             {
-                DLNgpio[2].Pins[9].Direction = 0;
+                lock (I2cLock) DLNgpio[2].Pins[9].Direction = 0;
                 // DLNgpio[0].Pins[31].OutputValue = 0;
                 //DLNgpio[port * 2].Pins[9].OutputValue = 0;
                 //DLNgpio[port * 2].Pins[31].OutputValue = 0;
@@ -349,8 +349,11 @@ namespace FZ4P
             byte[] buffer2 = new byte[2];
             try
             {
-                if(mode == 0) { DLNi2c[ch + 1].Read(0x40, 1, RegAddr, buffer2); } // AF
-                else DLNi2c[ch + 1].Read(0x41, 1, RegAddr, buffer2);
+                lock(I2cLock)
+                {
+                    if (mode == 0) { DLNi2c[ch + 1].Read(0x40, 1, RegAddr, buffer2); } // AF
+                    else DLNi2c[ch + 1].Read(0x41, 1, RegAddr, buffer2);
+                }
                 res = (buffer2[0] * 256 + buffer2[1]) / 10.0;
             }
             catch

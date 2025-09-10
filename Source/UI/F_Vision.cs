@@ -4351,8 +4351,11 @@ namespace FZ4P
             m__G.mFAL.mCandidateIndex = 0;
             ChangeFiducialMark(0);
 
+            pictureBox2.Image = BitmapConverter.ToBitmap(m__G.oCam[0].LoadCropMat(imgIndex));
 
             string strtmp = NthMeasure(imgIndex, ScanName);
+
+            DrawMarkDetected(true);
 
             strtmp += "\r\n" + imgIndex.ToString() + "\t";
             for (int i = 0; i < 12; i++)
@@ -5042,7 +5045,12 @@ namespace FZ4P
                 m__G.oCam[0].mFAL.BackupFMI();
             }
 
+            pictureBox2.Image = BitmapConverter.ToBitmap(m__G.oCam[0].LoadCropMat(imgIndex));
+
             string strtmp = NthMeasure(imgIndex, ScanName);
+
+            DrawMarkDetected(true);
+
             strtmp += "\r\n" + imgIndex.ToString() + "\t";
             for (int i = 0; i < 12; i++)
             {

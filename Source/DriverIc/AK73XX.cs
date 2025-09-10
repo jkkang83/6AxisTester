@@ -91,8 +91,8 @@ namespace FZ4P
 
                 if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x02, new byte[] { data })) return;
                 Process.AddLog(ch, string.Format("Write Mem : 0x{0:X2} Y1Data : 0x{1:X2}", 0x02, data));
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x02, new byte[] { data })) return;
-                Process.AddLog(ch, string.Format("Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0x02, data));
+                //if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x02, new byte[] { data })) return;
+                //Process.AddLog(ch, string.Format("Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0x02, data));
             }
             else if(name.Contains("ALL"))
             {
@@ -1326,7 +1326,7 @@ namespace FZ4P
             }
             else if (name.Contains("Y2"))
             {
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 0x00, buff)) return false;
+               // if (!Dln.WriteArray(ch, Y2SlaveAddr, 0x00, buff)) return false;
             }
             else if (name.Contains("Y"))
             {

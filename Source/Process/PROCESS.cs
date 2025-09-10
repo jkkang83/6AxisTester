@@ -715,7 +715,9 @@ namespace FZ4P
             }
             else
             {
-                CurrentRun = 1;
+                CurrentRun = 1;              
+                if (IsRun[0]) return;
+                IsRun[0] = true;
                 while (true)
                 {
                     Task tasks = null;
@@ -753,6 +755,7 @@ namespace FZ4P
             catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString());
+                IsRun[port] = false;
             }
         }
         public void Process_Start(int port)
@@ -803,33 +806,33 @@ namespace FZ4P
                 }
 
 
-                while (todoCnt < count)
-                {
-                    string testItem = Condition.ToDoList[todoCnt];
-
-                    Process_Function(port, testItem);
-
-                    if (errMsg[ch] != "" && errMsg[ch + 1] != "")
+                    while (todoCnt < count)
                     {
-                        loopContinue = false;
-                        AddLog(ch, errMsg[ch]);
-                        AddLog(ch + 1, errMsg[ch + 1]);
-                    }
-                    if (SuddenStop)
-                    {
-                        loopContinue = false;
-                        errMsg[ch] = errMsg[ch + 1] = "SuddenStop !";
-                        AddLog(ch, errMsg[ch]);
-                        AddLog(ch + 1, errMsg[ch + 1]);
-                    }
+                        string testItem = Condition.ToDoList[todoCnt];
 
-                    if (!loopContinue) break;
-                    else todoCnt++;
-                    Thread.Sleep(100);
-                }
-                LEDs_All_On(port, false);
+                        Process_Function(port, testItem);
 
-                double ellipse = (double)sw.ElapsedMilliseconds / 1000;
+                        if (errMsg[ch] != "" && errMsg[ch + 1] != "")
+                        {
+                            loopContinue = false;
+                            AddLog(ch, errMsg[ch]);
+                            AddLog(ch + 1, errMsg[ch + 1]);
+                        }
+                        if (SuddenStop)
+                        {
+                            loopContinue = false;
+                            errMsg[ch] = errMsg[ch + 1] = "SuddenStop !";
+                            AddLog(ch, errMsg[ch]);
+                            AddLog(ch + 1, errMsg[ch + 1]);
+                        }
+
+                        if (!loopContinue) break;
+                        else todoCnt++;
+                        Thread.Sleep(100);
+                    }
+                    LEDs_All_On(port, false);
+
+                    double ellipse = (double)sw.ElapsedMilliseconds / 1000;
                 sw.Stop();
 
                 Spec.LastSampleNum++;
