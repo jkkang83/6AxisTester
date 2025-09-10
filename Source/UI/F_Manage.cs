@@ -26,7 +26,7 @@ namespace FZ4P
         public CurrentPath Current { get { return STATIC.Rcp.Current; } }
         public Process Process { get { return STATIC.Process; } }
 
-        public static int bestpos;
+   
 
         public F_Manage()
         {
@@ -587,17 +587,7 @@ namespace FZ4P
         }
 
      
-        private void button3_Click_1(object sender, EventArgs e)
-        {
-
-            STATIC.DrvIC.OISOn(0, "AF", true);
-            STATIC.DrvIC.Move(0, "AF", bestpos);
-
-            STATIC.DrvIC.Move(0, "X", 2048);
-            STATIC.DrvIC.Move(0, "Y", 2048);
-            STATIC.DrvIC.OISOn(0, "X", true);
-            STATIC.DrvIC.OISOn(0, "Y", true);
-        }
+   
         public byte[] sDataBuff = null;
         public int RunNum = 1;
         public string CheckResultFolder()

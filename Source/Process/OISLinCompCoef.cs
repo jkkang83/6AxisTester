@@ -95,7 +95,7 @@ namespace FZ4P
 
 
 
-        int LinCompMain(float[] targPosi, float[] lensPosi, int numData, int pVt, int nVt, int ignInf, int ignMac, ref int[] linCoef, ref float resError)
+        public int LinCompMain(float[] targPosi, float[] lensPosi, int numData, int pVt, int nVt, int ignInf, int ignMac, ref int[] linCoef, ref float resError)
         {
             // Initialize output data
             for (int i = 0; i < NUM_COEF; i++) { linCoef[i] = 0; }

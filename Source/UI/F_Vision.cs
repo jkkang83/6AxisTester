@@ -4542,6 +4542,27 @@ namespace FZ4P
                 result.cy2[0] = result.cy[0] - result.tz[0] * mTZtoY1Y2;
             }
 
+            if (Option.XDirReverse)
+            {
+                result.cx[0] *= -1;
+                result.tx[0] *= -1;
+            }
+                
+            if (Option.YDirReverse)
+            {
+                result.cy[0] *= -1;
+                result.cy1[0] *= -1;
+                result.cy2[0] *= -1;
+                result.ty[0] *= -1;
+            }
+                
+            if(Option.AFDirReverse)
+            {
+                result.cz[0] *= -1;
+                result.tz[0] *= -1;
+            }
+               
+
             return result;
         }
         private void radioButton10Step_CheckedChanged(object sender, EventArgs e)

@@ -1354,12 +1354,12 @@ namespace FZ4P
             }
             else if (name.Contains("Y2"))
             {
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 0x00, buff)) return false;
+               // if (!Dln.WriteArray(ch, Y2SlaveAddr, 0x00, buff)) return false;
             }
             else if (name.Contains("Y"))
             {
                 if (!Dln.WriteArray(ch, Y1SlaveAddr, 0x00, buff)) return false;
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 0x00, buff)) return false;
+             //  if (!Dln.WriteArray(ch, Y2SlaveAddr, 0x00, buff)) return false;
             }
             return true;
         }
@@ -1369,7 +1369,7 @@ namespace FZ4P
             if (name.Contains("AF")) addr = AFSlaveAddr;
             else if (name.Contains("X")) addr = XSlaveAddr;
             else if (name.Contains("Y1")) addr = Y1SlaveAddr;
-            else if (name.Contains("Y2")) addr = Y2SlaveAddr;
+         //   else if (name.Contains("Y2")) addr = Y2SlaveAddr;
 
             byte[] data = new byte[2];
             Dln.ReadArray(ch, addr, 0x84, data);
@@ -1380,8 +1380,8 @@ namespace FZ4P
             int addr = 0x00;
             if (name.Contains("AF")) addr = AFSlaveAddr;
             else if (name.Contains("X")) addr = XSlaveAddr;
-            else if (name.Contains("Y1")) addr = Y1SlaveAddr;
-            else if (name.Contains("Y2")) addr = Y2SlaveAddr;
+            else if (name.Contains("Y")) addr = Y1SlaveAddr;
+          //  else if (name.Contains("Y2")) addr = Y2SlaveAddr;
 
             byte[] data = new byte[2];
             Dln.ReadArray(ch, addr, 0x80, data);
