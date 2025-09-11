@@ -41,7 +41,7 @@ namespace FZ4P
             AFSlaveAddr = 0x28;
             XSlaveAddr = 0x70;
             Y1SlaveAddr = 0x30;
-            Y2SlaveAddr = 0x6C;
+            Y2SlaveAddr = 0x00;
             FRA_Addr = 0x14;
         }
         public void OISOn(int ch, string name, bool isOn)
@@ -1406,13 +1406,13 @@ namespace FZ4P
             string axis;
             if (name.Contains("X"))
             {
-                addr = 0x1C;
+                addr = 0xE0;
                 sAddr = XSlaveAddr;
                 axis = "X";
             }
             else if(name.Contains("Y1"))
             {
-                addr = 0x9C;
+                addr = 0x60;
                 sAddr = Y1SlaveAddr;
                 axis = "Y1";
             }
@@ -1424,7 +1424,7 @@ namespace FZ4P
             }
             else if (name.Contains("AF"))
             {
-                addr = 0x18;
+                addr = 0x50;
                 sAddr = AFSlaveAddr;
                 axis = "AF";
             }

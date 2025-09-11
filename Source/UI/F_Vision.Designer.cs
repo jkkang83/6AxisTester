@@ -2621,6 +2621,7 @@
             // AFRadio
             // 
             this.AFRadio.AutoSize = true;
+            this.AFRadio.Checked = true;
             this.AFRadio.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.AFRadio.ForeColor = System.Drawing.Color.White;
             this.AFRadio.Location = new System.Drawing.Point(8, 16);

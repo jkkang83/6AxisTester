@@ -466,6 +466,7 @@ namespace FZ4P
             //    grbCalibration.Visible = false;
             //    grbVolumetric.Visible = false;
             //}
+            ScanName = "AF Scan";
         }
         public void BufferInit()
         {

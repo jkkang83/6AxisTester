@@ -1328,6 +1328,10 @@ namespace FZ4P
                 ////double ty0 = m__G.oCam[0].mC_pTY[0];
                 ////double tz0 = m__G.oCam[0].mC_pTZ[0];
 
+
+
+
+
                 for (i = 0; i < 5; i++)
                 {
                     sResult.X[0] += m__G.oCam[0].mC_pX[i] * umscale / 5;  //  um

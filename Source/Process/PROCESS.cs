@@ -30,7 +30,7 @@ namespace FZ4P
         public Model Model { get { return STATIC.Rcp.Model; } }
         public CurrentPath Current { get { return STATIC.Rcp.Current; } }
 
-
+        Global m__G = null; 
 
 
         public ObservableCollection<ActItems> ItemList = new ObservableCollection<ActItems>();
@@ -180,6 +180,7 @@ namespace FZ4P
             //ItemList.Add(new ActItems() { Name = "OIS Hall Test", Func = Act_OISHallTest, IsMulti = true });
             //ItemList.Add(new ActItems() { Name = "Hall Decenter", Func = HallDecenter, IsMulti = true });
             //ItemList.Add(new ActItems() { Name = "Servo Decenter", Func = ServoDecenter, IsMulti = true });
+            m__G = Global.GetInstance();
         }
         public void ShowDataResults(int ch, string key)
         {
@@ -768,6 +769,7 @@ namespace FZ4P
         {
             try
             {
+                m__G.oCam[port].ResetmCpXY();
                 int ch = port * 2;
                 int count = Condition.ToDoList.Count;
                 if (count == 0)
@@ -812,33 +814,33 @@ namespace FZ4P
                 }
 
 
-                    while (todoCnt < count)
+                while (todoCnt < count)
+                {
+                    string testItem = Condition.ToDoList[todoCnt];
+
+                    Process_Function(port, testItem);
+
+                    if (errMsg[ch] != "" && errMsg[ch + 1] != "")
                     {
-                        string testItem = Condition.ToDoList[todoCnt];
-
-                        Process_Function(port, testItem);
-
-                        if (errMsg[ch] != "" && errMsg[ch + 1] != "")
-                        {
-                            loopContinue = false;
-                            AddLog(ch, errMsg[ch]);
-                            AddLog(ch + 1, errMsg[ch + 1]);
-                        }
-                        if (SuddenStop)
-                        {
-                            loopContinue = false;
-                            errMsg[ch] = errMsg[ch + 1] = "SuddenStop !";
-                            AddLog(ch, errMsg[ch]);
-                            AddLog(ch + 1, errMsg[ch + 1]);
-                        }
-
-                        if (!loopContinue) break;
-                        else todoCnt++;
-                        Thread.Sleep(100);
+                        loopContinue = false;
+                        AddLog(ch, errMsg[ch]);
+                        AddLog(ch + 1, errMsg[ch + 1]);
                     }
-                    LEDs_All_On(port, false);
+                    if (SuddenStop)
+                    {
+                        loopContinue = false;
+                        errMsg[ch] = errMsg[ch + 1] = "SuddenStop !";
+                        AddLog(ch, errMsg[ch]);
+                        AddLog(ch + 1, errMsg[ch + 1]);
+                    }
 
-                    double ellipse = (double)sw.ElapsedMilliseconds / 1000;
+                    if (!loopContinue) break;
+                    else todoCnt++;
+                    Thread.Sleep(100);
+                }
+                LEDs_All_On(port, false);
+
+                double ellipse = (double)sw.ElapsedMilliseconds / 1000;
                 sw.Stop();
 
                 Spec.LastSampleNum++;
