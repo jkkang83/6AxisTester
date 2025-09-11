@@ -12432,14 +12432,33 @@ private void button15_Click(object sender, EventArgs e)
             sFiducialMark[] lsFM = allList.ToArray();
             writer.Serialize(file, lsFM);
             file.Close();
-            //MessageBox.Show("Saved");
+
             if (XMLfilename != "")
+            {
+                // LastFMI File
+                string preFMIFile = mLastFMIfile;
                 mLastFMIfile = XMLfilename;
 
-            StreamWriter wr = new StreamWriter(RootPath + "LastFMIfile.txt");
-            wr.WriteLine(mLastFMIfile);
-            wr.Close();
-            //MessageBox.Show("SaveFiducialMark() " + mLastFMIfile);
+                string lastFMIFilePathFile = RootPath + "LastFMIfile.txt";
+
+                using (StreamWriter wr = new StreamWriter(lastFMIFilePathFile))
+                {
+                    wr.WriteLine(mLastFMIfile);
+                }
+
+                // LastFMIFile 변경 기록 (시각, oldFileName, newFileName)
+                string lastFMIFileHistoryFile = RootPath + "LastFMIfileHistory.csv";
+                bool isHistoryFileExist = File.Exists(lastFMIFileHistoryFile);
+
+                using (StreamWriter wr = new StreamWriter(lastFMIFileHistoryFile, true))
+                {
+                    if (!isHistoryFileExist)
+                    {
+                        wr.WriteLine("Time,Old File Name,Last File Name");
+                    }
+                    wr.WriteLine($"{DateTime.Now},{preFMIFile},{mLastFMIfile}");
+                }
+            }
         }
 
         public void SetMarkNorm(sFiducialMark[] lFidMarkSide)
@@ -12757,10 +12776,30 @@ private void button15_Click(object sender, EventArgs e)
                 return 0;
 
 
-            StreamWriter wr = new StreamWriter(RootPath + "LastFMIfile.txt");
-            //MessageBox.Show("LoadFMIFile() 2 : " + mLastFMIfile);
-            wr.WriteLine(mLastFMIfile);
-            wr.Close();
+            // LastFMI File
+            string lastFMIFilePathFile = RootPath + "LastFMIfile.txt";
+            string preFMIFile = "";
+            using (StreamReader reader = new StreamReader(lastFMIFilePathFile))
+            {
+                preFMIFile = reader.ReadLine();
+            }
+
+            using (StreamWriter wr = new StreamWriter(lastFMIFilePathFile))
+            {
+                wr.WriteLine(mLastFMIfile);
+            }
+
+            // LastFMIFile 변경 기록 (시각, oldFileName, newFileName)
+            string lastFMIFileHistoryFile = RootPath + "LastFMIfileHistory.csv";
+            bool isHistoryFileExist = File.Exists(lastFMIFileHistoryFile);
+            using (StreamWriter wr = new StreamWriter(lastFMIFileHistoryFile, true))
+            {
+                if (!isHistoryFileExist)
+                {
+                    wr.WriteLine("Time,Old File Name,Last File Name");
+                }
+                wr.WriteLine($"{DateTime.Now},{preFMIFile},{mLastFMIfile}");
+            }
 
             mFidMarkSide = new List<sFiducialMark>();
             mFidMarkTop = new List<sFiducialMark>();

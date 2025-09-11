@@ -20,15 +20,44 @@ namespace FZ4P
         public Spec Spec { get; set; }
         public Model Model { get; set; }
         public Option Option { get; set; }
+        public List<PassFail> PassFails { get; set; }
+        public TotalYield yield { get; set; }
         public Recipe()
         {
             Current = new CurrentPath();
+            if (File.Exists(STATIC.CurrentPath))
+                Current = DataIO.DeserializeXMLFileToObject<CurrentPath>(STATIC.CurrentPath);
+
+            if (!Directory.Exists(STATIC.RootDir)) Directory.CreateDirectory(STATIC.RootDir);
+            if (!Directory.Exists(STATIC.DataDir)) Directory.CreateDirectory(STATIC.DataDir);
+            if (!Directory.Exists(STATIC.RecipeDir)) Directory.CreateDirectory(STATIC.RecipeDir);
+            if (!Directory.Exists(STATIC.SpecDir)) Directory.CreateDirectory(STATIC.SpecDir);
+            //if (!Directory.Exists(STATIC.FWDir)) Directory.CreateDirectory(STATIC.FWDir);
+            //if (!Directory.Exists(STATIC.BLDir)) Directory.CreateDirectory(STATIC.BLDir);
+
 
             Condition = new Condition();
-            Condition.Init(Current.ConditionName, "Recipe\\");
+            if (File.Exists(STATIC.RecipeDir + Current.ConditionName))
+                Condition = DataIO.DeserializeXMLFileToObject<Condition>(STATIC.RecipeDir + Current.ConditionName);
 
             Spec = new Spec();
-            Spec.Init(Current.SpecName, "Spec\\");
+            Spec.InitSpecList();
+            if (File.Exists(STATIC.SpecDir + Current.SpecName))
+            {
+                Spec compare = new Spec();
+                compare = DataIO.DeserializeXMLFileToObject<Spec>(STATIC.SpecDir + Current.SpecName);
+                for (int i = 0; i < compare.specList.Count; i++)
+                {
+                    int index = Spec.specList.FindIndex(x => x.DisplayName == compare.specList[i].DisplayName && x.Category == compare.specList[i].Category);
+                    if (index != -1)
+                    {
+                        Spec.specList[index].MinSpec = compare.specList[i].MinSpec;
+                        Spec.specList[index].MaxSpec = compare.specList[i].MaxSpec;
+                        Spec.specList[index].OnOff = compare.specList[i].OnOff;
+                        Spec.specList[index].FailCnt = compare.specList[i].FailCnt;
+                    }
+                }
+            }
 
             AfPidSet = new AFPidSet();
             AfPidSet.Init(Current.AFPidPath, "PID\\");
@@ -40,10 +69,22 @@ namespace FZ4P
             CodeScript.Init(Current.CodeScriptPath, "PID\\");
 
             Model = new Model();
-            Option = new Option();
 
-            if (!Directory.Exists(STATIC.RootDir)) Directory.CreateDirectory(STATIC.RootDir);
-            if (!Directory.Exists(STATIC.DataDir)) Directory.CreateDirectory(STATIC.DataDir);
+            Option = new Option();
+            if(File.Exists(STATIC.OptionPath))
+                Option = DataIO.DeserializeXMLFileToObject<Option>(STATIC.OptionPath);
+
+            yield = new TotalYield();
+            if (File.Exists(STATIC.YieldPath))
+                yield = DataIO.DeserializeXMLFileToObject<TotalYield>(STATIC.YieldPath);
+
+
+            PassFails = new List<PassFail>();
+            for (int i = 0; i < 2; i++)
+            {
+                PassFails.Add(new PassFail());
+                for (int j = 0; j < (int)SpecItem.Length; j++) PassFails[i].Results.Add(new ResultItems());
+            }
         }
     }
     public class BaseRecipe
@@ -93,785 +134,248 @@ namespace FZ4P
             }
         }
     }
-    public class Condition : BaseRecipe
+    public class Option
     {
-        public int iDrvAFStep;
-        public int iDrvXStep;
-        public int iDrvYStep;
-        public int iDrvStepIntervalZ;
-        public int iDrvStepIntervalX;
-        public int iDrvStepIntervalY;
 
-        public int iAFDrvCodeMin;
-        public int iAFDrvCodeMax;
-        public int iAFCrossOffsetCntl;
-        public int iAFCrossOffsetX;
-        public int iAFCrossOffsetY;
-        public int iAFPlotRange;
-        public int iAFCodeRange;
-        public int iAFStrokeRange;
-        public int iAFStandbyCode;
-        public int iAFJumpStepCode;
-        public double iAFSettlingCriteria;
-        public int iXDrvCodeMin;
-        public int iXDrvCodeMax;
-        public int iXCrossOffsetCntl;
-        public int iXCrossOffset;
-        public int iXCrossOffsetCntlAf;
-        public int iXCrossOffsetAf;
-        public int iXPlotRange;  
-        public int iXCodeRange;
-        public int iXStrokeRange;
+        [Option("Save Raw Data")] public bool SaveRawData { get; set; }
+        [Option("Screen Capture")] public bool ScreenCapture { get; set; }
+        [Option("Fixed Center")] public bool FixedCenter { get; set; }
+        [Option("Write Result to DriverIC")] public bool WriteResultToDriverIC { get; set; }
+        [Option("Safety Sensor Enable")] public bool SafeSensor { get; set; }
+        [Option("AF Dir Reverse")] public bool AFDirReverse { get; set; }
+        [Option("X Dir Reverse")] public bool XDirReverse { get; set; }
+        [Option("Y Dir Reverse")] public bool YDirReverse { get; set; }
+        [Option("XY Pos Reverse")] public bool XYPosReverse { get; set; }
 
-        public int iYDrvCodeMin;
-        public int iYDrvCodeMax;
-        public int iY2DrvCodeMin;
-        public int iY2DrvCodeMax;
-        public int iYCrossOffsetCntl;
-        public int iYCrossOffset;
-        public int iYCrossOffsetCntlAf;
-        public int iYCrossOffsetAf;
-        public int iYPlotRange;   
-        public int iYCodeRange;
-        public int iYStrokeRange;
 
-        public int iMCrossOffsetCntlAf;
-        public int iMCrossOffsetAf;
+    }
+    public class Condition
+    {
+        [Condition("ToDoList", "", "", "", "")] public List<string> ToDoList { get; set; } = new List<string>();
+        [Condition("Common", "Drv AF Step", "", "", "code")] public int iDrvAFStep { get; set; } = 40;
+        [Condition("Common", "Drv X Step", "", "", "code")] public int iDrvXStep { get; set; } = 400;
+        [Condition("Common", "Drv Y Step", "", "", "code")] public int iDrvYStep { get; set; } = 400;
+        [Condition("Common", "Drv Step Interval AF", "", "", "msec")] public int iDrvStepIntervalZ { get; set; } = 40;
+        [Condition("Common", "Drv Step interval X", "", "", "msec")] public int iDrvStepIntervalX { get; set; } = 40;
+        [Condition("Common", "Drv step Interval Y", "", "", "msec")] public int iDrvStepIntervalY { get; set; } = 40;
+     
+        [Condition("AF", "Drv Code Min", "", "", "code")] public int iAFDrvCodeMin { get; set; } = 8;
+        [Condition("AF", "Drv Code Max", "", "", "code")] public int iAFDrvCodeMax { get; set; } = 4088;
+        [Condition("AF", "Cross Axis Offset X", "", "", "code")] public int iAFCrossOffsetX { get; set; } = 2048;
+        [Condition("AF", "Cross Axis Offset Y", "", "", "code")] public int iAFCrossOffsetY { get; set; } = 2048;
+        [Condition("AF", "Plot Range", "", "", "code")] public int iAFPlotRange { get; set; } = 2048;
+        [Condition("AF", "Code Range", "", "", "code")] public int iAFCodeRange { get; set; } = 2048;
+        [Condition("AF", "Stroke Range", "", "", "um")] public int iAFStrokeRange { get; set; } = 500;
+        [Condition("AF", "Standby Code", "", "", "code")] public int iAFStandbyCode { get; set; } = 8;
+        [Condition("AF", "Jump Step Code", "", "", "code")] public int iAFJumpStepCode { get; set; } = 2048;
+        [Condition("AF", "Settling Criteria", "", "", "%")] public double iAFSettlingCriteria { get; set; } = 0.05;
 
-        public int HallCrossOffsetCntlAf;
-        public int HallCrossOffsetAf;
-        public int HallCalCntl;
-        public int HallCalMode;
 
-        public int LinSamplingSize;
-        public int LinStart;
-        public int LinEnd;
-        public int LinTargetDelay;
+        [Condition("X", "Drv Code Min", "", "", "code")] public int iXDrvCodeMin { get; set; } = 8;
+        [Condition("X", "Drv Code Max", "", "", "code")] public int iXDrvCodeMax { get; set; } = 4088;
+        [Condition("X", "Cross Axis Offset", "", "", "code")] public int iXCrossOffset { get; set; } = 2048;
+        [Condition("X", "Cross Axis Offset AF", "", "", "code")] public int iXCrossOffsetAf { get; set; } = 2048;
+        [Condition("X", "Plot Range", "", "", "code")] public int iXPlotRange { get; set; } =  2048;
+        [Condition("X", "Code Range", "", "", "code")] public int iXCodeRange { get; set; } = 2048;
+        [Condition("X", "stroke Range", "", "", "um")] public int iXStrokeRange { get; set; } = 500;
 
-        public int iXEPACutBottom;
-        public int iXEPACutTop;
-        public int iY1EPACutBottom;
-        public int iY1EPACutTop;
-        public int iY2EPACutBottom;
-        public int iY2EPACutTop;
+        [Condition("Y1", "Drv Code Min", "", "", "code")] public int iYDrvCodeMin { get; set; } = 8;
+        [Condition("Y1", "Drv Code Max", "", "", "code")] public int iYDrvCodeMax { get; set; } = 4088;
+        [Condition("Y2", "Drv Code Min", "", "", "code")] public int iY2DrvCodeMin { get; set; } = 8;
+        [Condition("Y2", "Drv Code Max", "", "", "code")] public int iY2DrvCodeMax { get; set; } = 4088;
 
-        public int iLinearityCntl;
-        public int iXEPAExBottom;
-        public int iXEPAExTop;
-        public int iY1EPAExBottom;
-        public int iY1EPAExTop;
-        public int iY2EPAExBottom;
-        public int iY2EPAExTop;
+        [Condition("Y", "Cross Axis Offset", "", "", "code")] public int iYCrossOffset { get; set; } = 2048;
 
-        public int iFRAloop;
-        public int iFRAstep;
-        public int iFRAdelay;
+        [Condition("Y", "Cross Axis Offset AF", "", "", "code")] public int iYCrossOffsetAf { get; set; } = 2048;
+        [Condition("Y", "Plot Range", "", "", "code")] public int iYPlotRange { get; set; } = 2048;
+        [Condition("Y", "Code Range", "", "", "code")] public int iYCodeRange { get; set; } = 2048;
+        [Condition("Y", "Stroke Range", "", "", "um")] public int iYStrokeRange { get; set; } = 500;
 
-        public int iAFChirpFrom;
-        public int iAFChirpTo;
-        public double iAFAmplitude;
 
-        public int iXChirpFrom;
-        public int iXChirpTo;
-        public double iXAmplitude;
-    
-        public int iYChirpFrom;
-        public int iYChirpTo;
-        public double iYAmplitude;
+        [Condition("PM", "Loop", "", "", "#")] public int iFRAloop { get; set; } = 1;
+        [Condition("PM", "Step", "", "", "Hz")] public int iFRAstep { get; set; } = 5;
+        [Condition("PM", "AF Chirp from", "", "", "Hz")] public int iAFChirpFrom { get; set; } = 250;
+        [Condition("PM", "AF Chirp to", "", "", "Hz")] public int iAFChirpTo { get; set; } = 100;
+        [Condition("PM", "AF Drv Amp", "", "", "mV")] public double iAFAmplitude { get; set; } = 75;
+        [Condition("PM", "X Chirp from", "", "", "Hz")] public int iXChirpFrom { get; set; } = 250;
+        [Condition("PM", "X Chirp to", "", "", "Hz")] public int iXChirpTo { get; set; } = 100;
+        [Condition("PM", "X Drv Amp", "", "", "mV")] public double iXAmplitude { get; set; } = 75;
+        [Condition("PM", "Y Chirp from", "", "", "Hz")] public int iYChirpFrom { get; set; } = 250;
+        [Condition("PM", "Y Chirp to", "", "", "Hz")] public int iYChirpTo { get; set; } = 100;
+        [Condition("PM", "Y Drv Amp", "", "", "mV")] public double iYAmplitude { get; set; } = 75;
 
-        public int iGainLoop;
-        public int iGainStep;
-        public int iGainDelay;
+        [Condition("GM", "Loop", "", "", "#")] public int iGainLoop { get; set; } = 1;
+        [Condition("GM", "Step", "", "", "Hz")] public int iGainStep { get; set; } = 5;
+        [Condition("GM", "X Chirp from", "", "", "Hz")] public int iXGainFrom { get; set; } = 400;
+        [Condition("GM", "X Chirp to", "", "", "Hz")] public int iXGainTo { get; set; } = 100;
+        [Condition("GM", "X Drv Amplitude", "", "", "mV")] public double iXAmplitudeGain { get; set; } = 60;
+        [Condition("GM", "Y Chirp from", "", "", "Hz")] public int iYGainFrom { get; set; } = 250;
+        [Condition("GM", "Y Chirp to", "", "", "Hz")] public int iYGainTo { get; set; } = 100;
+        [Condition("GM", "Y Drv Amplitude", "", "", "mV")] public double iYAmplitudeGain { get; set; } = 60;
 
-        public int iXGainFrom;
-        public int iXGainTo;
-        public int iYGainFrom;
-        public int iYGainTo;
+        [Condition("LG @ 10Hz", "X Amp", "", "", "mV")] public double iLoppgainXAmp { get; set; } = 60;
+        [Condition("LG @ 10Hz", "Y Amp", "", "", "mV")] public double iLoppgainYAmp { get; set; } = 60;
 
-        public double iFRAXgainTH2;
-        public double iFRAYgainTH2;
-        public double iXAmplitudeGain;
-        public double iYAmplitudeGain;
-        public double iLoppgainXAmp;
-        public double iLoppgainYAmp;
+        [Condition("Sine Wave", "SIN THD", "", "", "code")] public int SIN_THD { get; set; } = 150;
+        [Condition("Sine Wave", "SIN CNT ERR", "", "", "cnt")] public int SIN_CNT_ERR { get; set; } = 1;
+        [Condition("Sine Wave", "SIN FREQ", "", "", "Hz")] public int SIN_FREQ { get; set; } = 5;
+        [Condition("Sine Wave", "SIN AMP", "", "", "mV")] public int SIN_AMP { get; set; } = 58;
+        [Condition("Sine Wave", "SIN CYCL", "", "", "#")] public int SIN_CYCL { get; set; } = 18;
+        [Condition("Sine Wave", "SIN AXIS", "", "", "0:X 1:Y 2:Both")] public int SIN_AXIS { get; set; } = 0;
 
-        public int SIN_THD;
-        public int SIN_CNT_ERR;
-        public int SIN_FREQ;
-        public int SIN_AMP;
-        public int SIN_CYCL;
-        public int SIN_AXIS;
+        [Condition("Ringing", "RNG THD", "", "", "code")] public int RNG_THD { get; set; } = 20;
+        [Condition("Ringing", "RNG STVT", "", "", "%")] public int RNG_STVT { get; set; } = 90;
+        [Condition("Ringing", "RNG METM", "", "", "msec")] public int RNG_METM { get; set; } = 100;
+        [Condition("Ringing", "RNG WSEC", "", "", "msec")] public int RNG_WSEC { get; set; } = 50;
+        [Condition("Ringing", "RNG AXIS", "", "", "0:X 1:Y 2:Both")] public int RNG_AXIS { get; set; } = 0;
 
-        public int RNG_THD;
-        public int RNG_STVT;
-        public int RNG_METM;
-        public int RNG_WSEC;
-        public int RNG_AXIS;
 
-        public int iOLMaxCode;
-        public int iOLMidCode;
-        public int iOLMinCode;
-        public int iOLAgingLoop;
-        public int iOLAgingDelay;
+        [Condition("I2C", "I2C Clock", "", "", "KHz")] public int iI2Cclock { get; set; } = 400;
 
-        public int iI2Cclock;
-        public int iGrabTimeLimit;
-        public int iMaxWaitAfterLastTrigger;
-        public int iTriggeredGrabImageCount;
-        public int iRawGain;
-        public double iGamma;
-        public int iExposure;
-        public int iEdgeBand;
-        public double LedCurrentL;
-        public double LedCurrentR;
+        [Condition("Others", "Raw Gain", "", "", "30 ~ 512")] public int iRawGain { get; set; } = 35;
+        [Condition("Others", "Gamma", "", "", "0.1 ~ 3.99")] public double iGamma { get; set; } = 0.85;
+        [Condition("Others", "Exposure Time", "", "", "usec")] public int iExposure { get; set; } = 74;
+        [Condition("Others", "Edge Band", "", "", "5,7,9,11")] public int iEdgeBand { get; set; } = 7;
+        [Condition("Others", "LED Current L", "", "", "V")] public double LedCurrentL { get; set; } = 2.7;
+        [Condition("Others", "LED Current R", "", "", "V")] public double LedCurrentR { get; set; } = 2.7;
 
-        public ObservableCollection<string> ToDoList = new ObservableCollection<string>();
-
-        public Condition()
-        {
-            Param.Add(new object[] { "Common", "Drv AF Step", "40", "code", true });
-            Param.Add(new object[] { "Common", "Drv X Step", "400", "code", true });
-            Param.Add(new object[] { "Common", "Drv Y Step", "400", "code", true });
-            Param.Add(new object[] { "Common", "Drv Step Interval AF", "40", "msec", true });
-            Param.Add(new object[] { "Common", "Drv Step Interval X", "40", "msec", true });
-            Param.Add(new object[] { "Common", "Drv Step Interval Y", "40", "msec", true });
-
-            Param.Add(new object[] { "AF", "Drv Code Min", "8", "code", true });
-            Param.Add(new object[] { "AF", "Drv Code Max", "4088", "code", true });
-            Param.Add(new object[] { "AF", "Cross Axis Cntl", "1", "On(1)/Off(0)", true });
-            Param.Add(new object[] { "AF", "Cross Axis Offset X", "2048", "code", true });
-            Param.Add(new object[] { "AF", "Cross Axis Offset Y", "2048", "code", true });
-            Param.Add(new object[] { "AF", "Plot Range", "2048", "code", true });
-            Param.Add(new object[] { "AF", "Code Range", "2048", "code", true });
-            Param.Add(new object[] { "AF", "Stroke Range", "500", "um", true });
-            Param.Add(new object[] { "AF", "Standby Code", "8", "code", true });
-            Param.Add(new object[] { "AF", "Jump Step Code", "2048", "code", true });
-            Param.Add(new object[] { "AF", "Settling Criteria", "0.05", "%", true });
-
-            Param.Add(new object[] { "X", "Drv Code Min", "8", "code", true });
-            Param.Add(new object[] { "X", "Drv Code Max", "4088", "code", true });
-            Param.Add(new object[] { "X", "Cross Axis Cntl", "1", "On(1)/Off(0)", true });
-            Param.Add(new object[] { "X", "Cross Axis Offset", "2048", "code", true });
-            Param.Add(new object[] { "X", "Cross Axis Cntl Af", "1", "On(1)/Off(0)", true });
-            Param.Add(new object[] { "X", "Cross Axis Offset Af", "2048", "code", true });
-            Param.Add(new object[] { "X", "Plot Range", "2048", "code", true });
-            Param.Add(new object[] { "X", "Code Range", "2048", "code", true });
-            Param.Add(new object[] { "X", "Stroke Range", "500", "um", true });
-
-            Param.Add(new object[] { "Y1", "Drv Code Min", "8", "code", true });
-            Param.Add(new object[] { "Y1", "Drv Code Max", "4088", "code", true });
-            Param.Add(new object[] { "Y2", "Drv Code Min", "8", "code", true });
-            Param.Add(new object[] { "Y2", "Drv Code Max", "4088", "code", true });
-            Param.Add(new object[] { "Y", "Cross Axis Cntl", "1", "On(1)/Off(0)", true });
-            Param.Add(new object[] { "Y", "Cross Axis Offset", "2048", "code", true });
-            Param.Add(new object[] { "Y", "Cross Axis Cntl Af", "1", "On(1)/Off(0)", true });
-            Param.Add(new object[] { "Y", "Cross Axis Offset Af", "2048", "code", true });
-            Param.Add(new object[] { "Y", "Plot Range", "2048", "code", true });
-            Param.Add(new object[] { "Y", "Code Range", "2048", "code", true });
-            Param.Add(new object[] { "Y", "Stroke Range", "500", "um", true });
-
-            Param.Add(new object[] { "Matrix", "Cross Axis Cntl Af", "1", "On(1)/Off(0)", true });
-            Param.Add(new object[] { "Matrix", "Cross Axis Offset Af", "2048", "code", true });
-
-            Param.Add(new object[] { "Hall Cal", "Cross Axis Cntl Af", "1", "On(1)/Off(0)", true });
-            Param.Add(new object[] { "Hall Cal", "Cross Axis Offset Af", "2048", "code", true });
-            Param.Add(new object[] { "Hall Cal", "Hall Cal Cntl", "1", "On(1)/Off(0)", true });
-            Param.Add(new object[] { "Hall Cal", "Hall Cal Mode", "0", "doe", true });
-
-            Param.Add(new object[] { "Linearity Comp", "Move Step", "64", "code", true });
-            Param.Add(new object[] { "Linearity Comp", "Start Code", "0", "code", true });
-            Param.Add(new object[] { "Linearity Comp", "End Code", "4095", "code", true });
-            Param.Add(new object[] { "Linearity Comp", "Move Delay", "20", "ms", true });
-
-            Param.Add(new object[] { "EPA", "X EPA Cut Bottom", "300", "code", true });
-            Param.Add(new object[] { "EPA", "X EPA Cut Top", "300", "code", true });
-            Param.Add(new object[] { "EPA", "Y1 EPA Cut Bottom", "300", "code", true });
-            Param.Add(new object[] { "EPA", "Y1 EPA Cut Top", "300", "code", true });
-            Param.Add(new object[] { "EPA", "Y2 EPA Cut Bottom", "300", "code", true });
-            Param.Add(new object[] { "EPA", "Y2 EPA Cut Top", "300", "code", true });
-
-            Param.Add(new object[] { "EPA", "Linearity Cntl", "1", "On(1)/Off(0)", true });
-            Param.Add(new object[] { "EPA", "X Ex EPA Bottom", "300", "code", true });
-            Param.Add(new object[] { "EPA", "X Ex EPA Top", "300", "code", true });
-            Param.Add(new object[] { "EPA", "Y1 Ex EPA Bottom", "300", "code", true });
-            Param.Add(new object[] { "EPA", "Y1 Ex EPA Top", "300", "code", true });
-            Param.Add(new object[] { "EPA", "Y2 Ex EPA Bottom", "300", "code", true });
-            Param.Add(new object[] { "EPA", "Y2 Ex EPA Top", "300", "code", true });
-
-            Param.Add(new object[] { "Phase Margin", "Loop", "1", "#", true });
-            Param.Add(new object[] { "Phase Margin", "Step", "5", "Hz", true });
-            Param.Add(new object[] { "Phase Margin", "Delay", "10", "msec", true });
-            Param.Add(new object[] { "Phase Margin", "AF Chirp from", "250", "Hz", true });
-            Param.Add(new object[] { "Phase Margin", "AF Chirp to", "100", "Hz", true });
-            Param.Add(new object[] { "Phase Margin", "AF Drv Amplitude", "75", "mV", true });
-            Param.Add(new object[] { "Phase Margin", "X Chirp from", "250", "Hz", true });
-            Param.Add(new object[] { "Phase Margin", "X Chirp to", "100", "Hz", true });
-            Param.Add(new object[] { "Phase Margin", "X Drv Amplitude", "75", "mV", true });
-            Param.Add(new object[] { "Phase Margin", "Y Chirp from", "250", "Hz", true });
-            Param.Add(new object[] { "Phase Margin", "Y Chirp to", "100", "Hz", true });
-            Param.Add(new object[] { "Phase Margin", "Y Drv Amplitude", "75", "mV", true });
-
-            Param.Add(new object[] { "Gain Margin", "Loop", "1", "#", true });
-            Param.Add(new object[] { "Gain Margin", "Step", "5", "Hz", true });
-            Param.Add(new object[] { "Gain Margin", "Delay", "10", "msec", true });
-            Param.Add(new object[] { "Gain Margin", "X Chirp from", "400", "Hz", true });
-            Param.Add(new object[] { "Gain Margin", "X Chirp to", "100", "Hz", true });
-            Param.Add(new object[] { "Gain Margin", "X Drv Amplitude", "60", "mV", true });
-            Param.Add(new object[] { "Gain Margin", "Y Chirp from", "400", "Hz", true });
-            Param.Add(new object[] { "Gain Margin", "Y Chirp to", "100", "Hz", true });
-            Param.Add(new object[] { "Gain Margin", "Y Drv Amplitude", "60", "mV", true });
-
-            Param.Add(new object[] { "LG @ 10Hz", "X Amp", "60", "mV", true });
-            Param.Add(new object[] { "LG @ 10Hz", "Y Amp", "60", "mV", true });
-
-            Param.Add(new object[] { "Sine Wave", "SIN THD", "150", "code", true });
-            Param.Add(new object[] { "Sine Wave", "SIN CNT ERR", "1", "cnt", true });
-            Param.Add(new object[] { "Sine Wave", "SIN FREQ", "5", "Hz", true });
-            Param.Add(new object[] { "Sine Wave", "SIN AMP", "58", "mV", true });
-            Param.Add(new object[] { "Sine Wave", "SIN CYCL", "18", "#", true });
-            Param.Add(new object[] { "Sine Wave", "SIN AXIS", "0", "0:X 1:Y 2:Both", true });
-
-            Param.Add(new object[] { "Ringing", "RNG THD", "20", "code", true });
-            Param.Add(new object[] { "Ringing", "RNG STVT", "90", "%", true });
-            Param.Add(new object[] { "Ringing", "RNG METM", "100", "msec", true });
-            Param.Add(new object[] { "Ringing", "RNG WSEC", "50", "msec", true });
-            Param.Add(new object[] { "Ringing", "RNG AXIS", "0", "0:X 1:Y 2:Both", true });
-
-            Param.Add(new object[] { "Aging OpenLoop", "MaxCode", "1023", "Code", true });
-            Param.Add(new object[] { "Aging OpenLoop", "MidCode", "512", "Code", true });
-            Param.Add(new object[] { "Aging OpenLoop", "MinCode", "0", "Code", true });
-            Param.Add(new object[] { "Aging OpenLoop", "Loop Count", "1", "cnt", true });
-            Param.Add(new object[] { "Aging OpenLoop", "Delay", "60", "msec", true });
-
-            Param.Add(new object[] { "I2C", "I2C Clock", "400", "KHz", true });
-            Param.Add(new object[] { "Others", "Grab Time Limit", "10", "sec", true });
-            Param.Add(new object[] { "Others", "Max Wait after Last Trigger", "1000", "msec", true });
-            Param.Add(new object[] { "Others", "Triggered Grab Image Count", "10000", "#", true });
-            Param.Add(new object[] { "Others", "Raw Gain", "35", "30~512", true });
-            Param.Add(new object[] { "Others", "Gamma", "0.85", "0.1~3.99", true });
-            Param.Add(new object[] { "Others", "ExposureTime", "74", "usec", true });
-            Param.Add(new object[] { "Others", "Edge Band","7","5,7,9,11", true });
-            Param.Add(new object[] { "Others", "LEDCurrentL", "2.7", "V", true });
-            Param.Add(new object[] { "Others", "LEDCurrentR", "2.7", "V", true });
-        }
-        public override void Save(string filePath = "")
-        {
-            if (filePath == null) return;
-            if (filePath != "") FilePath = filePath;
-            StreamWriter sw = new StreamWriter(FilePath);
-
-            string data = "";
-            for (int i = 0; i < ToDoList.Count; i++)
-            {
-                data += string.Format("{0}\t", ToDoList[i]);
-            }
-            if (data != "") data = data.Remove(data.Length - 1);
-            sw.WriteLine(data);
-
-            for (int i = 0; i < Param.Count; i++)
-            {
-                data = string.Format("{0}\t{1}", Param[i][1], Param[i][2]);
-                sw.WriteLine(data);
-            }
-            sw.Close();
-
-            bChange = false;
-
-            Read();
-        }
-        public override void Read(string filePath = "")
-        {
-            if (filePath == null) return;
-            if (filePath != "")
-            {
-                FilePath = filePath;
-                CurrentName = Path.GetFileName(FilePath);
-            }
-            StreamReader sr = new StreamReader(FilePath);
-
-            ReadArry = sr.ReadToEnd().Split('\r');
-            ToDoList.Clear();
-
-            string[] actionArry = ReadArry[0].Split('\t');
-            for (int i = 0; i < actionArry.Length; i++)
-            {
-                if (actionArry[i] != "") ToDoList.Add(actionArry[i]);
-            }
-
-            int Paramindex = 0;
-
-            for (int i = 1; i < ReadArry.Length; i++)
-            {
-                string[] arr = ReadArry[i].Split('\t');
-                for (int j = Paramindex; j < Param.Count; j++)
-                {
-                    arr[0] = arr[0].Trim();
-                    if (arr[0] == Param[j][1].ToString().Trim())
-                    {
-                        Param[j][2] = arr[1];
-                        Paramindex = j + 1;
-                        break;
-                    }
-                    bChange = true;
-                }
-
-            }
-
-            if(Param.Count != ReadArry.Length - 2) bChange = true;
-            
-            sr.Close();
-            SetParam();
-        }
-        public override void SetParam()
-        {
-            int index = 0;
-            iDrvAFStep = Convert.ToInt32(Param[index++][2]);
-            iDrvXStep = Convert.ToInt32(Param[index++][2]);
-            iDrvYStep = Convert.ToInt32(Param[index++][2]);
-            iDrvStepIntervalZ = Convert.ToInt32(Param[index++][2]);
-            iDrvStepIntervalX = Convert.ToInt32(Param[index++][2]);
-            iDrvStepIntervalY = Convert.ToInt32(Param[index++][2]);
-
-            iAFDrvCodeMin = Convert.ToInt32(Param[index++][2]);
-            iAFDrvCodeMax = Convert.ToInt32(Param[index++][2]);
-            iAFCrossOffsetCntl = Convert.ToInt32(Param[index++][2]);
-            iAFCrossOffsetX = Convert.ToInt32(Param[index++][2]);
-            iAFCrossOffsetY = Convert.ToInt32(Param[index++][2]);
-            iAFPlotRange = Convert.ToInt32(Param[index++][2]);
-            iAFCodeRange = Convert.ToInt32(Param[index++][2]);
-            iAFStrokeRange = Convert.ToInt32(Param[index++][2]);
-            iAFStandbyCode = Convert.ToInt32(Param[index++][2]);
-            iAFJumpStepCode = Convert.ToInt32(Param[index++][2]);
-            iAFSettlingCriteria = Convert.ToDouble(Param[index++][2]);
-
-            iXDrvCodeMin = Convert.ToInt32(Param[index++][2]);
-            iXDrvCodeMax = Convert.ToInt32(Param[index++][2]);
-            iXCrossOffsetCntl = Convert.ToInt32(Param[index++][2]);
-            iXCrossOffset = Convert.ToInt32(Param[index++][2]);
-            iXCrossOffsetCntlAf = Convert.ToInt32(Param[index++][2]);
-            iXCrossOffsetAf = Convert.ToInt32(Param[index++][2]);
-            iXPlotRange = Convert.ToInt32(Param[index++][2]);
-            iXCodeRange = Convert.ToInt32(Param[index++][2]);
-            iXStrokeRange = Convert.ToInt32(Param[index++][2]);
-
-            iYDrvCodeMin = Convert.ToInt32(Param[index++][2]);
-            iYDrvCodeMax = Convert.ToInt32(Param[index++][2]);
-            iY2DrvCodeMin = Convert.ToInt32(Param[index++][2]);
-            iY2DrvCodeMax = Convert.ToInt32(Param[index++][2]);
-            iYCrossOffsetCntl = Convert.ToInt32(Param[index++][2]);
-            iYCrossOffset = Convert.ToInt32(Param[index++][2]);
-            iYCrossOffsetCntlAf = Convert.ToInt32(Param[index++][2]);
-            iYCrossOffsetAf = Convert.ToInt32(Param[index++][2]);
-            iYPlotRange = Convert.ToInt32(Param[index++][2]);
-            iYCodeRange = Convert.ToInt32(Param[index++][2]);
-            iYStrokeRange = Convert.ToInt32(Param[index++][2]);
-            iMCrossOffsetCntlAf = Convert.ToInt32(Param[index++][2]);
-            iMCrossOffsetAf = Convert.ToInt32(Param[index++][2]);
-            HallCrossOffsetCntlAf = Convert.ToInt32(Param[index++][2]);
-            HallCrossOffsetAf = Convert.ToInt32(Param[index++][2]);
-            HallCalCntl = Convert.ToInt32(Param[index++][2]);
-            HallCalMode = Convert.ToInt32(Param[index++][2]);
-
-            LinSamplingSize = Convert.ToInt32(Param[index++][2]);
-            LinStart = Convert.ToInt32(Param[index++][2]);
-            LinEnd = Convert.ToInt32(Param[index++][2]);
-            LinTargetDelay = Convert.ToInt32(Param[index++][2]);
-
-            iXEPACutBottom = Convert.ToInt32(Param[index++][2]);
-            iXEPACutTop = Convert.ToInt32(Param[index++][2]);
-            iY1EPACutBottom = Convert.ToInt32(Param[index++][2]);
-            iY1EPACutTop = Convert.ToInt32(Param[index++][2]);
-            iY2EPACutBottom = Convert.ToInt32(Param[index++][2]);
-            iY2EPACutTop = Convert.ToInt32(Param[index++][2]);
-
-            iLinearityCntl = Convert.ToInt32(Param[index++][2]);
-            iXEPAExBottom = Convert.ToInt32(Param[index++][2]);
-            iXEPAExTop = Convert.ToInt32(Param[index++][2]);
-            iY1EPAExBottom = Convert.ToInt32(Param[index++][2]);
-            iY1EPAExTop = Convert.ToInt32(Param[index++][2]);
-            iY2EPAExBottom = Convert.ToInt32(Param[index++][2]);
-            iY2EPAExTop = Convert.ToInt32(Param[index++][2]);
-
-            iFRAloop = Convert.ToInt32(Param[index++][2]);
-            iFRAstep = Convert.ToInt32(Param[index++][2]);
-            iFRAdelay = Convert.ToInt32(Param[index++][2]);
-
-            iAFChirpFrom = Convert.ToInt32(Param[index++][2]);
-            iAFChirpTo = Convert.ToInt32(Param[index++][2]);
-            iAFAmplitude = Convert.ToDouble(Param[index++][2]);
-
-            iXChirpFrom = Convert.ToInt32(Param[index++][2]);
-            iXChirpTo = Convert.ToInt32(Param[index++][2]);
-            iXAmplitude = Convert.ToDouble(Param[index++][2]);
-            iYChirpFrom = Convert.ToInt32(Param[index++][2]);
-            iYChirpTo = Convert.ToInt32(Param[index++][2]);
-            iYAmplitude = Convert.ToDouble(Param[index++][2]);
-
-            iGainLoop = Convert.ToInt32(Param[index++][2]);
-            iGainStep = Convert.ToInt32(Param[index++][2]);
-            iGainDelay = Convert.ToInt32(Param[index++][2]);
-            iXGainFrom = Convert.ToInt32(Param[index++][2]);
-            iXGainTo = Convert.ToInt32(Param[index++][2]);
-            iXAmplitudeGain = Convert.ToDouble(Param[index++][2]);
-            iYGainFrom = Convert.ToInt32(Param[index++][2]);
-            iYGainTo = Convert.ToInt32(Param[index++][2]);
-            iYAmplitudeGain = Convert.ToDouble(Param[index++][2]);
-
-            iLoppgainXAmp = Convert.ToDouble(Param[index++][2]);
-            iLoppgainYAmp = Convert.ToDouble(Param[index++][2]);
-
-            SIN_THD = Convert.ToInt32(Param[index++][2]);
-            SIN_CNT_ERR = Convert.ToInt32(Param[index++][2]);
-            SIN_FREQ = Convert.ToInt32(Param[index++][2]);
-            SIN_AMP = Convert.ToInt32(Param[index++][2]);
-            SIN_CYCL = Convert.ToInt32(Param[index++][2]);
-            SIN_AXIS = Convert.ToInt32(Param[index++][2]);
-
-            RNG_THD = Convert.ToInt32(Param[index++][2]);
-            RNG_STVT = Convert.ToInt32(Param[index++][2]);
-            RNG_METM = Convert.ToInt32(Param[index++][2]);
-            RNG_WSEC = Convert.ToInt32(Param[index++][2]);
-            RNG_AXIS = Convert.ToInt32(Param[index++][2]);
-
-            iOLMaxCode = Convert.ToInt32(Param[index++][2]);
-            iOLMidCode = Convert.ToInt32(Param[index++][2]);
-            iOLMinCode = Convert.ToInt32(Param[index++][2]);
-            iOLAgingLoop = Convert.ToInt32(Param[index++][2]);
-            iOLAgingDelay = Convert.ToInt32(Param[index++][2]);
-
-            iI2Cclock = Convert.ToInt32(Param[index++][2]);
-            iGrabTimeLimit = Convert.ToInt32(Param[index++][2]);
-            iMaxWaitAfterLastTrigger = Convert.ToInt32(Param[index++][2]);
-            iTriggeredGrabImageCount = Convert.ToInt32(Param[index++][2]);
-            iRawGain = Convert.ToInt32(Param[index++][2]);
-            iGamma = Convert.ToDouble(Param[index++][2]);
-            iExposure = Convert.ToInt32(Param[index++][2]);
-            iEdgeBand = Convert.ToInt32(Param[index++][2]);
-            LedCurrentL = Convert.ToDouble(Param[index++][2]);
-            LedCurrentR = Convert.ToDouble(Param[index++][2]);
-
-            if (bChange) Save();
-        }
     }
     public enum SpecItem
     {
-        YEILD,
-        OISX_Ratedstroke,
-        OISX_Forwardstroke,
-        OISX_Backwardstroke,
-        OISX_Sensitivity,
-        OISX_Linearity,
-        OISX_Hysteresis,
-        OISX_CenteringCurrent,
-        OISX_MaxCurrent,
-        OISX_CrosstalkY,
-        OISX_CrosstalkZ,
-        OISX_CrosstalkR,
-        OISX_Rolling,
 
-        OISY_Ratedstroke,
-        OISY_Forwardstroke,
-        OISY_Backwardstroke,
-        OISY_Sensitivity,
-        OISY_Linearity,
-        OISY_Hysteresis,
-        OISY_CenteringCurrent,
-        OISY_MaxCurrent,
-        OISY_CrosstalkX,
-        OISY_CrosstalkZ,
-        OISY_CrosstalkR,
-        OISY_Rolling,
+        [Spec("X", "Rated Stroke", "um")] OISX_Ratedstroke,
+        [Spec("X", "Forward Stroke", "um")] OISX_Forwardstroke,
+        [Spec("X", "Backward Stroke", "um")] OISX_Backwardstroke,
+        [Spec("X", "Sensitivity", "um / code")] OISX_Sensitivity,
+        [Spec("X", "Linearity", "um")] OISX_Linearity,
+        [Spec("X", "Hysteresis", "um")] OISX_Hysteresis,
+        [Spec("X", "Centering Current", "mA")] OISX_CenteringCurrent,
+        [Spec("X", "Max Current", "mA")] OISX_MaxCurrent,
+        [Spec("X", "Crosstalk Y", "um")] OISX_CrosstalkY,
+        [Spec("X", "Crosstalk Z", "um")] OISX_CrosstalkZ,
+        [Spec("X", "Crosstalk R", "um")] OISX_CrosstalkR,
+        [Spec("X", "Rolling", "min")] OISX_Rolling,
 
-        AF_Ratedstroke,
-        AF_Forwardstroke,
-        AF_Backwardstroke,
-        AF_Sensitivity,
-        AF_Linearity,
-        AF_Hysteresis,
-        AF_HoldingCurrent,
-        AF_MaxCurrent,
-        AF_CrosstalkX,
-        AF_CrosstalkY,
-        AF_CrosstalkR,
-        AF_Rolling,
-        AF_SettillingTime,
+        [Spec("Y", "Rated Stroke", "um")] OISY_Ratedstroke,
+        [Spec("Y", "Forward Stroke", "um")] OISY_Forwardstroke,
+        [Spec("Y", "Backward Stroke", "um")] OISY_Backwardstroke,
+        [Spec("Y", "Sensitivity", "um / code")] OISY_Sensitivity,
+        [Spec("Y", "Linearity", "um")] OISY_Linearity,
+        [Spec("Y", "Hysteresis", "um")] OISY_Hysteresis,
+        [Spec("Y", "Centering Current", "mA")] OISY_CenteringCurrent,
+        [Spec("Y", "Max Current", "mA")] OISY_MaxCurrent,
+        [Spec("Y", "Crosstalk X", "um")] OISY_CrosstalkX,
+        [Spec("Y", "Crosstalk Z", "um")] OISY_CrosstalkZ,
+        [Spec("Y", "Crosstalk R", "um")] OISY_CrosstalkR,
+        [Spec("Y", "Rolling", "min")] OISY_Rolling,
 
-        FRAX_PMFreq,
-        FRAX_PhaseMargin,
-        FRAX_Gain10Hz,
-        FRAX_GainMargin,
-        SineWaveX_Result,
-        SineWaveX_Count,
-        RingingX_Result,
-        RingingX_Time,
+        [Spec("AF", "Rated Stroke", "um")] AF_Ratedstroke,
+        [Spec("AF", "Forward Stroke", "um")] AF_Forwardstroke,
+        [Spec("AF", "Backward Stroke", "um")] AF_Backwardstroke,
+        [Spec("AF", "Sensitivity", "um / code")] AF_Sensitivity,
+        [Spec("AF", "Linearity", "um")] AF_Linearity,
+        [Spec("AF", "Hysteresis", "um")] AF_Hysteresis,
+        [Spec("AF", "Holding Currnet", "mA")] AF_HoldingCurrent,
+        [Spec("AF", "Max Current", "mA")] AF_MaxCurrent,
+        [Spec("AF", "Crosstalk X", "um")] AF_CrosstalkX,
+        [Spec("AF", "Crosstalk Y", "um")] AF_CrosstalkY,
+        [Spec("AF", "Crosstalk R", "um")] AF_CrosstalkR,
+        [Spec("AF", "Rolling", "min")] AF_Rolling,
+        [Spec("AF", "Settling Time", "ms")] AF_SettillingTime,
 
-        FRAAF_PMFreq,
-        FRAAF_PhaseMargin,
-        FRAAF_Gain10Hz,
-        FRAAF_GainMargin,
-        SineWaveAF_Result,
-        SineWaveAF_Count,
-        RingingAF_Result,
-        RingingAF_Time,
+        [Spec("FRA AF", "PM Frequency", "Hz")] FRAAF_PMFreq,
+        [Spec("FRA AF", "Phase Margin", "deg")] FRAAF_PhaseMargin,
+        [Spec("FRA AF", "Gain @ 10Hz", "db")] FRAAF_Gain10Hz,
+        [Spec("FRA AF", "Gain Margin", "db")] FRAAF_GainMargin,
+        [Spec("FRA AF", "Sinewave Result", "#")] SineWaveAF_Result,
+        [Spec("FRA AF", "Sinewave Count", "#")] SineWaveAF_Count,
+        [Spec("FRA AF", "Ringing Result", "#")] RingingAF_Result,
+        [Spec("FRA AF", "Ringing Time", "#")] RingingAF_Time,
 
-        FRAY1_PMFreq,
-        FRAY1_PhaseMargin,
-        FRAY1_Gain10Hz,
-        FRAY1_GainMargin,
-        SineWaveY1_Result,
-        SineWaveY1_Count,
-        RingingY1_Result,
-        RingingY1_Time,
+        [Spec("FRA X", "PM Frequency", "Hz")] FRAX_PMFreq,
+        [Spec("FRA X", "Phase Margin", "deg")] FRAX_PhaseMargin,
+        [Spec("FRA X", "Gain @ 10Hz", "db")] FRAX_Gain10Hz,
+        [Spec("FRA X", "Gain Margin", "db")] FRAX_GainMargin,
+        [Spec("FRA X", "Sinewave Result", "#")] SineWaveX_Result,
+        [Spec("FRA X", "Sinewave Count", "#")] SineWaveX_Count,
+        [Spec("FRA X", "Ringing Result", "#")] RingingX_Result,
+        [Spec("FRA X", "Ringing Time", "#")] RingingX_Time,
 
-        FRAY2_PMFreq,
-        FRAY2_PhaseMargin,
-        FRAY2_Gain10Hz,
-        FRAY2_GainMargin,
-        SineWaveY2_Result,
-        SineWaveY2_Count,
-        RingingY2_Result,
-        RingingY2_Time,
+        [Spec("FRA Y1", "PM Frequency", "Hz")] FRAY1_PMFreq,
+        [Spec("FRA Y1", "Phase Margin", "deg")] FRAY1_PhaseMargin,
+        [Spec("FRA Y1", "Gain @ 10Hz", "db")] FRAY1_Gain10Hz,
+        [Spec("FRA Y1", "Gain Margin", "db")] FRAY1_GainMargin,
+        [Spec("FRA Y1", "Sinewave Result", "#")] SineWaveY1_Result,
+        [Spec("FRA Y1", "Sinewave Count", "#")] SineWaveY1_Count,
+        [Spec("FRA Y1", "Ringing Result", "#")] RingingY1_Result,
+        [Spec("FRA Y1", "Ringing Time", "#")] RingingY1_Time,
 
-        x_HallDecenter,
-        y_HallDecenter,
-        x_ServoDecenter,
-        y_ServoDecenter,
+        [Spec("FRA Y2", "PM Frequency", "Hz")] FRAY2_PMFreq,
+        [Spec("FRA Y2", "Phase Margin", "deg")] FRAY2_PhaseMargin,
+        [Spec("FRA Y2", "Gain @ 10Hz", "db")] FRAY2_Gain10Hz,
+        [Spec("FRA Y2", "Gain Margin", "db")] FRAY2_GainMargin,
+        [Spec("FRA Y2", "Sinewave Result", "#")] SineWaveY2_Result,
+        [Spec("FRA Y2", "Sinewave Count", "#")] SineWaveY2_Count,
+        [Spec("FRA Y2", "Ringing Result", "#")] RingingY2_Result,
+        [Spec("FRA Y2", "Ringing Time", "#")] RingingY2_Time,
+       
+        [Spec("Servo Decenter", "X Decenter", "#")] x_ServoDecenter,
+        [Spec("Servo Decenter", "Y Decenter", "#")] y_ServoDecenter,
+        Length,
 
     };
-    public class Spec : BaseRecipe
+    public class Spec
     {
-        public class ResultItems
+        public List<SpecArray> specList { get; set; } = new List<SpecArray>();
+        public void InitSpecList()
         {
-            public double Val = 0;
-            public bool bPass = true;
-            public string msg = "";
-        }
-        public class PassFail
-        {
-            public int FirstFailIndex;
-            public string FirstFail;
-            public string TotalFail;
-            public string TotalTime;
-            public List<ResultItems> Results = new List<ResultItems>();
-            public List<double> Output = new List<double>();
-        }
-        public List<PassFail> PassFails = new List<PassFail>();
-        public int LastSampleNum;
-        public int TotlaTested;
-        public int TotlaPassed;
-        public int TotlaFailed;
-        public Spec()
-        {
-            Param.Add(new object[] { "", "Yeild", "0", "0", "0", "0", "0", "0", "0", "0", false });
-            Param.Add(new object[] { "X", "Rated stroke", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "X", "Forward stroke", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "X", "Backward stroke", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "X", "Sensitivity", "-1", "1", "0", "0", "0", "0", "0", "um / code", true });
-            Param.Add(new object[] { "X", "Linearity", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "X", "Hysteresis", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "X", "Centering Current", "0", "120", "0", "0", "0", "0", "0", "mA", true });
-            Param.Add(new object[] { "X", "Max Current", "0", "120", "0", "0", "0", "0", "0", "mA", true });
-            Param.Add(new object[] { "X", "CrosstalkY", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "X", "CrosstalkZ", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "X", "CrosstalkR", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "X", "Rolling", "-1", "1", "0", "0", "0", "0", "0", "min", true });
-
-            Param.Add(new object[] { "Y", "Rated stroke", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "Y", "Forward stroke", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "Y", "Backward stroke", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "Y", "Sensitivity", "-1", "1", "0", "0", "0", "0", "0", "um / code", true });
-            Param.Add(new object[] { "Y", "Linearity", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "Y", "Hysteresis", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "Y", "Centering Current", "0", "120", "0", "0", "0", "0", "0", "mA", true });
-            Param.Add(new object[] { "Y", "Max Current", "0", "120", "0", "0", "0", "0", "0", "mA", true });
-            Param.Add(new object[] { "Y", "CrosstalkX", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "Y", "CrosstalkZ", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "Y", "CrosstalkR", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "Y", "Rolling", "-1", "1", "0", "0", "0", "0", "0", "min", true });
-
-            Param.Add(new object[] { "AF", "Rated stroke", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "AF", "Forward stroke", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "AF", "Backward stroke", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "AF", "Sensitivity", "-1", "1", "0", "0", "0", "0", "0", "um / code", true });
-            Param.Add(new object[] { "AF", "Linearity", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "AF", "Hysteresis", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "AF", "Holding Current", "0", "120", "0", "0", "0", "0", "0", "mA", true });
-            Param.Add(new object[] { "AF", "Max Current", "0", "120", "0", "0", "0", "0", "0", "mA", true });
-            Param.Add(new object[] { "AF", "CrosstalkX", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "AF", "CrosstalkY", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "AF", "CrosstalkR", "-1", "1", "0", "0", "0", "0", "0", "um", true });
-            Param.Add(new object[] { "AF", "Rolling", "-1", "1", "0", "0", "0", "0", "0", "min", true });
-            Param.Add(new object[] { "AF", "Settling Time", "-1", "1", "0", "0", "0", "0", "0", "ms", true });
-
-            Param.Add(new object[] { "FRA AF", "PM Frequency", "-1", "1", "0", "0", "0", "0", "0", "Hz", true });
-            Param.Add(new object[] { "FRA AF", "Phase margin", "-1", "1", "0", "0", "0", "0", "0", "deg", true });
-            Param.Add(new object[] { "FRA AF", "Gain @ 10Hz", "-1", "1", "0", "0", "0", "0", "0", "db", true });
-            Param.Add(new object[] { "FRA AF", "Gain Margin", "-1", "1", "0", "0", "0", "0", "0", "db", true });
-            Param.Add(new object[] { "FRA AF", "Sinewave Result", "-1", "1", "0", "0", "0", "0", "0", "#", true });
-            Param.Add(new object[] { "FRA AF", "Sinewave Count", "-1", "1", "0", "0", "0", "0", "0", "#", true });
-            Param.Add(new object[] { "FRA AF", "Ringing Result", "-1", "1", "0", "0", "0", "0", "0", "#", true });
-            Param.Add(new object[] { "FRA AF", "Ringing Time", "-1", "1", "0", "0", "0", "0", "0", "#", true });
-
-            Param.Add(new object[] { "FRA X", "PM Frequency", "-1", "1", "0", "0", "0", "0", "0", "Hz", true });
-            Param.Add(new object[] { "FRA X", "Phase margin", "-1", "1", "0", "0", "0", "0", "0", "deg", true });
-            Param.Add(new object[] { "FRA X", "Gain @ 10Hz", "-1", "1", "0", "0", "0", "0", "0", "db", true });
-            Param.Add(new object[] { "FRA X", "Gain Margin", "-1", "1", "0", "0", "0", "0", "0", "db", true });
-            Param.Add(new object[] { "FRA X", "Sinewave Result", "-1", "1", "0", "0", "0", "0", "0", "#", true });
-            Param.Add(new object[] { "FRA X", "Sinewave Count", "-1", "1", "0", "0", "0", "0", "0", "#", true });
-            Param.Add(new object[] { "FRA X", "Ringing Result", "-1", "1", "0", "0", "0", "0", "0", "#", true });
-            Param.Add(new object[] { "FRA X", "Ringing Time", "-1", "1", "0", "0", "0", "0", "0", "#", true });
-
-            Param.Add(new object[] { "FRA Y1", "PM Frequency", "-1", "1", "0", "0", "0", "0", "0", "Hz", true });
-            Param.Add(new object[] { "FRA Y1", "Phase margin", "-1", "1", "0", "0", "0", "0", "0", "deg", true });
-            Param.Add(new object[] { "FRA Y1", "Gain @ 10Hz", "-1", "1", "0", "0", "0", "0", "0", "db", true });
-            Param.Add(new object[] { "FRA Y1", "Gain Margin", "-1", "1", "0", "0", "0", "0", "0", "db", true });
-            Param.Add(new object[] { "FRA Y1", "Sinewave Result", "-1", "1", "0", "0", "0", "0", "0", "#", true });
-            Param.Add(new object[] { "FRA Y1", "Sinewave Count", "-1", "1", "0", "0", "0", "0", "0", "#", true });
-            Param.Add(new object[] { "FRA Y1", "Ringing Result", "-1", "1", "0", "0", "0", "0", "0", "#", true });
-            Param.Add(new object[] { "FRA Y1", "Ringing Time", "-1", "1", "0", "0", "0", "0", "0", "#", true });
-
-            Param.Add(new object[] { "FRA Y2", "PM Frequency", "-1", "1", "0", "0", "0", "0", "0", "Hz", true });
-            Param.Add(new object[] { "FRA Y2", "Phase margin", "-1", "1", "0", "0", "0", "0", "0", "deg", true });
-            Param.Add(new object[] { "FRA Y2", "Gain @ 10Hz", "-1", "1", "0", "0", "0", "0", "0", "db", true });
-            Param.Add(new object[] { "FRA Y2", "Gain Margin", "-1", "1", "0", "0", "0", "0", "0", "db", true });
-            Param.Add(new object[] { "FRA Y2", "Sinewave Result", "-1", "1", "0", "0", "0", "0", "0", "#", true });
-            Param.Add(new object[] { "FRA Y2", "Sinewave Count", "-1", "1", "0", "0", "0", "0", "0", "#", true });
-            Param.Add(new object[] { "FRA Y2", "Ringing Result", "-1", "1", "0", "0", "0", "0", "0", "#", true });
-            Param.Add(new object[] { "FRA Y2", "Ringing Time", "-1", "1", "0", "0", "0", "0", "0", "#", true });
-
-            Param.Add(new object[] { "Hall Decenter", "X Decenter", "-1", "1", "0", "0", "0", "0", "0", "#", true });
-            Param.Add(new object[] { "Hall Decenter", "Y Decenter", "-1", "1", "0", "0", "0", "0", "0", "#", true });
-            Param.Add(new object[] { "Servo Decenter", "X Decenter", "-1", "1", "0", "0", "0", "0", "0", "#", true });
-            Param.Add(new object[] { "Servo Decenter", "Y Decenter", "-1", "1", "0", "0", "0", "0", "0", "#", true });
-
-            for (int i = 0; i < 2; i++)
+            specList.Clear();
+            for (int i = 0; i < (int)SpecItem.Length; i++)
             {
-                PassFails.Add(new PassFail());
-                for (int j = 0; j < Param.Count; j++) PassFails[i].Results.Add(new ResultItems());
-                for (int j = 0; j < 100; j++) PassFails[i].Output.Add(new double());
+                SpecItem s = (SpecItem)i;
+                specList.Add(new SpecArray());
+                specList[i].Category = DataIO.GetEnumArttribute<SpecAttribute>(s)?.Category;
+                specList[i].Unit = DataIO.GetEnumArttribute<SpecAttribute>(s)?.Unit;
+                specList[i].DisplayName = DataIO.GetEnumArttribute<SpecAttribute>(s)?.DisplayName;
             }
         }
-        public override void Save(string filePath = "")
-        {
-            if (filePath != "") FilePath = filePath;
-            StreamWriter sw = new StreamWriter(FilePath);
 
-            for (int i = 0; i < Param.Count; i++)
-            {
-                string data;
-                if (i == 0)
-                {
-                    data = string.Format("{0}\t{1}\t{2}\t{3}\t{4}",
-                        Param[i][1],
-                        Param[i][2] = LastSampleNum,
-                        Param[i][3] = TotlaTested,
-                        Param[i][4] = TotlaPassed,
-                        Param[i][5] = TotlaFailed);
-                }
-                else
-                {
-                    data = string.Format("{0}\t{1}\t{2}\t{3}\t{4}", Param[i][1], Param[i][2], Param[i][3], Param[i][8], Param[i][10]);
-                }
-                sw.WriteLine(data);
-            }
-            sw.Close();
-
-            bChange = false;
-
-            Read();
-        }
-        public override void Read(string filePath = "")
-        {
-            if (filePath != "")
-            {
-                FilePath = filePath;
-                CurrentName = Path.GetFileName(FilePath);
-            }
-            StreamReader sr = new StreamReader(FilePath);
-
-            ReadArry = sr.ReadToEnd().Split('\r');
-
-            string[] arry = ReadArry[0].Split('\t');
-
-            LastSampleNum = Convert.ToInt32(arry[1]);
-            TotlaTested = Convert.ToInt32(arry[2]);
-            TotlaPassed = Convert.ToInt32(arry[3]);
-            TotlaFailed = Convert.ToInt32(arry[4]);
-            Param[0][10] = false;
-
-            int Paramindex = 1;
-
-            for (int i = 1; i < ReadArry.Length; i++)
-            {
-                string[] arr = ReadArry[i].Split('\t');
-                for (int j = Paramindex; j < Param.Count; j++)
-                {
-                    arr[0] = arr[0].Trim();
-                    if (arr[0] == Param[j][1].ToString().Trim())
-                    {
-                        Param[Paramindex][2] = arr[1];
-                        Param[Paramindex][3] = arr[2];
-                        Param[Paramindex][8] = arr[3];
-                        Param[Paramindex][10] = arr[4];
-                        Paramindex = j + 1;
-                        break;
-                    }
-                    bChange = true;
-                }
-            }
-
-            sr.Close();
-
-            if (bChange) Save();
-        }
-        public void InitResult(int ch)
-        {
-            PassFails[ch].TotalFail = ""; 
-            PassFails[ch].FirstFail = "";
-            PassFails[ch].FirstFailIndex = 0;
-            for (int i = 0; i < Param.Count; i++)
-            {
-                PassFails[ch].Results[i].Val = 0;
-                PassFails[ch].Results[i].msg = ""; PassFails[ch].Results[i].bPass = true;
-            }
-        }
-        public void SetResult(int ch, int start, int end)
-        {
-            for (int i = start; i < end + 1; i++)
-            {
-                if (!Convert.ToBoolean(Param[i][10])) continue;
-
-                double lmin, lmax;
-                lmin = Convert.ToDouble(Param[i][2]);
-                lmax = Convert.ToDouble(Param[i][3]);
-
-                if (PassFails[ch].Results[i].Val < lmin || PassFails[ch].Results[i].Val > lmax || double.IsNaN(PassFails[ch].Results[i].Val))
-                {
-                    PassFails[ch].Results[i].msg = Param[i][0] + "_" + Param[i][1];
-                    PassFails[ch].Results[i].bPass = false;
-                    PassFails[ch].TotalFail += string.Format("{0}'", i + 1);
-                }
-                else
-                {
-                    PassFails[ch].Results[i].msg = ""; PassFails[ch].Results[i].bPass = true;
-                }
-            }
-            for (int i = start; i < end + 1; i++)
-            {
-                if (!PassFails[ch].Results[i].bPass)
-                {
-                    if (PassFails[ch].FirstFailIndex == 0)
-                    {
-                        PassFails[ch].FirstFailIndex = (i + 1);
-                        PassFails[ch].FirstFail = PassFails[ch].Results[i].msg;
-                    }
-
-                    int failCnt = Convert.ToInt32(Param[i][8]); failCnt++;
-                    Param[i][8] = failCnt;
-                }
-            }
-        }
     }
+
+    public class SpecArray
+    {
+        public double MinSpec { get; set; } = -1;
+        public double MaxSpec { get; set; } = 1;
+        public bool OnOff { get; set; } = true;
+        public string Category { get; set; }
+        public string DisplayName { get; set; }
+        public string Unit { get; set; }
+        public int FailCnt { get; set; }
+    }
+
+    public class TotalYield
+    {
+        public int LastSampleNum { get; set; }
+        public int TotlaTested { get; set; }
+        public int TotlaPassed { get; set; }
+        public int TotlaFailed { get; set; }
+
+    }
+    public class ResultItems
+    {
+        public double Val = 0;
+        public bool bPass = true;
+        public string msg = "";
+    }
+    public class PassFail
+    {
+        public int FirstFailIndex;
+        public string FirstFail;
+        public string TotalFail;
+        public string TotalTime;
+        public List<ResultItems> Results = new List<ResultItems>();
+    }
+
     public class AFPidSet : BaseRecipe
     {
         public AFPidSet()
@@ -1095,68 +599,17 @@ namespace FZ4P
             sr.Close();
         }
     }
-    public class CurrentPath : BaseRecipe
+    public class CurrentPath
     {
-        public List<string> List = new List<string>();
-        public string ConditionName;
-        public string SpecName;
-        public string AFPidPath;
-        public string XPidPath;
-        public string YPidPath;
-        public string CodeScriptPath;
 
-        public CurrentPath()
-        {
-            FilePath = STATIC.RootDir + "CurrentPath.txt";
+        public string ConditionName { get; set; } = "";
+        public string SpecName { get; set; } = "";
+        public string AFPidPath { get; set; } = "DefaultAF.txt";
+        public string XPidPath { get; set; } = "DefaultX.txt";
+        public string YPidPath { get; set; } = "DefaultY.txt";
+        public string CodeScriptPath { get; set; } = "DefaultCodeScript.txt";
 
-            List.Add(ConditionName = "Default.rcp");
-            List.Add(SpecName = "Default.spc");
-            List.Add(AFPidPath = "DefaultAF.txt");
-            List.Add(XPidPath = "DefaultX.txt");
-            List.Add(YPidPath = "DefaultY.txt");
-            List.Add(CodeScriptPath = "DefaultCodeScript.txt");
 
-            Read();
-        }
-        public override void Read(string Path = "")
-        {
-            base.Read();
-
-            if (!File.Exists(FilePath))
-            {
-                STATIC.SetTextLine(FilePath, List);
-            }
-            else
-            {
-                List<string> ReadList = STATIC.GetTextAll(FilePath);
-                if(List.Count != ReadList.Count)
-                {
-                    STATIC.SetTextLine(FilePath, List);
-                }
-                else
-                {
-                    List = ReadList;
-                }
-                int index = 0;
-                ConditionName = List[index++];
-                SpecName = List[index++];
-                AFPidPath = List[index++];
-                XPidPath = List[index++];
-                YPidPath = List[index++];
-                CodeScriptPath = List[index++];
-            }
-        }
-        public override void Save(string Path = "")
-        {
-            List.Clear();
-            List.Add(ConditionName);
-            List.Add(SpecName);
-            List.Add(AFPidPath);
-            List.Add(XPidPath);
-            List.Add(YPidPath);
-            List.Add(CodeScriptPath);
-            STATIC.SetTextLine(FilePath, List);
-        }
     }
     public class Model : BaseRecipe
     {
@@ -1271,86 +724,60 @@ namespace FZ4P
             Changed?.Invoke(null, EventArgs.Empty);
         }
     }
-    public class Option : BaseRecipe
+   
+
+  
+
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+    public sealed class OptionAttribute : Attribute
     {
-        public bool PasswordOn;
-        public bool SaveRawData;
-        public bool ScreenCapture;
-        public bool FixedCenter;
-        public bool SampleCount;
-        public bool WriteResultToDriverIC;
-        public bool SafeSensor;
-        public bool AFDirReverse;
-        public bool XDirReverse;
-        public bool YDirReverse;
-        public bool XYPosReverse;
-
-        public Option()
+        public string DisplayName { get; set; }
+        public OptionAttribute(string des)
         {
-            FilePath = STATIC.RootDir + "OptionState.txt";
-            Param.Add(new object[] { "Password", false });
-            Param.Add(new object[] { "Save Raw Data", false });
-            Param.Add(new object[] { "Save Screen Capture", false });
-            Param.Add(new object[] { "Fixed Center for F / B Stroke", false });
-            Param.Add(new object[] { "Sample Count Enable", false });
-            Param.Add(new object[] { "Write Result To DriverIC", false });
-            Param.Add(new object[] { "Safe Sensor Enable", false });
-            Param.Add(new object[] { "AF Direction Reversal", false });
-            Param.Add(new object[] { "X Direction Reversal", false });
-            Param.Add(new object[] { "Y Direction Reversal", false });
-            Param.Add(new object[] { "XY Position Reversal", false });
-
-            if (!File.Exists(FilePath)) Save();
-
-            Read();
-        }
-        public override void Read(string filePath = "")
-        {
-            StreamReader sr = new StreamReader(FilePath);
-
-            string[] readArry = sr.ReadToEnd().Split('\r');
-
-            int index = 0;
-            if (readArry.Length > index) PasswordOn = SetParam(readArry[index], index++);
-            if (readArry.Length > index) SaveRawData = SetParam(readArry[index], index++);
-            if (readArry.Length > index) ScreenCapture = SetParam(readArry[index], index++);
-            if (readArry.Length > index) FixedCenter = SetParam(readArry[index], index++);
-            if (readArry.Length > index) SampleCount = SetParam(readArry[index], index++);
-            if (readArry.Length > index) WriteResultToDriverIC = SetParam(readArry[index], index++);
-            if (readArry.Length > index) SafeSensor = SetParam(readArry[index], index++);
-            if (readArry.Length > index) AFDirReverse = SetParam(readArry[index], index++);
-            if (readArry.Length > index) XDirReverse = SetParam(readArry[index], index++);
-            if (readArry.Length > index) YDirReverse = SetParam(readArry[index], index++);
-            if (readArry.Length > index) XYPosReverse = SetParam(readArry[index], index++);
-
-            sr.Close();
-        }
-        public override void Save(string filePath = "")
-        {
-            if (filePath != "") FilePath = filePath;
-            StreamWriter sw = new StreamWriter(FilePath);
-
-            for (int i = 0; i < Param.Count; i++)
-            {
-                string data = string.Format("{0}\t{1}", Param[i][0], Param[i][1]);
-                sw.WriteLine(data);
-            }
-            sw.Close();
-
-            Read();
-        }
-        public bool SetParam(string Src, int index)
-        {
-            string[] arry = Src.Split('\t');
-            for (int i = 0; i < arry.Length; i++) arry[i] = arry[i].Trim();
-
-            if (arry[0] == Param[index][0].ToString())
-            {
-                bool ret = Convert.ToBoolean(arry[1]);
-                Param[index][1] = ret;
-                return ret;
-            }
-            return false;
+            DisplayName = des;
         }
     }
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+    public sealed class ConditionAttribute : Attribute
+    {
+        public string Category { get; set; }
+        public string DisplayName { get; set; }
+        public string ToDo1 { get; set; }
+        public string ToDo2 { get; set; }
+        public string Unit { get; set; }
+        public ConditionAttribute(string des, string des2, string des3, string des4, string des5)
+        {
+            Category = des;
+            DisplayName = des2;
+            ToDo1 = des3;
+            ToDo2 = des4;
+            Unit = des5;
+
+        }
+    }
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+    public sealed class SpecAttribute : Attribute
+    {
+        public string Category { get; set; }
+        public string DisplayName { get; set; }
+        public string Unit { get; set; }
+        public SpecAttribute(string des, string des2, string des3)
+        {
+            Category = des;
+            DisplayName = des2;
+            Unit = des3;
+        }
+    }
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+    public sealed class CommonAttribute : Attribute
+    {
+        public string Category { get; set; }
+        public string DisplayName { get; set; }
+        public CommonAttribute(string des, string des2)
+        {
+            Category = des;
+            DisplayName = des2;
+        }
+    }
+
 }

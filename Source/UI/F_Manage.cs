@@ -118,8 +118,8 @@ namespace FZ4P
                 BeginInvoke((MethodInvoker)delegate
                 {
                     //CurrentRunCnt.Text = Process.CurrentRun.ToString();
-                    LastSampleNum.Text = Spec.LastSampleNum.ToString();
-                    NewSampleNumber.Text = (Spec.LastSampleNum + 1).ToString();
+                    LastSampleNum.Text = STATIC.Rcp.yield.LastSampleNum.ToString();
+                    NewSampleNumber.Text = (STATIC.Rcp.yield.LastSampleNum + 1).ToString();
 
                     SafeInitYield();
 
@@ -202,14 +202,17 @@ namespace FZ4P
             p_Result.Controls.Add(Process.ResultDataGrid);
             Process.InitResultData();
             //Process.ResultDataGrid.CellMouseDoubleClick += new DataGridViewCellMouseEventHandler(ResultDataGrid_CellMouseDoubleClick);
-            for (int i = 0; i < Option.Param.Count; i++)
+
+            PropertyDescriptorCollection props = TypeDescriptor.GetProperties(Option);
+
+            for (int i = 0; i < props.Count; i++)
             {
                 int width = 0;
                 int hCal = 40 * i;
 
                 Label Chk = new Label
                 {
-                    Text = Option.Param[i][0].ToString(),
+                    Text = DataIO.GetCustomAttribute<OptionAttribute>(props[i])?.DisplayName,
                     Font = new Font("Calibri", 10, FontStyle.Bold),
                     ForeColor = Color.Black,
                     Location = new Point(6 + width, 50 + hCal),
@@ -217,7 +220,7 @@ namespace FZ4P
                     TextAlign = ContentAlignment.MiddleCenter,
                     BorderStyle = BorderStyle.FixedSingle,
                 };
-                if (Convert.ToBoolean(Option.Param[i][1]))
+                if (Convert.ToBoolean(props[i].GetValue(Option)))
                 {
                     Chk.BackColor = Color.Red;
                 }
@@ -225,8 +228,36 @@ namespace FZ4P
 
                 ModelGroup.Controls.Add(Chk);
             }
-            //MoveToVision();
+           
+        }
+        public void BindingUIModel()
+        {
+            ModelGroup.Controls.Clear();
+            PropertyDescriptorCollection props = TypeDescriptor.GetProperties(Option);
 
+            for (int i = 0; i < props.Count; i++)
+            {
+                int width = 0;
+                int hCal = 40 * i;
+
+                Label Chk = new Label
+                {
+                    Text = DataIO.GetCustomAttribute<OptionAttribute>(props[i])?.DisplayName,
+                    Font = new Font("Calibri", 10, FontStyle.Bold),
+                    ForeColor = Color.Black,
+                    Location = new Point(6 + width, hCal),
+                    Size = new Size(164, 38),
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    BorderStyle = BorderStyle.FixedSingle,
+                };
+                if (Convert.ToBoolean(props[i].GetValue(Option)))
+                {
+                    Chk.BackColor = Color.YellowGreen;
+                }
+                else Chk.BackColor = Color.Transparent;
+
+                ModelGroup.Controls.Add(Chk);
+            }
         }
         private void ResultDataGrid_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
         {
@@ -280,24 +311,24 @@ namespace FZ4P
 
         private void InitYield()
         {
-            LastSampleNum.Text = Spec.LastSampleNum.ToString();
-            NewSampleNumber.Text = (Spec.LastSampleNum + 1).ToString();
+            LastSampleNum.Text = STATIC.Rcp.yield.LastSampleNum.ToString();
+            NewSampleNumber.Text = (STATIC.Rcp.yield.LastSampleNum + 1).ToString();
             List<string> litem = new List<string>();
             List<double> lratio = new List<double>();
 
-            for (int i = 0; i < Spec.Param.Count; i++)
+            for (int i = 0; i < Spec.specList.Count; i++)
             {
-                int Failed = Convert.ToInt32(Spec.Param[i][8]);
+                int Failed = Convert.ToInt32(Spec.specList[i].FailCnt);
                 if (Failed > 0)
                 {
-                    litem.Add(string.Format("{0} {1}", Spec.Param[i][0], Spec.Param[i][1]));
-                    lratio.Add(Failed / (double)Spec.TotlaTested);
+                    litem.Add(string.Format("{0} {1}", Spec.specList[i].Category, Spec.specList[i].DisplayName));
+                    lratio.Add(Failed / (double)STATIC.Rcp.yield.TotlaTested);
                 }
             }
             double lyield = 100;
-            if (Spec.TotlaTested > 0)
+            if (STATIC.Rcp.yield.TotlaTested > 0)
             {
-                lyield = (1 - Spec.TotlaFailed / (double)Spec.TotlaTested) * 100;
+                lyield = (1 - STATIC.Rcp.yield.TotlaFailed / (double)STATIC.Rcp.yield.TotlaTested) * 100;
                 if (litem.Count > 0) YieldChart.Series[0].Points.DataBindXY(litem, lratio);
                 YieldChart.DataManipulator.Sort(PointSortOrder.Descending, YieldChart.Series[0]);
             }
@@ -305,7 +336,7 @@ namespace FZ4P
             {
                 YieldChart.Series[0].Points.Clear();
             }
-            YieldChart.Titles[0].Text = "Yield " + lyield.ToString("F2") + "% \t" + (Spec.TotlaTested - Spec.TotlaFailed).ToString() + " / " + Spec.TotlaTested.ToString();
+            YieldChart.Titles[0].Text = "Yield " + lyield.ToString("F2") + "% \t" + (STATIC.Rcp.yield.TotlaTested - STATIC.Rcp.yield.TotlaFailed).ToString() + " / " + STATIC.Rcp.yield.TotlaTested.ToString();
 
         }
         private async void RepeatStartTest_Click(object sender, EventArgs e)
@@ -470,8 +501,8 @@ namespace FZ4P
             int NewNum = Convert.ToInt32(NewSampleNumber.Text);
             if (NewNum > 0)
             {
-                Spec.LastSampleNum = NewNum - 1;
-                LastSampleNum.Text = Spec.LastSampleNum.ToString();
+                STATIC.Rcp.yield.LastSampleNum = NewNum - 1;
+                LastSampleNum.Text = STATIC.Rcp.yield.LastSampleNum.ToString();
             }
             else NewSampleNumber.Text = "1";
         }
@@ -521,12 +552,12 @@ namespace FZ4P
             DialogResult result = MessageBox.Show("Do you wan to Reset and Save Yield Data?", "Warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
             if (result == DialogResult.OK)
             {
-                Spec.TotlaTested = 0;
-                Spec.TotlaFailed = 0;
-                Spec.TotlaPassed = 0;
-                for (int i = 0; i < Spec.Param.Count; i++)
+                STATIC.Rcp.yield.TotlaTested = 0;
+                STATIC.Rcp.yield.TotlaFailed = 0;
+                STATIC.Rcp.yield.TotlaPassed = 0;
+                for (int i = 0; i < Spec.specList.Count; i++)
                 {
-                    Spec.Param[i][8] = 0;
+                    Spec.specList[i].FailCnt = 0;
                 }
                 InitYield();
             }

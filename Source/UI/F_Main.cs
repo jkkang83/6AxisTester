@@ -6,6 +6,7 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
@@ -58,6 +59,7 @@ namespace FZ4P
                     P_Vision.Location = new Point(59, 1026);
                     P_Vision.Size = new Size(50, 31);
                     P_Vision.Hide();
+                    STATIC.fManage.BindingUIModel();
                     break;
                 case (int)STATIC.STATE.Main:
                     //InitCondition();
@@ -200,36 +202,34 @@ namespace FZ4P
         //============================================================
         private void F_Main_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Spec.Save();
+
+            DataIO.SerializeToXMLFile(STATIC.Rcp.yield, STATIC.YieldPath);
             if (!Process.IsVirtual)
             {
                 Process.LEDs_All_On(0, false);
             }
             if (Model.MCType != "Normal") STATIC.TcpConn.disconnect();
         }
-        private void InitCondition(bool isClear = true)
+        private void InitCondition()
         {
-            if (isClear)
+            Type dgvType = ConditinGrid.GetType();
+            PropertyInfo pi = dgvType.GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic);
+            pi.SetValue(ConditinGrid, true, null);
+
+            Actionbox.Items.Clear();
+            for (int i = 0; i < Process.ItemList.Count; i++)
             {
-                Actionbox.Items.Clear();
-                for (int i = 0; i < Process.ItemList.Count; i++)
-                {
-                    Actionbox.Items.Add(Process.ItemList[i].Name);
-                }
-
-                TodoBox.Items.Clear();
-                for (int i = 0; i < Condition.ToDoList.Count; i++)
-                {
-                    TodoBox.Items.Add(Condition.ToDoList[i]);
-                }
-                RecipeFileName.Text = Condition.CurrentName;
+                Actionbox.Items.Add(Process.ItemList[i].Name);
             }
-            AFPidSetPath.BackColor = Color.White;
-            XPidSetPath.BackColor = Color.White;
-            YPidSetPath.BackColor = Color.White;
-            CodeScriptPath.BackColor = Color.White;
 
-            ConditinGrid.ColumnCount = 5;
+            TodoBox.Items.Clear();
+            for (int i = 0; i < Condition.ToDoList.Count; i++)
+            {
+                TodoBox.Items.Add(Condition.ToDoList[i]);
+            }
+            RecipeFileName.Text = Current.ConditionName;
+
+            ConditinGrid.ColumnCount = 4;
             ConditinGrid.Font = new Font("Calibri", 10, FontStyle.Bold);
             for (int i = 0; i < ConditinGrid.ColumnCount; i++)
             {
@@ -247,55 +247,52 @@ namespace FZ4P
             ConditinGrid.Columns[2].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             ConditinGrid.Columns[3].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
 
-            ConditinGrid.Columns[0].Width = 80;
-            ConditinGrid.Columns[1].Width = 150;
-            ConditinGrid.Columns[2].Width = 75;
-            ConditinGrid.Columns[3].Width = 70;
+            ConditinGrid.Columns[0].Width = 70;
+            ConditinGrid.Columns[1].Width = 140;
+            ConditinGrid.Columns[2].Width = 120;
+            ConditinGrid.Columns[3].Width = 55;
 
             ConditinGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             ConditinGrid.ColumnHeadersHeight = 22;
 
             int effRowNum = 0;
-            string colTitle;
-            bool bColorChange = false;
+            bool bColorChange = true;
             ConditinGrid.Rows.Clear();
 
-            for (int i = 0; i < Condition.Param.Count; i++)
+            PropertyDescriptorCollection props = TypeDescriptor.GetProperties(Condition);
+            for (int i = 0; i < props.Count; i++)
             {
-                if (Condition.Param[i][1].ToString().Length >= 9)
-                {
-                    string compare = Condition.Param[i][1].ToString().Substring(0, 9);
-                }
+                string Category = DataIO.GetCustomAttribute<ConditionAttribute>(props[i])?.Category;
+                string DisplayName = DataIO.GetCustomAttribute<ConditionAttribute>(props[i])?.DisplayName;
+                string Unit = DataIO.GetCustomAttribute<ConditionAttribute>(props[i])?.Unit;
 
-                if (i == 0) colTitle = Condition.Param[i][0].ToString();
-                else
+
+                if (Category != "ToDoList")
                 {
-                    if (Condition.Param[i - 1][0].ToString() == Condition.Param[i][0].ToString()) colTitle = "";
-                    else
+                    ConditinGrid.Rows.Add(Category, DisplayName, props[i].GetValue(Condition)?.ToString(), Unit);
+
+                    if (i != 0)
                     {
-                        colTitle = Condition.Param[i][0].ToString();
-                        bColorChange = !bColorChange;
+                        string BeforeCategory = DataIO.GetCustomAttribute<ConditionAttribute>(props[i - 1])?.Category;
+                        if (BeforeCategory != Category) bColorChange = !bColorChange;
+                        if (bColorChange)
+                        {
+
+                            ConditinGrid[0, effRowNum].Style.BackColor = Color.Lavender;
+                            ConditinGrid[1, effRowNum].Style.BackColor = Color.Lavender;
+                            ConditinGrid[3, effRowNum].Style.BackColor = Color.Lavender;
+                        }
+                        else
+                        {
+                            ConditinGrid[0, effRowNum].Style.BackColor = Color.White;
+                            ConditinGrid[1, effRowNum].Style.BackColor = Color.White;
+                            ConditinGrid[3, effRowNum].Style.BackColor = Color.White;
+                        }
+                        if (BeforeCategory == Category) ConditinGrid.Rows[effRowNum].Cells[0].Style.ForeColor = ConditinGrid.Rows[effRowNum].Cells[0].Style.BackColor;
                     }
+                    effRowNum++;
                 }
-                ConditinGrid.Rows.Add(colTitle, Condition.Param[i][1], Condition.Param[i][2], Condition.Param[i][3]);
-
-                if (bColorChange)
-                {
-
-                    ConditinGrid[0, effRowNum].Style.BackColor = Color.Lavender;
-                    ConditinGrid[1, effRowNum].Style.BackColor = Color.Lavender;
-                    ConditinGrid[3, effRowNum].Style.BackColor = Color.Lavender;
-                }
-                else
-                {
-                    ConditinGrid[0, effRowNum].Style.BackColor = Color.White;
-                    ConditinGrid[1, effRowNum].Style.BackColor = Color.White;
-                    ConditinGrid[3, effRowNum].Style.BackColor = Color.White;
-                }
-                ConditinGrid.Rows[effRowNum].Visible = Convert.ToBoolean(Condition.Param[i][4]);
-                effRowNum++;
             }
-            ConditinGrid.Rows.Add("", "", "", "", "");
 
             for (int i = 0; i < effRowNum; i++)
             {
@@ -330,7 +327,7 @@ namespace FZ4P
                         ConditinGrid[0, row].ReadOnly = true;
                         ConditinGrid[1, row].ReadOnly = true;
                         ConditinGrid[3, row].ReadOnly = true;
-                        ConditinGrid[4, row].ReadOnly = true;
+                     
                     }
                 }
             }
@@ -352,7 +349,7 @@ namespace FZ4P
                         SpecGrid[3, row].Style.BackColor = Color.White;
                         SpecGrid[0, row].ReadOnly = true;
                         SpecGrid[1, row].ReadOnly = true;
-                        SpecGrid[4, row].ReadOnly = true;
+                       
                     }
                 }
             }
@@ -368,7 +365,11 @@ namespace FZ4P
         }
         private void InitDataSpec()
         {
-            SpecGrid.ColumnCount = 5;
+            Type dgvType = SpecGrid.GetType();
+            PropertyInfo pi = dgvType.GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic);
+            pi.SetValue(SpecGrid, true, null);
+
+            SpecGrid.ColumnCount = 4;
             SpecGrid.Font = new Font("Calibri", 10, FontStyle.Bold);
             for (int i = 0; i < SpecGrid.ColumnCount; i++)
             {
@@ -377,13 +378,17 @@ namespace FZ4P
             SpecGrid.RowHeadersVisible = false;
             SpecGrid.BackgroundColor = Color.LightGray;
 
-            SpecFileName.Text = Spec.CurrentName;
+            SpecFileName.Text = Current.SpecName;
             // Column
             SpecGrid.Columns[0].Name = "Axis";
             SpecGrid.Columns[1].Name = "Test Item";
             SpecGrid.Columns[2].Name = "Min";
             SpecGrid.Columns[3].Name = "Max";
-            SpecGrid.Columns[4].Name = "unit";
+
+            DataGridViewCheckBoxColumn chkCol = new DataGridViewCheckBoxColumn();
+            chkCol.ValueType = typeof(bool);
+            chkCol.HeaderText = "On/Off";
+            SpecGrid.Columns.Add(chkCol);
             for (int i = 0; i < 5; i++)
                 SpecGrid.Columns[i].DefaultCellStyle.Font = new Font("Calibri", 10, FontStyle.Bold);
 
@@ -391,61 +396,49 @@ namespace FZ4P
             SpecGrid.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
             SpecGrid.Columns[2].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             SpecGrid.Columns[3].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            SpecGrid.Columns[4].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            SpecGrid.Columns[4].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
             SpecGrid.Columns[0].Width = 80;
-            SpecGrid.Columns[1].Width = 140;
-            SpecGrid.Columns[2].Width = 70;
-            SpecGrid.Columns[3].Width = 70;
-            SpecGrid.Columns[4].Width = 80;
+            SpecGrid.Columns[1].Width = 165;
+            SpecGrid.Columns[2].Width = 80;
+            SpecGrid.Columns[3].Width = 80;
+            SpecGrid.Columns[4].Width = 50;
 
-            // Row
-            int effRowNum = 0;
+            // Row 
             bool bColorChange = false;
             SpecGrid.Rows.Clear();
 
-            for (int i = 1; i < Spec.Param.Count; i++)
+            for (int i = 0; i < Spec.specList.Count; i++)
             {
-                if (Spec.Param[i - 1][0].ToString() != Spec.Param[i][0].ToString())
-                    bColorChange = !bColorChange;
+                SpecGrid.Rows.Add(Spec.specList[i].Category, Spec.specList[i].DisplayName, Spec.specList[i].MinSpec, Spec.specList[i].MaxSpec, Spec.specList[i].OnOff);
+                if (i > 0)
+                {
+                    if (Spec.specList[i - 1].Category != Spec.specList[i].Category) bColorChange = !bColorChange;
+                    if (bColorChange)
+                    {
+                        SpecGrid[0, i].Style.BackColor = Color.Lavender;
+                        SpecGrid[1, i].Style.BackColor = Color.Lavender;
 
-                SpecGrid.Rows.Add(Spec.Param[i][0], Spec.Param[i][1], Spec.Param[i][2], Spec.Param[i][3], Spec.Param[i][9]);
-                if (bColorChange)
-                {
-                    SpecGrid[0, effRowNum].Style.BackColor = Color.Lavender;
-                    SpecGrid[1, effRowNum].Style.BackColor = Color.Lavender;
-                    SpecGrid[4, effRowNum].Style.BackColor = Color.Lavender;
-                }
-                else
-                {
-                    SpecGrid[0, effRowNum].Style.BackColor = Color.White;
-                    SpecGrid[1, effRowNum].Style.BackColor = Color.White;
-                    SpecGrid[4, effRowNum].Style.BackColor = Color.White;
-                }
-                SpecGrid.Rows[effRowNum].Visible = Convert.ToBoolean(Spec.Param[i][10]);
-                effRowNum++;
-            }
-            
+                    }
+                    else
+                    {
+                        SpecGrid[0, i].Style.BackColor = Color.White;
+                        SpecGrid[1, i].Style.BackColor = Color.White;
 
-            string oldkey = "";
-            for (int i = 0; i < effRowNum; i++)
-            {
-                if (SpecGrid.Rows[i].Visible)
-                {
-                    string newKey = SpecGrid.Rows[i].Cells[0].Value.ToString();
-                    if (oldkey == newKey) SpecGrid.Rows[i].Cells[0].Value = "";
-                    oldkey = newKey;
+                    }
+                    if (Spec.specList[i - 1].Category == Spec.specList[i].Category)
+                        SpecGrid.Rows[i].Cells[0].Style.ForeColor = SpecGrid.Rows[i].Cells[0].Style.BackColor;
                 }
+
             }
 
-            SpecGrid.Rows.Add("", "", "", "", "");
 
             SpecGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             SpecGrid.ColumnHeadersHeight = 22;
 
-            for (int i = 0; i < effRowNum; i++)
+            for (int i = 0; i < Spec.specList.Count; i++)
             {
-                SpecGrid.Rows[i].Height = 15;     // spec 높이조절A
+                SpecGrid.Rows[i].Height = 18;     // spec 높이조절A
                 SpecGrid.Rows[i].Resizable = DataGridViewTriState.False;
                 SpecGrid.Rows[i].DefaultCellStyle.Font = new Font("Calibri", 9, FontStyle.Bold);
                 SpecGrid[1, i].Style.Font = new Font("Calibri", 9, FontStyle.Bold);
@@ -458,7 +451,10 @@ namespace FZ4P
                 for (int row = 0; row < SpecGrid.Rows.Count; row++)
                 {
                     SpecGrid[colum, row].Style.BackColor = Color.LightGray;
-                    SpecGrid.ReadOnly = true;
+                    if (Convert.ToBoolean(SpecGrid[4, row].Value))
+                        SpecGrid[1, row].Style.BackColor = Color.White;
+                    else SpecGrid[1, row].Style.BackColor = Color.OrangeRed;
+
                 }
             }
             SpecGrid.ReadOnly = true;
@@ -471,14 +467,29 @@ namespace FZ4P
             {
                 Condition.ToDoList.Add(TodoBox.Items[i].ToString());
             }
-            for (int i = 0; i < Condition.Param.Count; i++)
+            PropertyDescriptorCollection props = TypeDescriptor.GetProperties(Condition);
+            for (int i = 0; i < ConditinGrid.RowCount; i++)
             {
-                Condition.Param[i][2] = ConditinGrid[2, i].Value.ToString();
+                var found = props.Cast<PropertyDescriptor>().FirstOrDefault(prop =>
+                ((ConditionAttribute)prop.Attributes[typeof(ConditionAttribute)])?.DisplayName == ConditinGrid[1, i].Value.ToString() &&
+                ((ConditionAttribute)prop.Attributes[typeof(ConditionAttribute)])?.Category == ConditinGrid[0, i].Value.ToString());
+
+                TypeConverter convert = TypeDescriptor.GetConverter(found.PropertyType);
+                object convVal = convert.ConvertFromString(ConditinGrid[2, i].Value.ToString());
+                found.SetValue(Condition, convVal);
+
             }
-            for (int i = 0; i < Spec.Param.Count - 1; i++)
+            for (int i = 0; i < SpecGrid.RowCount; i++)
             {
-                Spec.Param[i + 1][2] = SpecGrid[2, i].Value.ToString();
-                Spec.Param[i + 1][3] = SpecGrid[3, i].Value.ToString();
+                int index = Spec.specList.FindIndex(x => x.DisplayName == SpecGrid[1, i].Value.ToString() && x.Category == SpecGrid[0, i].Value.ToString());
+
+                if (index != -1)
+                {
+                    Spec.specList[index].MinSpec = Convert.ToDouble(SpecGrid[2, i].Value);
+                    Spec.specList[index].MaxSpec = Convert.ToDouble(SpecGrid[3, i].Value);
+                    Spec.specList[index].OnOff = Convert.ToBoolean(SpecGrid[4, i].Value);
+
+                }
             }
 
             //  sRecipe 변수가 동작하지 않고 있음.
@@ -492,15 +503,18 @@ namespace FZ4P
         public List<CheckBox> ListChk = new List<CheckBox>();
         private void InitOption()
         {
-            for (int i = 0; i < Option.Param.Count; i++)
+
+            PropertyDescriptorCollection props = TypeDescriptor.GetProperties(Option);
+
+            for (int i = 0; i < props.Count; i++)
             {
                 int width = 0;
                 int hCal = 30 * i;
 
                 CheckBox Chk = new CheckBox
                 {
-                    Text = Option.Param[i][0].ToString(),
-                    Checked = Convert.ToBoolean(Option.Param[i][1]),
+                    Text = DataIO.GetCustomAttribute<OptionAttribute>(props[i])?.DisplayName,
+                    Checked = Convert.ToBoolean(props[i].GetValue(Option)),
                     Font = new Font("Calibri", 11, FontStyle.Bold),
                     ForeColor = Color.DarkBlue,
                     Location = new Point(300 + width, 30 + hCal),
@@ -570,37 +584,56 @@ namespace FZ4P
 
         private void OpenCondition_Click(object sender, EventArgs e)
         {
-            string result = STATIC.OpenFile(Condition.InitDir, Condition.Ext);
+            string result = STATIC.OpenFile(STATIC.RecipeDir, ".rcp");
             if (result == null) return;
-            Condition.Read(result);
-            Current.ConditionName = Condition.CurrentName;
-            Current.Save();
+            STATIC.Rcp.Condition = DataIO.DeserializeXMLFileToObject<Condition>(result);
+            Current.ConditionName = Path.GetFileName(result);
+            DataIO.SerializeToXMLFile(Current, STATIC.CurrentPath);
             InitCondition();
         }
 
         private void SaveCondition_Click(object sender, EventArgs e)
         {
+            string path = STATIC.RecipeDir + Current.ConditionName;
             UpdateUI();
-            Condition.Save();
+            DataIO.SerializeToXMLFile(Condition, path);
         }
 
         private void SaveAsCondition_Click(object sender, EventArgs e)
         {
-            string result = STATIC.OpenFile(Condition.InitDir, Condition.Ext, true);
+            string result = STATIC.OpenFile(STATIC.RecipeDir, ".rcp", true);
             UpdateUI();
-            Condition.Save(result);
-            Condition.Read(result);
-            Current.ConditionName = Condition.CurrentName;
-            InitCondition();
+            DataIO.SerializeToXMLFile(Condition, result);
+            Current.ConditionName = Path.GetFileName(result);
+            DataIO.SerializeToXMLFile(Current, STATIC.CurrentPath);
+            RecipeFileName.Text = Current.ConditionName;
+
         }
 
         private void OpenSpec_Click(object sender, EventArgs e)
         {
-            string result = STATIC.OpenFile(Spec.InitDir, Spec.Ext);
+            string result = STATIC.OpenFile(STATIC.SpecDir, ".spc");
             if (result == null) return;
-            Spec.Read(result);
-            Current.SpecName = Spec.CurrentName;
-            Current.Save();
+            Current.SpecName = Path.GetFileName(result);
+            Spec.InitSpecList();
+            if (File.Exists(STATIC.SpecDir + Current.SpecName))
+            {
+                Spec compare = new Spec();
+                compare = DataIO.DeserializeXMLFileToObject<Spec>(STATIC.SpecDir + Current.SpecName);
+                for (int i = 0; i < compare.specList.Count; i++)
+                {
+                    int index = Spec.specList.FindIndex(x => x.DisplayName == compare.specList[i].DisplayName && x.Category == compare.specList[i].Category);
+                    if (index != -1)
+                    {
+                        Spec.specList[index].MinSpec = compare.specList[i].MinSpec;
+                        Spec.specList[index].MaxSpec = compare.specList[i].MaxSpec;
+                        Spec.specList[index].OnOff = compare.specList[i].OnOff;
+                        Spec.specList[index].FailCnt = compare.specList[i].FailCnt;
+                    }
+                }
+            }
+
+            DataIO.SerializeToXMLFile(Current, STATIC.CurrentPath);
             InitDataSpec();
             Process.InitResultData();
         }
@@ -608,28 +641,32 @@ namespace FZ4P
         private void SaveSpec_Click(object sender, EventArgs e)
         {
             UpdateUI();
-            Spec.Save();
+            DataIO.SerializeToXMLFile(Spec, STATIC.SpecDir + Current.SpecName);
             Process.InitResultData();
         }
 
         private void SaveAsSpec_Click(object sender, EventArgs e)
         {
-            string result = STATIC.OpenFile(Spec.InitDir, Spec.Ext, true);
+            string result = STATIC.OpenFile(STATIC.SpecDir, ".spc", true);
             if (result == null) return;
             UpdateUI();
-            Spec.Save(result);
-
-            Spec.Read(result);
-            Current.SpecName = Spec.CurrentName;
-            InitDataSpec();
+            DataIO.SerializeToXMLFile(Spec, result);
+            Current.SpecName = Path.GetFileName(result);
+            DataIO.SerializeToXMLFile(Current, STATIC.CurrentPath);
+            SpecFileName.Text = Current.SpecName;
             Process.InitResultData();
         }
 
         private void ApplyTester_Click(object sender, EventArgs e)
         {
-            for (int i = 0; i < Option.Param.Count; i++)
-                Option.Param[i][1] = ListChk[i].Checked;
-            Option.Save();
+            PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(Option);
+
+            for (int i = 0; i < properties.Count; i++)
+            {
+                var found = properties.Cast<PropertyDescriptor>().FirstOrDefault(prop => ((OptionAttribute)prop.Attributes[typeof(OptionAttribute)])?.DisplayName == ListChk[i].Text);
+                found.SetValue(Option, ListChk[i].Checked);
+            }
+            DataIO.SerializeToXMLFile(Option, STATIC.OptionPath);
             //Model ==
             if (LotMaker.SelectedItem != null) Model.Maker = LotMaker.SelectedItem.ToString();
             Model.RevisionNo = RevisionNo.Text;
@@ -688,38 +725,36 @@ namespace FZ4P
 
         public void MoveTodo(bool dir) // true : up, false : down
         {
-            if (TodoBox.SelectedItems.Count > 1) return;
-            int cIndex = TodoBox.SelectedIndex;
-            if (cIndex < 0) return;
-            if (cIndex <= 0 && dir) return;
-            if ((cIndex + 1 >= TodoBox.Items.Count) && !dir) return;
-
-            int target = 0;
-            for (int i = 0; i < TodoBox.SelectedItems.Count; i++)
+            if (dir)
             {
-                if (dir)
-                    Condition.ToDoList.Move(cIndex + i, target = (cIndex + i - 1));
-                else
-                    Condition.ToDoList.Move(cIndex + i, target = (cIndex + i + 1));
+                if (TodoBox.SelectedIndex == -1 || TodoBox.SelectedIndex == 0) return;
+                object select, prev, tmp;
+                select = TodoBox.Items[TodoBox.SelectedIndex];
+                prev = TodoBox.Items[TodoBox.SelectedIndex - 1];
+                tmp = select;
+                select = prev;
+                prev = tmp;
+                TodoBox.Items[TodoBox.SelectedIndex] = select;
+                TodoBox.Items[TodoBox.SelectedIndex - 1] = prev;
+                TodoBox.SelectedIndex--;
+            }
+            else
+            {
+                if (TodoBox.SelectedIndex == -1 || TodoBox.SelectedIndex == TodoBox.Items.Count - 1) return;
+                object select, next, tmp;
+                select = TodoBox.Items[TodoBox.SelectedIndex];
+                next = TodoBox.Items[TodoBox.SelectedIndex + 1];
+                tmp = select;
+                select = next;
+                next = tmp;
+                TodoBox.Items[TodoBox.SelectedIndex] = select;
+                TodoBox.Items[TodoBox.SelectedIndex + 1] = next;
+                TodoBox.SelectedIndex++;
             }
 
-            TodoBox.Items.Clear();
-            for (int i = 0; i < Condition.ToDoList.Count; i++)
-            {
-                TodoBox.Items.Add(Condition.ToDoList[i]);
-            }
-            TodoBox.SelectedIndex = target;
         }
 
-        private void SpecGrid_CellMouseDoubleClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex < 0)
-            {
-                new TestItemOnOff().ShowDialog();
-                InitDataSpec();
-            }
-        }
-
+     
         private void EditCondition_CheckedChanged(object sender, EventArgs e)
         {
             IsEdit();
@@ -736,7 +771,7 @@ namespace FZ4P
             if (result == null) return;
             Rcp.AfPidSet.Read(result);
             Current.AFPidPath = Rcp.AfPidSet.CurrentName;
-            Current.Save();
+            DataIO.SerializeToXMLFile(Current, STATIC.CurrentPath);
             AFPidSetPath.Text = Current.AFPidPath;
         }
 
@@ -746,7 +781,7 @@ namespace FZ4P
             if (result == null) return;
             Rcp.XPidSet.Read(result);
             Current.XPidPath = Rcp.XPidSet.CurrentName;
-            Current.Save();
+            DataIO.SerializeToXMLFile(Current, STATIC.CurrentPath);
             XPidSetPath.Text = Current.XPidPath;
         }
 
@@ -756,7 +791,7 @@ namespace FZ4P
             if (result == null) return;
             Rcp.YPidSet.Read(result);
             Current.YPidPath = Rcp.YPidSet.CurrentName;
-            Current.Save();
+            DataIO.SerializeToXMLFile(Current, STATIC.CurrentPath);
             YPidSetPath.Text = Current.YPidPath;
         }
 
@@ -766,165 +801,13 @@ namespace FZ4P
             if (result == null) return;
             Rcp.CodeScript.Read(result);
             Current.CodeScriptPath = Rcp.CodeScript.CurrentName;
-            Current.Save();
+            DataIO.SerializeToXMLFile(Current, STATIC.CurrentPath);
             CodeScriptPath.Text = Current.CodeScriptPath;
         }
 
         private void Actionbox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            InitCondition(false);
-            ListBox b = (ListBox)sender;
-            if (b.SelectedItem == null) return;
-            switch(b.SelectedItem.ToString())
-            {
-                case "PID Setting":
-                    AFPidSetPath.BackColor = Color.Orange;
-                    XPidSetPath.BackColor = Color.Orange;
-                    YPidSetPath.BackColor = Color.Orange;
-                    break;
-                case "Aging OpenLoop":
-                    for (int i = 0; i < Condition.Param.Count; i++)
-                    {
-                        if (Condition.Param[i][0].ToString() == ("Aging"))
-                        {
-                            ConditinGrid[0, i].Style.BackColor = Color.Orange;
-                            ConditinGrid[1, i].Style.BackColor = Color.Orange;
-                        }
-                    }
-                    break;
-                case "Hall Calibration":
-                    for (int i = 0; i < Condition.Param.Count; i++)
-                    {
-                        if (Condition.Param[i][0].ToString() == ("Hall Cal"))
-                        {
-                            ConditinGrid[0, i].Style.BackColor = Color.Orange;
-                            ConditinGrid[1, i].Style.BackColor = Color.Orange;
-                        }
-                    }
-                    break;
-                case "AF Scan":
-                case "AF Scan2":
-                case "AF Scan3":
-                case "AF Scan4":
-                case "AF Settling":
-                    for (int i = 0; i < Condition.Param.Count; i++)
-                    {
-                        if (Condition.Param[i][0].ToString() == ("AF"))
-                        {
-                            ConditinGrid[0, i].Style.BackColor = Color.Orange;
-                            ConditinGrid[1, i].Style.BackColor = Color.Orange;
-                        }
-                    }
-                    break;
-                case "OIS X Scan":
-                case "OIS X Scan2":
-                case "OIS X Scan3":
-                case "OIS X Scan4":
-                    for (int i = 0; i < Condition.Param.Count; i++)
-                    {
-                        if (Condition.Param[i][0].ToString() == ("X"))
-                        {
-                            ConditinGrid[0, i].Style.BackColor = Color.Orange;
-                            ConditinGrid[1, i].Style.BackColor = Color.Orange;
-                        }
-                    }
-                    break;
-                case "OIS Y Scan":
-                case "OIS Y Scan2":
-                case "OIS Y Scan3":
-                case "OIS Y Scan4":
-                    for (int i = 0; i < Condition.Param.Count; i++)
-                    {
-                        if (Condition.Param[i][0].ToString() == ("Y") ||
-                            Condition.Param[i][0].ToString() == ("Y1") ||
-                            Condition.Param[i][0].ToString() == ("Y2"))
-                        {
-                            ConditinGrid[0, i].Style.BackColor = Color.Orange;
-                            ConditinGrid[1, i].Style.BackColor = Color.Orange;
-                        }
-                    }
-                    break;
-                case "OIS Matrix Scan":
-                    CodeScriptPath.BackColor = Color.Orange;
-                    for (int i = 0; i < Condition.Param.Count; i++)
-                    {
-                        if (Condition.Param[i][0].ToString() == ("Matrix"))
-                        {
-                            ConditinGrid[0, i].Style.BackColor = Color.Orange;
-                            ConditinGrid[1, i].Style.BackColor = Color.Orange;
-                        }
-                    }
-                    break;
-                case "OIS X EPA":
-                case "OIS Y EPA":
-                case "OIS X EPA Recipe":
-                case "OIS Y EPA Recipe":
-                case "OIS X Ex EPA Recipe":
-                case "OIS Y Ex EPA Recipe":
-                    for (int i = 0; i < Condition.Param.Count; i++)
-                    {
-                        if (Condition.Param[i][0].ToString() == ("EPA"))
-                        {
-                            ConditinGrid[0, i].Style.BackColor = Color.Orange;
-                            ConditinGrid[1, i].Style.BackColor = Color.Orange;
-                        }
-                    }
-                    break;
-                case "OIS X Linearity Comp":
-                case "OIS Y Linearity Comp":
-                case "OIS X Linearity Comp2":
-                case "OIS Y Linearity Comp2":
-                    for (int i = 0; i < Condition.Param.Count; i++)
-                    {
-                        if (Condition.Param[i][0].ToString() == ("Linearity Comp"))
-                        {
-                            ConditinGrid[0, i].Style.BackColor = Color.Orange;
-                            ConditinGrid[1, i].Style.BackColor = Color.Orange;
-                        }
-                    }
-                    break;
-                case "Gain@10Hz":
-                    for (int i = 0; i < Condition.Param.Count; i++)
-                    {
-                        if (Condition.Param[i][0].ToString() == ("LG @ 10Hz"))
-                        {
-                            ConditinGrid[0, i].Style.BackColor = Color.Orange;
-                            ConditinGrid[1, i].Style.BackColor = Color.Orange;
-                        }
-                    }
-                    break;
-                case "Phase Margin":
-                    for (int i = 0; i < Condition.Param.Count; i++)
-                    {
-                        if (Condition.Param[i][0].ToString().Contains("Phase Margin"))
-                        {
-                            ConditinGrid[0, i].Style.BackColor = Color.Orange;
-                            ConditinGrid[1, i].Style.BackColor = Color.Orange;
-                        }
-                    }
-                    break;
-                case "Gain Margin":
-                    for (int i = 0; i < Condition.Param.Count; i++)
-                    {
-                        if (Condition.Param[i][0].ToString().Contains("Gain Margin"))
-                        {
-                            ConditinGrid[0, i].Style.BackColor = Color.Orange;
-                            ConditinGrid[1, i].Style.BackColor = Color.Orange;
-                        }
-                    }
-                    break;
-                case "OIS Hall Test":
-                    for (int i = 0; i < Condition.Param.Count; i++)
-                    {
-                        if (Condition.Param[i][0].ToString().Contains("Sine Wave") ||
-                            Condition.Param[i][0].ToString().Contains("Ringing"))
-                        {
-                            ConditinGrid[0, i].Style.BackColor = Color.Orange;
-                            ConditinGrid[1, i].Style.BackColor = Color.Orange;
-                        }
-                    }
-                    break;
-            }
+           
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -1606,6 +1489,23 @@ namespace FZ4P
                 }
             }
             return lstr;
+        }
+
+        private void SpecGrid_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0 && e.ColumnIndex == 4)
+            {
+                DataGridViewCell cell = SpecGrid.Rows[e.RowIndex].Cells[e.ColumnIndex];
+                if (Convert.ToBoolean(cell.Value))
+                    SpecGrid[1, e.RowIndex].Style.BackColor = Color.White;
+                else SpecGrid[1, e.RowIndex].Style.BackColor = Color.OrangeRed;
+            }
+        }
+
+        private void SpecGrid_CurrentCellDirtyStateChanged(object sender, EventArgs e)
+        {
+            if (SpecGrid.IsCurrentCellDirty)
+                SpecGrid.CommitEdit(DataGridViewDataErrorContexts.Commit);
         }
     }
 }

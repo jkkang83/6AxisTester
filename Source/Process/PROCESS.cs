@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
@@ -29,6 +30,8 @@ namespace FZ4P
         public Option Option { get { return STATIC.Rcp.Option; } }
         public Model Model { get { return STATIC.Rcp.Model; } }
         public CurrentPath Current { get { return STATIC.Rcp.Current; } }
+        public List<PassFail> PassFails { get { return STATIC.Rcp.PassFails; } }
+        public TotalYield yield { get { return STATIC.Rcp.yield; } }
 
         Global m__G = null; 
 
@@ -182,58 +185,67 @@ namespace FZ4P
             //ItemList.Add(new ActItems() { Name = "Servo Decenter", Func = ServoDecenter, IsMulti = true });
             m__G = Global.GetInstance();
         }
-        public void ShowDataResults(int ch, string key)
+        public void ShowDataResults(int ch, string key, int start, int end)
         {
             if (ResultDataGrid.InvokeRequired)
             {
                 ResultDataGrid.BeginInvoke((MethodInvoker)delegate
                 {
-                    for (int i = 0; i < Spec.Param.Count; i++)
+                    for (int i = start; i <= end; i++)
                     {
-                        if (Spec.Param[i][0].ToString() != key) continue;
-
-                        if (Spec.PassFails[ch].Results[i].Val != 0)
+                        if (Spec.specList[i].Category != key) continue;
+                        if (PassFails[ch].Results[i].Val != 0)
                         {
                             if (key.Contains("FRA") || key.Contains("Gyro"))
                             {
-                                ResultDataGrid[ch + 4, i].Value = Spec.PassFails[ch].Results[i].Val.ToString("F1");
+                                ResultDataGrid[ch + 4, i].Value = PassFails[ch].Results[i].Val.ToString("F1");
                             }
                             else
                             {
-                                ResultDataGrid[ch + 4, i].Value = Spec.PassFails[ch].Results[i].Val.ToString("F3");
+                                ResultDataGrid[ch + 4, i].Value = PassFails[ch].Results[i].Val.ToString("F3");
                             }
                         }
-                        if (Spec.PassFails[ch].Results[i].bPass) ResultDataGrid[ch + 4, i].Style.BackColor = Color.White;
+                        if (PassFails[ch].Results[i].bPass) ResultDataGrid[ch + 4, i].Style.BackColor = Color.White;
                         else ResultDataGrid[ch + 4, i].Style.BackColor = Color.Orange;
+
                     }
+                
                 });
             }
             else
             {
-                for (int i = 0; i < Spec.Param.Count; i++)
+                for (int i = start; i <= end; i++)
                 {
-                    if (Spec.Param[i][0].ToString() != key) continue;
-
-                    if (Spec.PassFails[ch].Results[i].Val != 0)
+                    if (Spec.specList[i].Category != key) continue;
+                    if (PassFails[ch].Results[i].Val != 0)
                     {
                         if (key.Contains("FRA") || key.Contains("Gyro"))
                         {
-                            ResultDataGrid[ch + 4, i].Value = Spec.PassFails[ch].Results[i].Val.ToString("F1");
+                            ResultDataGrid[ch + 4, i].Value = PassFails[ch].Results[i].Val.ToString("F1");
                         }
                         else
                         {
-                            ResultDataGrid[ch + 4, i].Value = Spec.PassFails[ch].Results[i].Val.ToString("F3");
+                            ResultDataGrid[ch + 4, i].Value = PassFails[ch].Results[i].Val.ToString("F3");
                         }
                     }
-                    if (Spec.PassFails[ch].Results[i].bPass) ResultDataGrid[ch + 4, i].Style.BackColor = Color.White;
+                    if (PassFails[ch].Results[i].bPass) ResultDataGrid[ch + 4, i].Style.BackColor = Color.White;
                     else ResultDataGrid[ch + 4, i].Style.BackColor = Color.Orange;
+
                 }
             }
         }
         public void InitResultData()
         {
+            Type dgvType = ResultDataGrid.GetType();
+            PropertyInfo pi = dgvType.GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic);
+            pi.SetValue(ResultDataGrid, true, null);
+
+            ResultDataGrid.AllowUserToAddRows = false;
+            ResultDataGrid.AllowUserToDeleteRows = false;
+            ResultDataGrid.AllowUserToResizeColumns = false;
+            ResultDataGrid.AllowUserToResizeRows = false;
             ResultDataGrid.Tag = "S";
-            ResultDataGrid.ColumnCount = 9; //  Group, Item, min, max, r0, r1, r2, r3, unit, Fratio
+            ResultDataGrid.ColumnCount = 7; //  Group, Item, min, max, r0, r1, r2, r3, unit, Fratio
             ResultDataGrid.Font = new Font("Calibri", 14, FontStyle.Bold);
             for (int i = 0; i < ResultDataGrid.ColumnCount; i++)
             {
@@ -257,52 +269,105 @@ namespace FZ4P
             ResultDataGrid.Columns[3].DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopRight;
             ResultDataGrid.Columns[4].DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopRight;
             ResultDataGrid.Columns[5].DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopRight;
-            ResultDataGrid.Columns[6].DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopRight;
+            ResultDataGrid.Columns[6].DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopLeft;
 
-            ResultDataGrid.Columns[0].Width = 80;
-            ResultDataGrid.Columns[1].Width = 180;
+            ResultDataGrid.Columns[0].Width = 160;
+            ResultDataGrid.Columns[1].Width = 215;
             ResultDataGrid.Columns[2].Width = 70;
             ResultDataGrid.Columns[3].Width = 70;
             ResultDataGrid.Columns[4].Width = 90;
             ResultDataGrid.Columns[5].Width = 90;
-            ResultDataGrid.Columns[6].Width = 90;
+            ResultDataGrid.Columns[6].Width = 65;
 
             ResultDataGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             ResultDataGrid.ColumnHeadersHeight = 28;
 
             bool bColorChange = true;
             ResultDataGrid.Rows.Clear();
-            for (int i = 0; i < Spec.Param.Count; i++)
+            for (int i = 0; i < Spec.specList.Count; i++)
             {
-                if (i > 0)
-                    if (Spec.Param[i - 1][0].ToString() != Spec.Param[i][0].ToString())
-                        bColorChange = !bColorChange;
-
-                ResultDataGrid.Rows.Add(Spec.Param[i][0], Spec.Param[i][1], Spec.Param[i][2], Spec.Param[i][3], Spec.Param[i][4], Spec.Param[i][5], Spec.Param[i][9]);
+                ResultDataGrid.Rows.Add(Spec.specList[i].Category, Spec.specList[i].DisplayName, Spec.specList[i].MinSpec, Spec.specList[i].MaxSpec, 0, 0, Spec.specList[i].Unit);
+                ResultDataGrid.Rows[i].Visible = Convert.ToBoolean(Spec.specList[i].OnOff);
 
                 if (bColorChange) for (int k = 0; k < ResultDataGrid.ColumnCount; k++) ResultDataGrid[k, i].Style.BackColor = Color.Lavender;
                 else for (int k = 0; k < ResultDataGrid.ColumnCount; k++) ResultDataGrid[k, i].Style.BackColor = Color.White;
 
-                ResultDataGrid.Rows[i].Visible = Convert.ToBoolean(Spec.Param[i][10]);
+
 
                 ResultDataGrid.Rows[i].Height = 22;
                 ResultDataGrid.Rows[i].Resizable = DataGridViewTriState.False;
-                ResultDataGrid.Rows[i].DefaultCellStyle.Font = new Font("Calibri", 12, FontStyle.Bold);
-                ResultDataGrid[1, i].Style.Font = new Font("Calibri", 12, FontStyle.Bold);
-                ResultDataGrid[2, i].Style.Font = new Font("Calibri", 12, FontStyle.Bold);
-                ResultDataGrid[6, i].Style.Font = new Font("Calibri", 12, FontStyle.Italic);
+                ResultDataGrid.Rows[i].DefaultCellStyle.Font = new Font("Calibri", 10, FontStyle.Bold);
+                ResultDataGrid[1, i].Style.Font = new Font("Calibri", 10, FontStyle.Bold);
+                ResultDataGrid[2, i].Style.Font = new Font("Calibri", 10, FontStyle.Bold);
+                ResultDataGrid[6, i].Style.Font = new Font("Calibri", 10, FontStyle.Italic);
 
                 ResultDataGrid.ReadOnly = true;
             }
 
-            string oldkey = "";
-            for (int i = 0; i < Spec.Param.Count; i++)
+            string old = string.Empty;/*ResultGrid.Rows[0].Cells[0].Value.ToString();*/
+            for (int i = 0; i < Spec.specList.Count; i++)
             {
                 if (ResultDataGrid.Rows[i].Visible)
                 {
                     string newKey = ResultDataGrid.Rows[i].Cells[0].Value.ToString();
-                    if (oldkey == newKey) ResultDataGrid.Rows[i].Cells[0].Value = "";
-                    oldkey = newKey;
+
+                    if (old != newKey)
+                        bColorChange = !bColorChange;
+                    if (bColorChange) for (int k = 0; k < ResultDataGrid.ColumnCount; k++) ResultDataGrid[k, i].Style.BackColor = Color.Lavender;
+                    else for (int k = 0; k < ResultDataGrid.ColumnCount; k++) ResultDataGrid[k, i].Style.BackColor = Color.White;
+
+                    if (old == newKey)
+                        ResultDataGrid.Rows[i].Cells[0].Style.ForeColor = ResultDataGrid.Rows[i].Cells[0].Style.BackColor;
+                    old = newKey;
+                }
+            }
+        }
+        public void InitResult(int ch)
+        {
+            PassFails[ch].TotalFail = "";
+            PassFails[ch].FirstFail = "";
+            PassFails[ch].FirstFailIndex = 0;
+            for (int i = 0; i < (int)SpecItem.Length; i++)
+            {
+                PassFails[ch].Results[i].Val = 0;
+                PassFails[ch].Results[i].msg = ""; PassFails[ch].Results[i].bPass = true;
+            }
+        }
+        public void SetResult(int ch, int start, int end)
+        {
+            for (int i = start; i < end + 1; i++)
+            {
+                if (!Spec.specList[i].OnOff) continue;
+
+                double lmin, lmax;
+                lmin = Convert.ToDouble(Spec.specList[i].MinSpec);
+                lmax = Convert.ToDouble(Spec.specList[i].MaxSpec);
+
+                if (PassFails[ch].Results[i].Val < lmin || PassFails[ch].Results[i].Val > lmax || double.IsNaN(PassFails[ch].Results[i].Val))
+                {
+                    PassFails[ch].Results[i].msg = Spec.specList[i].Category + "_" + Spec.specList[i].DisplayName;
+                    PassFails[ch].Results[i].bPass = false;
+                    PassFails[ch].TotalFail += string.Format("{0}'", i + 1);
+                }
+                else
+                {
+                    PassFails[ch].Results[i].msg = "";
+                    PassFails[ch].Results[i].bPass = true;
+
+                }
+            }
+            for (int i = start; i < end + 1; i++)
+            {
+                if (!PassFails[ch].Results[i].bPass)
+                {
+                    if (PassFails[ch].FirstFailIndex == 0)
+                    {
+                        PassFails[ch].FirstFailIndex = (i + 1);
+                        PassFails[ch].FirstFail = PassFails[ch].Results[i].msg;
+                    }
+
+                    int failCnt = Convert.ToInt32(Spec.specList[i].FailCnt); failCnt++;
+                    Spec.specList[i].FailCnt = failCnt;
                 }
             }
         }
@@ -312,20 +377,20 @@ namespace FZ4P
             {
                 ResultDataGrid.BeginInvoke((MethodInvoker)delegate
                 {
-                    Spec.InitResult(ch);
-                    for (int i = 0; i < Spec.Param.Count; i++)
+                    InitResult(ch);
+                    for (int i = 0; i < Spec.specList.Count; i++)
                     {
-                        ResultDataGrid[ch + 4, i].Value = Spec.PassFails[ch].Results[i].Val.ToString("F0");
+                        ResultDataGrid[ch + 4, i].Value = PassFails[ch].Results[i].Val.ToString("F0");
                         ResultDataGrid[ch + 4, i].Style.BackColor = Color.White;
                     }
                 });
             }
             else
             {
-                Spec.InitResult(ch);
-                for (int i = 0; i < Spec.Param.Count; i++)
+                InitResult(ch);
+                for (int i = 0; i < Spec.specList.Count; i++)
                 {
-                    ResultDataGrid[ch + 4, i].Value = Spec.PassFails[ch].Results[i].Val.ToString("F0");
+                    ResultDataGrid[ch + 4, i].Value = PassFails[ch].Results[i].Val.ToString("F0");
                     ResultDataGrid[ch + 4, i].Style.BackColor = Color.White;
                 }
             }
@@ -782,7 +847,7 @@ namespace FZ4P
                 {
                     m_ChannelOn[k] = true;
                     errMsg[k] = "";
-                    Spec.PassFails[k].FirstFailIndex = 0;
+                    PassFails[k].FirstFailIndex = 0;
                 }
 
                 //m_ChannelOn[1] = false; // 1ch Test
@@ -843,12 +908,12 @@ namespace FZ4P
                 double ellipse = (double)sw.ElapsedMilliseconds / 1000;
                 sw.Stop();
 
-                Spec.LastSampleNum++;
+                yield.LastSampleNum++;
 
                 for (int k = ch; k < ch + ChannelCnt; k++)
                 {
                     AddLog(k, string.Format("Total Test Time\t{0:0.000} sec", ellipse));
-                    Spec.PassFails[k].TotalTime = ellipse.ToString("F3");
+                    PassFails[k].TotalTime = ellipse.ToString("F3");
                 }
 
                 if (!SuddenStop) WriteResult(port);
@@ -882,7 +947,7 @@ namespace FZ4P
             {
                 if (m_ChannelOn[k])
                 {
-                    //m_StrIndex[k] = (Spec.LastSampleNum + k + 1).ToString();
+                    m_StrIndex[k] = (yield.LastSampleNum + k + 1).ToString();
                     AddLog(k, m_StrIndex[k] + ">> " + testItem + " Start");
                 }
             }
@@ -2073,10 +2138,10 @@ namespace FZ4P
             else
             {
                 AddLog(ch, string.Format("FRA X Gain10Hz = {0:0.000}",
-                    Spec.PassFails[ch].Results[(int)SpecItem.FRAX_Gain10Hz].Val = gain[0]));
+                    PassFails[ch].Results[(int)SpecItem.FRAX_Gain10Hz].Val = gain[0]));
 
-                Spec.SetResult(ch, (int)SpecItem.FRAX_Gain10Hz, (int)SpecItem.FRAX_Gain10Hz);
-                ShowDataResults(ch, "FRA X");
+                SetResult(ch, (int)SpecItem.FRAX_Gain10Hz, (int)SpecItem.FRAX_Gain10Hz);
+                ShowDataResults(ch, "FRA X", (int)SpecItem.FRAX_Gain10Hz, (int)SpecItem.FRAX_Gain10Hz);
             }
             //Y1
             amp = (int)Condition.iLoppgainYAmp;
@@ -2095,10 +2160,10 @@ namespace FZ4P
             else
             {
                 AddLog(ch, string.Format("FRA Y1 Gain10Hz = {0:0.000}",
-                Spec.PassFails[ch].Results[(int)SpecItem.FRAY1_Gain10Hz].Val = gain[0]));
+                PassFails[ch].Results[(int)SpecItem.FRAY1_Gain10Hz].Val = gain[0]));
 
-                Spec.SetResult(ch, (int)SpecItem.FRAY1_Gain10Hz, (int)SpecItem.FRAY1_Gain10Hz);
-                ShowDataResults(ch, "FRA Y1");
+                SetResult(ch, (int)SpecItem.FRAY1_Gain10Hz, (int)SpecItem.FRAY1_Gain10Hz);
+                ShowDataResults(ch, "FRA Y1", (int)SpecItem.FRAY1_Gain10Hz, (int)SpecItem.FRAY1_Gain10Hz);
             }
             //Y2
             //amp = (int)Condition.iLoppgainYAmp;
@@ -2176,10 +2241,10 @@ namespace FZ4P
             else
             {
                 AddLog(ch, string.Format("FRA X Freq = {0} PM = {1}",
-                Spec.PassFails[ch].Results[(int)SpecItem.FRAX_PMFreq].Val = freq[(int)phaseIndex], Spec.PassFails[ch].Results[(int)SpecItem.FRAX_PhaseMargin].Val = 180 + (phase[(int)phaseIndex])));
+                PassFails[ch].Results[(int)SpecItem.FRAX_PMFreq].Val = freq[(int)phaseIndex], PassFails[ch].Results[(int)SpecItem.FRAX_PhaseMargin].Val = 180 + (phase[(int)phaseIndex])));
 
-                Spec.SetResult(ch, (int)SpecItem.FRAX_PMFreq, (int)SpecItem.FRAX_PhaseMargin);
-                ShowDataResults(ch, "FRA X");
+                SetResult(ch, (int)SpecItem.FRAX_PMFreq, (int)SpecItem.FRAX_PhaseMargin);
+                ShowDataResults(ch, "FRA X", (int)SpecItem.FRAX_PMFreq, (int)SpecItem.FRAX_PhaseMargin);
             }
             #endregion
             #region Y PM
@@ -2222,10 +2287,10 @@ namespace FZ4P
             else
             {
                 AddLog(ch, string.Format("FRA Y1 Freq = {0} PM = {1}",
-                Spec.PassFails[ch].Results[(int)SpecItem.FRAY1_PMFreq].Val = freq[(int)phaseIndex], Spec.PassFails[ch].Results[(int)SpecItem.FRAY1_PhaseMargin].Val = 180 + (phase[(int)phaseIndex])));
+                PassFails[ch].Results[(int)SpecItem.FRAY1_PMFreq].Val = freq[(int)phaseIndex], PassFails[ch].Results[(int)SpecItem.FRAY1_PhaseMargin].Val = 180 + (phase[(int)phaseIndex])));
 
-                Spec.SetResult(ch, (int)SpecItem.FRAY1_PMFreq, (int)SpecItem.FRAY1_PhaseMargin);
-                ShowDataResults(ch, "FRA Y1");
+                SetResult(ch, (int)SpecItem.FRAY1_PMFreq, (int)SpecItem.FRAY1_PhaseMargin);
+                ShowDataResults(ch, "FRA Y1", (int)SpecItem.FRAY1_PMFreq, (int)SpecItem.FRAY1_PhaseMargin);
             }
             #endregion
             #region Y2 PM
@@ -2311,10 +2376,10 @@ namespace FZ4P
             else
             {
                 AddLog(ch, string.Format("FRA AF Freq = {0} PM = {1}",
-                      Spec.PassFails[ch].Results[(int)SpecItem.FRAAF_PMFreq].Val = freq[(int)phaseIndex], Spec.PassFails[ch].Results[(int)SpecItem.FRAAF_PhaseMargin].Val = 180 + (phase[(int)phaseIndex])));
+                      PassFails[ch].Results[(int)SpecItem.FRAAF_PMFreq].Val = freq[(int)phaseIndex], PassFails[ch].Results[(int)SpecItem.FRAAF_PhaseMargin].Val = 180 + (phase[(int)phaseIndex])));
 
-                Spec.SetResult(ch, (int)SpecItem.FRAAF_PMFreq, (int)SpecItem.FRAAF_PhaseMargin);
-                ShowDataResults(ch, "FRA AF");
+                SetResult(ch, (int)SpecItem.FRAAF_PMFreq, (int)SpecItem.FRAAF_PhaseMargin);
+                ShowDataResults(ch, "FRA AF", (int)SpecItem.FRAAF_PMFreq, (int)SpecItem.FRAAF_PhaseMargin);
             }
             #endregion
 
@@ -2395,13 +2460,16 @@ namespace FZ4P
             }
             else
             {
-                AddLog(ch, string.Format("FRA X GM = {0}", Spec.PassFails[ch].Results[(int)SpecItem.FRAX_GainMargin].Val = Math.Abs(gain[gainIndex])));
-                Spec.SetResult(ch, (int)SpecItem.FRAX_GainMargin, (int)SpecItem.FRAX_GainMargin);
-                ShowDataResults(ch, "FRA X");
+                AddLog(ch, string.Format("FRA X GM = {0}", PassFails[ch].Results[(int)SpecItem.FRAX_GainMargin].Val = Math.Abs(gain[gainIndex])));
+                SetResult(ch, (int)SpecItem.FRAX_GainMargin, (int)SpecItem.FRAX_GainMargin);
+                ShowDataResults(ch, "FRA X", (int)SpecItem.FRAX_GainMargin, (int)SpecItem.FRAX_GainMargin);
             }
 
             //Y1
             axis = "Y1";
+            startFreq = Condition.iYGainFrom;
+            EndFreq = Condition.iYGainTo;
+            amp = (int)Condition.iYAmplitudeGain;
             AddLog(ch, string.Format("{0} FRA ==", axis));
 
             gain = new List<double>();
@@ -2421,10 +2489,10 @@ namespace FZ4P
             }
             else
             {
-                AddLog(ch, string.Format("FRA Y1 GM = {0}", Spec.PassFails[ch].Results[(int)SpecItem.FRAY1_GainMargin].Val = Math.Abs(gain[gainIndex])));
+                AddLog(ch, string.Format("FRA Y1 GM = {0}", PassFails[ch].Results[(int)SpecItem.FRAY1_GainMargin].Val = Math.Abs(gain[gainIndex])));
 
-                Spec.SetResult(ch, (int)SpecItem.FRAY1_PMFreq, (int)SpecItem.FRAY1_GainMargin);
-                ShowDataResults(ch, "FRA Y1");
+                SetResult(ch, (int)SpecItem.FRAY1_PMFreq, (int)SpecItem.FRAY1_GainMargin);
+                ShowDataResults(ch, "FRA Y1", (int)SpecItem.FRAY1_PMFreq, (int)SpecItem.FRAY1_GainMargin);
             }
 
             //Y2
@@ -2479,7 +2547,7 @@ namespace FZ4P
             fX[1] = STATIC.fVision.MeasureTxTyTz(0, "X", true);
 
 
-            Spec.PassFails[0].Results[(int)SpecItem.x_ServoDecenter].Val = fX[0].cx[0] - fX[1].cx[0];
+            PassFails[0].Results[(int)SpecItem.x_ServoDecenter].Val = fX[0].cx[0] - fX[1].cx[0];
 
 
             STATIC.DrvIC.OISOn(0, "X", true);
@@ -2498,10 +2566,10 @@ namespace FZ4P
             STATIC.fVision.m__G.oCam[0].GrabA(0);
             fY[1] = STATIC.fVision.MeasureTxTyTz(0, "Y", true);
 
-            Spec.PassFails[0].Results[(int)SpecItem.y_ServoDecenter].Val = fY[0].cy[0] - fY[1].cy[0];
+            PassFails[0].Results[(int)SpecItem.y_ServoDecenter].Val = fY[0].cy[0] - fY[1].cy[0];
 
-            Spec.SetResult(0, (int)SpecItem.x_ServoDecenter, (int)SpecItem.y_ServoDecenter);
-            ShowDataResults(0, "Servo Decenter");
+            SetResult(0, (int)SpecItem.x_ServoDecenter, (int)SpecItem.y_ServoDecenter);
+            ShowDataResults(0, "Servo Decenter", (int)SpecItem.x_ServoDecenter, (int)SpecItem.y_ServoDecenter);
 
             LEDs_All_On(port, false);
         }
@@ -2525,87 +2593,20 @@ namespace FZ4P
                         switch (name)
                         {
                             case "AF Scan":
-                            case "AF Scan2":
-                            case "AF Scan3":
-                            case "AF Scan4":
                                 //AF ========
                                 MakeWaveformCode(ref Cal.CodeZ, Condition.iAFDrvCodeMin, Condition.iAFDrvCodeMax, 2048, Condition.iDrvAFStep);
                                 break;
                             case "OIS X Scan":
-                            case "OIS X Scan2":
-                            case "OIS X Scan3":
-                            case "OIS X Scan4":
                                 //X =========
                                 MakeWaveformCode(ref Cal.CodeX, Condition.iXDrvCodeMin, Condition.iXDrvCodeMax, 2048, Condition.iDrvXStep);
                                 break;
-                            case "OIS Y Scan":
-                            case "OIS Y Scan2":
-                            case "OIS Y Scan3":
-                            case "OIS Y Scan4":
+                            case "OIS Y Scan":                           
                                 //Y1 ===========================
                                 MakeWaveformCode(ref Cal.CodeY1, Condition.iYDrvCodeMin, Condition.iYDrvCodeMax, 2048, Condition.iDrvYStep);
                                 //Y2 ===========================
                                 MakeWaveformCode(ref Cal.CodeY2, Condition.iY2DrvCodeMin, Condition.iY2DrvCodeMax, 2048, Condition.iDrvYStep);
                                 break;
-                            case "OIS Matrix Scan":
-                                for (int i = 0; i < Rcp.CodeScript.Param.Count; i++)
-                                {
-                                    Cal.CodeX.Add(int.Parse(Rcp.CodeScript.Param[i][1].ToString()));
-                                    Cal.CodeY1.Add(int.Parse(Rcp.CodeScript.Param[i][2].ToString()));
-                                    Cal.CodeY1.Add(int.Parse(Rcp.CodeScript.Param[i][3].ToString()));
-                                }
-                                break;
-                            case "OIS X Linearity Comp":
-                            case "OIS Y Linearity Comp":
-                            case "OIS X Linearity Comp2":
-                            case "OIS Y Linearity Comp2":
-                                if (name.Contains("X"))
-                                {
-                                    min = Condition.LinStart;
-                                    max = Condition.LinEnd;
-                                    step = Condition.LinSamplingSize;
-
-                                    curPos = min;
-                                    Cal.CodeX.Add(curPos);
-                                    Cal.CodeX.Add(curPos);
-                                    do
-                                    {
-                                        Cal.CodeX.Add(curPos);
-                                        curPos += step;
-                                    } while (curPos < max);
-                                    Cal.CodeX.Add(max);
-                                }
-                                else if (name.Contains("Y"))
-                                {
-                                    min = Condition.LinStart;
-                                    max = Condition.LinEnd;
-                                    step = Condition.LinSamplingSize;
-
-                                    curPos = min;
-                                    Cal.CodeY1.Add(curPos);
-                                    Cal.CodeY1.Add(curPos);
-                                    do
-                                    {
-                                        Cal.CodeY1.Add(curPos);
-                                        curPos += step;
-                                    } while (curPos < max);
-                                    Cal.CodeY1.Add(max);
-
-                                    min = Condition.LinStart;
-                                    max = Condition.LinEnd;
-                                    step = Condition.LinSamplingSize;
-
-                                    curPos = min;
-                                    Cal.CodeY2.Add(curPos);
-                                    Cal.CodeY2.Add(curPos);
-                                    do
-                                    {
-                                        Cal.CodeY2.Add(curPos);
-                                        curPos += step;
-                                    } while (curPos < max);
-                                    Cal.CodeY2.Add(max);
-                                }
-                                break;
+                        
                             case "AF Settling":
                                 min = Condition.iAFStandbyCode;
                                 max = Condition.iAFJumpStepCode;
@@ -2681,69 +2682,29 @@ namespace FZ4P
                 switch (name)
                 {
                     case "AF Scan":
-                    case "AF Scan2":
-                    case "AF Scan3":
-                    case "AF Scan4":
                         DrvIC.Move(j, "AF", 2048);
-                        if (Condition.iAFCrossOffsetCntl == 1)
-                        {
-                            DrvIC.OISOn(j, "X", true);
-                            DrvIC.Move(j, "X", Condition.iAFCrossOffsetX);
-                            DrvIC.OISOn(j, "Y", true);
-                            DrvIC.Move(j, "Y", Condition.iAFCrossOffsetY);
-                        }
+                        DrvIC.OISOn(j, "X", true);
+                        DrvIC.Move(j, "X", Condition.iAFCrossOffsetX);
+                        DrvIC.OISOn(j, "Y", true);
+                        DrvIC.Move(j, "Y", Condition.iAFCrossOffsetY);
                         break;
                     case "OIS X Scan":
-                    case "OIS X Scan2":
-                    case "OIS X Scan3":
-                    case "OIS X Scan4":
-                    case "OIS X Linearity Comp":
-                    case "OIS X Linearity Comp2":
+                
                         DrvIC.Move(j, "X", 2048);
-                        if (Condition.iXCrossOffsetCntl == 1)
-                        {
-                            DrvIC.OISOn(j, "Y", true);
-                            DrvIC.Move(j, "Y", Condition.iXCrossOffset);
-                        }
-                        if (Condition.iXCrossOffsetCntlAf == 1)
-                        {
-                            DrvIC.OISOn(j, "AF", true);
-                            //DrvIC.Move(j, "AF", Condition.iXCrossOffsetAf);
-
-                            DrvIC.Move(j, "AF", BestAFPos);
-                        }
+                        DrvIC.OISOn(j, "Y", true);
+                        DrvIC.Move(j, "Y", Condition.iXCrossOffset);
+                        DrvIC.OISOn(j, "AF", true);
+                        DrvIC.Move(j, "AF", BestAFPos);
                         break;
                     case "OIS Y Scan":
-                    case "OIS Y Scan2":
-                    case "OIS Y Scan3":
-                    case "OIS Y Scan4":
-                    case "OIS Y Linearity Comp":
-                    case "OIS Y Linearity Comp2":
+                    
                         DrvIC.Move(j, "Y", 2048);
-                        if (Condition.iYCrossOffsetCntl == 1)
-                        {
-                            DrvIC.OISOn(j, "X", true);
-                            DrvIC.Move(j, "X", Condition.iYCrossOffset);
-                        }
-                        if (Condition.iYCrossOffsetCntlAf == 1)
-                        {
-                            DrvIC.OISOn(j, "AF", true);
-                            //DrvIC.Move(j, "AF", Condition.iYCrossOffsetAf);
-
-                            DrvIC.Move(j, "AF", BestAFPos);
-                        }
-                        break;
-                    case "OIS Matrix Scan":
                         DrvIC.OISOn(j, "X", true);
-                        DrvIC.OISOn(j, "Y", true);
-                        DrvIC.Move(j, "X", 2048);
-                        DrvIC.Move(j, "Y", 2048);
-                        if (Condition.iMCrossOffsetCntlAf == 1)
-                        {
-                            DrvIC.OISOn(j, "AF", true);
-                            DrvIC.Move(j, "AF", Condition.iMCrossOffsetAf);
-                        }
+                        DrvIC.Move(j, "X", Condition.iYCrossOffset);
+                        DrvIC.OISOn(j, "AF", true);
+                        DrvIC.Move(j, "AF", BestAFPos);
                         break;
+                  
                 }
             }
             Thread.Sleep(100);
@@ -3231,7 +3192,7 @@ namespace FZ4P
             }
             if (Option.SaveRawData)
             {
-                string str = Convert.ToString(Spec.LastSampleNum + 1);
+                string str = Convert.ToString(yield.LastSampleNum + 1);
                 string dateDir = STATIC.CreateDateDir();
                 dateDir += "DrivingData\\";
                 if (!Directory.Exists(dateDir))
@@ -3260,7 +3221,7 @@ namespace FZ4P
                                     arry.Add("i,AF Code,X Code,Y1 Code,Y2 Code,X,Y,Z,TX,TY,TZ,Y1,Y2,Hall X,Hall Y1,Hall Y2,Hall AF,Current");
                                     for (int i = 0; i < fCount; i++)
                                     {
-                                        path = string.Format(dateDir + "{0}_{1}_{2}_{3}.csv", name, m_StrIndex[j], Spec.LastSampleNum + 1, st);
+                                        path = string.Format(dateDir + "{0}_{1}_{2}_{3}.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
                                         string data = string.Format("{0},{1},{2},{3},{4},{5:0.000},{6:0.000},{7:0.000},{8:0.000},{9:0.000},{10:0.000},{11:0.000},{12:0.000},{13},{14},{15},{16},{17:0.000}", i, Cal.CodeZ[i], Condition.iAFCrossOffsetX, Condition.iAFCrossOffsetY, Condition.iAFCrossOffsetY,
                                             Cal.StrokeX[i], Cal.StrokeY[i], Cal.StrokeZ[i], Cal.TiltX[i], Cal.TiltY[i], Cal.TiltZ[i], Cal.StrokeY1[i], Cal.StrokeY2[i],
                                             Cal.HallX[i], Cal.HallY1[i], Cal.HallY2[i], Cal.HallZ[i], Cal.Current[i]);
@@ -3280,8 +3241,8 @@ namespace FZ4P
                                     for (int i = 0; i < fCount; i++)
                                     {
                                         if (name.Contains("Linearity"))
-                                            path = string.Format(dateDir + "{0}_{1}_{2}_{3}_Lin.csv", name, m_StrIndex[j], Spec.LastSampleNum + 1, st);
-                                        else path = string.Format(dateDir + "{0}_{1}_{2}_{3}.csv", name, m_StrIndex[j], Spec.LastSampleNum + 1, st);
+                                            path = string.Format(dateDir + "{0}_{1}_{2}_{3}_Lin.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
+                                        else path = string.Format(dateDir + "{0}_{1}_{2}_{3}.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
                                         string data = string.Format("{0},{1},{2},{3},{4},{5:0.000},{6:0.000},{7:0.000},{8:0.000},{9:0.000},{10:0.000},{11:0.000},{12:0.000},{13},{14},{15},{16},{17:0.000}", i, Condition.iXCrossOffsetAf, Cal.CodeX[i], Condition.iXCrossOffset, Condition.iXCrossOffset,
                                             Cal.StrokeX[i], Cal.StrokeY[i], Cal.StrokeZ[i], Cal.TiltX[i], Cal.TiltY[i], Cal.TiltZ[i], Cal.StrokeY1[i], Cal.StrokeY2[i],
                                             Cal.HallX[i], Cal.HallY1[i], Cal.HallY2[i], Cal.HallZ[i], Cal.Current[i]);
@@ -3311,8 +3272,8 @@ namespace FZ4P
                                     for (int i = 0; i < fCount; i++)
                                     {
                                         if (name.Contains("Linearity"))
-                                            path = string.Format(dateDir + "{0}_{1}_{2}_{3}_Lin.csv", name, m_StrIndex[j], Spec.LastSampleNum + 1, st);
-                                        else path = string.Format(dateDir + "{0}_{1}_{2}_{3}.csv", name, m_StrIndex[j], Spec.LastSampleNum + 1, st);
+                                            path = string.Format(dateDir + "{0}_{1}_{2}_{3}_Lin.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
+                                        else path = string.Format(dateDir + "{0}_{1}_{2}_{3}.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
                                         string data = string.Format("{0},{1},{2},{3},{4},{5:0.000},{6:0.000},{7:0.000},{8:0.000},{9:0.000},{10:0.000},{11:0.000},{12:0.000},{13},{14},{15},{16},{17:0.000}", i, Condition.iYCrossOffsetAf, Condition.iYCrossOffset, Cal.CodeY1[i], Cal.CodeY1[i],
                                                Cal.StrokeX[i], Cal.StrokeY[i], Cal.StrokeZ[i], Cal.TiltX[i], Cal.TiltY[i], Cal.TiltZ[i], Cal.StrokeY1[i], Cal.StrokeY2[i],
                                              Cal.HallX[i], Cal.HallY1[i], Cal.HallY2[i], Cal.HallZ[i], Cal.Current[i]);
@@ -3335,7 +3296,7 @@ namespace FZ4P
                                     arry.Add("i,X Code,Y1 Code,Y2 Code,X Stroke,Y1 Stroke,Y2 Stroke,Current,Hall X,Hall Y1,Hall Y2,Tx,Ty,Tz");
                                     for (int i = 0; i < fCount; i++)
                                     {
-                                        path = string.Format("{0}_{1}_{2}_{3}.csv", name, m_StrIndex[j], Spec.LastSampleNum + 1, st);
+                                        path = string.Format("{0}_{1}_{2}_{3}.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
                                         string data = string.Format("{0},{1},{2},{3},{4:0.000},{5:0.000},{6:0.000},{7:0.0},{8},{9},{10},{11:0.000},{12:0.000},{13:0.000}", i, Cal.CodeZ[i],
                                            Cal.CodeX[i], Cal.CodeY1[i],
                                            Cal.StrokeX[i], Cal.StrokeY1[i], Cal.StrokeY2[i], Cal.Current[i], Cal.HallX[i], Cal.HallY1[i], Cal.HallY2[i], Cal.TiltX[i], Cal.TiltY[i], Cal.TiltZ[i]);
@@ -3364,58 +3325,58 @@ namespace FZ4P
                         if (name.Contains("Linearity")) return;
                         if (name.Contains("AF"))
                         {
-                            forword = Spec.PassFails[j].Results[(int)SpecItem.AF_Forwardstroke].Val = Cal.CalFwdStoke(Cal.CodeZ, Cal.StrokeZ);
-                            backword = Spec.PassFails[j].Results[(int)SpecItem.AF_Backwardstroke].Val = Cal.CalBwdStoke(Cal.CodeZ, Cal.StrokeZ);
-                            Spec.PassFails[j].Results[(int)SpecItem.AF_Ratedstroke].Val = forword + backword;
-                            Spec.PassFails[j].Results[(int)SpecItem.AF_Sensitivity].Val = Cal.CalSensitivity(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.AF_Linearity].Val = Cal.CalLinearity(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.AF_Hysteresis].Val = Cal.CalHysteresis(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.AF_MaxCurrent].Val = Cal.CalMaxCurrent(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.AF_HoldingCurrent].Val = Cal.CalHoldingCurrent(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.AF_CrosstalkX].Val = Cal.CalCrosstalk(Cal.CodeZ, Cal.StrokeX, Condition.iAFCodeRange, Condition.iAFCodeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.AF_CrosstalkY].Val = Cal.CalCrosstalk(Cal.CodeZ, Cal.StrokeY, Condition.iAFCodeRange, Condition.iAFCodeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.AF_CrosstalkR].Val = Cal.CalCrosstalkR(Cal.CodeZ, Cal.StrokeX, Cal.StrokeY, Condition.iAFCodeRange, Condition.iAFCodeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.AF_Rolling].Val = Cal.CalRolling(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
+                            forword = PassFails[j].Results[(int)SpecItem.AF_Forwardstroke].Val = Cal.CalFwdStoke(Cal.CodeZ, Cal.StrokeZ);
+                            backword = PassFails[j].Results[(int)SpecItem.AF_Backwardstroke].Val = Cal.CalBwdStoke(Cal.CodeZ, Cal.StrokeZ);
+                            PassFails[j].Results[(int)SpecItem.AF_Ratedstroke].Val = forword + backword;
+                            PassFails[j].Results[(int)SpecItem.AF_Sensitivity].Val = Cal.CalSensitivity(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.AF_Linearity].Val = Cal.CalLinearity(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.AF_Hysteresis].Val = Cal.CalHysteresis(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.AF_MaxCurrent].Val = Cal.CalMaxCurrent(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.AF_HoldingCurrent].Val = Cal.CalHoldingCurrent(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.AF_CrosstalkX].Val = Cal.CalCrosstalk(Cal.CodeZ, Cal.StrokeX, Condition.iAFCodeRange, Condition.iAFCodeRange);
+                            PassFails[j].Results[(int)SpecItem.AF_CrosstalkY].Val = Cal.CalCrosstalk(Cal.CodeZ, Cal.StrokeY, Condition.iAFCodeRange, Condition.iAFCodeRange);
+                            PassFails[j].Results[(int)SpecItem.AF_CrosstalkR].Val = Cal.CalCrosstalkR(Cal.CodeZ, Cal.StrokeX, Cal.StrokeY, Condition.iAFCodeRange, Condition.iAFCodeRange);
+                            PassFails[j].Results[(int)SpecItem.AF_Rolling].Val = Cal.CalRolling(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
 
-                            Spec.SetResult(j, (int)SpecItem.AF_Ratedstroke, (int)SpecItem.AF_Rolling);
-                            ShowDataResults(j, "AF");
+                            SetResult(j, (int)SpecItem.AF_Ratedstroke, (int)SpecItem.AF_Rolling);
+                            ShowDataResults(j, "AF", (int)SpecItem.AF_Ratedstroke, (int)SpecItem.AF_Rolling);
                         }
                         else if (name.Contains("OIS X"))
                         {
-                            forword = Spec.PassFails[j].Results[(int)SpecItem.OISX_Forwardstroke].Val = Cal.CalFwdStoke(Cal.CodeX, Cal.StrokeX);
-                            backword = Spec.PassFails[j].Results[(int)SpecItem.OISX_Backwardstroke].Val = Cal.CalBwdStoke(Cal.CodeX, Cal.StrokeX);
-                            Spec.PassFails[j].Results[(int)SpecItem.OISX_Ratedstroke].Val = forword + backword;
-                            Spec.PassFails[j].Results[(int)SpecItem.OISX_Sensitivity].Val = Cal.CalSensitivity(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXStrokeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.OISX_Linearity].Val = Cal.CalLinearity(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXStrokeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.OISX_Hysteresis].Val = Cal.CalHysteresis(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXStrokeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.OISX_MaxCurrent].Val = Cal.CalMaxCurrent(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXStrokeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.OISX_CenteringCurrent].Val = Cal.CalCenterCurrent(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXCodeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.OISX_CrosstalkY].Val = Cal.CalCrosstalk(Cal.CodeX, Cal.StrokeY, Condition.iXCodeRange, Condition.iXCodeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.OISX_CrosstalkZ].Val = Cal.CalCrosstalk(Cal.CodeX, Cal.StrokeZ, Condition.iXCodeRange, Condition.iXCodeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.OISX_CrosstalkR].Val = Cal.CalCrosstalkR(Cal.CodeX, Cal.StrokeY, Cal.StrokeZ, Condition.iXCodeRange, Condition.iXCodeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.OISX_Rolling].Val = Cal.CalRolling(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXStrokeRange);
+                            forword = PassFails[j].Results[(int)SpecItem.OISX_Forwardstroke].Val = Cal.CalFwdStoke(Cal.CodeX, Cal.StrokeX);
+                            backword = PassFails[j].Results[(int)SpecItem.OISX_Backwardstroke].Val = Cal.CalBwdStoke(Cal.CodeX, Cal.StrokeX);
+                            PassFails[j].Results[(int)SpecItem.OISX_Ratedstroke].Val = forword + backword;
+                            PassFails[j].Results[(int)SpecItem.OISX_Sensitivity].Val = Cal.CalSensitivity(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.OISX_Linearity].Val = Cal.CalLinearity(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.OISX_Hysteresis].Val = Cal.CalHysteresis(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.OISX_MaxCurrent].Val = Cal.CalMaxCurrent(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.OISX_CenteringCurrent].Val = Cal.CalCenterCurrent(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXCodeRange);
+                            PassFails[j].Results[(int)SpecItem.OISX_CrosstalkY].Val = Cal.CalCrosstalk(Cal.CodeX, Cal.StrokeY, Condition.iXCodeRange, Condition.iXCodeRange);
+                            PassFails[j].Results[(int)SpecItem.OISX_CrosstalkZ].Val = Cal.CalCrosstalk(Cal.CodeX, Cal.StrokeZ, Condition.iXCodeRange, Condition.iXCodeRange);
+                            PassFails[j].Results[(int)SpecItem.OISX_CrosstalkR].Val = Cal.CalCrosstalkR(Cal.CodeX, Cal.StrokeY, Cal.StrokeZ, Condition.iXCodeRange, Condition.iXCodeRange);
+                            PassFails[j].Results[(int)SpecItem.OISX_Rolling].Val = Cal.CalRolling(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXStrokeRange);
 
-                            Spec.SetResult(j, (int)SpecItem.OISX_Ratedstroke, (int)SpecItem.OISX_Rolling);
-                            ShowDataResults(j, "X");
+                            SetResult(j, (int)SpecItem.OISX_Ratedstroke, (int)SpecItem.OISX_Rolling);
+                            ShowDataResults(j, "X", (int)SpecItem.OISX_Ratedstroke, (int)SpecItem.OISX_Rolling);
                         }
                         else if (name.Contains("OIS Y"))
                         {
-                            forword = Spec.PassFails[j].Results[(int)SpecItem.OISY_Forwardstroke].Val = Cal.CalFwdStoke(Cal.CodeY1, Cal.StrokeY);
-                            backword = Spec.PassFails[j].Results[(int)SpecItem.OISY_Backwardstroke].Val = Cal.CalBwdStoke(Cal.CodeY1, Cal.StrokeY);
-                            Spec.PassFails[j].Results[(int)SpecItem.OISY_Ratedstroke].Val = forword + backword;
+                            forword = PassFails[j].Results[(int)SpecItem.OISY_Forwardstroke].Val = Cal.CalFwdStoke(Cal.CodeY1, Cal.StrokeY);
+                            backword = PassFails[j].Results[(int)SpecItem.OISY_Backwardstroke].Val = Cal.CalBwdStoke(Cal.CodeY1, Cal.StrokeY);
+                            PassFails[j].Results[(int)SpecItem.OISY_Ratedstroke].Val = forword + backword;
 
-                            Spec.PassFails[j].Results[(int)SpecItem.OISY_Sensitivity].Val = Cal.CalSensitivity(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.OISY_Linearity].Val = Cal.CalLinearity(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.OISY_Hysteresis].Val = Cal.CalHysteresis(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.OISY_MaxCurrent].Val = Cal.CalMaxCurrent(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.OISY_CenteringCurrent].Val = Cal.CalCenterCurrent(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.OISY_CrosstalkX].Val = Cal.CalCrosstalk(Cal.CodeY1, Cal.StrokeX, Condition.iYStrokeRange, Condition.iYStrokeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.OISY_CrosstalkZ].Val = Cal.CalCrosstalk(Cal.CodeY1, Cal.StrokeZ, Condition.iYStrokeRange, Condition.iYStrokeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.OISY_CrosstalkR].Val = Cal.CalCrosstalkR(Cal.CodeY1, Cal.StrokeX, Cal.StrokeZ, Condition.iYStrokeRange, Condition.iYStrokeRange);
-                            Spec.PassFails[j].Results[(int)SpecItem.OISY_Rolling].Val = Cal.CalRolling(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.OISY_Sensitivity].Val = Cal.CalSensitivity(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.OISY_Linearity].Val = Cal.CalLinearity(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.OISY_Hysteresis].Val = Cal.CalHysteresis(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.OISY_MaxCurrent].Val = Cal.CalMaxCurrent(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.OISY_CenteringCurrent].Val = Cal.CalCenterCurrent(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.OISY_CrosstalkX].Val = Cal.CalCrosstalk(Cal.CodeY1, Cal.StrokeX, Condition.iYStrokeRange, Condition.iYStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.OISY_CrosstalkZ].Val = Cal.CalCrosstalk(Cal.CodeY1, Cal.StrokeZ, Condition.iYStrokeRange, Condition.iYStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.OISY_CrosstalkR].Val = Cal.CalCrosstalkR(Cal.CodeY1, Cal.StrokeX, Cal.StrokeZ, Condition.iYStrokeRange, Condition.iYStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.OISY_Rolling].Val = Cal.CalRolling(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
 
-                            Spec.SetResult(j, (int)SpecItem.OISY_Ratedstroke, (int)SpecItem.OISY_Rolling);
-                            ShowDataResults(j, "Y");
+                            SetResult(j, (int)SpecItem.OISY_Ratedstroke, (int)SpecItem.OISY_Rolling);
+                            ShowDataResults(j, "Y", (int)SpecItem.OISY_Ratedstroke, (int)SpecItem.OISY_Rolling);
                         }
                         AddChart(j, name);
                     }
@@ -3479,7 +3440,7 @@ namespace FZ4P
 
             if (Option.SaveRawData)
             {
-                string str = Convert.ToString(Spec.LastSampleNum + 1);
+                string str = Convert.ToString(yield.LastSampleNum + 1);
                 string dateDir = STATIC.CreateDateDir();
                 dateDir += "DrivingData\\";
                 if (!Directory.Exists(dateDir))
@@ -3505,7 +3466,7 @@ namespace FZ4P
                                     lstr = "";
                                     for (int i = 0; i < framCnt[port]; i++)
                                     {
-                                        path = string.Format(dateDir + "{0}_{1}_{2}_{3}.csv", name, m_StrIndex[j], Spec.LastSampleNum + 1, st);
+                                        path = string.Format(dateDir + "{0}_{1}_{2}_{3}.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
                                         string data = string.Format("{0},{1:0.000},{2:0.000},{3:0.000},{4:0.000},{5:0.000},{6:0.000},{7:0.000},{8:0.000},{9:0.000}", i, Cal.Time[i],
                                                Cal.StrokeX[i], Cal.StrokeY[i], Cal.StrokeZ[i], Cal.TiltX[i], Cal.TiltY[i], Cal.TiltZ[i], Cal.StrokeY1[i], Cal.StrokeY2[i]);
                                         arry.Add(data);
@@ -3560,10 +3521,10 @@ namespace FZ4P
                                 }
                                 settling = Cal.Time[SettlingIndex] - Cal.Time[RisingIndex];  //  msec
                                 //===========================================================================
-                                Spec.PassFails[j].Results[(int)SpecItem.AF_SettillingTime].Val = settling;
+                                PassFails[j].Results[(int)SpecItem.AF_SettillingTime].Val = settling;
 
-                                Spec.SetResult(j, (int)SpecItem.AF_SettillingTime, (int)SpecItem.AF_SettillingTime);
-                                ShowDataResults(j, "AF");
+                                SetResult(j, (int)SpecItem.AF_SettillingTime, (int)SpecItem.AF_SettillingTime);
+                                ShowDataResults(j, "AF", (int)SpecItem.AF_SettillingTime, (int)SpecItem.AF_SettillingTime);
                                 break;
                         }
                         AddChart(j, name);
@@ -3580,35 +3541,13 @@ namespace FZ4P
             sHeader = "Time,Index,PlateBCode,LotID,ACTID,Channel,PM Index,PassFail,1st Fail Item,";
 
             string sParam = "";
-            for (int i = (int)SpecItem.OISX_Ratedstroke; i < (int)SpecItem.OISY_Ratedstroke; i++)
+            for (int i = (int)SpecItem.OISX_Ratedstroke; i < (int)SpecItem.Length; i++)
             {
-                sParam += string.Format("X {0},", Spec.Param[i][1]);
+                sParam += string.Format("{0} {1},", Spec.specList[i].Category, Spec.specList[i].DisplayName);
             }
             sHeader += sParam;
 
-            sParam = "";
-            for (int i = (int)SpecItem.OISY_Ratedstroke; i < (int)SpecItem.OISY_CrosstalkX; i++)
-            {
-                sParam += string.Format("Y {0},", Spec.Param[i][1]);
-            }
-            sHeader += sParam;
-
-            sParam = "";
-            for (int i = (int)SpecItem.OISY_CrosstalkX; i < (int)SpecItem.FRAX_PMFreq; i++)
-            {
-                sParam += string.Format("AF {0},", Spec.Param[i][1]);
-            }
-            sHeader += sParam;
-
-            sParam = "";
-            for (int i = (int)SpecItem.FRAX_PMFreq; i < Spec.Param.Count; i++)
-            {
-                if (Spec.Param[i][0].Equals("FRA X")) sParam += string.Format("X {0},", Spec.Param[i][1]);
-                else if (Spec.Param[i][0].Equals("FRA Y")) sParam += string.Format("Y {0},", Spec.Param[i][1]);
-                else sParam += string.Format("{0},", Spec.Param[i][1]);
-            }
-
-            sHeader += sParam;
+       
             //Time
             sParam = "";
             for (int i = 0; i < ItemList.Count; i++)
@@ -3626,9 +3565,9 @@ namespace FZ4P
             sHeader = "uint,,,,,,,,,";
 
             sParam = "";
-            for (int i = (int)SpecItem.OISX_Ratedstroke; i < Spec.Param.Count; i++)
+            for (int i = (int)SpecItem.OISX_Ratedstroke; i < (int)SpecItem.Length; i++)
             {
-                sParam += string.Format("({0}),", Spec.Param[i][9]);
+                sParam += string.Format("({0}),", Spec.specList[i].Unit);
             }
             sHeader += sParam;
 
@@ -3636,9 +3575,9 @@ namespace FZ4P
 
             sHeader = "Spec Min,,,,,,,,,";
             sParam = "";
-            for (int i = (int)SpecItem.OISX_Ratedstroke; i < Spec.Param.Count; i++)
+            for (int i = (int)SpecItem.OISX_Ratedstroke; i < (int)SpecItem.Length; i++)
             {
-                sParam += string.Format("{0},", Spec.Param[i][2]);
+                sParam += string.Format("{0},", Spec.specList[i].MinSpec);
             }
             sHeader += sParam;
 
@@ -3646,9 +3585,9 @@ namespace FZ4P
 
             sHeader = "Spec Max,,,,,,,,,";
             sParam = "";
-            for (int i = (int)SpecItem.OISX_Ratedstroke; i < Spec.Param.Count; i++)
+            for (int i = (int)SpecItem.OISX_Ratedstroke; i < (int)SpecItem.Length; i++)
             {
-                sParam += string.Format("{0},", Spec.Param[i][3]);
+                sParam += string.Format("{0},", Spec.specList[i].MaxSpec);
             }
             sHeader += sParam;
 
@@ -3676,44 +3615,44 @@ namespace FZ4P
             for (int j = ch; j < ch + ChannelCnt; j++)
             {
                 string log = "";
-                if (errMsg[j].Contains("Hall Cal")) { Spec.PassFails[j].FirstFailIndex = -1; }
-                else if (errMsg[j] == "Socket Empty") { Spec.PassFails[j].FirstFailIndex = -2; }
+                if (errMsg[j].Contains("Hall Cal")) { PassFails[j].FirstFailIndex = -1; }
+                else if (errMsg[j] == "Socket Empty") { PassFails[j].FirstFailIndex = -2; }
                 else
                 {
                     for (int k = 0; k < ItemList.Count; k++)
                     {
                         if (errMsg[j].Contains(ItemList[k].Name))
                         {
-                            Spec.PassFails[j].FirstFailIndex = (-(k + 2));
+                            PassFails[j].FirstFailIndex = (-(k + 2));
                         }
                     }
                 }
 
-                AddLog(j, string.Format("ch : {0}, msg : {1}, PassFail : {2}", j, errMsg[j], Spec.PassFails[j].FirstFailIndex));
+                AddLog(j, string.Format("ch : {0}, msg : {1}, PassFail : {2}", j, errMsg[j], PassFails[j].FirstFailIndex));
 
                 //"Time,Index,PlateBCode,LotID,ACTID,Channel,PM Index,PassFail,"
                 log += string.Format("'{0},{1},{2},{3},{4},{5},{6},{7},",
-                    DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), m_StrIndex[j], "", Model.LotID, "", j, "", Spec.PassFails[j].TotalFail);
+                    DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), m_StrIndex[j], "", Model.LotID, "", j, "", PassFails[j].TotalFail);
 
-                Spec.TotlaTested++;
+                yield.TotlaTested++;
                 //1st Fail Item
-                if (Spec.PassFails[j].FirstFailIndex > 0)
+                if (PassFails[j].FirstFailIndex > 0)
                 {
-                    errMsg[j] = Spec.PassFails[j].FirstFail;
-                    Spec.TotlaFailed++;
+                    errMsg[j] = PassFails[j].FirstFail;
+                    yield.TotlaFailed++;
                     AddLog(j, "Fail : " + errMsg[j]);
                     log += errMsg[j] + ",";
                 }
-                else if (Spec.PassFails[j].FirstFailIndex < 0)
+                else if (PassFails[j].FirstFailIndex < 0)
                 {
-                    Spec.TotlaTested--;
+                    yield.TotlaTested--;
                     log += errMsg[j] + ",";
                 }
                 else
                 {
                     if (m_ChannelOn[j])
                     {
-                        Spec.TotlaPassed++;
+                        yield.TotlaPassed++;
                         log += "PASS" + ",";
                     }
                     else
@@ -3725,24 +3664,24 @@ namespace FZ4P
                 //  X Results
                 for (int i = (int)SpecItem.OISX_Ratedstroke; i < (int)SpecItem.OISY_Ratedstroke; i++)
                 {
-                    log += string.Format("{0:0.000},", Spec.PassFails[j].Results[i].Val);
+                    log += string.Format("{0:0.000},", PassFails[j].Results[i].Val);
                 }
 
                 //  Y Results
                 for (int i = (int)SpecItem.OISY_Ratedstroke; i < (int)SpecItem.AF_Ratedstroke; i++)
                 {
-                    log += string.Format("{0:0.000},", Spec.PassFails[j].Results[i].Val);
+                    log += string.Format("{0:0.000},", PassFails[j].Results[i].Val);
                 }
 
                 //  AF Results
                 for (int i = (int)SpecItem.AF_Ratedstroke; i < (int)SpecItem.FRAX_PMFreq; i++)
                 {
-                    log += string.Format("{0:0.000},", Spec.PassFails[j].Results[i].Val);
+                    log += string.Format("{0:0.000},", PassFails[j].Results[i].Val);
                 }
 
-                for (int i = (int)SpecItem.FRAX_PMFreq; i < Spec.Param.Count; i++)
+                for (int i = (int)SpecItem.FRAX_PMFreq; i < (int)SpecItem.Length; i++)
                 {
-                    log += string.Format("{0:0.000},", Spec.PassFails[j].Results[i].Val);
+                    log += string.Format("{0:0.000},", PassFails[j].Results[i].Val);
                 }
 
                 //Time
@@ -3751,7 +3690,7 @@ namespace FZ4P
                     log += string.Format("{0:0.000},", ItemList[i].Time);
                 }
 
-                log += string.Format("{0:0.000},", Spec.PassFails[ch].TotalTime);
+                log += string.Format("{0:0.000},", PassFails[ch].TotalTime);
 
                 sw.WriteLine(log);
             }
@@ -3761,970 +3700,7 @@ namespace FZ4P
 
         #endregion
 
-        #region old
-        private void Act_ChangeSlaveAddr(int ch, string testItem)
-        {
-            //if (ch == 1) return;
-            if (!DrvIC.ChangeSlaveAddr(ch))
-            {
-                errMsg[ch] = string.Format("{0} Error", testItem);
-                m_ChannelOn[ch] = false;
-            }
-        }
-        private void Act_PIDSetting(int ch, string testItem)
-        {
-            if (!DrvIC.PIDSetting(ch, Rcp.AfPidSet.Param, 0))
-            {
-                errMsg[ch] = string.Format("{0} Error", testItem);
-                m_ChannelOn[ch] = false;
-            }
-            if (!DrvIC.PIDSetting(ch, Rcp.XPidSet.Param, 1))
-            {
-                errMsg[ch] = string.Format("{0} Error", testItem);
-                m_ChannelOn[ch] = false;
-            }
-            if (!DrvIC.PIDSetting(ch, Rcp.YPidSet.Param, 2))
-            {
-                errMsg[ch] = string.Format("{0} Error", testItem);
-                m_ChannelOn[ch] = false;
-            }
-        }
-        private void Act_AgingOpenLoop(int ch, string testItem)
-        {
-            if (!DrvIC.AgingOpenLoop(ch, testItem))
-            {
-                errMsg[ch] = string.Format("{0} Error", testItem);
-                m_ChannelOn[ch] = false;
-            }
-        }
-        private void Act_LinearitySave(int ch, string testItem)
-        {
-            if (!DrvIC.LinearitySave(ch))
-            {
-                errMsg[ch] = string.Format("{0} Error", testItem);
-                m_ChannelOn[ch] = false;
-            }
-        }
-        private void Act_LinearityDelete(int ch, string testItem)
-        {
-            if (!DrvIC.LinearityDelete(ch))
-            {
-                errMsg[ch] = string.Format("{0} Error", testItem);
-                m_ChannelOn[ch] = false;
-            }
-        }
-        private void Act_LinearityRestore(int ch, string testItem)
-        {
-            if (!DrvIC.LinearityRestore(ch))
-            {
-                errMsg[ch] = string.Format("{0} Error", testItem);
-                m_ChannelOn[ch] = false;
-            }
-        }
-        private void Act_HallCalibration(int ch, string testItem)
-        {
-            if (!DrvIC.EPA_Set(ch, "X", 0, 0))
-            {
-                errMsg[ch] = string.Format("Reset EPA Error");
-                m_ChannelOn[ch] = false;
-            }
-            if (!DrvIC.EPA_Set(ch, "Y1", 0, 0))
-            {
-                errMsg[ch] = string.Format("Reset EPA Error");
-                m_ChannelOn[ch] = false;
-            }
-            if (!DrvIC.EPA_Set(ch, "Y2", 0, 0))
-            {
-                errMsg[ch] = string.Format("Reset EPA Error");
-                m_ChannelOn[ch] = false;
-            }
-
-            if (!m_ChannelOn[ch]) return;
-            if (!DrvIC.HallCalibration(ch, Condition.HallCalMode))
-            {
-                errMsg[ch] = string.Format("{0} Error", testItem);
-                m_ChannelOn[ch] = false;
-            }
-        }
-        private void Act_Data_Check(int ch, string testItem)
-        {
-            if (!DrvIC.Data_Check(ch))
-            {
-                errMsg[ch] = string.Format("{0} Error", testItem);
-                m_ChannelOn[ch] = false;
-            }
-        }
-        private void Act_OIS_EPA(int port, string testItem)
-        {
-            int[] centerCode = new int[6];  //  Hall 값이 (2048,2048,2048) 에 가장 가까와지는  code 값
-                                            //  ch1_x, ch1_y1, ch1_y2, ch2_x, ch2_y1, ch2_y2
-                                            //  centerCode 위치에서 FWD 방향 구동거리와 BWD 방향 구동거리가 같아지는 Code 값
-            int[] epaCodeMin = new int[6];  //  ch1_x, ch1_y1, ch1_y2,     ch2_x, ch2_y1, ch2_y2
-
-            int[] epaCodeMax = new int[6];  //  ch1_x, ch1_y1, ch1_y2,     ch2_x, ch2_y1, ch2_y2\
-
-            Process_FindEPA(port, testItem, ref centerCode, ref epaCodeMin, ref epaCodeMax);
-
-            int ch = port * 2;
-            for (int j = ch; j < ch + ChannelCnt; j++)
-            {
-                if (!m_ChannelOn[j]) continue;
-                AddLog(j, string.Format("epaCodeMin X : {0}, Y1 : {1}, Y2 : {2}", epaCodeMin[0 + 3 * j], epaCodeMin[1 + 3 * j], epaCodeMin[2 + 3 * j]));
-                AddLog(j, string.Format("epaCodeMax X : {0}, Y1 : {1}, Y2 : {2}", 4096 - epaCodeMax[0 + 3 * j], 4096 - epaCodeMax[1 + 3 * j], 4096 - epaCodeMax[2 + 3 * j]));
-            }
-
-            if (testItem.Contains("X"))
-            {
-                for (int j = ch; j < ch + ChannelCnt; j++)
-                {
-                    if (!m_ChannelOn[j]) continue;
-                    if (!DrvIC.EPA_Set(j, "X", 4096 - epaCodeMax[0 + 3 * j], epaCodeMin[0 + 3 * j]))
-                    {
-                        errMsg[j] = string.Format("{0} Error", testItem);
-                        m_ChannelOn[j] = false;
-                    }
-                }
-            }
-            else
-            {
-                for (int j = ch; j < ch + ChannelCnt; j++)
-                {
-                    if (!m_ChannelOn[j]) continue;
-                    if (!DrvIC.EPA_Set(j, "Y1", 4096 - epaCodeMax[1 + 3 * j], epaCodeMin[1 + 3 * j]))
-                    {
-                        errMsg[j] = string.Format("{0} Error", testItem);
-                        m_ChannelOn[j] = false;
-                    }
-                    if (!DrvIC.EPA_Set(j, "Y2", 4096 - epaCodeMax[2 + 3 * j], epaCodeMin[2 + 3 * j]))
-                    {
-                        errMsg[j] = string.Format("{0} Error", testItem);
-                        m_ChannelOn[j] = false;
-                    }
-                }
-            }
-
-
-        }
-        private void Act_OIS_EPA_Recipe(int ch, string testItem)
-        {
-            if (testItem.Contains("X"))
-            {
-                if (!DrvIC.EPA_Set(ch, "X", Condition.iXEPACutTop, Condition.iXEPACutBottom))
-                {
-                    errMsg[ch] = string.Format("{0} Error", testItem);
-                    m_ChannelOn[ch] = false;
-                }
-            }
-            else
-            {
-                if (!DrvIC.EPA_Set(ch, "Y1", Condition.iY1EPACutTop, Condition.iY1EPACutBottom))
-                {
-                    errMsg[ch] = string.Format("{0} Error", testItem);
-                    m_ChannelOn[ch] = false;
-                }
-                if (!DrvIC.EPA_Set(ch, "Y2", Condition.iY2EPACutTop, Condition.iY2EPACutBottom))
-                {
-                    errMsg[ch] = string.Format("{0} Error", testItem);
-                    m_ChannelOn[ch] = false;
-                }
-            }
-        }
-        private void Act_OIS_ExEPA_Recipe(int ch, string testItem)
-        {
-            if (testItem.Contains("X"))
-            {
-                if (!DrvIC.Ex_EPA_Set(ch, "X", Condition.iXEPAExTop, Condition.iXEPAExBottom))
-                {
-                    errMsg[ch] = string.Format("{0} Error", testItem);
-                    m_ChannelOn[ch] = false;
-                }
-            }
-            else
-            {
-                if (!DrvIC.Ex_EPA_Set(ch, "Y1", Condition.iY1EPAExTop, Condition.iY1EPAExBottom))
-                {
-                    errMsg[ch] = string.Format("{0} Error", testItem);
-                    m_ChannelOn[ch] = false;
-                }
-                if (!DrvIC.Ex_EPA_Set(ch, "Y2", Condition.iY2EPAExTop, Condition.iY2EPAExBottom))
-                {
-                    errMsg[ch] = string.Format("{0} Error", testItem);
-                    m_ChannelOn[ch] = false;
-                }
-            }
-        }
        
-        private void Act_OISHallTest(int ch, string testItem)
-        {
-            List<int> result;
-            //SineWave Test
-            if (Condition.SIN_AXIS == 0 || Condition.SIN_AXIS == 2)
-            {
-                result = new List<int>();
-                if (!DrvIC.Sine_Wave_Test(ch, "X", Condition.SIN_AXIS, Condition.SIN_THD,
-                    Condition.SIN_CNT_ERR, Condition.SIN_FREQ, Condition.SIN_AMP, Condition.SIN_CYCL, ref result))
-                {
-                    errMsg[ch] = string.Format("{0} Error", testItem);
-                    m_ChannelOn[ch] = false;
-                }
-                else
-                {
-                    Spec.PassFails[ch].Results[(int)SpecItem.SineWaveX_Count].Val = result[0];
-                    Spec.PassFails[ch].Results[(int)SpecItem.SineWaveX_Result].Val = result[1];
-
-                    Spec.SetResult(ch, (int)SpecItem.SineWaveX_Result, (int)SpecItem.SineWaveX_Count);
-                    ShowDataResults(ch, "FRA X");
-                }
-            }
-
-            if (Condition.SIN_AXIS == 1 || Condition.SIN_AXIS == 2)
-            {
-                result = new List<int>();
-                if (!DrvIC.Sine_Wave_Test(ch, "Y1", Condition.SIN_AXIS, Condition.SIN_THD,
-                    Condition.SIN_CNT_ERR, Condition.SIN_FREQ, Condition.SIN_AMP, Condition.SIN_CYCL, ref result))
-                {
-                    errMsg[ch] = string.Format("{0} Error", testItem);
-                    m_ChannelOn[ch] = false;
-                }
-                else
-                {
-                    Spec.PassFails[ch].Results[(int)SpecItem.SineWaveY1_Count].Val = result[0];
-                    Spec.PassFails[ch].Results[(int)SpecItem.SineWaveY1_Result].Val = result[1];
-
-                    Spec.SetResult(ch, (int)SpecItem.SineWaveY1_Result, (int)SpecItem.SineWaveY1_Count);
-                    ShowDataResults(ch, "FRA Y1");
-                }
-
-
-                result = new List<int>();
-                if (!DrvIC.Sine_Wave_Test(ch, "Y2", Condition.SIN_AXIS, Condition.SIN_THD,
-                    Condition.SIN_CNT_ERR, Condition.SIN_FREQ, Condition.SIN_AMP, Condition.SIN_CYCL, ref result))
-                {
-                    errMsg[ch] = string.Format("{0} Error", testItem);
-                    m_ChannelOn[ch] = false;
-                }
-                else
-                {
-                    Spec.PassFails[ch].Results[(int)SpecItem.SineWaveY2_Count].Val = result[0];
-                    Spec.PassFails[ch].Results[(int)SpecItem.SineWaveY2_Result].Val = result[1];
-
-                    Spec.SetResult(ch, (int)SpecItem.SineWaveY2_Result, (int)SpecItem.SineWaveY2_Count);
-                    ShowDataResults(ch, "FRA Y2");
-                }
-            }
-            //Ringing Test
-            if (Condition.RNG_AXIS == 0 || Condition.RNG_AXIS == 2)
-            {
-                result = new List<int>();
-                if (!DrvIC.Ringing_Test(ch, "X", Condition.RNG_AXIS, Condition.RNG_THD, Condition.RNG_STVT,
-                    Condition.RNG_METM, Condition.RNG_WSEC, ref result))
-                {
-                    errMsg[ch] = string.Format("{0} Error", testItem);
-                    m_ChannelOn[ch] = false;
-                }
-                else
-                {
-                    Spec.PassFails[ch].Results[(int)SpecItem.RingingX_Time].Val = result[0];
-                    Spec.PassFails[ch].Results[(int)SpecItem.RingingX_Result].Val = result[1];
-
-                    Spec.SetResult(ch, (int)SpecItem.RingingX_Result, (int)SpecItem.RingingX_Time);
-                    ShowDataResults(ch, "FRA X");
-                }
-            }
-
-            if (Condition.RNG_AXIS == 1 || Condition.RNG_AXIS == 2)
-            {
-                result = new List<int>();
-                if (!DrvIC.Ringing_Test(ch, "Y1", Condition.RNG_AXIS, Condition.RNG_THD, Condition.RNG_STVT,
-                    Condition.RNG_METM, Condition.RNG_WSEC, ref result))
-                {
-                    errMsg[ch] = string.Format("{0} Error", testItem);
-                    m_ChannelOn[ch] = false;
-                }
-                else
-                {
-                    Spec.PassFails[ch].Results[(int)SpecItem.RingingY1_Time].Val = result[0];
-                    Spec.PassFails[ch].Results[(int)SpecItem.RingingY1_Result].Val = result[1];
-
-                    Spec.SetResult(ch, (int)SpecItem.RingingY1_Result, (int)SpecItem.RingingY1_Time);
-                    ShowDataResults(ch, "FRA Y1");
-                }
-
-                result = new List<int>();
-                if (!DrvIC.Ringing_Test(ch, "Y2", Condition.RNG_AXIS, Condition.RNG_THD, Condition.RNG_STVT,
-                    Condition.RNG_METM, Condition.RNG_WSEC, ref result))
-                {
-                    errMsg[ch] = string.Format("{0} Error", testItem);
-                    m_ChannelOn[ch] = false;
-                }
-                else
-                {
-                    Spec.PassFails[ch].Results[(int)SpecItem.RingingY2_Time].Val = result[0];
-                    Spec.PassFails[ch].Results[(int)SpecItem.RingingY2_Result].Val = result[1];
-
-                    Spec.SetResult(ch, (int)SpecItem.RingingY2_Result, (int)SpecItem.RingingY2_Time);
-                    ShowDataResults(ch, "FRA Y2");
-                }
-            }
-        }
-        private void Act_OISLineartitycomp(int port, string testItem)
-        {
-            LEDs_All_On(port, true);
-            Process_ScanCodeTest(port, testItem);
-            LEDs_All_On(port, false);
-            if (!Option.WriteResultToDriverIC) Process_CalcCodeTest(port, testItem);
-
-            int ch = port * 2;
-
-            for (int j = ch; j < ch + ChannelCnt; j++)
-            {
-                if (!m_ChannelOn[j]) continue;
-                foreach (var Cal in CalList[j])
-                    if (Cal.Name == testItem)
-                    {
-                        List<byte> result = new List<byte>();
-
-                        if (testItem.Contains("X"))
-                        {
-                            Cal.CodeX.RemoveAt(0);
-                            Cal.CodeX.RemoveAt(0);
-                            Cal.StrokeX.RemoveAt(0);
-                            Cal.StrokeX.RemoveAt(0);
-                            if (!DrvIC.LinearityComp(j, testItem, Cal.CodeX, Cal.StrokeX, ref result))
-                            {
-                                errMsg[j] = string.Format("{0} Error", testItem);
-                                m_ChannelOn[j] = false;
-                            }
-
-                            DrvValue[j].XLC2C = result[0];
-                            DrvValue[j].XLC2D = result[1];
-                            DrvValue[j].XLC2E = result[2];
-                        }
-                        else
-                        {
-                            Cal.CodeY1.RemoveAt(0);
-                            Cal.CodeY1.RemoveAt(0);
-                            Cal.StrokeY.RemoveAt(0);
-                            Cal.StrokeY.RemoveAt(0);
-                            if (!DrvIC.LinearityComp(j, testItem, Cal.CodeY1, Cal.StrokeY, ref result))
-                            {
-                                errMsg[j] = string.Format("{0} Error", testItem);
-                                m_ChannelOn[j] = false;
-                            }
-
-                            DrvValue[j].YLC2C = result[0];
-                            DrvValue[j].YLC2D = result[1];
-                            DrvValue[j].YLC2E = result[2];
-                        }
-                    }
-            }
-
-            LEDs_All_On(port, false);
-        }
-       
-        public void Process_FindEPA(int port, string name, ref int[] centerCode, ref int[] epaCodeMin, ref int[] epaCodeMax)
-        {
-            int ch = port * 2;
-
-            int[] xcode = new int[ChannelCnt];
-            int[] y1code = new int[ChannelCnt];
-            int[] y2code = new int[ChannelCnt];
-            for (int j = ch; j < ch + ChannelCnt; j++)
-            {
-                if (!m_ChannelOn[j]) continue;
-                xcode[j] = 2048;
-                y1code[j] = 2048;
-                y2code[j] = 2048;
-            }
-
-            int[] xHall = new int[ChannelCnt];
-            int[] y1Hall = new int[ChannelCnt];
-            int[] y2Hall = new int[ChannelCnt];
-
-            int[] errX = new int[ChannelCnt];
-            int[] errY1 = new int[ChannelCnt];
-            int[] errY2 = new int[ChannelCnt];
-
-            //  구동오차 이력, 구동 코드이력 저장
-            List<int>[] errXold = new List<int>[ChannelCnt];
-            List<int>[] errY1old = new List<int>[ChannelCnt];
-            List<int>[] errY2old = new List<int>[ChannelCnt];
-
-            List<int>[] xcodeold = new List<int>[ChannelCnt];
-            List<int>[] y1codeold = new List<int>[ChannelCnt];
-            List<int>[] y2codeold = new List<int>[ChannelCnt];
-
-            //  초기 위치는 (2048, 2048, 2048)
-            for (int j = ch; j < ch + ChannelCnt; j++)
-            {
-                if (!m_ChannelOn[j]) continue;
-                errXold[j] = new List<int>();
-                errY1old[j] = new List<int>();
-                errY2old[j] = new List<int>();
-
-                xcodeold[j] = new List<int>();
-                y1codeold[j] = new List<int>();
-                y2codeold[j] = new List<int>();
-
-                if (name.Contains("X"))
-                {
-                    DrvIC.OISOn(j, "X", true);
-                    Thread.Sleep(10);
-                    DrvIC.Move(j, "X", xcode[j]);
-                    AddLog(j, string.Format("Move X : {0}", xcode[j]));
-                    xcodeold[j].Add(Math.Abs(xcode[j]));
-                }
-                else
-                {
-                    DrvIC.OISOn(j, "Y", true);
-                    Thread.Sleep(10);
-                    DrvIC.Move(j, "Y1", y1code[j]);
-                    DrvIC.Move(j, "Y2", y2code[j]);
-                    AddLog(j, string.Format("Move Y1 : {0}, Y2 : {1}", y1code[j], y2code[j]));
-                    y1codeold[j].Add(Math.Abs(y1code[j]));
-                    y2codeold[j].Add(Math.Abs(y2code[j]));
-                }
-            }
-
-            Thread.Sleep(100);
-
-            for (int j = ch; j < ch + ChannelCnt; j++)
-            {
-                if (!m_ChannelOn[j]) continue;
-                if (name.Contains("X"))
-                {
-                    xHall[j] = DrvIC.ReadHall(j, "X");
-                    AddLog(j, string.Format("Read Hall X : {0}", xHall[j]));
-                    errX[j] = xHall[j] - 2048;
-                    errXold[j].Add(Math.Abs(errX[j]));
-                }
-                else
-                {
-                    y1Hall[j] = DrvIC.ReadHall(j, "Y1");
-                    y2Hall[j] = DrvIC.ReadHall(j, "Y2");
-                    AddLog(j, string.Format("Read Hall Y1 : {0}, Y2 : {1}", y1Hall[j], y2Hall[j]));
-                    errY1[j] = y1Hall[j] - 2048;
-                    errY2[j] = y2Hall[j] - 2048;
-                    errY1old[j].Add(Math.Abs(errY1[j]));
-                    errY2old[j].Add(Math.Abs(errY2[j]));
-                }
-            }
-
-            int itrCnt = 0;
-            bool[] chFinish = new bool[2] { false, false };
-
-            //
-            LEDs_All_On(0, true);
-            //Process.LEDs_All_On(1, true);
-
-
-            while (true)
-            {
-                for (int j = ch; j < ch + ChannelCnt; j++)
-                {
-                    if (!m_ChannelOn[j]) continue;
-                    if (name.Contains("X"))
-                    {
-                        xcode[j] -= errX[j];
-                        DrvIC.Move(j, "X", xcode[j]);
-                        AddLog(j, string.Format("Move X : {0}", xcode[j]));
-                        xcodeold[j].Add(Math.Abs(xcode[j]));
-                    }
-                    else
-                    {
-                        y1code[j] -= errY1[j];
-                        y2code[j] -= errY2[j];
-                        DrvIC.Move(j, "Y1", y1code[j]);
-                        DrvIC.Move(j, "Y2", y2code[j]);
-                        AddLog(j, string.Format("Move Y1 : {0}, Y2 : {1}", y1code[j], y2code[j]));
-                        y1codeold[j].Add(Math.Abs(y1code[j]));
-                        y2codeold[j].Add(Math.Abs(y2code[j]));
-                    }
-                }
-
-                Thread.Sleep(100);
-                for (int j = ch; j < ch + ChannelCnt; j++)
-                {
-                    if (!m_ChannelOn[j]) continue;
-                    if (name.Contains("X"))
-                    {
-                        xHall[j] = DrvIC.ReadHall(j, "X");
-                        AddLog(j, string.Format("Read Hall X : {0}", xHall[j]));
-                        errX[j] = xHall[j] - 2048;
-                        errXold[j].Add(Math.Abs(errX[j]));
-                        //  2048 을 찾은 경우 종료
-                        if (errX[j] == 0)
-                            chFinish[j] = true;
-
-                        if (itrCnt > 5)
-                        {
-                            if (!m_ChannelOn[j]) continue;
-                            //  더이상 오차가 줄어들지 않는 경우 종료
-                            if (errXold[j][itrCnt - 1] >= Math.Abs(errX[j]))
-                                chFinish[j] = true;
-
-                            if (errXold[j][itrCnt - 1] >= Math.Abs(errX[j]))
-                                chFinish[j] = true;
-                        }
-                    }
-                    else
-                    {
-                        y1Hall[j] = DrvIC.ReadHall(j, "Y1");
-                        y2Hall[j] = DrvIC.ReadHall(j, "Y2");
-                        AddLog(j, string.Format("Read Hall Y1 : {0}, Y2 : {1}", y1Hall[j], y2Hall[j]));
-                        errY1[j] = y1Hall[j] - 2048;
-                        errY2[j] = y2Hall[j] - 2048;
-                        errY1old[j].Add(Math.Abs(errY1[j]));
-                        errY2old[j].Add(Math.Abs(errY2[j]));
-                        //  2048, 2048 을 찾은 경우 종료
-                        if (errY1[j] == 0 && errY2[j] == 0)
-                            chFinish[j] = true;
-
-                        if (itrCnt > 5)
-                        {
-                            if (!m_ChannelOn[j]) continue;
-                            //  더이상 오차가 줄어들지 않는 경우 종료
-                            if (errY1old[j][itrCnt - 1] >= Math.Abs(errY1[j]) && errY2old[j][itrCnt - 1] >= Math.Abs(errY2[j]))
-                                chFinish[j] = true;
-
-                            if (errY1old[j][itrCnt - 1] >= Math.Abs(errY1[j]) && errY2old[j][itrCnt - 1] >= Math.Abs(errY2[j]))
-                                chFinish[j] = true;
-                        }
-                    }
-                }
-
-                if (chFinish[0] && chFinish[1])
-                    break;
-
-                itrCnt++;
-
-                //for (int j = ch; j < ch + ChannelCnt; j++)
-                //{
-                //    if (!m_ChannelOn[j]) continue;
-                //    AddLog(j, string.Format("Read Hall X : {0}, Y1 : {1}, Y2 : {2}", xHall[j], y1Hall[j], y2Hall[j]));
-                //}
-
-                if (itrCnt == 50)
-                {
-                    for (int j = ch; j < ch + ChannelCnt; j++)
-                    {
-                        if (!m_ChannelOn[j]) continue;
-                        AddLog(j, string.Format("Not Found Center Hall.."));
-                    }
-                    break;
-                }
-            }
-
-            for (int j = ch; j < ch + ChannelCnt; j++)
-            {
-                if (!m_ChannelOn[j]) continue;
-                if (name.Contains("X"))
-                {
-                    AddLog(j, string.Format("Center Final Code X : {0}", xcode[j]));
-                }
-                else
-                {
-                    AddLog(j, string.Format("Center Final Code Y1 : {0}, Y2 : {1}", y1code[j], y2code[j]));
-                }
-            }
-
-            centerCode[0] = xcode[0];
-            centerCode[3] = xcode[1];
-            centerCode[1] = y1code[0];
-            centerCode[2] = y2code[0];
-            centerCode[4] = y1code[1];
-            centerCode[5] = y2code[1];
-
-            //  Center Position
-            //STATIC.fVision.oCam[0].GrabB(0);
-            //List<double[]> measure = STATIC.fVision.MeasureTxTyTz(0, m_ChannelOn, false, "default");
-
-            List<FindResult> result = new List<FindResult>();
-            result.Add(new FindResult());
-            //result[0].cy = measure[0];
-            //result[0].cx = measure[1];
-            //result[0].cz = measure[2];
-            //result[0].ty = measure[3];
-            //result[0].tx = measure[4];
-            //result[0].tz = measure[5];
-            //result[0].cy1 = measure[6]; //  Y1 변위
-            //result[0].cy2 = measure[7]; //  Y2 변위
-
-            //  Driver To 4095
-            for (int j = ch; j < ch + ChannelCnt; j++)
-            {
-                chFinish[j] = false;
-                if (!m_ChannelOn[j]) chFinish[j] = true;
-            }
-
-            itrCnt = 0;
-            for (int j = ch; j < ch + ChannelCnt; j++)
-            {
-                if (!m_ChannelOn[j]) continue;
-                xcodeold[j].Clear();
-                y1codeold[j].Clear();
-                y2codeold[j].Clear();
-                xcodeold[j].Add(Math.Abs(xcode[j]));
-                y1codeold[j].Add(Math.Abs(y1code[j]));
-                y2codeold[j].Add(Math.Abs(y2code[j]));
-            }
-
-            while (true)
-            {
-                for (int j = ch; j < ch + ChannelCnt; j++)
-                {
-                    if (!m_ChannelOn[j]) continue;
-                    if (name.Contains("X"))
-                    {
-                        xcode[j] = xcode[j] < 3996 ? (xcode[j] + 100) : 4095;
-                    }
-                    else if (name.Contains("Y"))
-                    {
-                        if (Math.Max(y1code[j], y2code[j]) < 3996)
-                        {
-                            y1code[j] += 100;
-                            y2code[j] += 100;
-                        }
-                        else
-                        {
-                            if (y1code[j] >= y2code[j])
-                            {
-                                int delta = 4095 - y1code[j];
-                                y1code[j] += delta;
-                                y2code[j] += delta;
-                            }
-                            else
-                            {
-                                int delta = 4095 - y2code[j];
-                                y1code[j] += delta;
-                                y2code[j] += delta;
-                            }
-                        }
-                    }
-                    if (name.Contains("X"))
-                    {
-                        DrvIC.Move(j, "X", xcode[j]);
-                        AddLog(j, string.Format("Move X : {0:0.00}", xcode[j]));
-                        xcodeold[j].Add(Math.Abs(xcode[j]));
-                    }
-                    else
-                    {
-
-                        DrvIC.Move(j, "Y1", y1code[j]);
-                        DrvIC.Move(j, "Y2", y2code[j]);
-                        AddLog(j, string.Format("Move Y1 : {0:0.00}, Y2 : {1:0.00}", y1code[j], y2code[j]));
-
-                        y1codeold[j].Add(Math.Abs(y1code[j]));
-                        y2codeold[j].Add(Math.Abs(y2code[j]));
-                    }
-
-                }
-                Thread.Sleep(100);
-                //STATIC.fVision.oCam[0].GrabB(0);
-
-                //measure = STATIC.fVision.MeasureTxTyTz(0, m_ChannelOn, false, "default");
-                //itrCnt++;
-                //result.Add(new FindResult());
-                //result[itrCnt].cy = measure[0];
-                //result[itrCnt].cx = measure[1];
-                //result[itrCnt].cz = measure[2];
-                //result[itrCnt].ty = measure[3];
-                //result[itrCnt].tx = measure[4];
-                //result[itrCnt].tz = measure[5];
-                //result[itrCnt].cy1 = measure[6]; //  Y1 변위
-                //result[itrCnt].cy2 = measure[7]; //  Y2 변위
-
-                for (int j = ch; j < ch + ChannelCnt; j++)
-                {
-                    if (!m_ChannelOn[j]) continue;
-                    if (xcode[j] == 4095 || y1code[j] == 4095 || y2code[j] == 4095)
-                        chFinish[j] = true;
-
-                    if (name.Contains("X"))
-                    {
-                        AddLog(j, string.Format("Stroke X : {0:0.00}", result[itrCnt].cx[j]));
-                    }
-                    else
-                    {
-                        AddLog(j, string.Format("Stroke Y1 : {0:0.00}, Y2 : {1:0.00}", result[itrCnt].cy1[j], result[itrCnt].cy2[j]));
-                    }
-                }
-                if (chFinish[0] && chFinish[1])
-                    break;
-            }
-            for (int j = ch; j < ch + ChannelCnt; j++)
-            {
-                if (!m_ChannelOn[j]) continue;
-                AddLog(j, string.Format("======================================================="));
-            }
-            int fwdLast = itrCnt;
-            //  Driver To 0
-            for (int j = ch; j < ch + ChannelCnt; j++)
-            {
-                chFinish[j] = false;
-                if (!m_ChannelOn[j]) chFinish[j] = true;
-            }
-            while (true)
-            {
-                for (int j = ch; j < ch + ChannelCnt; j++)
-                {
-                    if (!m_ChannelOn[j]) continue;
-                    if (name.Contains("X"))
-                    {
-                        xcode[j] = xcode[j] > 99 ? (xcode[j] - 100) : 0;
-                    }
-                    else if (name.Contains("Y"))
-                    {
-                        if (Math.Min(y1code[j], y2code[j]) > 99)
-                        {
-                            y1code[j] -= 100;
-                            y2code[j] -= 100;
-                        }
-                        else
-                        {
-                            if (y1code[j] < y2code[j])
-                            {
-                                int delta = y1code[j];
-                                y1code[j] -= delta;
-                                y2code[j] -= delta;
-                            }
-                            else
-                            {
-                                int delta = y2code[j];
-                                y1code[j] -= delta;
-                                y2code[j] -= delta;
-                            }
-                        }
-                    }
-                    if (name.Contains("X"))
-                    {
-                        DrvIC.Move(j, "X", xcode[j]);
-                        AddLog(j, string.Format("Move X : {0}", xcode[j]));
-                        xcodeold[j].Add(Math.Abs(xcode[j]));
-                    }
-                    else
-                    {
-
-                        DrvIC.Move(j, "Y1", y1code[j]);
-                        DrvIC.Move(j, "Y2", y2code[j]);
-                        AddLog(j, string.Format("Move Y1 : {0}, Y2 : {1}", y1code[j], y2code[j]));
-
-                        y1codeold[j].Add(Math.Abs(y1code[j]));
-                        y2codeold[j].Add(Math.Abs(y2code[j]));
-                    }
-                }
-                Thread.Sleep(100);
-                //STATIC.fVision.oCam[0].GrabB(0);
-
-
-                //measure = STATIC.fVision.MeasureTxTyTz(0, m_ChannelOn, false, "default");
-                //itrCnt++;
-                //result.Add(new FindResult());
-                //result[itrCnt].cy = measure[0];
-                //result[itrCnt].cx = measure[1];
-                //result[itrCnt].cz = measure[2];
-                //result[itrCnt].ty = measure[3];
-                //result[itrCnt].tx = measure[4];
-                //result[itrCnt].tz = measure[5];
-                //result[itrCnt].cy1 = measure[6]; //  Y1 변위
-                //result[itrCnt].cy2 = measure[7]; //  Y2 변위
-
-                for (int j = ch; j < ch + ChannelCnt; j++)
-                {
-                    if (!m_ChannelOn[j]) continue;
-                    if (xcode[j] == 0 || y1code[j] == 0 || y2code[j] == 0)
-                        chFinish[j] = true;
-                    if (name.Contains("X"))
-                    {
-                        AddLog(j, string.Format("Stroke X : {0:0.00}", result[itrCnt].cx[j]));
-                    }
-                    else
-                    {
-                        AddLog(j, string.Format("Stroke Y1 : {0:0.00}, Y2 : {1:0.00}", result[itrCnt].cy1[j], result[itrCnt].cy2[j]));
-                    }
-                }
-                if (chFinish[0] && chFinish[1])
-                    break;
-            }
-
-
-            int bwdLast = itrCnt;
-            double[] fwdStroke = new double[2];
-            double[] bwdStroke = new double[2];
-            for (int j = ch; j < ch + ChannelCnt; j++)
-            {
-                if (!m_ChannelOn[j]) continue;
-                if (name.Contains("X"))
-                {
-                    fwdStroke[j] = Math.Abs(result[0].cx[j] - result[fwdLast].cx[j]);
-                    bwdStroke[j] = Math.Abs(result[0].cx[j] - result[bwdLast].cx[j]);
-
-                    AddLog(j, string.Format("fwdStroke X : {0:0.00}, bwdStroke X  : {1:0.00}", fwdStroke[j], bwdStroke[j]));
-                }
-                else if (name.Contains("Y"))
-                {
-                    fwdStroke[j] = Math.Abs(result[0].cy[j] - result[fwdLast].cy[j]);
-                    bwdStroke[j] = Math.Abs(result[0].cy[j] - result[bwdLast].cy[j]);
-
-                    AddLog(j, string.Format("fwdStroke Y : {0:0.00}, bwdStroke Y  : {1:0.00}", fwdStroke[j], bwdStroke[j]));
-                }
-
-                int i = 0;
-                double lstroke = 0;
-                if (fwdStroke[j] > bwdStroke[j])
-                {
-                    //  정방향 Stroke 가 더 큰 경우
-                    i = fwdLast - 1;
-                    while (true)
-                    {
-                        if (name.Contains("X"))
-                            lstroke = Math.Abs(result[0].cx[j] - result[i].cx[j]);
-                        else if (name.Contains("Y"))
-                            lstroke = Math.Abs(result[0].cy[j] - result[i].cy[j]);
-
-                        if (lstroke < bwdStroke[j])
-                            break;
-                        i--;
-                    }
-                    int targetXCode = 0;
-                    int targetY1Code = 0;
-                    int targetY2Code = 0;
-                    if (name.Contains("X"))
-                    {
-                        targetXCode = (int)(xcodeold[j][i] + (bwdStroke[j] - lstroke) * (xcodeold[j][i + 1] - xcodeold[j][i]) / Math.Abs(result[i + 1].cx[j] - result[i].cx[j]));
-                        epaCodeMin[j * 3 + 0] = 0;
-                        epaCodeMax[j * 3 + 0] = targetXCode;
-                    }
-                    else if (name.Contains("Y"))
-                    {
-                        targetY1Code = (int)(y1codeold[j][i] + (bwdStroke[j] - lstroke) * (y1codeold[j][i + 1] - y1codeold[j][i]) / Math.Abs(result[i + 1].cy[j] - result[i].cy[j]));
-                        targetY2Code = (int)(y2codeold[j][i] + (bwdStroke[j] - lstroke) * (y2codeold[j][i + 1] - y2codeold[j][i]) / Math.Abs(result[i + 1].cy[j] - result[i].cy[j]));
-
-                        epaCodeMin[j * 3 + 1] = 0;
-                        epaCodeMin[j * 3 + 2] = 0;
-
-                        epaCodeMax[j * 3 + 1] = targetY1Code;
-                        epaCodeMax[j * 3 + 2] = targetY2Code;
-                    }
-                }
-                else
-                {
-                    //  역방향 Stroke 가 더 큰 경우
-                    i = bwdLast - 1;
-                    while (true)
-                    {
-                        if (name.Contains("X"))
-                            lstroke = Math.Abs(result[0].cx[j] - result[i].cx[j]);
-                        else if (name.Contains("Y"))
-                            lstroke = Math.Abs(result[0].cy[j] - result[i].cy[j]);
-
-                        if (lstroke < fwdStroke[j])
-                            break;
-                        i--;
-                    }
-                    int targetXCode = 0;
-                    int targetY1Code = 0;
-                    int targetY2Code = 0;
-                    if (name.Contains("X"))
-                    {
-                        targetXCode = (int)(xcodeold[j][i] + (fwdStroke[j] - lstroke) * (xcodeold[j][i + 1] - xcodeold[j][i]) / Math.Abs(result[i + 1].cx[j] - result[i].cx[j]));
-                        epaCodeMin[j * 3 + 0] = targetXCode;
-                        epaCodeMax[j * 3 + 0] = 0;
-                    }
-                    else if (name.Contains("Y"))
-                    {
-                        targetY1Code = (int)(y1codeold[j][i] + (fwdStroke[j] - lstroke) * (y1codeold[j][i + 1] - y1codeold[j][i]) / Math.Abs(result[i + 1].cy[j] - result[i].cy[j]));
-                        targetY2Code = (int)(y2codeold[j][i] + (fwdStroke[j] - lstroke) * (y2codeold[j][i + 1] - y2codeold[j][i]) / Math.Abs(result[i + 1].cy[j] - result[i].cy[j]));
-
-                        epaCodeMin[j * 3 + 1] = targetY1Code;
-                        epaCodeMin[j * 3 + 2] = targetY2Code;
-
-                        epaCodeMax[j * 3 + 1] = 0;
-                        epaCodeMax[j * 3 + 2] = 0;
-                    }
-                }
-            }
-
-            LEDs_All_On(0, false);
-
-            for (int j = ch; j < ch + ChannelCnt; j++)
-            {
-                if (!m_ChannelOn[j]) continue;
-                if (name.Contains("X"))
-                {
-                    DrvIC.OISOn(j, "X", false);
-                    DrvIC.Move(j, "X", xcode[j]);
-                }
-                else if (name.Contains("Y"))
-                {
-                    DrvIC.OISOn(j, "Y", false);
-                    DrvIC.Move(j, "Y1", y1code[j]);
-                    DrvIC.Move(j, "Y2", y2code[j]);
-                }
-            }
-        }
-
-        public void HallDecenter(int port, string name)
-        {
-            LEDs_All_On(port, true);
-            FindResult[] fX = new FindResult[3] { new FindResult(), new FindResult(), new FindResult() };
-            FindResult[] fY = new FindResult[3] { new FindResult(), new FindResult(), new FindResult() };
-            STATIC.DrvIC.OISOn(0, "X", true);
-            STATIC.DrvIC.OISOn(0, "Y", true);
-            STATIC.DrvIC.OISOn(0, "AF", true);
-
-            STATIC.DrvIC.Move(0, "X", 2048);
-            STATIC.DrvIC.Move(0, "Y", 2048);
-            STATIC.DrvIC.Move(0, "AF", BestAFPos);
-            Thread.Sleep(500);
-            STATIC.fVision.m__G.oCam[0].GrabA(0);
-            fX[0] = STATIC.fVision.MeasureTxTyTz(0, "X", true);
-            fY[0] = STATIC.fVision.MeasureTxTyTz(0, "Y", true);
-
-            STATIC.DrvIC.Move(0, "X", 100);
-            Thread.Sleep(100);
-            STATIC.DrvIC.Move(0, "X", 0);
-            Thread.Sleep(500);
-            STATIC.fVision.m__G.oCam[0].GrabA(0);
-            fX[1] = STATIC.fVision.MeasureTxTyTz(0, "X", true);
-            STATIC.DrvIC.Move(0, "X", 3995);
-            Thread.Sleep(100);
-            STATIC.DrvIC.Move(0, "X", 4095);
-            Thread.Sleep(500);
-            STATIC.fVision.m__G.oCam[0].GrabA(0);
-            fX[2] = STATIC.fVision.MeasureTxTyTz(0, "X", true);
-            ////X 측정
-            STATIC.DrvIC.Move(0, "X", 2048);
-            Thread.Sleep(200);
-
-            STATIC.DrvIC.Move(0, "Y", 100);
-            Thread.Sleep(100);
-            STATIC.DrvIC.Move(0, "Y", 0);
-            Thread.Sleep(500);
-            STATIC.fVision.m__G.oCam[0].GrabA(0);
-            fY[1] = STATIC.fVision.MeasureTxTyTz(0, "Y", true);
-            STATIC.DrvIC.Move(0, "Y", 3995);
-            Thread.Sleep(100);
-            STATIC.DrvIC.Move(0, "Y", 4095);
-            Thread.Sleep(500);
-            //Y측정
-            STATIC.fVision.m__G.oCam[0].GrabA(0);
-            fY[2] = STATIC.fVision.MeasureTxTyTz(0, "Y", true);
-
-
-            Spec.PassFails[0].Results[(int)SpecItem.x_HallDecenter].Val = ((fX[1].cx[0] + fX[2].cx[0]) / 2.0f) - fX[0].cx[0];
-            Spec.PassFails[0].Results[(int)SpecItem.y_HallDecenter].Val = ((fY[1].cy[0] + fY[2].cy[0]) / 2.0f) - fY[0].cy[0];
-
-            Spec.SetResult(0, (int)SpecItem.x_HallDecenter, (int)SpecItem.y_HallDecenter);
-            ShowDataResults(0, "Hall Decenter");
-
-            LEDs_All_On(port, false);
-
-
-        }
-
-       
-        #endregion
 
     }
 }

@@ -366,7 +366,7 @@ namespace FZ4P
         //public FVision fVision = new FVision();
         //public FManage fManage = new FManage();
         //public FStatistics fStat = new FStatistics();
-        public TestItemOnOff fTestItemOnOff = new TestItemOnOff();
+       
         public FAutoLearn.FAutoLearn mFAL = null;
         // 모션
         //public F_Motion mMotion = null;

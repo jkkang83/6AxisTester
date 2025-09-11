@@ -1,7 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
+using System.Reflection;
+using System.Text;
 using System.Windows.Forms;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace FZ4P
 {
@@ -28,9 +33,15 @@ namespace FZ4P
         public static event EventHandler StateChange = null;
 
         public static string BaseDir = "C:\\6AxisTester\\";
+        public static string RecipeDir = BaseDir + "Recipe\\";
+        public static string SpecDir = BaseDir + "Spec\\";
         public static string RootDir = BaseDir + "\\DoNotTouch\\";
         public static string DataDir = BaseDir + "\\Data\\";
         public static string UserScriptDir = BaseDir + "\\DriverIC\\FW\\";
+        public static string OptionPath = RootDir + "OptionState.txt";
+        public static string YieldPath = RootDir + "Yield.txt";
+        public static string CurrentPath = RootDir + "CurrPath.txt";
+
         public static void SetTextLine(string path, List<string> list)
         {
             try
@@ -101,43 +112,114 @@ namespace FZ4P
                 Directory.CreateDirectory(dir);
             return dir;
         }
-        public class DeviceCompactInfo
-        {
-            public string Name
-            {
-                get;
-                set;
-            }
-
-            public string Description
-            {
-                get;
-                set;
-            }
-
-            public string Manufacturer
-            {
-                get;
-                set;
-            }
-
-            public string SystemName
-            {
-                get;
-                set;
-            }
-
-            public string DeviceID
-            {
-                get;
-                set;
-            }
-        }
+      
 
         public static Recipe Rcp = new Recipe();
         public static Process Process = new Process();
         public static DLN Dln = new DLN();
         public static AK73XX DrvIC = new AK73XX();
 
+    }
+    public static class DataIO
+    {
+        public static string SerializeToXML<T>(this T toSerialize)
+        {
+            try
+            {
+                XmlSerializer xmlSerializer = new XmlSerializer(typeof(T));
+                XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+                using (var ms = new MemoryStream())
+                {
+                    using (var xw = XmlWriter.Create(ms, new XmlWriterSettings()
+                    {
+                        Encoding = new UTF8Encoding(false),
+                        Indent = true,
+                    }))
+                    {
+                        xmlSerializer.Serialize(xw, toSerialize, ns);
+                        return Encoding.UTF8.GetString(ms.ToArray());
+                    }
+                }
+            }
+            catch
+            { return string.Empty; }
+
+        }
+        public static bool SerializeToXMLFile<T>(this T toSerialize, string FileName) where T : class, new()
+        {
+            try
+            {
+                string dir = Path.GetDirectoryName(FileName);
+                try { Directory.CreateDirectory(dir); }
+                catch
+                { return false; }
+                string backFile = Path.ChangeExtension(FileName, ".bak");
+                if (File.Exists(backFile))
+                    File.Delete(backFile);
+                try { File.WriteAllText(backFile, toSerialize.SerializeToXML<T>()); }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.ToString());
+                    return false;
+                }
+                FileInfo info = new FileInfo(backFile);
+                if (info.Length == 0)
+                { return false; }
+
+                if (File.Exists(FileName))
+                    File.Delete(FileName);
+                File.Move(backFile, FileName);
+                return true;
+            }
+            catch { return false; }
+        }
+        public static object Deserialize<T>(this string toDeserialize) where T : class, new()
+        {
+            try
+            {
+                XmlSerializer xmlSerializer = new XmlSerializer(typeof(T));
+                using (StringReader txtReader = new StringReader(toDeserialize))
+                {
+                    return xmlSerializer.Deserialize(txtReader);
+                }
+            }
+            catch
+            { return default(T); }
+        }
+        public static T DeserializeXMLFileToObject<T>(string FileName) where T : class, new()
+        {
+            try
+            {
+                string xml = File.ReadAllText(FileName);
+                return xml.Deserialize<T>() as T;
+            }
+            catch
+            {
+                return default(T);
+            }
+        }
+
+        public static T GetEnumArttribute<T>(Enum val) where T : Attribute
+        {
+            Type enumT = val.GetType();
+            string enumName = Enum.GetName(enumT, val);
+            if (enumName != null)
+            {
+                FieldInfo finfo = enumT.GetField(enumName);
+                if (finfo != null)
+                {
+                    T attri = (T)Attribute.GetCustomAttribute(finfo, typeof(T));
+                    return attri;
+                }
+            }
+
+            return null;
+        }
+        public static T GetCustomAttribute<T>(PropertyDescriptor p) where T : Attribute
+        {
+            T attri = (T)p.Attributes[typeof(T)];
+            return attri;
+
+        }
     }
 }

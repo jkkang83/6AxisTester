@@ -110,6 +110,9 @@ namespace FZ4P
             // SpecGrid
             // 
             this.SpecGrid.AllowUserToAddRows = false;
+            this.SpecGrid.AllowUserToDeleteRows = false;
+            this.SpecGrid.AllowUserToResizeColumns = false;
+            this.SpecGrid.AllowUserToResizeRows = false;
             this.SpecGrid.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.SpecGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
             dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
@@ -127,7 +130,8 @@ namespace FZ4P
             this.SpecGrid.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.SpecGrid.Size = new System.Drawing.Size(473, 843);
             this.SpecGrid.TabIndex = 78;
-            this.SpecGrid.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.SpecGrid_CellMouseDoubleClick);
+            this.SpecGrid.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.SpecGrid_CellValueChanged);
+            this.SpecGrid.CurrentCellDirtyStateChanged += new System.EventHandler(this.SpecGrid_CurrentCellDirtyStateChanged);
             // 
             // btnApplyTesterNo2
             // 
@@ -672,6 +676,9 @@ namespace FZ4P
             // ConditinGrid
             // 
             this.ConditinGrid.AllowUserToAddRows = false;
+            this.ConditinGrid.AllowUserToDeleteRows = false;
+            this.ConditinGrid.AllowUserToResizeColumns = false;
+            this.ConditinGrid.AllowUserToResizeRows = false;
             this.ConditinGrid.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.ConditinGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
