@@ -329,6 +329,9 @@ namespace FZ4P
         {
             if (IsOn)
             {
+
+                STATIC.Process.AddLog(0, $"Power On");
+
                 lock (I2cLock) DLNgpio[2].Pins[9].Direction = 1;
                 //   DLNgpio[0].Pins[31].OutputValue = 1;
                 //DLNgpio[port * 2].Pins[9].OutputValue = 1;
@@ -336,6 +339,7 @@ namespace FZ4P
             }
             else
             {
+                STATIC.Process.AddLog(0, $"Power Off");
                 lock (I2cLock) DLNgpio[2].Pins[9].Direction = 0;
                 // DLNgpio[0].Pins[31].OutputValue = 0;
                 //DLNgpio[port * 2].Pins[9].OutputValue = 0;

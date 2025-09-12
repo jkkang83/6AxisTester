@@ -1,4 +1,5 @@
-﻿using OpenCvSharp.Flann;
+﻿using OpenCvSharp.Dnn;
+using OpenCvSharp.Flann;
 using S2System.Vision;
 using System;
 using System.Collections.Generic;
@@ -399,9 +400,7 @@ namespace FZ4P
                     switch (name)
                     {
                         case "OIS X Scan":
-                        case "OIS X Scan2":
-                        case "OIS X Scan3":
-                        case "OIS X Scan4":
+                     
                             CodeRange = Condition.iXPlotRange;
                             //Stroke
                             if (ChartTop[ch].C.InvokeRequired)
@@ -439,9 +438,7 @@ namespace FZ4P
                             }
                             break;
                         case "OIS Y Scan":
-                        case "OIS Y Scan2":
-                        case "OIS Y Scan3":
-                        case "OIS Y Scan4":
+                 
                             CodeRange = Condition.iYPlotRange;
                             //Stroke
                             if (ChartTop[ch].C.InvokeRequired)
@@ -479,9 +476,7 @@ namespace FZ4P
                             }
                             break;
                         case "AF Scan":
-                        case "AF Scan2":
-                        case "AF Scan3":
-                        case "AF Scan4":
+                       
                             CodeRange = Condition.iAFPlotRange;
                             //Stroke
                             if (ChartTop[ch].C.InvokeRequired)
@@ -542,78 +537,7 @@ namespace FZ4P
                                 });
                             }
                             break;
-                        case "OIS Matrix Scan":
-                            CodeRange = Condition.iXPlotRange;
-                            //Stroke
-                            if (ChartTop[ch].C.InvokeRequired)
-                            {
-                                ChartTop[ch].C.BeginInvoke((MethodInvoker)delegate
-                                {
-                                    ChartTop[ch].C.Series[0].Points.Clear();
-
-                                    for (int i = 2; i < Cal.CodeX.Count; i++)
-                                    {
-                                        if (Cal.CodeX[i] >= 2048 - CodeRange && Cal.CodeX[i] <= 2048 + CodeRange)
-                                        {
-                                            ChartTop[ch].C.Series[0].Points.AddXY(Cal.CodeX[i], Cal.StrokeX[i]); //  stroke
-                                            ChartTop[ch].C.Series[3].Points.AddXY(Cal.CodeX[i], Cal.Current[i]); //  current
-                                            ChartTop[ch].C.Series[6].Points.AddXY(Cal.CodeX[i], Cal.HallX[i] / 10); //  hall
-                                        }
-                                    }
-                                });
-                            }
-
-                            CodeRange = Condition.iYPlotRange;
-                            //Stroke
-                            if (ChartTop[ch].C.InvokeRequired)
-                            {
-                                ChartTop[ch].C.BeginInvoke((MethodInvoker)delegate
-                                {
-                                    for (int i = 2; i < Cal.CodeY1.Count; i++)
-                                    {
-                                        if (Cal.CodeY1[i] >= 2048 - CodeRange && Cal.CodeY1[i] <= 2048 + CodeRange)
-                                        {
-                                            ChartTop[ch].C.Series[9].Points.AddXY(Cal.CodeY1[i], Cal.StrokeY1[i]); //  stroke 1
-                                            ChartTop[ch].C.Series[10].Points.AddXY(Cal.CodeY2[i], Cal.StrokeY2[i]); //  stroke 2
-                                            ChartTop[ch].C.Series[4].Points.AddXY(Cal.CodeY1[i], Cal.Current[i]); //  current
-                                            ChartTop[ch].C.Series[7].Points.AddXY(Cal.CodeY1[i], Cal.HallY1[i] / 10); //  hall
-                                        }
-                                    }
-                                });
-                            }
-                            //Tilt
-                            if (ChartBtm[ch].C.InvokeRequired)
-                            {
-                                ChartBtm[ch].C.BeginInvoke((MethodInvoker)delegate
-                                {
-                                    for (int i = 2; i < Cal.CodeY1.Count; i++)
-                                    {
-                                        if (Cal.CodeY1[i] >= 2048 - CodeRange && Cal.CodeY1[i] <= 2048 + CodeRange)
-                                        {
-                                            ChartBtm[ch].C.Series[0].Points.AddXY(Cal.CodeY1[i], Cal.TiltX[i]); //  Tilt 
-                                            ChartBtm[ch].C.Series[1].Points.AddXY(Cal.CodeY1[i], Cal.TiltY[i]); //  Tilt 
-                                            ChartBtm[ch].C.Series[2].Points.AddXY(Cal.CodeY1[i], Cal.TiltZ[i]); //  Tilt 
-                                        }
-                                    }
-                                });
-                            }
-                            //Tilt
-                            if (ChartBtm[ch].C.InvokeRequired)
-                            {
-                                ChartBtm[ch].C.BeginInvoke((MethodInvoker)delegate
-                                {
-                                    for (int i = 2; i < Cal.CodeY1.Count; i++)
-                                    {
-                                        if (Cal.CodeY1[i] >= 2048 - CodeRange && Cal.CodeY1[i] <= 2048 + CodeRange)
-                                        {
-                                            ChartBtm[ch].C.Series[3].Points.AddXY(Cal.CodeY1[i], Cal.TiltX[i]); //  Tilt 
-                                            ChartBtm[ch].C.Series[4].Points.AddXY(Cal.CodeY1[i], Cal.TiltY[i]); //  Tilt 
-                                            ChartBtm[ch].C.Series[5].Points.AddXY(Cal.CodeY1[i], Cal.TiltZ[i]); //  Tilt 
-                                        }
-                                    }
-                                });
-                            }
-                            break;
+                    
                     }
                     ChartSet(ch, name);
                 }
@@ -871,19 +795,19 @@ namespace FZ4P
                     string testItem = Condition.ToDoList[todoCnt];
 
                     Process_Function(port, testItem);
-
-                    if (errMsg[ch] != "" && errMsg[ch + 1] != "")
+                  
+                    if (errMsg[ch] != "")
                     {
                         loopContinue = false;
                         AddLog(ch, errMsg[ch]);
-                        AddLog(ch + 1, errMsg[ch + 1]);
+                       
                     }
                     if (SuddenStop)
                     {
                         loopContinue = false;
                         errMsg[ch] = errMsg[ch + 1] = "SuddenStop !";
                         AddLog(ch, errMsg[ch]);
-                        AddLog(ch + 1, errMsg[ch + 1]);
+                       
                     }
 
                     if (!loopContinue) break;
@@ -927,7 +851,7 @@ namespace FZ4P
             }
 
             int ch = port * 2;
-            if (!m_ChannelOn[ch] && !m_ChannelOn[ch + 1])
+            if (!m_ChannelOn[ch])
                 return;
 
             for (int k = ch; k < ch + ChannelCnt; k++)
@@ -1027,11 +951,18 @@ namespace FZ4P
 
 
         #region new
+        private void Act_AFOpenLoopAging(int ch, string testItem)
+        {
+            AFOpenLoopAging(0);
+        }
+
 
         private void Act_AFInit(int ch, string testItem)
         {
             byte[] rbuf = new byte[1];
 
+
+            AddLog(ch, "Setting register setting");
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x40 });
             Thread.Sleep(5);
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xAE, new byte[] { 0x3B });
@@ -1044,6 +975,7 @@ namespace FZ4P
             AF_LinearityComp_Reset(ch);
 
             //PID Update - 나중에 파일로 처리
+            AddLog(ch, "PID parameter setting");
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x10, new byte[] { 0x2C });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x11, new byte[] { 0x47 });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x12, new byte[] { 0x96 });
@@ -1085,7 +1017,7 @@ namespace FZ4P
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xC7, new byte[] { 0x50 });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xC8, new byte[] { 0x09 });
 
-            //Function Reg Set
+            AddLog(ch, "Function register setting");
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xCA, new byte[] { 0x46 });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xCB, new byte[] { 0xD8 });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xCC, new byte[] { 0x40 });
@@ -1093,25 +1025,36 @@ namespace FZ4P
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xCE, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x3D, new byte[] { 0x06 });
 
-            //Temp Setting 
+            AddLog(ch, "Temp register setting");
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xC9, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x80 });
             Thread.Sleep(50);
             Dln.ReadArray(ch, DrvIC.AFSlaveAddr, 0x70, rbuf);
+            AddLog(ch, $"Read 0x70 : 0x{rbuf[0].ToString("X")}");
+
+
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xC9, rbuf);
 
-            //Cal Instruction
+            AddLog(ch, "Calibration instruction");
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x0C, new byte[] { 0x62 });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x18 });
             Thread.Sleep(150);
             Dln.ReadArray(ch, DrvIC.AFSlaveAddr, 0x19, rbuf);
+            AddLog(ch, $"Read 0x19 : 0x{rbuf[0].ToString("X")}");
+
             byte tmpData = (byte)(rbuf[0] * 0.75);
+            AddLog(ch, $"CalcData : 0x{tmpData.ToString("X")}");
+
             if (tmpData >= 0x00 && tmpData <= 0x30)
             {
                 Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x19, new byte[] { tmpData });
             }
             else
             {
+                PassFails[ch].FirstFailIndex = (int)NonSpecItem.AF_Init;
+                m_ChannelOn[ch] = false;
+                errMsg[ch] = NonSpecItem.AF_Init.ToString();
+                return;
                 //Error처리
             }
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xF3, new byte[] { 0x1E });
@@ -1125,17 +1068,15 @@ namespace FZ4P
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x40 });
             CheckData(ch, 0);
         }
-        private void Act_AFOpenLoopAging(int ch, string testItem)
-        {
-            AFOpenLoopAging(0);
-
-        }
+     
         void Act_CloseLoopAging(int ch, string testitem)
         {
             CloseLoopAging(0);
         }
         private void Act_AFEPA(int ch, string testItem)
         {
+
+        
             //LEDs_All_On(0, true);
             //FindResult res = new FindResult();
 
@@ -1308,8 +1249,13 @@ namespace FZ4P
             //Inf, Mac EPA 기입 계산
 
             //  byte POSVT = (byte)((macPos - 8191) / 16); byte NEGVT = (byte)(InfPos / 16);
-            byte POSVT = (byte)(0x00); byte NEGVT = (byte)(0x20);
 
+              byte POSVT = (byte)((-Condition.AFPOSVT) / 16); byte NEGVT = (byte)(Condition.AFNEGVT / 16);
+
+            AddLog(ch, $"POSVT = {Condition.AFPOSVT}, NEGVT = {Condition.AFNEGVT}");
+            AddLog(ch, $"0x0E : 0x{POSVT.ToString("X")}, 0x0F : 0x{NEGVT.ToString("X")}");
+
+        
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x40 });
             Thread.Sleep(5);
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xAE, new byte[] { 0x3B });
@@ -1327,12 +1273,13 @@ namespace FZ4P
             //Thread.Sleep(200);
             Dln.ReadArray(ch, DrvIC.AFSlaveAddr, 0x4B, rbuf);
             if ((byte)(rbuf[0] & 0x04) == 0x00)
-            {
-
-            }
+            { }
             else
             {
-                //error 처리
+                m__G.m_ChannelOn[ch] = false;
+                PassFails[ch].FirstFailIndex = (int)NonSpecItem.AF_EPA;
+                errMsg[ch] = NonSpecItem.AF_EPA.ToString();
+                return;
             }
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xAE, new byte[] { 0x00 });
         }
@@ -1340,40 +1287,46 @@ namespace FZ4P
         {
             byte[] rbuf = new byte[1];
             byte backData = 0;
-            byte POSVT = (byte)(0x00); byte NEGVT = 200;
+
+            int Xposvt = -Condition.XPOSVT, Xnegvt = Condition.XNEGVT, Yposvt = -Condition.YPOSVT, Ynegvt = Condition.YNEGVT;
+            AddLog(ch, $"X POSVT = {Xposvt}, X NEGVT = {Xnegvt}");
+            AddLog(ch, $"Y POSVT = {Yposvt}, Y NEGVT = {Ynegvt}");
+
+            AddLog(ch, $"X = 0x0E : 0x{((Xposvt / 4) >> 2).ToString("X")}, 0x0F : 0x{((Xnegvt / 4) & 0x03).ToString("X")}");
+            AddLog(ch, $"Y = 0x0E : 0x{((Yposvt / 4) >> 2).ToString("X")}, 0x0F : 0x{((Ynegvt / 4) & 0x03).ToString("X")}");
 
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 });
+            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 });
             Thread.Sleep(5);
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x3B });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0E, new byte[] { (byte)(POSVT >> 2) });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0F, new byte[] { (byte)(NEGVT >> 2) });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0D, new byte[] { (byte)((POSVT & 0x03 << 2) | (NEGVT & 0x03)) });
-        
+            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xAE, new byte[] { 0x3B });
+            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0E, new byte[] { (byte)((Xposvt / 4) >> 2) });
+            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0F, new byte[] { (byte)((Xnegvt / 4) >> 2) });
+            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0D, new byte[] { (byte)(((Xposvt / 4) & 0x03 << 2) | ((Xnegvt) & 0x03)) });
+
+            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x0E, new byte[] { (byte)((Yposvt / 4) >> 2) });
+            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x0F, new byte[] { (byte)((Ynegvt / 4) >> 2) });
+            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x0D, new byte[] { (byte)(((Yposvt / 4) & 0x03 << 2) | ((Ynegvt) & 0x03)) });
+
 
             Dln.ReadArray(ch, DrvIC.XSlaveAddr, 0x0B, rbuf);
             backData = rbuf[0];
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0B, new byte[] { (byte)(rbuf[0] | 0X80) });//0x0B값 읽어서 백업해야하는지 확인
+            Dln.ReadArray(ch, DrvIC.Y1SlaveAddr, 0x0B, rbuf);
+            backData = rbuf[0];
+            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x0B, new byte[] { (byte)(rbuf[0] | 0X80) });//0x0B값 읽어서 백업해야하는지 확인
             Thread.Sleep(120);
 
             Store(ch, 1);
-            //Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x03, new byte[] { 0x01 });
-            //Thread.Sleep(100);
-            ////Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x03, new byte[] { 0x10 });
-            ////Thread.Sleep(200);
-            //Dln.ReadArray(ch, DrvIC.AFSlaveAddr, 0x4B, rbuf);
-            //if ((byte)(rbuf[0] & 0x04) == 0x00)
-            //{
-
-            //}
-            //else
-            //{
-            //    //error 처리
-            //}
+            Store(ch, 2);
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x00 });
+            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xAE, new byte[] { 0x00 });
         }
 
         void Store(int ch, int Axis)
         {
+
+            AddLog(ch, "Store Start");
             byte[] rbuf = new byte[1];
             if (Axis == 0)
             {
@@ -1394,7 +1347,11 @@ namespace FZ4P
                 }
                 else
                 {
-                    //error 처리
+                    m__G.m_ChannelOn[ch] = false;
+                    PassFails[ch].FirstFailIndex = (int)NonSpecItem.Store_Fail;
+                    errMsg[ch] = NonSpecItem.Store_Fail.ToString();
+                    AddLog(ch, "Store fail");
+                    return;
                 }
 
             }
@@ -1419,17 +1376,24 @@ namespace FZ4P
                 }
                 else
                 {
-                    //error 처리
+                    m__G.m_ChannelOn[ch] = false;
+                    PassFails[ch].FirstFailIndex = (int)NonSpecItem.Store_Fail;
+                    errMsg[ch] = NonSpecItem.Store_Fail.ToString();
+                    AddLog(ch, "Store fail");
+                    return;
                 }
             }
+            AddLog(ch, "Store finish");
         }
         void AF_EPA_Reset(int ch)
         {
+            AddLog(ch, "AF EPA Reset");
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x0E, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x0F, new byte[] { 0x00 });
         }
         void AF_LinearityComp_Reset(int ch)
         {
+            AddLog(ch, "AF Linearity Comp Reset");
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x30, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x31, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x32, new byte[] { 0x00 });
@@ -1447,6 +1411,7 @@ namespace FZ4P
 
         void OIS_EPA_Reset(int ch)
         {
+            AddLog(ch, "OIS EPA Reset");
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0E, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x0E, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0F, new byte[] { 0x00 });
@@ -1454,6 +1419,7 @@ namespace FZ4P
         }
         void OIS_LinearityComp_Reset(int ch)
         {
+            AddLog(ch, "OIS Linearity Comp Reset");
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x2A, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x2B, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x2C, new byte[] { 0x00 });
@@ -1486,6 +1452,7 @@ namespace FZ4P
         {
             byte[] rbuf = new byte[1];
             byte DataBackup = 0x00;
+            int delay = 1000000 / Condition.AFOpenLoopFreq / 2 / 1000;
 
             //OIS On
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x00, new byte[] { 0x80, 0x00 });
@@ -1504,13 +1471,18 @@ namespace FZ4P
             rbuf[0] = (byte)(rbuf[0] & 0x7F);
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xA6, new byte[] { 0x7B });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 });
-            for (int i = 0; i < 10; i++)
+
+            AddLog(ch, $"OpenLoop Range : {0} - {4095}");
+            AddLog(ch, $"OpenLoop Freq : {Condition.AFOpenLoopFreq}");
+            AddLog(ch, $"OpenLoop Count : {Condition.AFOpenLoopCount}");
+            for (int i = 0; i < Condition.AFOpenLoopCount; i++)
             {
                 Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x00, new byte[] { 0xFF, 0xF0 });
-                Thread.Sleep(50);
+                Thread.Sleep(delay);
                 Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x00, new byte[] { 0x00, 0x00 });
-                Thread.Sleep(50);
+                Thread.Sleep(delay);
             }
+
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x40 });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xA6, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x0B, new byte[] { DataBackup });
@@ -1519,6 +1491,15 @@ namespace FZ4P
         void CloseLoopAging(int ch)
         {
             Random rnd = new Random();
+
+            int AFMin = Condition.CLAgingAFMin, AFMax = Condition.CLAgingAFMax, OISMin = Condition.CLAgingOISMin, OISMax = Condition.CLAgingOISMax, count = Condition.CLAgingCount;
+            int delay = delay = 1000000 / Condition.CLAgingFreq / 2 / 1000;
+
+
+            AddLog(ch, $"AF Range : {AFMin} - {AFMax}");
+            AddLog(ch, $"OIS Range : {OISMin} - {OISMax}");
+            AddLog(ch, $"Aging Count : {count}, Freq : {Condition.CLAgingFreq}");
+
 
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
@@ -1529,16 +1510,16 @@ namespace FZ4P
             DrvIC.Move(ch, "Y", 2048);
 
             Thread.Sleep(100);
-            for (int i = 0; i < 30; i++)
+            for (int i = 0; i < count; i++)
             {
-                DrvIC.Move(ch, "AF", 1000);
-                DrvIC.Move(ch, "X", rnd.Next(100, 4000));
-                DrvIC.Move(ch, "Y", rnd.Next(100, 4000));
-                Thread.Sleep(50);
-                DrvIC.Move(ch, "AF", 3000);
-                DrvIC.Move(ch, "X", rnd.Next(100, 4000));
-                DrvIC.Move(ch, "Y", rnd.Next(100, 4000));
-                Thread.Sleep(50);
+                DrvIC.Move(ch, "AF", AFMin);
+                DrvIC.Move(ch, "X", rnd.Next(OISMin, OISMax));
+                DrvIC.Move(ch, "Y", rnd.Next(OISMin, OISMax));
+                Thread.Sleep(delay);
+                DrvIC.Move(ch, "AF", AFMax);
+                DrvIC.Move(ch, "X", rnd.Next(OISMin, OISMax));
+                DrvIC.Move(ch, "Y", rnd.Next(OISMin, OISMax));
+                Thread.Sleep(delay);
             }
             DrvIC.Move(ch, "AF", 2048);
             DrvIC.Move(ch, "X", 2048);
@@ -1571,7 +1552,7 @@ namespace FZ4P
             {
                 Dln.ReadArray(ch, addr, 0x00 + i, rbuf);
                 data[i] = rbuf[0];
-                
+               
             }
             for (int i = 0; i < 16; i++)
             {
@@ -1590,9 +1571,23 @@ namespace FZ4P
             int addr = testitem.Contains("X") ? DrvIC.XSlaveAddr : DrvIC.Y1SlaveAddr;
             string Axis = testitem.Contains("X") ? "X" : "Y";
             int axisint = testitem.Contains("X") ? 1 : 2;
+
+            int start = 0, end = 0, step = 0, delay = 0;
+            List<float> target = new List<float>();
+            List<float> data = new List<float>();
+            List<float> ReadHall = new List<float>();
+            float RefData = 0;
+
+
+            if (Axis == "X") { start = Condition.XLinCompStart; end = Condition.XLinCompEnd; step = Condition.XLinCompStep; delay = Condition.XLinCompMoveDelay; }
+            else { start = Condition.YLinCompStart; end = Condition.YLinCompEnd; step = Condition.YLinCompStep; delay = Condition.YLinCompMoveDelay; }
+
+
+
             LEDs_All_On(0, true);
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 });
             DrvIC.Move(ch, "AF", BestAFPos);
+            AddLog(ch, $"Move AF Best Position : {BestAFPos}");
 
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
@@ -1601,46 +1596,7 @@ namespace FZ4P
             Thread.Sleep(100);
 
             FindResult tmpres = new FindResult();
-            float[] target = new float[]
-            {
-                8,
-                128,
-                248,
-                368,
-                488,
-                608,
-                728,
-                848,
-                968,
-                1088,
-                1208,
-                1328,
-                1448,
-                1568,
-                1688,
-                1808,
-                1928,
-                2048,
-                2168,
-                2288,
-                2408,
-                2528,
-                2648,
-                2768,
-                2888,
-                3008,
-                3128,
-                3248,
-                3368,
-                3488,
-                3608,
-                3728,
-                3848,
-                3968,
-                4088,
-
-            };
-            float[] data = new float[target.Length];
+    
             byte pvt = 0, nvt = 0;
             byte[] rbuf = new byte[1];
 
@@ -1648,36 +1604,66 @@ namespace FZ4P
             pvt = rbuf[0];
             Dln.ReadArray(ch, addr, 0x0F, rbuf);
             nvt = rbuf[0];
-            DrvIC.Move(ch, Axis, 8);
 
-            for (int i = 0; i < data.Length; i++)
+            AddLog(ch, $"POSVT = {pvt}, NEGVT = {nvt}");
+
+
+            Dln.WriteArray(ch, addr, 0x02, new byte[] { 0x00 });
+            DrvIC.Move(ch, Axis, start);
+            int index = 0;
+            AddLog(ch, $"Target\tPos\tReadHall");
+            while (true)
             {
-                STATIC.DrvIC.Move(0, Axis, (int)target[i]);
-                Thread.Sleep(100);
+                int currCode = start + (index * step);
+                if (currCode > end)
+                    currCode = end;
+                STATIC.DrvIC.Move(0, Axis, currCode);
+                Thread.Sleep(delay);
                 STATIC.fVision.m__G.oCam[0].GrabA(0);
                 tmpres = STATIC.fVision.MeasureTxTyTz(0, Axis, true);
-
+                target.Add(currCode);
+                ReadHall.Add(DrvIC.ReadHall(ch, Axis));
                 if(Axis == "X")
                 {
-                    if (i != 0)
-                        data[i] = (float)tmpres.cx[0] - data[0];
-                    else data[i] = (float)tmpres.cx[0];
+                    if (index != 0)
+                        data.Add((float)tmpres.cx[0] - RefData);
+                    else { data.Add(0); RefData = (float)tmpres.cx[0]; }
                 }
                 else
                 {
-                    if (i != 0)
-                        data[i] = (float)tmpres.cy[0] - data[0];
-                    else data[i] = (float)tmpres.cy[0];
+                    if (index != 0)
+                        data.Add((float)tmpres.cy[0] - RefData);
+                    else { data.Add(0); RefData = (float)tmpres.cy[0]; }
                 }
-             
+
+                AddLog(ch, $"{target[index]}\t{data[index].ToString("F2")}\t{ReadHall[index]}");
+                if (currCode >= end) break;
+                index++;
             }
-            data[0] = 0;
+
 
             DrvIC.Move(ch, Axis, 2048);
             OISLinCompCoef coef = new OISLinCompCoef();
             int[] lincoef = new int[OISLinCompCoef.NUM_COEF];
             float resError = 0;
-            int res = coef.LinCompMain(target, data, data.Length, pvt, nvt, 0, 0, ref lincoef, ref resError);
+            int res = coef.LinCompMain(target.ToArray(), data.ToArray(), data.Count, pvt, nvt, 0, 0, ref lincoef, ref resError);
+            if (res != 0)
+            {
+                AddLog(ch, $"Linearity Comp Fail");
+                m__G.m_ChannelOn[ch] = false;
+                if(Axis == "X")
+                {
+                    PassFails[ch].FirstFailIndex = (int)NonSpecItem.X_LinearityComp;
+                    errMsg[ch] = NonSpecItem.X_LinearityComp.ToString();
+                }
+                else
+                {
+                    PassFails[ch].FirstFailIndex = (int)NonSpecItem.Y_LinearityComp;
+                    errMsg[ch] = NonSpecItem.Y_LinearityComp.ToString();
+                }
+               
+            }
+
 
             Dln.WriteArray(ch, addr, 0xAE, new byte[] { 0x3B });
             Dln.WriteArray(ch, addr, 0x2A, new byte[] { (byte)lincoef[0] });
@@ -1694,56 +1680,26 @@ namespace FZ4P
             Dln.WriteArray(ch, addr, 0x35, new byte[] { (byte)lincoef[11] });
             Dln.WriteArray(ch, addr, 0x36, new byte[] { (byte)lincoef[12] });
 
+            string s = $"0x2A : 0x{lincoef[0].ToString("X")}, 0x2B : 0x{lincoef[1].ToString("X")}, 0x2C : 0x{lincoef[2].ToString("X")}, 0x2D : 0x{lincoef[3].ToString("X")}, 0x2E : 0x{lincoef[4].ToString("X")}\r\n" +
+             $"0x2F : 0x{lincoef[5].ToString("X")}, 0x30 : 0x{lincoef[6].ToString("X")}, 0x31 : 0x{lincoef[7].ToString("X")}, 0x32 : 0x{lincoef[8].ToString("X")}, 0x33 : 0x{lincoef[9].ToString("X")}\r\n" +
+             $"0x34 : 0x{lincoef[10].ToString("X")}, 0x35 : 0x{lincoef[11].ToString("X")}, 0x36 : 0x{lincoef[12].ToString("X")}";
+
+            AddLog(ch, s);
+
             Store(ch, axisint);
             Dln.WriteArray(ch, addr, 0xAE, new byte[] { 0x00 });
             LEDs_All_On(0, false);
         }
         void Act_AFLinComp(int ch, string testitem)
         {
+            int start = Condition.AfLinCompStart, end = Condition.AfLinCompEnd, step = Condition.AFLinCompStep, delay = Condition.AFLinCompMoveDelay;
             LEDs_All_On(0, true);
             FindResult tmpres = new FindResult();
-            float[] target = new float[]
-            {
-                8,
-                128,
-                248,
-                368,
-                488,
-                608,
-                728,
-                848,
-                968,
-                1088,
-                1208,
-                1328,
-                1448,
-                1568,
-                1688,
-                1808,
-                1928,
-                2048,
-                2168,
-                2288,
-                2408,
-                2528,
-                2648,
-                2768,
-                2888,
-                3008,
-                3128,
-                3248,
-                3368,
-                3488,
-                3608,
-                3728,
-                3848,
-                3968,
-                4088,
 
-            };
-            float[] data = new float[target.Length];
-
-
+            List<float> target = new List<float>();
+            List<float> data = new List<float>();
+            List<float> ReadHall = new List<float>();
+            float RefData = 0;
             byte[] rbuf = new byte[1];
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
@@ -1754,27 +1710,48 @@ namespace FZ4P
             byte pvt = rbuf[0];
             Dln.ReadArray(ch, DrvIC.AFSlaveAddr, 0x0F, rbuf);
             byte nvt = rbuf[0];
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 });
-            DrvIC.Move(ch, "AF", 8);
 
-            for (int i = 0; i < data.Length; i++)
+            AddLog(ch, $"POSVT = {pvt}, NEGVT = {nvt}");
+
+            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 });
+            DrvIC.Move(ch, "AF", start);
+            int index = 0;
+            AddLog(ch, $"Target\tPos\tReadHall");
+            while(true)
             {
-                STATIC.DrvIC.Move(0, "AF", (int)target[i]);
-                Thread.Sleep(100);
+                int currCode = start + (index * step);
+                if (currCode > end)
+                    currCode = end;
+                STATIC.DrvIC.Move(0, "AF", currCode);
+                Thread.Sleep(delay);
                 STATIC.fVision.m__G.oCam[0].GrabA(0);
                 tmpres = STATIC.fVision.MeasureTxTyTz(0, "AF", true);
+                target.Add(currCode);
+                ReadHall.Add(DrvIC.ReadHall(ch, "AF"));
+                if (index != 0)
+                    data.Add((float)tmpres.cz[0] - RefData);
+                else { data.Add(0); RefData = (float)tmpres.cz[0]; }
 
-                if (i != 0)
-                    data[i] = (float)tmpres.cz[0] - data[0];
-                else data[i] = (float)tmpres.cz[0];
+                AddLog(ch, $"{target[index]}\t{data[index].ToString("F2")}\t{ReadHall[index]}");
+                if (currCode >= end) break;
+                index++;
             }
-            data[0] = 0;
-           
+            
             DrvIC.Move(ch, "AF", 2048);
             AFLinCompCoef coef = new AFLinCompCoef();
             int[] lincoef = new int[AFLinCompCoef.NUM_COEF];
             float resError = 0;
-            int res = coef.LinCompMain(target, data, data.Length, pvt, nvt, 0, 0, ref lincoef, ref resError);
+            int res = coef.LinCompMain(target.ToArray(), data.ToArray(), data.Count, pvt, nvt, 0, 0, ref lincoef, ref resError);
+
+            if(res != 0)
+            {
+                AddLog(ch, $"Linearity Comp Fail");
+                m__G.m_ChannelOn[ch] = false;
+                PassFails[ch].FirstFailIndex = (int)NonSpecItem.AF_LinearityComp;
+                errMsg[ch] = NonSpecItem.AF_LinearityComp.ToString();
+            }
+
+
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xAE, new byte[] { 0x3B });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x30, new byte[] { (byte)lincoef[0] });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x31, new byte[] { (byte)lincoef[1] });
@@ -1790,11 +1767,13 @@ namespace FZ4P
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x3B, new byte[] { (byte)lincoef[11] });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x3C, new byte[] { (byte)lincoef[12] });
 
+            string s = $"0x30 : 0x{lincoef[0].ToString("X")}, 0x31 : 0x{lincoef[1].ToString("X")}, 0x32 : 0x{lincoef[2].ToString("X")}, 0x33 : 0x{lincoef[3].ToString("X")}, 0x34 : 0x{lincoef[4].ToString("X")}\r\n" +
+                       $"0x35 : 0x{lincoef[5].ToString("X")}, 0x36 : 0x{lincoef[6].ToString("X")}, 0x37 : 0x{lincoef[7].ToString("X")}, 0x38 : 0x{lincoef[8].ToString("X")}, 0x39 : 0x{lincoef[9].ToString("X")}\r\n" +
+                       $"0x3A : 0x{lincoef[10].ToString("X")}, 0x3B : 0x{lincoef[11].ToString("X")}, 0x3C : 0x{lincoef[12].ToString("X")}";
+
+            AddLog(ch, s);
             Store(ch, 0);
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xAE, new byte[] { 0x00 });
-
-
-
 
             LEDs_All_On(0, false);
         }
@@ -1891,7 +1870,7 @@ namespace FZ4P
 
                     xBestPos = (int)(step[i - 1] + (step[i] - step[i - 1]) * (xCenter - hallX[i - 1]) / (hallX[i] - hallX[i - 1]));
 
-                    //xBestPos = (int)(step[i - 1] + ((step[i] - step[i - 1]) * ((xCenter - hallX[i - 1]) / (hallX[i] - hallX[i - 1]))));
+                  
                     break;
                 }
             }
@@ -1976,14 +1955,16 @@ namespace FZ4P
 
             //Set I2C Volt = 1.8V
             DrvIC.Move(ch, "AF", BestAFPos);
+            AddLog(ch, $"Move AF Best Position : {BestAFPos}");
             Thread.Sleep(100);
-            //X
+
+            AddLog(ch, $"X/Y Setting register setting");
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x3B });
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0b, new byte[] { 0x02 });
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0A, new byte[] { 0x59 });
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x08, new byte[] { 0x08 });
 
-            //y
+           
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xAE, new byte[] { 0x3B });
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x0b, new byte[] { 0x04 });
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x0A, new byte[] { 0x59 });
@@ -2037,6 +2018,7 @@ namespace FZ4P
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xDD, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xDD, new byte[] { 0x00 });
 
+            AddLog(ch, $"X/Y Register initial setting");
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0D, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x0D, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0E, new byte[] { 0x00 });
@@ -2055,11 +2037,15 @@ namespace FZ4P
             OIS_EPA_Reset(ch);
             OIS_LinearityComp_Reset(ch);
 
+
+            AddLog(ch, $"X/Y PID parameter setting");
             for (int i = 0; i < PID.Count; i++)
             {
                 Dln.WriteArray(ch, DrvIC.XSlaveAddr, PID[i][0], new byte[] { PID[i][1] });
                 Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, PID[i][0], new byte[] { PID[i][2] });
             }
+
+            AddLog(ch, $"X/Y Calibration instruction");
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x09 });
             Thread.Sleep(150);
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x19, new byte[] { 0x88 });
@@ -2513,12 +2499,12 @@ namespace FZ4P
 
         public void ServoDecenter(int port, string name)
         {
+            int ch = port * 2;
             LEDs_All_On(port, true);
             FindResult[] fX = new FindResult[2] { new FindResult(), new FindResult() };
             FindResult[] fY = new FindResult[2] { new FindResult(), new FindResult() };
             STATIC.DrvIC.OISOn(0, "X", true);
             STATIC.DrvIC.OISOn(0, "Y", true);
-
 
             STATIC.DrvIC.Move(0, "X", 2048);
             STATIC.DrvIC.Move(0, "Y", 2048);
@@ -2613,8 +2599,6 @@ namespace FZ4P
             int curPos = 0;
 
             curPos = mid;
-            //code.Add(curPos);
-            //code.Add(curPos);
             do
             {
                 code.Add(curPos);
@@ -2622,8 +2606,6 @@ namespace FZ4P
             } while (curPos < max);
             if (max >= 4095) max = 4095;
             code.Add(max);
-            code.Add(max);
-            //code.Add(max);
             curPos -= step;
             do
             {
@@ -2631,8 +2613,6 @@ namespace FZ4P
                 curPos -= step;
             } while (curPos > mid);
 
-            //code.Add(mid);
-            //code.Add(mid);
             int lastCode = 0;
             do
             {
@@ -2641,9 +2621,7 @@ namespace FZ4P
             } while (curPos > min);
             lastCode = code[code.Count - 1];
             code.Add(min);
-            code.Add(min);
-            //code.Add(lastCode);
-            //code.Add(min);
+
             curPos = lastCode;
             do
             {
@@ -2651,9 +2629,6 @@ namespace FZ4P
                 curPos += step;
             } while (curPos < mid);
             code.Add(mid);
-            //code.Add(mid);
-            //code.Add(mid);
-
 
         }
 
@@ -2685,6 +2660,7 @@ namespace FZ4P
                         DrvIC.Move(j, "Y", Condition.iXCrossOffset);
                         DrvIC.OISOn(j, "AF", true);
                         DrvIC.Move(j, "AF", BestAFPos);
+                        AddLog(ch, $"Move AF Best Position : {BestAFPos}");
                         break;
                     case "OIS Y Scan":
                     
@@ -2693,6 +2669,7 @@ namespace FZ4P
                         DrvIC.Move(j, "X", Condition.iYCrossOffset);
                         DrvIC.OISOn(j, "AF", true);
                         DrvIC.Move(j, "AF", BestAFPos);
+                        AddLog(ch, $"Move AF Best Position : {BestAFPos}");
                         break;
                   
                 }
@@ -2935,6 +2912,7 @@ namespace FZ4P
                 DrvIC.OISOn(j, "Y", false);
                 DrvIC.OISOn(j, "AF", true);
                 DrvIC.Move(j, "AF", BestAFPos);
+                AddLog(ch, $"Move AF Best Position : {BestAFPos}");
             }
 
             Stopwatch sw = new Stopwatch();
@@ -3205,9 +3183,7 @@ namespace FZ4P
                             switch (name)
                             {
                                 case "AF Scan":
-                                case "AF Scan2":
-                                case "AF Scan3":
-                                case "AF Scan4":
+                             
                                     arry.Add("i,AF Code,X Code,Y1 Code,Y2 Code,X,Y,Z,TX,TY,TZ,Y1,Y2,Hall X,Hall Y1,Hall Y2,Hall AF,Current");
                                     for (int i = 0; i < fCount; i++)
                                     {
@@ -3222,11 +3198,7 @@ namespace FZ4P
                                     }
                                     break;
                                 case "OIS X Scan":
-                                case "OIS X Scan2":
-                                case "OIS X Scan3":
-                                case "OIS X Scan4":
-                                    //case "OIS X Linearity Comp":
-                                    //case "OIS X Linearity Comp2":
+
                                     arry.Add("i,AF Code,X Code,Y1 Code,Y2 Code,X,Y,Z,TX,TY,TZ,Y1,Y2,Hall X,Hall Y1,Hall Y2,Hall AF,Current");
                                     for (int i = 0; i < fCount; i++)
                                     {
@@ -3253,11 +3225,7 @@ namespace FZ4P
 
                                     break;
                                 case "OIS Y Scan":
-                                case "OIS Y Scan2":
-                                case "OIS Y Scan3":
-                                case "OIS Y Scan4":
-                                    //case "OIS Y Linearity Comp":
-                                    // case "OIS Y Linearity Comp2":
+
                                     arry.Add("i,AF Code,X Code,Y1 Code,Y2 Code,X,Y,Z,TX,TY,TZ,Y1,Y2,Hall X,Hall Y1,Hall Y2,Hall AF,Current");
                                     for (int i = 0; i < fCount; i++)
                                     {
@@ -3282,23 +3250,7 @@ namespace FZ4P
                                     AddLog(j, string.Format("Rotation Diff {0:00}", Math.Abs(Cal.TiltZ.Max() - Cal.TiltZ.Min())));
 
                                     break;
-                                case "OIS Matrix Scan":
-                                    arry.Add("i,X Code,Y1 Code,Y2 Code,X Stroke,Y1 Stroke,Y2 Stroke,Current,Hall X,Hall Y1,Hall Y2,Tx,Ty,Tz");
-                                    for (int i = 0; i < fCount; i++)
-                                    {
-                                        path = string.Format("{0}_{1}_{2}_{3}.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
-                                        string data = string.Format("{0},{1},{2},{3},{4:0.000},{5:0.000},{6:0.000},{7:0.0},{8},{9},{10},{11:0.000},{12:0.000},{13:0.000}", i, Cal.CodeZ[i],
-                                           Cal.CodeX[i], Cal.CodeY1[i],
-                                           Cal.StrokeX[i], Cal.StrokeY1[i], Cal.StrokeY2[i], Cal.Current[i], Cal.HallX[i], Cal.HallY1[i], Cal.HallY2[i], Cal.TiltX[i], Cal.TiltY[i], Cal.TiltZ[i]);
-                                        arry.Add(data);
-
-                                        if (i == 0)
-                                            AddLog(j, string.Format("X Code\tY1 Code\tY2 Code\tStroke X\tStroke Y1\tStroke Y2\tTx\tTy\tTz"));
-
-                                        AddLog(j, string.Format("{0}\t{1}\t{2}\t{3:0.000}\t{4:0.000}\t{5:0.000}\t{6:0.000}\t{7:0.000}\t{8:0.000}", Cal.CodeX[i], Cal.CodeY1[i], Cal.CodeY2[i], Cal.StrokeX[i], Cal.StrokeY1[i], Cal.StrokeY2[i], Cal.TiltX[i], Cal.TiltY[i], Cal.TiltZ[i]));
-                                    }
-
-                                    break;
+                               
                             }
                             if (path != "") STATIC.SetTextLine(path, arry);
                         }
@@ -3592,7 +3544,7 @@ namespace FZ4P
                 Directory.CreateDirectory(dateDir);
 
             string path = string.Format("{0}res_{1}.csv", dateDir, DateTime.Now.ToString("yyMMdd"));
-
+            
             if (!File.Exists(path))
             {
                 AddHeadResult(path);
@@ -3605,9 +3557,9 @@ namespace FZ4P
             for (int j = ch; j < ch + ChannelCnt; j++)
             {
                 string log = "";
-                if (errMsg[j].Contains("Hall Cal")) { PassFails[j].FirstFailIndex = -1; }
-                else if (errMsg[j] == "Socket Empty") { PassFails[j].FirstFailIndex = -2; }
-                else
+                if (errMsg[j] == "Socket Empty") { yield.TotlaTested--; continue; } 
+           
+                if (PassFails[j].FirstFailIndex > 0)
                 {
                     for (int k = 0; k < ItemList.Count; k++)
                     {
@@ -3622,7 +3574,7 @@ namespace FZ4P
 
                 //"Time,Index,PlateBCode,LotID,ACTID,Channel,PM Index,PassFail,"
                 log += string.Format("'{0},{1},{2},{3},{4},{5},{6},{7},",
-                    DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), m_StrIndex[j], "", Model.LotID, "", j, "", PassFails[j].TotalFail);
+                    DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), m_StrIndex[j], "", Model.LotID, "", j, "", PassFails[j].FirstFailIndex);
 
                 yield.TotlaTested++;
                 //1st Fail Item
@@ -3635,7 +3587,7 @@ namespace FZ4P
                 }
                 else if (PassFails[j].FirstFailIndex < 0)
                 {
-                    yield.TotlaTested--;
+                   
                     log += errMsg[j] + ",";
                 }
                 else

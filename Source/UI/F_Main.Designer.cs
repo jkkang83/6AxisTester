@@ -831,7 +831,6 @@ namespace FZ4P
             this.TodoBox.ItemHeight = 15;
             this.TodoBox.Location = new System.Drawing.Point(2, 525);
             this.TodoBox.Name = "TodoBox";
-            this.TodoBox.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
             this.TodoBox.Size = new System.Drawing.Size(357, 274);
             this.TodoBox.TabIndex = 190;
             this.TodoBox.SelectedIndexChanged += new System.EventHandler(this.Actionbox_SelectedIndexChanged);

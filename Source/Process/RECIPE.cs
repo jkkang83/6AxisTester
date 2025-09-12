@@ -185,11 +185,43 @@ namespace FZ4P
         [Condition("Y2", "Drv Code Max", "", "", "code")] public int iY2DrvCodeMax { get; set; } = 4088;
 
         [Condition("Y", "Cross Axis Offset", "", "", "code")] public int iYCrossOffset { get; set; } = 2048;
-
         [Condition("Y", "Cross Axis Offset AF", "", "", "code")] public int iYCrossOffsetAf { get; set; } = 2048;
         [Condition("Y", "Plot Range", "", "", "code")] public int iYPlotRange { get; set; } = 2048;
         [Condition("Y", "Code Range", "", "", "code")] public int iYCodeRange { get; set; } = 2048;
         [Condition("Y", "Stroke Range", "", "", "um")] public int iYStrokeRange { get; set; } = 500;
+
+        [Condition("AF OL Aging", "Frequency", "", "", "Hz")] public int AFOpenLoopFreq { get; set; } = 10;
+        [Condition("AF OL Aging", "Count", "", "", "-")] public int AFOpenLoopCount { get; set; } = 10;
+
+        [Condition("CL Aging", "AF Min", "", "", "-")] public int CLAgingAFMin { get; set; } = 1000;
+        [Condition("CL Aging", "AF Max", "", "", "-")] public int CLAgingAFMax { get; set; } = 3000;
+        [Condition("CL Aging", "OIS Min", "", "", "-")] public int CLAgingOISMin { get; set; } = 100;
+        [Condition("CL Aging", "OIS Max", "", "", "-")] public int CLAgingOISMax { get; set; } = 4000;
+        [Condition("CL Aging", "Frequency", "", "", "-")] public int CLAgingFreq { get; set; } = 10;
+        [Condition("CL Aging", "Count", "", "", "-")] public int CLAgingCount { get; set; } = 10;
+
+        [Condition("AF EPA", "POSVT", "", "", "code")] public int AFPOSVT { get; set; } = 256;
+        [Condition("AF EPA", "NEGVT", "", "", "code")] public int AFNEGVT { get; set; } = 256;
+
+        [Condition("OIS EPA", "X POSVT", "", "", "code")] public int XPOSVT { get; set; } = 264;
+        [Condition("OIS EPA", "X NEGVT", "", "", "code")] public int XNEGVT { get; set; } = 264;
+        [Condition("OIS EPA", "Y POSVT", "", "", "code")] public int YPOSVT { get; set; } = 264;
+        [Condition("OIS EPA", "Y NEGVT", "", "", "code")] public int YNEGVT { get; set; } = 264;
+
+        [Condition("AF Linearity Comp", "Start", "", "", "code")] public int AfLinCompStart { get; set; } = 8;
+        [Condition("AF Linearity Comp", "End", "", "", "code")] public int AfLinCompEnd { get; set; } = 4088;
+        [Condition("AF Linearity Comp", "Step", "", "", "code")] public int AFLinCompStep { get; set; } = 120;
+        [Condition("AF Linearity Comp", "Move Delay", "", "", "msec")] public int AFLinCompMoveDelay { get; set; } = 50;
+
+        [Condition("X Linearity Comp", "Start", "", "", "code")] public int XLinCompStart { get; set; } = 8;
+        [Condition("X Linearity Comp", "End", "", "", "code")] public int XLinCompEnd { get; set; } = 4088;
+        [Condition("X Linearity Comp", "Step", "", "", "code")] public int XLinCompStep { get; set; } = 120;
+        [Condition("X Linearity Comp", "Move Delay", "", "", "msec")] public int XLinCompMoveDelay { get; set; } = 50;
+
+        [Condition("Y Linearity Comp", "Start", "", "", "code")] public int YLinCompStart { get; set; } = 8;
+        [Condition("Y Linearity Comp", "End", "", "", "code")] public int YLinCompEnd { get; set; } = 4088;
+        [Condition("Y Linearity Comp", "Step", "", "", "code")] public int YLinCompStep { get; set; } = 120;
+        [Condition("Y Linearity Comp", "Move Delay", "", "", "msec")] public int YLinCompMoveDelay { get; set; } = 50;
 
 
         [Condition("PM", "Loop", "", "", "#")] public int iFRAloop { get; set; } = 1;
@@ -324,6 +356,16 @@ namespace FZ4P
         Length,
 
     };
+    public enum NonSpecItem
+    {
+        Store_Fail = -999,
+        AF_Init,
+        OIS_Init,
+        AF_EPA,
+        AF_LinearityComp,
+        X_LinearityComp,
+        Y_LinearityComp,
+    }
     public class Spec
     {
         public List<SpecArray> specList { get; set; } = new List<SpecArray>();

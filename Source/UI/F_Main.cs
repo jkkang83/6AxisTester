@@ -724,6 +724,7 @@ namespace FZ4P
 
         public void MoveTodo(bool dir) // true : up, false : down
         {
+
             if (dir)
             {
                 if (TodoBox.SelectedIndex == -1 || TodoBox.SelectedIndex == 0) return;

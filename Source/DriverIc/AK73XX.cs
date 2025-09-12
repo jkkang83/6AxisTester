@@ -831,7 +831,7 @@ namespace FZ4P
             int addr = 0x00;
             if (name.Contains("AF")) addr = AFSlaveAddr;
             else if (name.Contains("X")) addr = XSlaveAddr;
-            else if (name.Contains("Y1")) addr = Y1SlaveAddr;
+            else if (name.Contains("Y")) addr = Y1SlaveAddr;
          //   else if (name.Contains("Y2")) addr = Y2SlaveAddr;
 
             byte[] data = new byte[2];
