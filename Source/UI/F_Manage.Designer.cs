@@ -354,6 +354,7 @@ namespace FZ4P
             this.TestCountText.TabIndex = 181;
             this.TestCountText.Text = "0";
             this.TestCountText.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.TestCountText.Visible = false;
             // 
             // TestStopBtn
             // 
@@ -368,6 +369,7 @@ namespace FZ4P
             this.TestStopBtn.TabIndex = 180;
             this.TestStopBtn.Text = "Stop";
             this.TestStopBtn.UseVisualStyleBackColor = false;
+            this.TestStopBtn.Visible = false;
             this.TestStopBtn.Click += new System.EventHandler(this.button3_Click);
             // 
             // TestStartBtn
@@ -383,6 +385,7 @@ namespace FZ4P
             this.TestStartBtn.TabIndex = 179;
             this.TestStartBtn.Text = "Test";
             this.TestStartBtn.UseVisualStyleBackColor = false;
+            this.TestStartBtn.Visible = false;
             this.TestStartBtn.Click += new System.EventHandler(this.button2_Click);
             // 
             // btnClearLogs
@@ -689,6 +692,7 @@ namespace FZ4P
             this.textBox1.TabIndex = 152;
             this.textBox1.Text = "0";
             this.textBox1.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.textBox1.Visible = false;
             // 
             // textBox2
             // 
@@ -700,6 +704,7 @@ namespace FZ4P
             this.textBox2.TabIndex = 153;
             this.textBox2.Text = "1";
             this.textBox2.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.textBox2.Visible = false;
             // 
             // label4
             // 
@@ -710,6 +715,7 @@ namespace FZ4P
             this.label4.Size = new System.Drawing.Size(52, 21);
             this.label4.TabIndex = 190;
             this.label4.Text = "SPL 0";
+            this.label4.Visible = false;
             // 
             // label5
             // 
@@ -720,6 +726,7 @@ namespace FZ4P
             this.label5.Size = new System.Drawing.Size(52, 21);
             this.label5.TabIndex = 191;
             this.label5.Text = "SPL 1";
+            this.label5.Visible = false;
             // 
             // tableLayoutPanel2
             // 

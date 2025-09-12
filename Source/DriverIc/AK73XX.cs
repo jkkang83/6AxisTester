@@ -38,6 +38,7 @@ namespace FZ4P
             //Y1SlaveAddr = 0x4E;
             //Y2SlaveAddr = 0x6C;
             //FRA_Addr = 0x14;
+
             AFSlaveAddr = 0x28;
             XSlaveAddr = 0x70;
             Y1SlaveAddr = 0x30;
@@ -1307,17 +1308,5 @@ namespace FZ4P
             return val;
         }
 
-        private double AKM_Abs(double dbData)
-        {
-            double abs = dbData;
-
-            if (dbData < 0)
-            {
-                abs = dbData * -1.0f;
-            }
-
-            return abs;
-        }
-    
     }
 }

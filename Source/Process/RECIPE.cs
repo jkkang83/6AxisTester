@@ -319,8 +319,8 @@ namespace FZ4P
         [Spec("FRA Y2", "Ringing Result", "#")] RingingY2_Result,
         [Spec("FRA Y2", "Ringing Time", "#")] RingingY2_Time,
        
-        [Spec("Servo Decenter", "X Decenter", "#")] x_ServoDecenter,
-        [Spec("Servo Decenter", "Y Decenter", "#")] y_ServoDecenter,
+        [Spec("Servo Decenter", "X Decenter", "um")] x_ServoDecenter,
+        [Spec("Servo Decenter", "Y Decenter", "um")] y_ServoDecenter,
         Length,
 
     };

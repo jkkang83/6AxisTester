@@ -98,26 +98,11 @@ namespace FZ4P
                 DrvValue.Add(new DrvParam());
 
                 CalList.Add(new List<CalResult>());
-                CalList[i].Add(new CalResult("AF Scan"));
-                CalList[i].Add(new CalResult("AF Scan2"));
-                CalList[i].Add(new CalResult("AF Scan3"));
-                CalList[i].Add(new CalResult("AF Scan4"));
+                CalList[i].Add(new CalResult("AF Scan"));              
                 CalList[i].Add(new CalResult("AF Settling"));
-                CalList[i].Add(new CalResult("OIS X Scan"));
-                CalList[i].Add(new CalResult("OIS X Scan2"));
-                CalList[i].Add(new CalResult("OIS X Scan3"));
-                CalList[i].Add(new CalResult("OIS X Scan4"));
+                CalList[i].Add(new CalResult("OIS X Scan"));              
                 CalList[i].Add(new CalResult("OIS Y Scan"));
-                CalList[i].Add(new CalResult("OIS Y Scan2"));
-                CalList[i].Add(new CalResult("OIS Y Scan3"));
-                CalList[i].Add(new CalResult("OIS Y Scan4"));
-                CalList[i].Add(new CalResult("OIS X Linearity Comp"));
-                CalList[i].Add(new CalResult("OIS Y Linearity Comp"));
-                CalList[i].Add(new CalResult("OIS X Linearity Comp2"));
-                CalList[i].Add(new CalResult("OIS Y Linearity Comp2"));
-                CalList[i].Add(new CalResult("OIS X EPA"));
-                CalList[i].Add(new CalResult("OIS Y EPA"));
-                CalList[i].Add(new CalResult("OIS Matrix Scan"));
+
 
                 ChartTop.Add(new ChartList("Stroke", i));
                 ChartBtm.Add(new ChartList("Tilt", i));
@@ -143,6 +128,7 @@ namespace FZ4P
             ItemList.Add(new ActItems() { Name = "Gain@10Hz", Func = Act_GaindB10Hz, IsMulti = true });
             ItemList.Add(new ActItems() { Name = "Phase Margin", Func = Act_Phase_Margin, IsMulti = true });
             ItemList.Add(new ActItems() { Name = "Gain Margin", Func = Act_Gain_Margin, IsMulti = true });
+            ItemList.Add(new ActItems() { Name = "AF Settling", Func = Act_ScanTimeCode });
             //ItemList.Add(new ActItems() { Name = "Change Slave Addr", Func = Act_ChangeSlaveAddr, IsMulti = true });
             //ItemList.Add(new ActItems() { Name = "Data Check", Func = Act_Data_Check, IsMulti = true });
             //ItemList.Add(new ActItems() { Name = "PID Setting", Func = Act_PIDSetting, IsMulti = true });
@@ -157,7 +143,7 @@ namespace FZ4P
             //ItemList.Add(new ActItems() { Name = "AF Scan2", Func = Act_ScanCode });
             //ItemList.Add(new ActItems() { Name = "AF Scan3", Func = Act_ScanCode });
             //ItemList.Add(new ActItems() { Name = "AF Scan4", Func = Act_ScanCode });
-            //ItemList.Add(new ActItems() { Name = "AF Settling", Func = Act_ScanTimeCode });
+
             //ItemList.Add(new ActItems() { Name = "OIS X Scan", Func = Act_ScanCode });
             //ItemList.Add(new ActItems() { Name = "OIS X Scan2", Func = Act_ScanCode });
             //ItemList.Add(new ActItems() { Name = "OIS X Scan3", Func = Act_ScanCode });
@@ -835,6 +821,7 @@ namespace FZ4P
             try
             {
                 m__G.oCam[port].ResetmCpXY();
+                BestAFPos = 2048; // 나중에 주소 읽어서 구동 
                 int ch = port * 2;
                 int count = Condition.ToDoList.Count;
                 if (count == 0)
@@ -2682,11 +2669,14 @@ namespace FZ4P
                 switch (name)
                 {
                     case "AF Scan":
-                        DrvIC.Move(j, "AF", 2048);
-                        DrvIC.OISOn(j, "X", true);
-                        DrvIC.Move(j, "X", Condition.iAFCrossOffsetX);
-                        DrvIC.OISOn(j, "Y", true);
-                        DrvIC.Move(j, "Y", Condition.iAFCrossOffsetY);
+
+                        Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 });
+                        Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 });
+                        //DrvIC.Move(j, "AF", 2048);
+                        //DrvIC.OISOn(j, "X", true);
+                        //DrvIC.Move(j, "X", Condition.iAFCrossOffsetX);
+                        //DrvIC.OISOn(j, "Y", true);
+                        //DrvIC.Move(j, "Y", Condition.iAFCrossOffsetY);
                         break;
                     case "OIS X Scan":
                 

@@ -83,7 +83,7 @@ namespace FZ4P
                     if (DLNdevice[i].I2cMaster.Ports[0].Restrictions.Frequency == Restriction.MustBeDisabled)
                         DLNdevice[i].I2cMaster.Ports[0].Enabled = false;
 
-                    DLNdevice[i].I2cMaster.Ports[0].Frequency = 400 * 1000;
+                    DLNdevice[i].I2cMaster.Ports[0].Frequency = STATIC.Rcp.Condition.iI2Cclock * 1000;
                     DLNdevice[i].I2cMaster.Ports[0].Enabled = true;
                 }
                 catch (Exception ex)

@@ -26,6 +26,7 @@ namespace FZ4P
         public CurrentPath Current { get { return STATIC.Rcp.Current; } }
         public Process Process { get { return STATIC.Process; } }
 
+        public string ProgramVer = string.Empty; 
    
 
         public F_Manage()
@@ -228,6 +229,8 @@ namespace FZ4P
 
                 ModelGroup.Controls.Add(Chk);
             }
+            lblCrecipe.Text = Current.ConditionName;
+            lblSpec.Text = Current.SpecName;
            
         }
         public void BindingUIModel()
@@ -258,6 +261,8 @@ namespace FZ4P
 
                 ModelGroup.Controls.Add(Chk);
             }
+            lblCrecipe.Text = Current.ConditionName;
+            lblSpec.Text = Current.SpecName;
         }
         private void ResultDataGrid_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
         {

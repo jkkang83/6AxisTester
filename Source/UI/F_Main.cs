@@ -147,7 +147,6 @@ namespace FZ4P
                 else
                     STATIC.TcpConn.connect("192.168.100.2", 5000);
             }
-            
         }
 
         private void TcpConn_OnStatus(bool isCon)
