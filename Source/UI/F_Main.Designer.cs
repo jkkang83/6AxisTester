@@ -29,9 +29,9 @@ namespace FZ4P
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(F_Main));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.SpecGrid = new System.Windows.Forms.DataGridView();
             this.btnApplyTesterNo2 = new System.Windows.Forms.Button();
             this.ModelGroup = new System.Windows.Forms.GroupBox();
@@ -115,14 +115,14 @@ namespace FZ4P
             this.SpecGrid.AllowUserToResizeRows = false;
             this.SpecGrid.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.SpecGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("굴림", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.SpecGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("굴림", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.SpecGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
             this.SpecGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.SpecGrid.Location = new System.Drawing.Point(1208, 266);
             this.SpecGrid.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
@@ -227,7 +227,7 @@ namespace FZ4P
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.ForeColor = System.Drawing.Color.MediumBlue;
-            this.label2.Location = new System.Drawing.Point(96, 562);
+            this.label2.Location = new System.Drawing.Point(78, 562);
             this.label2.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(141, 41);
@@ -239,7 +239,7 @@ namespace FZ4P
             this.lblStartModel.AutoSize = true;
             this.lblStartModel.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblStartModel.ForeColor = System.Drawing.Color.MediumBlue;
-            this.lblStartModel.Location = new System.Drawing.Point(110, 481);
+            this.lblStartModel.Location = new System.Drawing.Point(92, 481);
             this.lblStartModel.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblStartModel.Name = "lblStartModel";
             this.lblStartModel.Size = new System.Drawing.Size(109, 41);
@@ -252,7 +252,7 @@ namespace FZ4P
             this.MCtypeList.ForeColor = System.Drawing.Color.MediumBlue;
             this.MCtypeList.FormattingEnabled = true;
             this.MCtypeList.ItemHeight = 35;
-            this.MCtypeList.Location = new System.Drawing.Point(218, 562);
+            this.MCtypeList.Location = new System.Drawing.Point(219, 562);
             this.MCtypeList.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.MCtypeList.Name = "MCtypeList";
             this.MCtypeList.Size = new System.Drawing.Size(202, 74);
@@ -264,7 +264,7 @@ namespace FZ4P
             this.ModelList.ForeColor = System.Drawing.Color.MediumBlue;
             this.ModelList.FormattingEnabled = true;
             this.ModelList.ItemHeight = 35;
-            this.ModelList.Location = new System.Drawing.Point(218, 481);
+            this.ModelList.Location = new System.Drawing.Point(219, 481);
             this.ModelList.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.ModelList.Name = "ModelList";
             this.ModelList.Size = new System.Drawing.Size(202, 39);
@@ -274,7 +274,7 @@ namespace FZ4P
             // 
             this.MCNumber.BackColor = System.Drawing.Color.White;
             this.MCNumber.Font = new System.Drawing.Font("Calibri", 14F, System.Drawing.FontStyle.Bold);
-            this.MCNumber.Location = new System.Drawing.Point(218, 422);
+            this.MCNumber.Location = new System.Drawing.Point(219, 422);
             this.MCNumber.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.MCNumber.Name = "MCNumber";
             this.MCNumber.Size = new System.Drawing.Size(202, 47);
@@ -285,7 +285,7 @@ namespace FZ4P
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(99, 427);
+            this.label4.Location = new System.Drawing.Point(81, 427);
             this.label4.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(123, 41);
@@ -298,7 +298,7 @@ namespace FZ4P
             this.SupplierList.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.SupplierList.FormattingEnabled = true;
             this.SupplierList.ItemHeight = 35;
-            this.SupplierList.Location = new System.Drawing.Point(218, 338);
+            this.SupplierList.Location = new System.Drawing.Point(219, 338);
             this.SupplierList.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.SupplierList.Name = "SupplierList";
             this.SupplierList.Size = new System.Drawing.Size(202, 39);
@@ -308,7 +308,7 @@ namespace FZ4P
             // 
             this.label17.AutoSize = true;
             this.label17.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label17.Location = new System.Drawing.Point(11, 346);
+            this.label17.Location = new System.Drawing.Point(-7, 346);
             this.label17.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(221, 41);
@@ -319,7 +319,7 @@ namespace FZ4P
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(36, 292);
+            this.label1.Location = new System.Drawing.Point(18, 292);
             this.label1.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(193, 41);
@@ -330,7 +330,7 @@ namespace FZ4P
             // 
             this.ProductLine.BackColor = System.Drawing.Color.White;
             this.ProductLine.Font = new System.Drawing.Font("Calibri", 14F, System.Drawing.FontStyle.Bold);
-            this.ProductLine.Location = new System.Drawing.Point(218, 280);
+            this.ProductLine.Location = new System.Drawing.Point(219, 280);
             this.ProductLine.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.ProductLine.Name = "ProductLine";
             this.ProductLine.Size = new System.Drawing.Size(202, 47);
@@ -341,7 +341,7 @@ namespace FZ4P
             // 
             this.label15.AutoSize = true;
             this.label15.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label15.Location = new System.Drawing.Point(64, 229);
+            this.label15.Location = new System.Drawing.Point(46, 229);
             this.label15.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(161, 41);
@@ -352,7 +352,7 @@ namespace FZ4P
             // 
             this.lblRevisionNumber.AutoSize = true;
             this.lblRevisionNumber.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblRevisionNumber.Location = new System.Drawing.Point(36, 170);
+            this.lblRevisionNumber.Location = new System.Drawing.Point(18, 170);
             this.lblRevisionNumber.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblRevisionNumber.Name = "lblRevisionNumber";
             this.lblRevisionNumber.Size = new System.Drawing.Size(193, 41);
@@ -363,7 +363,7 @@ namespace FZ4P
             // 
             this.TesterNo.BackColor = System.Drawing.Color.White;
             this.TesterNo.Font = new System.Drawing.Font("Calibri", 14F, System.Drawing.FontStyle.Bold);
-            this.TesterNo.Location = new System.Drawing.Point(218, 217);
+            this.TesterNo.Location = new System.Drawing.Point(219, 217);
             this.TesterNo.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.TesterNo.Name = "TesterNo";
             this.TesterNo.Size = new System.Drawing.Size(202, 47);
@@ -374,7 +374,7 @@ namespace FZ4P
             // 
             this.lblMaker.AutoSize = true;
             this.lblMaker.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblMaker.Location = new System.Drawing.Point(112, 93);
+            this.lblMaker.Location = new System.Drawing.Point(94, 93);
             this.lblMaker.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblMaker.Name = "lblMaker";
             this.lblMaker.Size = new System.Drawing.Size(109, 41);
@@ -387,7 +387,7 @@ namespace FZ4P
             this.LotMaker.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LotMaker.FormattingEnabled = true;
             this.LotMaker.ItemHeight = 35;
-            this.LotMaker.Location = new System.Drawing.Point(218, 86);
+            this.LotMaker.Location = new System.Drawing.Point(219, 86);
             this.LotMaker.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.LotMaker.Name = "LotMaker";
             this.LotMaker.Size = new System.Drawing.Size(202, 39);
@@ -397,7 +397,7 @@ namespace FZ4P
             // 
             this.RevisionNo.BackColor = System.Drawing.Color.LightCyan;
             this.RevisionNo.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold);
-            this.RevisionNo.Location = new System.Drawing.Point(218, 163);
+            this.RevisionNo.Location = new System.Drawing.Point(219, 163);
             this.RevisionNo.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.RevisionNo.Name = "RevisionNo";
             this.RevisionNo.Size = new System.Drawing.Size(202, 42);
@@ -726,14 +726,14 @@ namespace FZ4P
             this.ConditinGrid.AllowUserToResizeRows = false;
             this.ConditinGrid.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.ConditinGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("굴림", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.ConditinGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("굴림", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.ConditinGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle4;
             this.ConditinGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.ConditinGrid.Location = new System.Drawing.Point(572, 75);
             this.ConditinGrid.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
