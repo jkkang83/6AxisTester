@@ -1,6 +1,10 @@
-﻿using System;
+﻿using Dln;
+using OpenCvSharp;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
+using System.Security.Cryptography;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using System.Xml.Linq;
@@ -359,108 +363,230 @@ namespace FZ4P
 
             return result.dSlope;
         }
-        public double CalLinearity(List<int> code, List<double> stroke, int CodeRange, int StrokeRange)
-        {
-            List<SPoint> point = new List<SPoint>();
-            double max = -9999;
 
-            for (int i = 2; i < code.Count; i++)
+        public double CalLinearity(List<int> code, List<double> stroke, int CodeMin, int CodeMax, int MinStep, int MaxStep, int Mode)
+        {
+
+            double max = -9999;
+            List<CalcList> fwdIndex = new List<CalcList>();
+            List<CalcList> bwdIndex = new List<CalcList>();
+            for (int i = 1; i < code.Count; i++)
             {
-                if (code[i] >= 2048 - CodeRange && code[i] <= 2048 + CodeRange && stroke[i] >= -StrokeRange && stroke[i] <= StrokeRange)
+                int dy = code[i] - code[i - 1];
+                if (dy > 0) fwdIndex.Add(new CalcList { code = code[i], Val1 = stroke[i] });
+                else bwdIndex.Add(new CalcList { code = code[i], Val1 = stroke[i] });
+            }
+            fwdIndex = fwdIndex.OrderBy(a => a.code).ToList();
+            bwdIndex = bwdIndex.OrderBy(a => a.code).ToList();
+            List<SPoint> pt = new List<SPoint>();
+            pt.Add(new SPoint());
+            pt.Add(new SPoint());
+            SLine res = new SLine();
+            if (Mode == 0)
+            {
+                for (int i = 0; i < fwdIndex.Count - 1; i++)
+                {
+                    if (fwdIndex[i].code <= CodeMin && fwdIndex[i  + 1].code >= CodeMin)
+                    {
+                        if (Math.Abs(fwdIndex[i].code - CodeMin) <= Math.Abs(fwdIndex[i + 1].code - CodeMin))
+                        { pt.Add(new SPoint { x = fwdIndex[i].code, y = fwdIndex[i].Val1 }); }
+                        else { pt.Add(new SPoint { x = fwdIndex[i + 1].code, y = fwdIndex[i + 1].Val1 }); }
+                    }
+                    if (fwdIndex[i].code <= CodeMax && fwdIndex[i + 1].code >= CodeMax)
+                    {
+                        if (Math.Abs(fwdIndex[i].code - CodeMin) <= Math.Abs(fwdIndex[i + 1].code - CodeMin))
+                        { pt.Add(new SPoint { x = fwdIndex[i].code, y = fwdIndex[i].Val1 }); }
+                        else { pt.Add(new SPoint { x = fwdIndex[i + 1].code, y = fwdIndex[i + 1].Val1 }); }
+                    }
+                    
+                }
+               
+            }
+            else
+            {
+                pt.Add(new SPoint { x = fwdIndex[MinStep].code, y = fwdIndex[MinStep].Val1 });
+                pt.Add(new SPoint { x = fwdIndex[fwdIndex.Count - MaxStep].code, y = fwdIndex[fwdIndex.Count - MaxStep].Val1 });
+
+               
+            }
+            res = Line_fitting(pt);
+            if (Mode == 0)
+            {
+                for (int i = 0; i < fwdIndex.Count; i++)
+                {
+                    if (fwdIndex[i].code >= CodeMin && fwdIndex[i].code <= CodeMax)
+                    {
+                        double newS = res.dSlope * fwdIndex[i].code + res.dYintercept;
+                        if (max < Math.Abs(newS - fwdIndex[i].Val1))
+                            max = Math.Abs(newS - fwdIndex[i].Val1);
+                    }
+                }
+            }
+            else
+            {
+                for (int i = MinStep; i < fwdIndex.Count - MaxStep; i++)
+                {
+                    double newS = res.dSlope * fwdIndex[i].code + res.dYintercept;
+                    if (max < Math.Abs(newS - fwdIndex[i].Val1))
+                        max = Math.Abs(newS - fwdIndex[i].Val1);
+                }
+            }
+                return max;
+        }
+
+
+        //public double CalLinearity(List<int> code, List<double> stroke, int CodeRange, int StrokeRange)
+        //{
+        //    List<SPoint> point = new List<SPoint>();
+        //    double max = -9999;
+
+        //    for (int i = 2; i < code.Count; i++)
+        //    {
+        //        if (code[i] >= 2048 - CodeRange && code[i] <= 2048 + CodeRange && stroke[i] >= -StrokeRange && stroke[i] <= StrokeRange)
                 
-                {
-                    point.Add(new SPoint() { x = code[i], y = stroke[i] });
-                }
-            }
+        //        {
+        //            point.Add(new SPoint() { x = code[i], y = stroke[i] });
+        //        }
+        //    }
 
-            SLine result = Line_fitting(point);
+        //    SLine result = Line_fitting(point);
 
-            for (int i = 2; i < point.Count; i++)
-            {
-                double newS = result.dSlope * point[i].x + result.dYintercept;
-                if (max < Math.Abs(newS - point[i].y))
-                    max = Math.Abs(newS - point[i].y);
-            }
+        //    for (int i = 2; i < point.Count; i++)
+        //    {
+        //        double newS = result.dSlope * point[i].x + result.dYintercept;
+        //        if (max < Math.Abs(newS - point[i].y))
+        //            max = Math.Abs(newS - point[i].y);
+        //    }
 
-            return max;
-        }
-        public double CalHysteresis(List<int> code, List<double> stroke, int CodeRange, int StrokeRange)
+        //    return max;
+        //}
+        //public double CalHysteresis(List<int> code, List<double> stroke, int CodeRange, int StrokeRange)
+        //{
+        //    double max = -9999;
+        //    int fwdIndex = 0;
+        //    int bwdIndex = 0;
+        //    for (int i = 2; i < code.Count - 1; i++)
+        //    {
+        //        if (code[i + 1] < code[i])
+        //        {
+        //            fwdIndex = i;
+        //            break;
+        //        }
+        //    }
+        //    for (int i = fwdIndex; i < code.Count - 1; i++)
+        //    {
+        //        if (code[i + 1] <= 2048)
+        //        {
+        //            bwdIndex = i;
+        //            break;
+        //        }
+        //    }
+        //    for (int i = 2; i < fwdIndex; i++)
+        //    {
+        //        for (int j = fwdIndex; j < bwdIndex; j++)
+        //        {
+        //            if (code[i] == code[j])
+        //            {
+        //                if (code[i] >= 2048 - CodeRange && code[i] <= 2048 + CodeRange && stroke[i] >= -StrokeRange && stroke[i] <= StrokeRange)
+        //                {
+        //                    double Hyst = Math.Abs(stroke[i] - stroke[j]);
+        //                    if (max < Hyst)
+        //                        max = Hyst;
+        //                }
+        //            }
+        //        }
+        //    }
+        //    for (int i = bwdIndex; i < code.Count - 1; i++)
+        //    {
+        //        if (code[i + 1] > code[i])
+        //        {
+        //            fwdIndex = i;
+        //            break;
+        //        }
+        //    }
+        //    //for (int i = fwdIndex; i < code.Count - 1; i++)
+        //    //{
+        //    //    if (code[i + 1] > code[i])
+        //    //    {
+        //    //        fwdIndex = i;
+        //    //        break;
+        //    //    }
+        //    //}
+        //    for (int i = fwdIndex; i < code.Count - 1; i++)
+        //    {
+        //        if (code[i] >= 2048)
+        //        {
+        //            bwdIndex = i;
+        //            break;
+        //        }
+        //    }
+        //    for (int i = 2; i < fwdIndex; i++)
+        //    {
+        //        for (int j = fwdIndex; j < bwdIndex; j++)
+        //        {
+        //            if (code[i] == code[j])
+        //            {
+        //                if (code[i] >= 2048 - CodeRange && code[i] <= 2048 + CodeRange && stroke[i] >= -StrokeRange && stroke[i] <= StrokeRange)
+        //                {
+        //                    double Hyst = Math.Abs(stroke[i] - stroke[j]);
+        //                    if (max < Hyst)
+        //                        max = Hyst;
+        //                }
+        //            }
+        //        }
+        //    }
+        //    return max;
+        //}
+
+        public double CalHysteresis(List<int> code, List<double> stroke, int CodeMin, int CodeMax, int MinStep, int MaxStep, int Mode)
         {
+
             double max = -9999;
-            int fwdIndex = 0;
-            int bwdIndex = 0;
-            for (int i = 2; i < code.Count - 1; i++)
+            List<CalcList> fwdIndex = new List<CalcList>();
+            List<CalcList> bwdIndex = new List<CalcList>();
+            for (int i = 1; i < code.Count; i++)
             {
-                if (code[i + 1] < code[i])
-                {
-                    fwdIndex = i;
-                    break;
-                }
+                int dy = code[i] - code[i - 1];
+                if (dy > 0) fwdIndex.Add(new CalcList { code = code[i], Val1 = stroke[i] });
+                else bwdIndex.Add(new CalcList { code = code[i], Val1 = stroke[i] });
             }
-            for (int i = fwdIndex; i < code.Count - 1; i++)
+            fwdIndex = fwdIndex.OrderBy(a => a.code).ToList();
+            bwdIndex = bwdIndex.OrderBy(a => a.code).ToList();
+
+            if (Mode == 0)
             {
-                if (code[i + 1] <= 2048)
+                for (int i = 0; i < fwdIndex.Count; i++)
                 {
-                    bwdIndex = i;
-                    break;
-                }
-            }
-            for (int i = 2; i < fwdIndex; i++)
-            {
-                for (int j = fwdIndex; j < bwdIndex; j++)
-                {
-                    if (code[i] == code[j])
+                    for (int j = 0; j < bwdIndex.Count; j++)
                     {
-                        if (code[i] >= 2048 - CodeRange && code[i] <= 2048 + CodeRange && stroke[i] >= -StrokeRange && stroke[i] <= StrokeRange)
+                        if (fwdIndex[i].code == bwdIndex[j].code)
                         {
-                            double Hyst = Math.Abs(stroke[i] - stroke[j]);
-                            if (max < Hyst)
-                                max = Hyst;
+                            if (fwdIndex[i].code >= CodeMin && fwdIndex[i].code <= CodeMax)
+                            {
+                                double hyst = Math.Abs(fwdIndex[i].Val1 - bwdIndex[j].Val1);
+                                if (max < hyst) max = hyst;
+                            }
                         }
                     }
                 }
             }
-            for (int i = bwdIndex; i < code.Count - 1; i++)
+            else
             {
-                if (code[i + 1] > code[i])
+                for (int i = MinStep; i < fwdIndex.Count - MaxStep; i++)
                 {
-                    fwdIndex = i;
-                    break;
-                }
-            }
-            for (int i = fwdIndex; i < code.Count - 1; i++)
-            {
-                if (code[i + 1] > code[i])
-                {
-                    fwdIndex = i;
-                    break;
-                }
-            }
-            for (int i = fwdIndex; i < code.Count - 1; i++)
-            {
-                if (code[i] >= 2048)
-                {
-                    bwdIndex = i;
-                    break;
-                }
-            }
-            for (int i = 2; i < fwdIndex; i++)
-            {
-                for (int j = fwdIndex; j < bwdIndex; j++)
-                {
-                    if (code[i] == code[j])
+                    for (int j = MinStep; j < bwdIndex.Count - MaxStep; j++)
                     {
-                        if (code[i] >= 2048 - CodeRange && code[i] <= 2048 + CodeRange && stroke[i] >= -StrokeRange && stroke[i] <= StrokeRange)
+                        if (fwdIndex[i].code == bwdIndex[j].code)
                         {
-                            double Hyst = Math.Abs(stroke[i] - stroke[j]);
-                            if (max < Hyst)
-                                max = Hyst;
+                            double hyst = Math.Abs(fwdIndex[i].Val1 - bwdIndex[j].Val1);
+                            if (max < hyst) max = hyst;
                         }
                     }
                 }
             }
             return max;
         }
+
         public double CalResolution(List<int> code, List<double> stroke, int CodeRange, int StrokeRange)
         {
             double Resolution = 0;
@@ -584,6 +710,71 @@ namespace FZ4P
             }
 
             return Math.Abs(maxTilt - minTilt);
+
+        }
+        public double CalTilt(List<int> x, List<double> TiltX, List<double> TiltY ,int CodeMin, int CodeMax, int RefCode)
+        {
+           
+            List<CalcList> fwdIndex = new List<CalcList>();
+            List<CalcList> bwdIndex = new List<CalcList>();
+            double RefFwdTiltX = 0, RefBwdTiltX = 0;
+            double RefFwdTiltY = 0, RefBwdtiltY = 0;
+
+            for (int i = 1; i < x.Count; i++)
+            {
+                int dy = x[i] - x[i - 1];
+                if (dy > 0)
+                {
+                    if (x[i] >= CodeMin && x[i] <= CodeMax)
+                        fwdIndex.Add(new CalcList { code = x[i], Val1 = TiltX[i], Val2 = TiltY[i] });
+                }                    
+                else
+                {
+                    if (x[i] >= CodeMin && x[i] <= CodeMax)
+                        bwdIndex.Add(new CalcList { code = x[i], Val1 = TiltX[i], Val2 = TiltY[i] });
+                }
+                   
+            }
+            fwdIndex = fwdIndex.OrderBy(a => a.code).ToList();
+            bwdIndex = bwdIndex.OrderBy(a => a.code).ToList();
+            for (int i = 0; i < fwdIndex.Count - 1; i++)
+            {
+                if(RefCode >= fwdIndex[i].code && RefCode <= fwdIndex[i + 1].code)
+                {
+                    if (Math.Abs(fwdIndex[i].code - RefCode) > Math.Abs(fwdIndex[i + 1].code - RefCode))
+                    { RefFwdTiltX = fwdIndex[i + 1].Val1; RefFwdTiltY = fwdIndex[i + 1].Val2; }
+                    else { RefFwdTiltX = fwdIndex[i].Val1; RefFwdTiltY = fwdIndex[i].Val2; }
+                }
+            }
+            for (int i = 0; i < bwdIndex.Count - 1; i++)
+            {
+                if (RefCode >= bwdIndex[i].code && RefCode <= bwdIndex[i + 1].code)
+                {
+                    if (Math.Abs(bwdIndex[i].code - RefCode) > Math.Abs(bwdIndex[i + 1].code - RefCode))
+                    { RefBwdTiltX = bwdIndex[i + 1].Val1; RefBwdtiltY = bwdIndex[i + 1].Val2; }
+                    else { RefBwdTiltX = bwdIndex[i].Val1; RefBwdtiltY = bwdIndex[i].Val2; }
+                }
+            }
+
+            double MaxFwdT = 0;
+            double MaxBwdT = 0;
+            for (int i = 0; i < fwdIndex.Count; i++)
+            {
+                double tx = fwdIndex[i].Val1 - RefFwdTiltX;
+                double ty = fwdIndex[i].Val2 - RefFwdTiltY;
+                double t = Math.Sqrt(Math.Pow(tx, 2) + Math.Pow(ty, 2));
+                if (MaxFwdT < t)
+                    MaxFwdT = t;
+            }
+            for (int i = 0; i < bwdIndex.Count; i++)
+            {
+                double tx = bwdIndex[i].Val1 - RefFwdTiltX;
+                double ty = bwdIndex[i].Val2 - RefFwdTiltY;
+                double t = Math.Sqrt(Math.Pow(tx, 2) + Math.Pow(ty, 2));
+                if (MaxBwdT < t)
+                    MaxBwdT = t;
+            }
+            return Math.Max(MaxFwdT, MaxBwdT);
 
         }
     }
@@ -858,5 +1049,12 @@ namespace FZ4P
                 C.Tag = "S";
             }
         }
+    }
+    public class CalcList
+    {
+        public int code { get; set; }
+        public double Val1 { get; set; }
+        public double Val2 { get; set; }
+        public double Val3 { get; set; }
     }
 }

@@ -32,9 +32,6 @@ namespace FZ4P
             if (!Directory.Exists(STATIC.DataDir)) Directory.CreateDirectory(STATIC.DataDir);
             if (!Directory.Exists(STATIC.RecipeDir)) Directory.CreateDirectory(STATIC.RecipeDir);
             if (!Directory.Exists(STATIC.SpecDir)) Directory.CreateDirectory(STATIC.SpecDir);
-            //if (!Directory.Exists(STATIC.FWDir)) Directory.CreateDirectory(STATIC.FWDir);
-            //if (!Directory.Exists(STATIC.BLDir)) Directory.CreateDirectory(STATIC.BLDir);
-
 
             Condition = new Condition();
             if (File.Exists(STATIC.RecipeDir + Current.ConditionName))
@@ -261,6 +258,46 @@ namespace FZ4P
         [Condition("Ringing", "RNG WSEC", "", "", "msec")] public int RNG_WSEC { get; set; } = 50;
         [Condition("Ringing", "RNG AXIS", "", "", "0:X 1:Y 2:Both")] public int RNG_AXIS { get; set; } = 0;
 
+        [Condition("Tilt", "Ref Code", "", "", "code")] public int TiltRefCode { get; set; } = 1000;
+        [Condition("Tilt", "Min Range", "", "", "code")] public int TiltMinCode { get; set; } = 200;
+        [Condition("Tilt", "Min Range", "", "", "code")] public int TiltMaxCode { get; set; } = 3900;
+
+        [Condition("AF Linearity", "Min Range", "", "", "code")] public int AFLinMinRange { get; set; } = 200;
+        [Condition("AF Linearity", "Max Range", "", "", "code")] public int AFLinMaxRange { get; set; } = 3900;
+        [Condition("AF Linearity", "Min Step", "", "", "_")] public int AFLinMinStep { get; set; } = 0;
+        [Condition("AF Linearity", "Max Step", "", "", "_")] public int AFLinMaxStep { get; set; } = 0;
+        [Condition("AF Linearity", "Mode", "", "", "0:CodeRange / 1:Step")] public int AFLinMode { get; set; } = 0;
+
+        [Condition("AF Hysteresis", "Min Range", "", "", "code")] public int AFHysMinRange { get; set; } = 200;
+        [Condition("AF Hysteresis", "Max Range", "", "", "code")] public int AFHysMaxRange { get; set; } = 3900;
+        [Condition("AF Hysteresis", "Min Step", "", "", "_")] public int AFHysMinStep { get; set; } = 0;
+        [Condition("AF Hysteresis", "Max Step", "", "", "_")] public int AFhysMaxStep { get; set; } = 0;
+        [Condition("AF Hysteresis", "Mode", "", "", "0:CodeRange / 1:Step")] public int AFHysMode { get; set; } = 0;
+
+        [Condition("X Linearity", "Min Range", "", "", "code")] public int XLinMinRange { get; set; } = 648;
+        [Condition("X Linearity", "Max Range", "", "", "code")] public int XLinMaxRange { get; set; } = 3448;
+        [Condition("X Linearity", "Min Step", "", "", "_")] public int XLinMinStep { get; set; } = 0;
+        [Condition("X Linearity", "Max Step", "", "", "_")] public int XLinMaxStep { get; set; } = 0;
+        [Condition("X Linearity", "Mode", "", "", "0:CodeRange / 1:Step")] public int XLinMode { get; set; } = 0;
+
+        [Condition("X Hysteresis", "Min Range", "", "", "code")] public int XHysMinRange { get; set; } = 648;
+        [Condition("X Hysteresis", "Max Range", "", "", "code")] public int XHysMaxRange { get; set; } = 3448;
+        [Condition("X Hysteresis", "Min Step", "", "", "_")] public int XHysMinStep { get; set; } = 0;
+        [Condition("X Hysteresis", "Max Step", "", "", "_")] public int XHysMaxStep { get; set; } = 0;
+        [Condition("X Hysteresis", "Mode", "", "", "0:CodeRange / 1:Step")] public int XHysMode { get; set; } = 0;
+
+        [Condition("Y Linearity", "Min Range", "", "", "code")] public int YLinMinRange { get; set; } = 648;
+        [Condition("Y Linearity", "Max Range", "", "", "code")] public int YLinMaxRange { get; set; } = 3448;
+        [Condition("Y Linearity", "Min Step", "", "", "_")] public int YLinMinStep { get; set; } = 0;
+        [Condition("Y Linearity", "Max Step", "", "", "_")] public int YLinMaxStep { get; set; } = 0;
+        [Condition("Y Linearity", "Mode", "", "", "0:CodeRange / 1:Step")] public int YLinMode { get; set; } = 0;
+
+        [Condition("Y Hysteresis", "Min Range", "", "", "code")] public int YHysMinRange { get; set; } = 648;
+        [Condition("Y Hysteresis", "Max Range", "", "", "code")] public int YHysMaxRange { get; set; } = 3448;
+        [Condition("Y Hysteresis", "Min Step", "", "", "_")] public int YHysMinStep { get; set; } = 0;
+        [Condition("Y Hysteresis", "Max Step", "", "", "_")] public int YHysMaxStep { get; set; } = 0;
+        [Condition("Y Hysteresis", "Mode", "", "", "0:CodeRange / 1:Step")] public int YHysMode { get; set; } = 0;
+
 
         [Condition("I2C", "I2C Clock", "", "", "KHz")] public int iI2Cclock { get; set; } = 400;
 
@@ -313,7 +350,9 @@ namespace FZ4P
         [Spec("AF", "Crosstalk Y", "um")] AF_CrosstalkY,
         [Spec("AF", "Crosstalk R", "um")] AF_CrosstalkR,
         [Spec("AF", "Rolling", "min")] AF_Rolling,
+        [Spec("AF", "Tilt", "um")] AF_Tilt,
         [Spec("AF", "Settling Time", "ms")] AF_SettillingTime,
+       
 
         [Spec("FRA AF", "PM Frequency", "Hz")] FRAAF_PMFreq,
         [Spec("FRA AF", "Phase Margin", "deg")] FRAAF_PhaseMargin,
@@ -350,7 +389,9 @@ namespace FZ4P
         [Spec("FRA Y2", "Sinewave Count", "#")] SineWaveY2_Count,
         [Spec("FRA Y2", "Ringing Result", "#")] RingingY2_Result,
         [Spec("FRA Y2", "Ringing Time", "#")] RingingY2_Time,
+
        
+
         [Spec("Servo Decenter", "X Decenter", "um")] x_ServoDecenter,
         [Spec("Servo Decenter", "Y Decenter", "um")] y_ServoDecenter,
         Length,

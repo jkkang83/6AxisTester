@@ -124,11 +124,13 @@ namespace FZ4P
             dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.SpecGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.SpecGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.SpecGrid.Location = new System.Drawing.Point(769, 152);
+            this.SpecGrid.Location = new System.Drawing.Point(1208, 266);
+            this.SpecGrid.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.SpecGrid.Name = "SpecGrid";
+            this.SpecGrid.RowHeadersWidth = 72;
             this.SpecGrid.RowTemplate.Height = 23;
             this.SpecGrid.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.SpecGrid.Size = new System.Drawing.Size(473, 843);
+            this.SpecGrid.Size = new System.Drawing.Size(743, 1475);
             this.SpecGrid.TabIndex = 78;
             this.SpecGrid.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.SpecGrid_CellValueChanged);
             this.SpecGrid.CurrentCellDirtyStateChanged += new System.EventHandler(this.SpecGrid_CurrentCellDirtyStateChanged);
@@ -141,9 +143,10 @@ namespace FZ4P
             this.btnApplyTesterNo2.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnApplyTesterNo2.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Bold);
             this.btnApplyTesterNo2.ForeColor = System.Drawing.Color.White;
-            this.btnApplyTesterNo2.Location = new System.Drawing.Point(151, 951);
+            this.btnApplyTesterNo2.Location = new System.Drawing.Point(237, 1664);
+            this.btnApplyTesterNo2.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.btnApplyTesterNo2.Name = "btnApplyTesterNo2";
-            this.btnApplyTesterNo2.Size = new System.Drawing.Size(159, 36);
+            this.btnApplyTesterNo2.Size = new System.Drawing.Size(250, 63);
             this.btnApplyTesterNo2.TabIndex = 178;
             this.btnApplyTesterNo2.Text = "Apply";
             this.btnApplyTesterNo2.UseVisualStyleBackColor = false;
@@ -171,9 +174,11 @@ namespace FZ4P
             this.ModelGroup.Controls.Add(this.LotMaker);
             this.ModelGroup.Controls.Add(this.RevisionNo);
             this.ModelGroup.Controls.Add(this.ApplyTester);
-            this.ModelGroup.Location = new System.Drawing.Point(1248, 48);
+            this.ModelGroup.Location = new System.Drawing.Point(1961, 84);
+            this.ModelGroup.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.ModelGroup.Name = "ModelGroup";
-            this.ModelGroup.Size = new System.Drawing.Size(647, 524);
+            this.ModelGroup.Padding = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            this.ModelGroup.Size = new System.Drawing.Size(1017, 917);
             this.ModelGroup.TabIndex = 159;
             this.ModelGroup.TabStop = false;
             // 
@@ -181,9 +186,10 @@ namespace FZ4P
             // 
             this.lblDefaultModel.AutoSize = true;
             this.lblDefaultModel.Font = new System.Drawing.Font("맑은 고딕", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            this.lblDefaultModel.Location = new System.Drawing.Point(6, 494);
+            this.lblDefaultModel.Location = new System.Drawing.Point(9, 864);
+            this.lblDefaultModel.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblDefaultModel.Name = "lblDefaultModel";
-            this.lblDefaultModel.Size = new System.Drawing.Size(126, 17);
+            this.lblDefaultModel.Size = new System.Drawing.Size(216, 31);
             this.lblDefaultModel.TabIndex = 239;
             this.lblDefaultModel.Text = "Default Model File";
             // 
@@ -194,9 +200,10 @@ namespace FZ4P
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.button1.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold);
             this.button1.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.button1.Location = new System.Drawing.Point(4, 390);
+            this.button1.Location = new System.Drawing.Point(6, 682);
+            this.button1.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(200, 28);
+            this.button1.Size = new System.Drawing.Size(314, 49);
             this.button1.TabIndex = 238;
             this.button1.Text = "Load Model FIle List";
             this.button1.UseVisualStyleBackColor = true;
@@ -207,10 +214,11 @@ namespace FZ4P
             this.lbxModelFiles.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(242)))), ((int)(((byte)(255)))));
             this.lbxModelFiles.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbxModelFiles.FormattingEnabled = true;
-            this.lbxModelFiles.ItemHeight = 15;
-            this.lbxModelFiles.Location = new System.Drawing.Point(4, 427);
+            this.lbxModelFiles.ItemHeight = 28;
+            this.lbxModelFiles.Location = new System.Drawing.Point(6, 747);
+            this.lbxModelFiles.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.lbxModelFiles.Name = "lbxModelFiles";
-            this.lbxModelFiles.Size = new System.Drawing.Size(643, 64);
+            this.lbxModelFiles.Size = new System.Drawing.Size(1008, 88);
             this.lbxModelFiles.TabIndex = 237;
             this.lbxModelFiles.SelectedIndexChanged += new System.EventHandler(this.lbxModelFiles_SelectedIndexChanged);
             // 
@@ -219,9 +227,10 @@ namespace FZ4P
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.ForeColor = System.Drawing.Color.MediumBlue;
-            this.label2.Location = new System.Drawing.Point(61, 321);
+            this.label2.Location = new System.Drawing.Point(96, 562);
+            this.label2.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(78, 23);
+            this.label2.Size = new System.Drawing.Size(141, 41);
             this.label2.TabIndex = 236;
             this.label2.Text = "MC Type";
             // 
@@ -230,9 +239,10 @@ namespace FZ4P
             this.lblStartModel.AutoSize = true;
             this.lblStartModel.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblStartModel.ForeColor = System.Drawing.Color.MediumBlue;
-            this.lblStartModel.Location = new System.Drawing.Point(70, 275);
+            this.lblStartModel.Location = new System.Drawing.Point(110, 481);
+            this.lblStartModel.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblStartModel.Name = "lblStartModel";
-            this.lblStartModel.Size = new System.Drawing.Size(62, 23);
+            this.lblStartModel.Size = new System.Drawing.Size(109, 41);
             this.lblStartModel.TabIndex = 236;
             this.lblStartModel.Text = "Model";
             // 
@@ -241,10 +251,11 @@ namespace FZ4P
             this.MCtypeList.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.MCtypeList.ForeColor = System.Drawing.Color.MediumBlue;
             this.MCtypeList.FormattingEnabled = true;
-            this.MCtypeList.ItemHeight = 19;
-            this.MCtypeList.Location = new System.Drawing.Point(139, 321);
+            this.MCtypeList.ItemHeight = 35;
+            this.MCtypeList.Location = new System.Drawing.Point(218, 562);
+            this.MCtypeList.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.MCtypeList.Name = "MCtypeList";
-            this.MCtypeList.Size = new System.Drawing.Size(130, 61);
+            this.MCtypeList.Size = new System.Drawing.Size(202, 74);
             this.MCtypeList.TabIndex = 235;
             // 
             // ModelList
@@ -252,19 +263,21 @@ namespace FZ4P
             this.ModelList.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ModelList.ForeColor = System.Drawing.Color.MediumBlue;
             this.ModelList.FormattingEnabled = true;
-            this.ModelList.ItemHeight = 19;
-            this.ModelList.Location = new System.Drawing.Point(139, 275);
+            this.ModelList.ItemHeight = 35;
+            this.ModelList.Location = new System.Drawing.Point(218, 481);
+            this.ModelList.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.ModelList.Name = "ModelList";
-            this.ModelList.Size = new System.Drawing.Size(130, 42);
+            this.ModelList.Size = new System.Drawing.Size(202, 39);
             this.ModelList.TabIndex = 235;
             // 
             // MCNumber
             // 
             this.MCNumber.BackColor = System.Drawing.Color.White;
             this.MCNumber.Font = new System.Drawing.Font("Calibri", 14F, System.Drawing.FontStyle.Bold);
-            this.MCNumber.Location = new System.Drawing.Point(139, 241);
+            this.MCNumber.Location = new System.Drawing.Point(218, 422);
+            this.MCNumber.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.MCNumber.Name = "MCNumber";
-            this.MCNumber.Size = new System.Drawing.Size(130, 30);
+            this.MCNumber.Size = new System.Drawing.Size(202, 47);
             this.MCNumber.TabIndex = 234;
             this.MCNumber.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -272,9 +285,10 @@ namespace FZ4P
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(63, 244);
+            this.label4.Location = new System.Drawing.Point(99, 427);
+            this.label4.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(69, 23);
+            this.label4.Size = new System.Drawing.Size(123, 41);
             this.label4.TabIndex = 233;
             this.label4.Text = "MC No.";
             // 
@@ -283,19 +297,21 @@ namespace FZ4P
             this.SupplierList.BackColor = System.Drawing.Color.LightCyan;
             this.SupplierList.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.SupplierList.FormattingEnabled = true;
-            this.SupplierList.ItemHeight = 19;
-            this.SupplierList.Location = new System.Drawing.Point(139, 193);
+            this.SupplierList.ItemHeight = 35;
+            this.SupplierList.Location = new System.Drawing.Point(218, 338);
+            this.SupplierList.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.SupplierList.Name = "SupplierList";
-            this.SupplierList.Size = new System.Drawing.Size(130, 42);
+            this.SupplierList.Size = new System.Drawing.Size(202, 39);
             this.SupplierList.TabIndex = 230;
             // 
             // label17
             // 
             this.label17.AutoSize = true;
             this.label17.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label17.Location = new System.Drawing.Point(7, 198);
+            this.label17.Location = new System.Drawing.Point(11, 346);
+            this.label17.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(125, 23);
+            this.label17.Size = new System.Drawing.Size(221, 41);
             this.label17.TabIndex = 229;
             this.label17.Text = "Prism Supplier";
             // 
@@ -303,9 +319,10 @@ namespace FZ4P
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(23, 167);
+            this.label1.Location = new System.Drawing.Point(36, 292);
+            this.label1.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(109, 23);
+            this.label1.Size = new System.Drawing.Size(193, 41);
             this.label1.TabIndex = 228;
             this.label1.Text = "Product Line";
             // 
@@ -313,9 +330,10 @@ namespace FZ4P
             // 
             this.ProductLine.BackColor = System.Drawing.Color.White;
             this.ProductLine.Font = new System.Drawing.Font("Calibri", 14F, System.Drawing.FontStyle.Bold);
-            this.ProductLine.Location = new System.Drawing.Point(139, 160);
+            this.ProductLine.Location = new System.Drawing.Point(218, 280);
+            this.ProductLine.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.ProductLine.Name = "ProductLine";
-            this.ProductLine.Size = new System.Drawing.Size(130, 30);
+            this.ProductLine.Size = new System.Drawing.Size(202, 47);
             this.ProductLine.TabIndex = 227;
             this.ProductLine.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -323,9 +341,10 @@ namespace FZ4P
             // 
             this.label15.AutoSize = true;
             this.label15.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label15.Location = new System.Drawing.Point(41, 131);
+            this.label15.Location = new System.Drawing.Point(64, 229);
+            this.label15.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(91, 23);
+            this.label15.Size = new System.Drawing.Size(161, 41);
             this.label15.TabIndex = 226;
             this.label15.Text = "Tester No.";
             // 
@@ -333,9 +352,10 @@ namespace FZ4P
             // 
             this.lblRevisionNumber.AutoSize = true;
             this.lblRevisionNumber.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblRevisionNumber.Location = new System.Drawing.Point(23, 97);
+            this.lblRevisionNumber.Location = new System.Drawing.Point(36, 170);
+            this.lblRevisionNumber.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblRevisionNumber.Name = "lblRevisionNumber";
-            this.lblRevisionNumber.Size = new System.Drawing.Size(110, 23);
+            this.lblRevisionNumber.Size = new System.Drawing.Size(193, 41);
             this.lblRevisionNumber.TabIndex = 222;
             this.lblRevisionNumber.Text = "Revision No.";
             // 
@@ -343,9 +363,10 @@ namespace FZ4P
             // 
             this.TesterNo.BackColor = System.Drawing.Color.White;
             this.TesterNo.Font = new System.Drawing.Font("Calibri", 14F, System.Drawing.FontStyle.Bold);
-            this.TesterNo.Location = new System.Drawing.Point(139, 124);
+            this.TesterNo.Location = new System.Drawing.Point(218, 217);
+            this.TesterNo.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.TesterNo.Name = "TesterNo";
-            this.TesterNo.Size = new System.Drawing.Size(130, 30);
+            this.TesterNo.Size = new System.Drawing.Size(202, 47);
             this.TesterNo.TabIndex = 225;
             this.TesterNo.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -353,9 +374,10 @@ namespace FZ4P
             // 
             this.lblMaker.AutoSize = true;
             this.lblMaker.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblMaker.Location = new System.Drawing.Point(71, 53);
+            this.lblMaker.Location = new System.Drawing.Point(112, 93);
+            this.lblMaker.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblMaker.Name = "lblMaker";
-            this.lblMaker.Size = new System.Drawing.Size(61, 23);
+            this.lblMaker.Size = new System.Drawing.Size(109, 41);
             this.lblMaker.TabIndex = 221;
             this.lblMaker.Text = "Maker";
             // 
@@ -364,19 +386,21 @@ namespace FZ4P
             this.LotMaker.BackColor = System.Drawing.Color.LightCyan;
             this.LotMaker.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LotMaker.FormattingEnabled = true;
-            this.LotMaker.ItemHeight = 19;
-            this.LotMaker.Location = new System.Drawing.Point(139, 49);
+            this.LotMaker.ItemHeight = 35;
+            this.LotMaker.Location = new System.Drawing.Point(218, 86);
+            this.LotMaker.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.LotMaker.Name = "LotMaker";
-            this.LotMaker.Size = new System.Drawing.Size(130, 42);
+            this.LotMaker.Size = new System.Drawing.Size(202, 39);
             this.LotMaker.TabIndex = 224;
             // 
             // RevisionNo
             // 
             this.RevisionNo.BackColor = System.Drawing.Color.LightCyan;
             this.RevisionNo.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold);
-            this.RevisionNo.Location = new System.Drawing.Point(139, 93);
+            this.RevisionNo.Location = new System.Drawing.Point(218, 163);
+            this.RevisionNo.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.RevisionNo.Name = "RevisionNo";
-            this.RevisionNo.Size = new System.Drawing.Size(130, 27);
+            this.RevisionNo.Size = new System.Drawing.Size(202, 42);
             this.RevisionNo.TabIndex = 223;
             this.RevisionNo.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -388,9 +412,10 @@ namespace FZ4P
             this.ApplyTester.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.ApplyTester.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Bold);
             this.ApplyTester.ForeColor = System.Drawing.Color.White;
-            this.ApplyTester.Location = new System.Drawing.Point(9, 9);
+            this.ApplyTester.Location = new System.Drawing.Point(14, 16);
+            this.ApplyTester.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.ApplyTester.Name = "ApplyTester";
-            this.ApplyTester.Size = new System.Drawing.Size(179, 34);
+            this.ApplyTester.Size = new System.Drawing.Size(281, 60);
             this.ApplyTester.TabIndex = 132;
             this.ApplyTester.Text = "Apply";
             this.ApplyTester.UseVisualStyleBackColor = false;
@@ -404,9 +429,10 @@ namespace FZ4P
             this.panel4.Controls.Add(this.EditSpec);
             this.panel4.Controls.Add(this.SaveSpec);
             this.panel4.Controls.Add(this.SaveAsSpec);
-            this.panel4.Location = new System.Drawing.Point(769, 46);
+            this.panel4.Location = new System.Drawing.Point(1208, 80);
+            this.panel4.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(474, 70);
+            this.panel4.Size = new System.Drawing.Size(745, 122);
             this.panel4.TabIndex = 91;
             // 
             // textBox4
@@ -415,10 +441,11 @@ namespace FZ4P
             this.textBox4.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textBox4.Font = new System.Drawing.Font("Calibri", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBox4.ForeColor = System.Drawing.Color.White;
-            this.textBox4.Location = new System.Drawing.Point(0, -2);
+            this.textBox4.Location = new System.Drawing.Point(0, -4);
+            this.textBox4.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.textBox4.Name = "textBox4";
             this.textBox4.ReadOnly = true;
-            this.textBox4.Size = new System.Drawing.Size(474, 26);
+            this.textBox4.Size = new System.Drawing.Size(745, 45);
             this.textBox4.TabIndex = 90;
             this.textBox4.TabStop = false;
             this.textBox4.Text = "Test Spec";
@@ -431,9 +458,10 @@ namespace FZ4P
             this.OpenSpec.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.OpenSpec.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold);
             this.OpenSpec.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.OpenSpec.Location = new System.Drawing.Point(15, 31);
+            this.OpenSpec.Location = new System.Drawing.Point(24, 54);
+            this.OpenSpec.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.OpenSpec.Name = "OpenSpec";
-            this.OpenSpec.Size = new System.Drawing.Size(120, 28);
+            this.OpenSpec.Size = new System.Drawing.Size(189, 49);
             this.OpenSpec.TabIndex = 88;
             this.OpenSpec.Text = "Open";
             this.OpenSpec.UseVisualStyleBackColor = true;
@@ -445,9 +473,10 @@ namespace FZ4P
             this.EditSpec.BackColor = System.Drawing.Color.Transparent;
             this.EditSpec.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.EditSpec.ForeColor = System.Drawing.Color.White;
-            this.EditSpec.Location = new System.Drawing.Point(401, 37);
+            this.EditSpec.Location = new System.Drawing.Point(630, 65);
+            this.EditSpec.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.EditSpec.Name = "EditSpec";
-            this.EditSpec.Size = new System.Drawing.Size(47, 19);
+            this.EditSpec.Size = new System.Drawing.Size(75, 32);
             this.EditSpec.TabIndex = 1;
             this.EditSpec.Text = "Edit";
             this.EditSpec.UseVisualStyleBackColor = false;
@@ -460,9 +489,10 @@ namespace FZ4P
             this.SaveSpec.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SaveSpec.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold);
             this.SaveSpec.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.SaveSpec.Location = new System.Drawing.Point(141, 31);
+            this.SaveSpec.Location = new System.Drawing.Point(222, 54);
+            this.SaveSpec.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.SaveSpec.Name = "SaveSpec";
-            this.SaveSpec.Size = new System.Drawing.Size(120, 28);
+            this.SaveSpec.Size = new System.Drawing.Size(189, 49);
             this.SaveSpec.TabIndex = 87;
             this.SaveSpec.Text = "Save";
             this.SaveSpec.UseVisualStyleBackColor = true;
@@ -475,9 +505,10 @@ namespace FZ4P
             this.SaveAsSpec.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SaveAsSpec.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold);
             this.SaveAsSpec.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.SaveAsSpec.Location = new System.Drawing.Point(267, 31);
+            this.SaveAsSpec.Location = new System.Drawing.Point(420, 54);
+            this.SaveAsSpec.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.SaveAsSpec.Name = "SaveAsSpec";
-            this.SaveAsSpec.Size = new System.Drawing.Size(120, 28);
+            this.SaveAsSpec.Size = new System.Drawing.Size(189, 49);
             this.SaveAsSpec.TabIndex = 89;
             this.SaveAsSpec.Text = "Save As";
             this.SaveAsSpec.UseVisualStyleBackColor = true;
@@ -489,10 +520,11 @@ namespace FZ4P
             this.SpecFileName.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.SpecFileName.Font = new System.Drawing.Font("Calibri", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.SpecFileName.ForeColor = System.Drawing.Color.LightGray;
-            this.SpecFileName.Location = new System.Drawing.Point(769, 118);
+            this.SpecFileName.Location = new System.Drawing.Point(1208, 206);
+            this.SpecFileName.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.SpecFileName.Name = "SpecFileName";
             this.SpecFileName.ReadOnly = true;
-            this.SpecFileName.Size = new System.Drawing.Size(474, 26);
+            this.SpecFileName.Size = new System.Drawing.Size(745, 45);
             this.SpecFileName.TabIndex = 89;
             this.SpecFileName.TabStop = false;
             this.SpecFileName.Text = "Spec File Name";
@@ -500,23 +532,26 @@ namespace FZ4P
             // 
             // P_AutoLearn
             // 
-            this.P_AutoLearn.Location = new System.Drawing.Point(117, 1023);
+            this.P_AutoLearn.Location = new System.Drawing.Point(184, 1790);
+            this.P_AutoLearn.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.P_AutoLearn.Name = "P_AutoLearn";
-            this.P_AutoLearn.Size = new System.Drawing.Size(50, 31);
+            this.P_AutoLearn.Size = new System.Drawing.Size(79, 54);
             this.P_AutoLearn.TabIndex = 196;
             // 
             // P_Vision
             // 
-            this.P_Vision.Location = new System.Drawing.Point(61, 1023);
+            this.P_Vision.Location = new System.Drawing.Point(96, 1790);
+            this.P_Vision.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.P_Vision.Name = "P_Vision";
-            this.P_Vision.Size = new System.Drawing.Size(50, 31);
+            this.P_Vision.Size = new System.Drawing.Size(79, 54);
             this.P_Vision.TabIndex = 195;
             // 
             // P_Manager
             // 
-            this.P_Manager.Location = new System.Drawing.Point(5, 1023);
+            this.P_Manager.Location = new System.Drawing.Point(8, 1790);
+            this.P_Manager.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.P_Manager.Name = "P_Manager";
-            this.P_Manager.Size = new System.Drawing.Size(50, 31);
+            this.P_Manager.Size = new System.Drawing.Size(79, 54);
             this.P_Manager.TabIndex = 194;
             // 
             // LotID
@@ -524,10 +559,11 @@ namespace FZ4P
             this.LotID.BackColor = System.Drawing.Color.White;
             this.LotID.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
             this.LotID.Font = new System.Drawing.Font("Calibri", 14F, System.Drawing.FontStyle.Bold);
-            this.LotID.Location = new System.Drawing.Point(151, 879);
+            this.LotID.Location = new System.Drawing.Point(237, 1538);
+            this.LotID.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.LotID.MaxLength = 50;
             this.LotID.Name = "LotID";
-            this.LotID.Size = new System.Drawing.Size(159, 30);
+            this.LotID.Size = new System.Drawing.Size(248, 47);
             this.LotID.TabIndex = 170;
             this.LotID.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -552,9 +588,10 @@ namespace FZ4P
             this.P_Main.Controls.Add(this.label16);
             this.P_Main.Controls.Add(this.LotID);
             this.P_Main.Controls.Add(this.OperatorName);
-            this.P_Main.Location = new System.Drawing.Point(2, 1);
+            this.P_Main.Location = new System.Drawing.Point(3, 2);
+            this.P_Main.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.P_Main.Name = "P_Main";
-            this.P_Main.Size = new System.Drawing.Size(1898, 998);
+            this.P_Main.Size = new System.Drawing.Size(2983, 1746);
             this.P_Main.TabIndex = 197;
             // 
             // SetCodeScript
@@ -565,9 +602,10 @@ namespace FZ4P
             this.SetCodeScript.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SetCodeScript.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Bold);
             this.SetCodeScript.ForeColor = System.Drawing.Color.White;
-            this.SetCodeScript.Location = new System.Drawing.Point(1247, 907);
+            this.SetCodeScript.Location = new System.Drawing.Point(1960, 1587);
+            this.SetCodeScript.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.SetCodeScript.Name = "SetCodeScript";
-            this.SetCodeScript.Size = new System.Drawing.Size(642, 43);
+            this.SetCodeScript.Size = new System.Drawing.Size(1009, 75);
             this.SetCodeScript.TabIndex = 243;
             this.SetCodeScript.Text = "Code Script File";
             this.SetCodeScript.UseVisualStyleBackColor = false;
@@ -579,10 +617,11 @@ namespace FZ4P
             this.CodeScriptPath.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.CodeScriptPath.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.CodeScriptPath.ForeColor = System.Drawing.SystemColors.InactiveCaptionText;
-            this.CodeScriptPath.Location = new System.Drawing.Point(1247, 956);
+            this.CodeScriptPath.Location = new System.Drawing.Point(1960, 1673);
+            this.CodeScriptPath.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.CodeScriptPath.Name = "CodeScriptPath";
             this.CodeScriptPath.ReadOnly = true;
-            this.CodeScriptPath.Size = new System.Drawing.Size(639, 36);
+            this.CodeScriptPath.Size = new System.Drawing.Size(1004, 63);
             this.CodeScriptPath.TabIndex = 242;
             this.CodeScriptPath.Text = "";
             // 
@@ -594,9 +633,10 @@ namespace FZ4P
             this.SetYPIDUpdate.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SetYPIDUpdate.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Bold);
             this.SetYPIDUpdate.ForeColor = System.Drawing.Color.White;
-            this.SetYPIDUpdate.Location = new System.Drawing.Point(1247, 814);
+            this.SetYPIDUpdate.Location = new System.Drawing.Point(1960, 1424);
+            this.SetYPIDUpdate.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.SetYPIDUpdate.Name = "SetYPIDUpdate";
-            this.SetYPIDUpdate.Size = new System.Drawing.Size(642, 43);
+            this.SetYPIDUpdate.Size = new System.Drawing.Size(1009, 75);
             this.SetYPIDUpdate.TabIndex = 241;
             this.SetYPIDUpdate.Text = "Set Y PID Update File";
             this.SetYPIDUpdate.UseVisualStyleBackColor = false;
@@ -608,10 +648,11 @@ namespace FZ4P
             this.YPidSetPath.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.YPidSetPath.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.YPidSetPath.ForeColor = System.Drawing.SystemColors.InactiveCaptionText;
-            this.YPidSetPath.Location = new System.Drawing.Point(1247, 863);
+            this.YPidSetPath.Location = new System.Drawing.Point(1960, 1510);
+            this.YPidSetPath.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.YPidSetPath.Name = "YPidSetPath";
             this.YPidSetPath.ReadOnly = true;
-            this.YPidSetPath.Size = new System.Drawing.Size(639, 36);
+            this.YPidSetPath.Size = new System.Drawing.Size(1004, 63);
             this.YPidSetPath.TabIndex = 240;
             this.YPidSetPath.Text = "";
             // 
@@ -623,9 +664,10 @@ namespace FZ4P
             this.SetXPIDUpdate.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SetXPIDUpdate.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Bold);
             this.SetXPIDUpdate.ForeColor = System.Drawing.Color.White;
-            this.SetXPIDUpdate.Location = new System.Drawing.Point(1247, 723);
+            this.SetXPIDUpdate.Location = new System.Drawing.Point(1960, 1265);
+            this.SetXPIDUpdate.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.SetXPIDUpdate.Name = "SetXPIDUpdate";
-            this.SetXPIDUpdate.Size = new System.Drawing.Size(642, 43);
+            this.SetXPIDUpdate.Size = new System.Drawing.Size(1009, 75);
             this.SetXPIDUpdate.TabIndex = 239;
             this.SetXPIDUpdate.Text = "Set X PID Update File";
             this.SetXPIDUpdate.UseVisualStyleBackColor = false;
@@ -637,10 +679,11 @@ namespace FZ4P
             this.XPidSetPath.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.XPidSetPath.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.XPidSetPath.ForeColor = System.Drawing.SystemColors.InactiveCaptionText;
-            this.XPidSetPath.Location = new System.Drawing.Point(1247, 772);
+            this.XPidSetPath.Location = new System.Drawing.Point(1960, 1351);
+            this.XPidSetPath.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.XPidSetPath.Name = "XPidSetPath";
             this.XPidSetPath.ReadOnly = true;
-            this.XPidSetPath.Size = new System.Drawing.Size(639, 36);
+            this.XPidSetPath.Size = new System.Drawing.Size(1004, 63);
             this.XPidSetPath.TabIndex = 238;
             this.XPidSetPath.Text = "";
             // 
@@ -652,9 +695,10 @@ namespace FZ4P
             this.SetAFPIDUpdate.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SetAFPIDUpdate.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Bold);
             this.SetAFPIDUpdate.ForeColor = System.Drawing.Color.White;
-            this.SetAFPIDUpdate.Location = new System.Drawing.Point(1248, 632);
+            this.SetAFPIDUpdate.Location = new System.Drawing.Point(1961, 1106);
+            this.SetAFPIDUpdate.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.SetAFPIDUpdate.Name = "SetAFPIDUpdate";
-            this.SetAFPIDUpdate.Size = new System.Drawing.Size(642, 43);
+            this.SetAFPIDUpdate.Size = new System.Drawing.Size(1009, 75);
             this.SetAFPIDUpdate.TabIndex = 237;
             this.SetAFPIDUpdate.Text = "Set AF PID Update File";
             this.SetAFPIDUpdate.UseVisualStyleBackColor = false;
@@ -666,10 +710,11 @@ namespace FZ4P
             this.AFPidSetPath.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.AFPidSetPath.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.AFPidSetPath.ForeColor = System.Drawing.SystemColors.InactiveCaptionText;
-            this.AFPidSetPath.Location = new System.Drawing.Point(1248, 681);
+            this.AFPidSetPath.Location = new System.Drawing.Point(1961, 1192);
+            this.AFPidSetPath.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.AFPidSetPath.Name = "AFPidSetPath";
             this.AFPidSetPath.ReadOnly = true;
-            this.AFPidSetPath.Size = new System.Drawing.Size(639, 36);
+            this.AFPidSetPath.Size = new System.Drawing.Size(1004, 63);
             this.AFPidSetPath.TabIndex = 191;
             this.AFPidSetPath.Text = "";
             // 
@@ -690,11 +735,13 @@ namespace FZ4P
             dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.ConditinGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             this.ConditinGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.ConditinGrid.Location = new System.Drawing.Point(364, 43);
+            this.ConditinGrid.Location = new System.Drawing.Point(572, 75);
+            this.ConditinGrid.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.ConditinGrid.Name = "ConditinGrid";
+            this.ConditinGrid.RowHeadersWidth = 72;
             this.ConditinGrid.RowTemplate.Height = 23;
             this.ConditinGrid.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.ConditinGrid.Size = new System.Drawing.Size(399, 951);
+            this.ConditinGrid.Size = new System.Drawing.Size(627, 1664);
             this.ConditinGrid.TabIndex = 87;
             // 
             // panel2
@@ -703,8 +750,9 @@ namespace FZ4P
             this.panel2.Controls.Add(this.ToVision);
             this.panel2.Controls.Add(this.ToOperator);
             this.panel2.Location = new System.Drawing.Point(0, 0);
+            this.panel2.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(1907, 42);
+            this.panel2.Size = new System.Drawing.Size(2997, 74);
             this.panel2.TabIndex = 32;
             // 
             // ToVision
@@ -714,9 +762,10 @@ namespace FZ4P
             this.ToVision.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.ToVision.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Bold);
             this.ToVision.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.ToVision.Location = new System.Drawing.Point(363, 0);
+            this.ToVision.Location = new System.Drawing.Point(570, 0);
+            this.ToVision.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.ToVision.Name = "ToVision";
-            this.ToVision.Size = new System.Drawing.Size(400, 45);
+            this.ToVision.Size = new System.Drawing.Size(629, 79);
             this.ToVision.TabIndex = 68;
             this.ToVision.Text = "Vision";
             this.ToVision.UseVisualStyleBackColor = false;
@@ -730,8 +779,9 @@ namespace FZ4P
             this.ToOperator.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Bold);
             this.ToOperator.ForeColor = System.Drawing.Color.WhiteSmoke;
             this.ToOperator.Location = new System.Drawing.Point(0, 0);
+            this.ToOperator.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.ToOperator.Name = "ToOperator";
-            this.ToOperator.Size = new System.Drawing.Size(357, 45);
+            this.ToOperator.Size = new System.Drawing.Size(561, 79);
             this.ToOperator.TabIndex = 120;
             this.ToOperator.Text = "Operator";
             this.ToOperator.UseVisualStyleBackColor = false;
@@ -741,9 +791,10 @@ namespace FZ4P
             // 
             this.lblOPName.AutoSize = true;
             this.lblOPName.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblOPName.Location = new System.Drawing.Point(17, 915);
+            this.lblOPName.Location = new System.Drawing.Point(27, 1601);
+            this.lblOPName.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.lblOPName.Name = "lblOPName";
-            this.lblOPName.Size = new System.Drawing.Size(134, 23);
+            this.lblOPName.Size = new System.Drawing.Size(238, 41);
             this.lblOPName.TabIndex = 172;
             this.lblOPName.Text = "Operator Name";
             // 
@@ -751,9 +802,10 @@ namespace FZ4P
             // 
             this.label16.AutoSize = true;
             this.label16.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label16.Location = new System.Drawing.Point(90, 883);
+            this.label16.Location = new System.Drawing.Point(141, 1545);
+            this.label16.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(61, 23);
+            this.label16.Size = new System.Drawing.Size(108, 41);
             this.label16.TabIndex = 171;
             this.label16.Text = "LOT ID";
             // 
@@ -761,26 +813,29 @@ namespace FZ4P
             // 
             this.OperatorName.BackColor = System.Drawing.Color.White;
             this.OperatorName.Font = new System.Drawing.Font("Calibri", 14F, System.Drawing.FontStyle.Bold);
-            this.OperatorName.Location = new System.Drawing.Point(151, 915);
+            this.OperatorName.Location = new System.Drawing.Point(237, 1601);
+            this.OperatorName.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.OperatorName.MaxLength = 50;
             this.OperatorName.Name = "OperatorName";
-            this.OperatorName.Size = new System.Drawing.Size(159, 30);
+            this.OperatorName.Size = new System.Drawing.Size(248, 47);
             this.OperatorName.TabIndex = 170;
             this.OperatorName.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
             // P_Motion
             // 
-            this.P_Motion.Location = new System.Drawing.Point(173, 1023);
+            this.P_Motion.Location = new System.Drawing.Point(272, 1790);
+            this.P_Motion.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.P_Motion.Name = "P_Motion";
-            this.P_Motion.Size = new System.Drawing.Size(50, 31);
+            this.P_Motion.Size = new System.Drawing.Size(79, 54);
             this.P_Motion.TabIndex = 198;
             // 
             // Move_Down
             // 
             this.Move_Down.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Move_Down.Location = new System.Drawing.Point(207, 807);
+            this.Move_Down.Location = new System.Drawing.Point(325, 1412);
+            this.Move_Down.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.Move_Down.Name = "Move_Down";
-            this.Move_Down.Size = new System.Drawing.Size(101, 37);
+            this.Move_Down.Size = new System.Drawing.Size(159, 65);
             this.Move_Down.TabIndex = 193;
             this.Move_Down.Text = "Dn";
             this.Move_Down.UseVisualStyleBackColor = true;
@@ -789,9 +844,10 @@ namespace FZ4P
             // Move_Up
             // 
             this.Move_Up.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Move_Up.Location = new System.Drawing.Point(38, 807);
+            this.Move_Up.Location = new System.Drawing.Point(60, 1412);
+            this.Move_Up.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.Move_Up.Name = "Move_Up";
-            this.Move_Up.Size = new System.Drawing.Size(101, 37);
+            this.Move_Up.Size = new System.Drawing.Size(159, 65);
             this.Move_Up.TabIndex = 192;
             this.Move_Up.Text = "Up";
             this.Move_Up.UseVisualStyleBackColor = true;
@@ -802,10 +858,11 @@ namespace FZ4P
             this.tbToDoList.BackColor = System.Drawing.Color.White;
             this.tbToDoList.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tbToDoList.ForeColor = System.Drawing.Color.Black;
-            this.tbToDoList.Location = new System.Drawing.Point(4, 501);
+            this.tbToDoList.Location = new System.Drawing.Point(6, 877);
+            this.tbToDoList.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.tbToDoList.Name = "tbToDoList";
             this.tbToDoList.ReadOnly = true;
-            this.tbToDoList.Size = new System.Drawing.Size(355, 23);
+            this.tbToDoList.Size = new System.Drawing.Size(556, 35);
             this.tbToDoList.TabIndex = 191;
             this.tbToDoList.TabStop = false;
             this.tbToDoList.Text = "To Do List";
@@ -815,11 +872,12 @@ namespace FZ4P
             // 
             this.Actionbox.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Actionbox.FormattingEnabled = true;
-            this.Actionbox.ItemHeight = 15;
-            this.Actionbox.Location = new System.Drawing.Point(3, 177);
+            this.Actionbox.ItemHeight = 28;
+            this.Actionbox.Location = new System.Drawing.Point(5, 310);
+            this.Actionbox.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.Actionbox.Name = "Actionbox";
             this.Actionbox.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
-            this.Actionbox.Size = new System.Drawing.Size(356, 259);
+            this.Actionbox.Size = new System.Drawing.Size(557, 424);
             this.Actionbox.TabIndex = 186;
             this.Actionbox.SelectedIndexChanged += new System.EventHandler(this.Actionbox_SelectedIndexChanged);
             // 
@@ -828,10 +886,11 @@ namespace FZ4P
             this.TodoBox.BackColor = System.Drawing.Color.PaleGreen;
             this.TodoBox.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.TodoBox.FormattingEnabled = true;
-            this.TodoBox.ItemHeight = 15;
-            this.TodoBox.Location = new System.Drawing.Point(2, 525);
+            this.TodoBox.ItemHeight = 28;
+            this.TodoBox.Location = new System.Drawing.Point(3, 919);
+            this.TodoBox.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.TodoBox.Name = "TodoBox";
-            this.TodoBox.Size = new System.Drawing.Size(357, 274);
+            this.TodoBox.Size = new System.Drawing.Size(559, 452);
             this.TodoBox.TabIndex = 190;
             this.TodoBox.SelectedIndexChanged += new System.EventHandler(this.Actionbox_SelectedIndexChanged);
             // 
@@ -840,10 +899,11 @@ namespace FZ4P
             this.tbActionList.BackColor = System.Drawing.Color.White;
             this.tbActionList.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tbActionList.ForeColor = System.Drawing.Color.Black;
-            this.tbActionList.Location = new System.Drawing.Point(3, 154);
+            this.tbActionList.Location = new System.Drawing.Point(5, 270);
+            this.tbActionList.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.tbActionList.Name = "tbActionList";
             this.tbActionList.ReadOnly = true;
-            this.tbActionList.Size = new System.Drawing.Size(356, 23);
+            this.tbActionList.Size = new System.Drawing.Size(557, 35);
             this.tbActionList.TabIndex = 187;
             this.tbActionList.TabStop = false;
             this.tbActionList.Text = "Action List";
@@ -852,9 +912,10 @@ namespace FZ4P
             // RemoveItem
             // 
             this.RemoveItem.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.RemoveItem.Location = new System.Drawing.Point(38, 442);
+            this.RemoveItem.Location = new System.Drawing.Point(60, 774);
+            this.RemoveItem.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.RemoveItem.Name = "RemoveItem";
-            this.RemoveItem.Size = new System.Drawing.Size(101, 37);
+            this.RemoveItem.Size = new System.Drawing.Size(159, 65);
             this.RemoveItem.TabIndex = 189;
             this.RemoveItem.Text = "↑↑";
             this.RemoveItem.UseVisualStyleBackColor = true;
@@ -863,9 +924,10 @@ namespace FZ4P
             // AddItem
             // 
             this.AddItem.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.AddItem.Location = new System.Drawing.Point(207, 442);
+            this.AddItem.Location = new System.Drawing.Point(325, 774);
+            this.AddItem.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.AddItem.Name = "AddItem";
-            this.AddItem.Size = new System.Drawing.Size(101, 37);
+            this.AddItem.Size = new System.Drawing.Size(159, 65);
             this.AddItem.TabIndex = 188;
             this.AddItem.Text = "↓↓";
             this.AddItem.UseVisualStyleBackColor = true;
@@ -877,9 +939,10 @@ namespace FZ4P
             this.EditCondition.BackColor = System.Drawing.SystemColors.ControlDarkDark;
             this.EditCondition.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.EditCondition.ForeColor = System.Drawing.Color.White;
-            this.EditCondition.Location = new System.Drawing.Point(302, 39);
+            this.EditCondition.Location = new System.Drawing.Point(475, 68);
+            this.EditCondition.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.EditCondition.Name = "EditCondition";
-            this.EditCondition.Size = new System.Drawing.Size(47, 19);
+            this.EditCondition.Size = new System.Drawing.Size(75, 32);
             this.EditCondition.TabIndex = 0;
             this.EditCondition.Text = "Edit";
             this.EditCondition.UseVisualStyleBackColor = false;
@@ -892,9 +955,10 @@ namespace FZ4P
             this.textBox1.Font = new System.Drawing.Font("Calibri", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBox1.ForeColor = System.Drawing.Color.White;
             this.textBox1.Location = new System.Drawing.Point(0, 0);
+            this.textBox1.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.textBox1.Name = "textBox1";
             this.textBox1.ReadOnly = true;
-            this.textBox1.Size = new System.Drawing.Size(358, 26);
+            this.textBox1.Size = new System.Drawing.Size(563, 45);
             this.textBox1.TabIndex = 92;
             this.textBox1.TabStop = false;
             this.textBox1.Text = "Recipe";
@@ -908,9 +972,10 @@ namespace FZ4P
             this.panel3.Controls.Add(this.SaveCondition);
             this.panel3.Controls.Add(this.OpenCondition);
             this.panel3.Controls.Add(this.EditCondition);
-            this.panel3.Location = new System.Drawing.Point(2, 47);
+            this.panel3.Location = new System.Drawing.Point(3, 82);
+            this.panel3.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(357, 72);
+            this.panel3.Size = new System.Drawing.Size(561, 126);
             this.panel3.TabIndex = 185;
             // 
             // SaveAsCondition
@@ -920,9 +985,10 @@ namespace FZ4P
             this.SaveAsCondition.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SaveAsCondition.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold);
             this.SaveAsCondition.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.SaveAsCondition.Location = new System.Drawing.Point(205, 34);
+            this.SaveAsCondition.Location = new System.Drawing.Point(322, 60);
+            this.SaveAsCondition.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.SaveAsCondition.Name = "SaveAsCondition";
-            this.SaveAsCondition.Size = new System.Drawing.Size(89, 28);
+            this.SaveAsCondition.Size = new System.Drawing.Size(140, 49);
             this.SaveAsCondition.TabIndex = 70;
             this.SaveAsCondition.Text = "Save As";
             this.SaveAsCondition.UseVisualStyleBackColor = true;
@@ -935,9 +1001,10 @@ namespace FZ4P
             this.SaveCondition.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SaveCondition.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold);
             this.SaveCondition.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.SaveCondition.Location = new System.Drawing.Point(104, 34);
+            this.SaveCondition.Location = new System.Drawing.Point(163, 60);
+            this.SaveCondition.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.SaveCondition.Name = "SaveCondition";
-            this.SaveCondition.Size = new System.Drawing.Size(89, 28);
+            this.SaveCondition.Size = new System.Drawing.Size(140, 49);
             this.SaveCondition.TabIndex = 69;
             this.SaveCondition.Text = "Save";
             this.SaveCondition.UseVisualStyleBackColor = true;
@@ -950,9 +1017,10 @@ namespace FZ4P
             this.OpenCondition.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.OpenCondition.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold);
             this.OpenCondition.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.OpenCondition.Location = new System.Drawing.Point(3, 34);
+            this.OpenCondition.Location = new System.Drawing.Point(5, 60);
+            this.OpenCondition.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.OpenCondition.Name = "OpenCondition";
-            this.OpenCondition.Size = new System.Drawing.Size(89, 28);
+            this.OpenCondition.Size = new System.Drawing.Size(140, 49);
             this.OpenCondition.TabIndex = 68;
             this.OpenCondition.Text = "Open";
             this.OpenCondition.UseVisualStyleBackColor = true;
@@ -964,10 +1032,11 @@ namespace FZ4P
             this.RecipeFileName.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.RecipeFileName.Font = new System.Drawing.Font("Calibri", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.RecipeFileName.ForeColor = System.Drawing.Color.LightGray;
-            this.RecipeFileName.Location = new System.Drawing.Point(2, 119);
+            this.RecipeFileName.Location = new System.Drawing.Point(3, 208);
+            this.RecipeFileName.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.RecipeFileName.Name = "RecipeFileName";
             this.RecipeFileName.ReadOnly = true;
-            this.RecipeFileName.Size = new System.Drawing.Size(357, 26);
+            this.RecipeFileName.Size = new System.Drawing.Size(561, 45);
             this.RecipeFileName.TabIndex = 184;
             this.RecipeFileName.TabStop = false;
             this.RecipeFileName.Text = "Recipe File Name";
@@ -975,9 +1044,9 @@ namespace FZ4P
             // 
             // F_Main
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 21F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1904, 1041);
+            this.ClientSize = new System.Drawing.Size(2884, 1764);
             this.Controls.Add(this.P_AutoLearn);
             this.Controls.Add(this.P_Vision);
             this.Controls.Add(this.P_Manager);
@@ -993,10 +1062,11 @@ namespace FZ4P
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.RecipeFileName);
             this.Controls.Add(this.P_Main);
+            this.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.Name = "F_Main";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "6AxisTester_25091201";
+            this.Text = "6AxisTester_25091501";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.F_Main_FormClosing);
             this.Load += new System.EventHandler(this.F_Main_Load);
             ((System.ComponentModel.ISupportInitialize)(this.SpecGrid)).EndInit();

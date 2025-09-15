@@ -130,46 +130,7 @@ namespace FZ4P
             ItemList.Add(new ActItems() { Name = "Phase Margin", Func = Act_Phase_Margin, IsMulti = true });
             ItemList.Add(new ActItems() { Name = "Gain Margin", Func = Act_Gain_Margin, IsMulti = true });
             ItemList.Add(new ActItems() { Name = "AF Settling", Func = Act_ScanTimeCode });
-            //ItemList.Add(new ActItems() { Name = "Change Slave Addr", Func = Act_ChangeSlaveAddr, IsMulti = true });
-            //ItemList.Add(new ActItems() { Name = "Data Check", Func = Act_Data_Check, IsMulti = true });
-            //ItemList.Add(new ActItems() { Name = "PID Setting", Func = Act_PIDSetting, IsMulti = true });
-            //ItemList.Add(new ActItems() { Name = "Aging OpenLoop", Func = Act_AgingOpenLoop, IsMulti = true });
-            //ItemList.Add(new ActItems() { Name = "Hall Calibration", Func = Act_HallCalibration, IsMulti = true });
-            //ItemList.Add(new ActItems() { Name = "Linearity Save", Func = Act_LinearitySave, IsMulti = true });
-            //ItemList.Add(new ActItems() { Name = "Linearity Delete", Func = Act_LinearityDelete, IsMulti = true });
-            //ItemList.Add(new ActItems() { Name = "Linearity Restore", Func = Act_LinearityRestore, IsMulti = true });
 
-            //ItemList.Add(new ActItems() { Name = "AF Scan", Func = Act_ScanCode });
-            //ItemList.Add(new ActItems() { Name = "AF Scan", Func = Act_ScanCode });
-            //ItemList.Add(new ActItems() { Name = "AF Scan2", Func = Act_ScanCode });
-            //ItemList.Add(new ActItems() { Name = "AF Scan3", Func = Act_ScanCode });
-            //ItemList.Add(new ActItems() { Name = "AF Scan4", Func = Act_ScanCode });
-
-            //ItemList.Add(new ActItems() { Name = "OIS X Scan", Func = Act_ScanCode });
-            //ItemList.Add(new ActItems() { Name = "OIS X Scan2", Func = Act_ScanCode });
-            //ItemList.Add(new ActItems() { Name = "OIS X Scan3", Func = Act_ScanCode });
-            //ItemList.Add(new ActItems() { Name = "OIS X Scan4", Func = Act_ScanCode });
-            //ItemList.Add(new ActItems() { Name = "OIS Y Scan", Func = Act_ScanCode });
-            //ItemList.Add(new ActItems() { Name = "OIS Y Scan2", Func = Act_ScanCode });
-            //ItemList.Add(new ActItems() { Name = "OIS Y Scan3", Func = Act_ScanCode });
-            //ItemList.Add(new ActItems() { Name = "OIS Y Scan4", Func = Act_ScanCode });
-            //ItemList.Add(new ActItems() { Name = "OIS Matrix Scan", Func = Act_ScanCode });
-            //ItemList.Add(new ActItems() { Name = "OIS X EPA", Func = Act_OIS_EPA });
-            //ItemList.Add(new ActItems() { Name = "OIS Y EPA", Func = Act_OIS_EPA });
-            //ItemList.Add(new ActItems() { Name = "OIS X EPA Recipe", Func = Act_OIS_EPA_Recipe, IsMulti = true });
-            //ItemList.Add(new ActItems() { Name = "OIS Y EPA Recipe", Func = Act_OIS_EPA_Recipe, IsMulti = true });
-            //ItemList.Add(new ActItems() { Name = "OIS X Ex EPA Recipe", Func = Act_OIS_ExEPA_Recipe, IsMulti = true });
-            //ItemList.Add(new ActItems() { Name = "OIS Y Ex EPA Recipe", Func = Act_OIS_ExEPA_Recipe, IsMulti = true });
-            //ItemList.Add(new ActItems() { Name = "OIS X Linearity Comp", Func = Act_OISLineartitycomp });
-            //ItemList.Add(new ActItems() { Name = "OIS Y Linearity Comp", Func = Act_OISLineartitycomp });
-            //ItemList.Add(new ActItems() { Name = "OIS X Linearity Comp2", Func = Act_OISLineartitycomp });
-            //ItemList.Add(new ActItems() { Name = "OIS Y Linearity Comp2", Func = Act_OISLineartitycomp });
-            //ItemList.Add(new ActItems() { Name = "Gain@10Hz", Func = Act_GaindB10Hz, IsMulti = true });
-            //ItemList.Add(new ActItems() { Name = "Phase Margin", Func = Act_Phase_Margin, IsMulti = true });
-            //ItemList.Add(new ActItems() { Name = "Gain Margin", Func = Act_Gain_Margin, IsMulti = true });
-            //ItemList.Add(new ActItems() { Name = "OIS Hall Test", Func = Act_OISHallTest, IsMulti = true });
-            //ItemList.Add(new ActItems() { Name = "Hall Decenter", Func = HallDecenter, IsMulti = true });
-            //ItemList.Add(new ActItems() { Name = "Servo Decenter", Func = ServoDecenter, IsMulti = true });
             m__G = Global.GetInstance();
         }
         public void ShowDataResults(int ch, string key, int start, int end)
@@ -3205,7 +3166,7 @@ namespace FZ4P
                                         if (name.Contains("Linearity"))
                                             path = string.Format(dateDir + "{0}_{1}_{2}_{3}_Lin.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
                                         else path = string.Format(dateDir + "{0}_{1}_{2}_{3}.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
-                                        string data = string.Format("{0},{1},{2},{3},{4},{5:0.000},{6:0.000},{7:0.000},{8:0.000},{9:0.000},{10:0.000},{11:0.000},{12:0.000},{13},{14},{15},{16},{17:0.000}", i, Condition.iXCrossOffsetAf, Cal.CodeX[i], Condition.iXCrossOffset, Condition.iXCrossOffset,
+                                        string data = string.Format("{0},{1},{2},{3},{4},{5:0.000},{6:0.000},{7:0.000},{8:0.000},{9:0.000},{10:0.000},{11:0.000},{12:0.000},{13},{14},{15},{16},{17:0.000}", i, BestAFPos, Cal.CodeX[i], Condition.iXCrossOffset, Condition.iXCrossOffset,
                                             Cal.StrokeX[i], Cal.StrokeY[i], Cal.StrokeZ[i], Cal.TiltX[i], Cal.TiltY[i], Cal.TiltZ[i], Cal.StrokeY1[i], Cal.StrokeY2[i],
                                             Cal.HallX[i], Cal.HallY1[i], Cal.HallY2[i], Cal.HallZ[i], Cal.Current[i]);
                                         arry.Add(data);
@@ -3232,7 +3193,7 @@ namespace FZ4P
                                         if (name.Contains("Linearity"))
                                             path = string.Format(dateDir + "{0}_{1}_{2}_{3}_Lin.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
                                         else path = string.Format(dateDir + "{0}_{1}_{2}_{3}.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
-                                        string data = string.Format("{0},{1},{2},{3},{4},{5:0.000},{6:0.000},{7:0.000},{8:0.000},{9:0.000},{10:0.000},{11:0.000},{12:0.000},{13},{14},{15},{16},{17:0.000}", i, Condition.iYCrossOffsetAf, Condition.iYCrossOffset, Cal.CodeY1[i], Cal.CodeY1[i],
+                                        string data = string.Format("{0},{1},{2},{3},{4},{5:0.000},{6:0.000},{7:0.000},{8:0.000},{9:0.000},{10:0.000},{11:0.000},{12:0.000},{13},{14},{15},{16},{17:0.000}", i, BestAFPos, Condition.iYCrossOffset, Cal.CodeY1[i], Cal.CodeY1[i],
                                                Cal.StrokeX[i], Cal.StrokeY[i], Cal.StrokeZ[i], Cal.TiltX[i], Cal.TiltY[i], Cal.TiltZ[i], Cal.StrokeY1[i], Cal.StrokeY2[i],
                                              Cal.HallX[i], Cal.HallY1[i], Cal.HallY2[i], Cal.HallZ[i], Cal.Current[i]);
                                         arry.Add(data);
@@ -3271,17 +3232,19 @@ namespace FZ4P
                             backword = PassFails[j].Results[(int)SpecItem.AF_Backwardstroke].Val = Cal.CalBwdStoke(Cal.CodeZ, Cal.StrokeZ);
                             PassFails[j].Results[(int)SpecItem.AF_Ratedstroke].Val = forword + backword;
                             PassFails[j].Results[(int)SpecItem.AF_Sensitivity].Val = Cal.CalSensitivity(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
-                            PassFails[j].Results[(int)SpecItem.AF_Linearity].Val = Cal.CalLinearity(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
-                            PassFails[j].Results[(int)SpecItem.AF_Hysteresis].Val = Cal.CalHysteresis(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.AF_Linearity].Val = Cal.CalLinearity(Cal.CodeZ, Cal.StrokeZ, Condition.AFLinMinRange, Condition.AFLinMaxRange, Condition.AFLinMinStep,
+                                Condition.AFLinMaxStep, Condition.AFLinMode);
+                            PassFails[j].Results[(int)SpecItem.AF_Hysteresis].Val = Cal.CalHysteresis(Cal.CodeZ, Cal.StrokeZ, Condition.AFHysMinRange, Condition.AFHysMaxRange, Condition.AFHysMinStep,
+                                Condition.AFhysMaxStep, Condition.AFHysMode);
                             PassFails[j].Results[(int)SpecItem.AF_MaxCurrent].Val = Cal.CalMaxCurrent(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
                             PassFails[j].Results[(int)SpecItem.AF_HoldingCurrent].Val = Cal.CalHoldingCurrent(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
                             PassFails[j].Results[(int)SpecItem.AF_CrosstalkX].Val = Cal.CalCrosstalk(Cal.CodeZ, Cal.StrokeX, Condition.iAFCodeRange, Condition.iAFCodeRange);
                             PassFails[j].Results[(int)SpecItem.AF_CrosstalkY].Val = Cal.CalCrosstalk(Cal.CodeZ, Cal.StrokeY, Condition.iAFCodeRange, Condition.iAFCodeRange);
                             PassFails[j].Results[(int)SpecItem.AF_CrosstalkR].Val = Cal.CalCrosstalkR(Cal.CodeZ, Cal.StrokeX, Cal.StrokeY, Condition.iAFCodeRange, Condition.iAFCodeRange);
                             PassFails[j].Results[(int)SpecItem.AF_Rolling].Val = Cal.CalRolling(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
-
-                            SetResult(j, (int)SpecItem.AF_Ratedstroke, (int)SpecItem.AF_Rolling);
-                            ShowDataResults(j, "AF", (int)SpecItem.AF_Ratedstroke, (int)SpecItem.AF_Rolling);
+                            PassFails[j].Results[(int)SpecItem.AF_Tilt].Val = Cal.CalTilt(Cal.CodeZ, Cal.TiltX, Cal.TiltY, Condition.TiltMinCode, Condition.TiltMaxCode, Condition.TiltRefCode);
+                            SetResult(j, (int)SpecItem.AF_Ratedstroke, (int)SpecItem.AF_Tilt);
+                            ShowDataResults(j, "AF", (int)SpecItem.AF_Ratedstroke, (int)SpecItem.AF_Tilt);
                         }
                         else if (name.Contains("OIS X"))
                         {
@@ -3289,8 +3252,10 @@ namespace FZ4P
                             backword = PassFails[j].Results[(int)SpecItem.OISX_Backwardstroke].Val = Cal.CalBwdStoke(Cal.CodeX, Cal.StrokeX);
                             PassFails[j].Results[(int)SpecItem.OISX_Ratedstroke].Val = forword + backword;
                             PassFails[j].Results[(int)SpecItem.OISX_Sensitivity].Val = Cal.CalSensitivity(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXStrokeRange);
-                            PassFails[j].Results[(int)SpecItem.OISX_Linearity].Val = Cal.CalLinearity(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXStrokeRange);
-                            PassFails[j].Results[(int)SpecItem.OISX_Hysteresis].Val = Cal.CalHysteresis(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.OISX_Linearity].Val = Cal.CalLinearity(Cal.CodeX, Cal.StrokeX, Condition.XLinMinRange, Condition.XLinMaxRange, Condition.XLinMinStep, 
+                                Condition.XLinMaxStep, Condition.XLinMode);
+                            PassFails[j].Results[(int)SpecItem.OISX_Hysteresis].Val = Cal.CalHysteresis(Cal.CodeX, Cal.StrokeX, Condition.XHysMinRange, Condition.XHysMaxRange, Condition.XHysMinStep,
+                                Condition.XHysMaxStep, Condition.XHysMode);
                             PassFails[j].Results[(int)SpecItem.OISX_MaxCurrent].Val = Cal.CalMaxCurrent(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXStrokeRange);
                             PassFails[j].Results[(int)SpecItem.OISX_CenteringCurrent].Val = Cal.CalCenterCurrent(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXCodeRange);
                             PassFails[j].Results[(int)SpecItem.OISX_CrosstalkY].Val = Cal.CalCrosstalk(Cal.CodeX, Cal.StrokeY, Condition.iXCodeRange, Condition.iXCodeRange);
@@ -3308,8 +3273,10 @@ namespace FZ4P
                             PassFails[j].Results[(int)SpecItem.OISY_Ratedstroke].Val = forword + backword;
 
                             PassFails[j].Results[(int)SpecItem.OISY_Sensitivity].Val = Cal.CalSensitivity(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
-                            PassFails[j].Results[(int)SpecItem.OISY_Linearity].Val = Cal.CalLinearity(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
-                            PassFails[j].Results[(int)SpecItem.OISY_Hysteresis].Val = Cal.CalHysteresis(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.OISY_Linearity].Val = Cal.CalLinearity(Cal.CodeY1, Cal.StrokeY, Condition.YLinMinRange, Condition.YLinMaxRange, Condition.YLinMinStep, 
+                                Condition.YLinMaxStep, Condition.YLinMode);
+                            PassFails[j].Results[(int)SpecItem.OISY_Hysteresis].Val = Cal.CalHysteresis(Cal.CodeY1, Cal.StrokeY, Condition.YHysMinRange, Condition.YHysMaxRange, Condition.YHysMinStep,
+                                Condition.YHysMaxStep, Condition.YHysMode);
                             PassFails[j].Results[(int)SpecItem.OISY_MaxCurrent].Val = Cal.CalMaxCurrent(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
                             PassFails[j].Results[(int)SpecItem.OISY_CenteringCurrent].Val = Cal.CalCenterCurrent(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
                             PassFails[j].Results[(int)SpecItem.OISY_CrosstalkX].Val = Cal.CalCrosstalk(Cal.CodeY1, Cal.StrokeX, Condition.iYStrokeRange, Condition.iYStrokeRange);
