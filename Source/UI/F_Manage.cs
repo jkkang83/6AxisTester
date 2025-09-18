@@ -230,7 +230,7 @@ namespace FZ4P
                 ModelGroup.Controls.Add(Chk);
             }
             lblCrecipe.Text = Current.ConditionName;
-            lblSpec.Text = Current.SpecName;
+            lblCspec.Text = Current.SpecName;
            
         }
         public void BindingUIModel()
@@ -262,7 +262,7 @@ namespace FZ4P
                 ModelGroup.Controls.Add(Chk);
             }
             lblCrecipe.Text = Current.ConditionName;
-            lblSpec.Text = Current.SpecName;
+            lblCspec.Text = Current.SpecName;
         }
         private void ResultDataGrid_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
         {

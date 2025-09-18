@@ -390,9 +390,9 @@ namespace FZ4P
                                     {
                                         if (Cal.CodeX[i] >= 2048 - CodeRange && Cal.CodeX[i] <= 2048 + CodeRange)
                                         {
-                                            ChartBtm[ch].C.Series[0].Points.AddXY(Cal.CodeX[i], Cal.TiltX[i]); //  Tilt 
-                                            ChartBtm[ch].C.Series[1].Points.AddXY(Cal.CodeX[i], Cal.TiltY[i]); //  Tilt 
-                                            ChartBtm[ch].C.Series[2].Points.AddXY(Cal.CodeX[i], Cal.TiltZ[i]); //  Tilt 
+                                            //ChartBtm[ch].C.Series[0].Points.AddXY(Cal.CodeX[i], Cal.TiltX[i]); //  Tilt 
+                                            //ChartBtm[ch].C.Series[1].Points.AddXY(Cal.CodeX[i], Cal.TiltY[i]); //  Tilt 
+                                            //ChartBtm[ch].C.Series[2].Points.AddXY(Cal.CodeX[i], Cal.TiltZ[i]); //  Tilt 
                                         }
                                     }
                                 });
@@ -428,9 +428,9 @@ namespace FZ4P
                                     {
                                         if (Cal.CodeY1[i] >= 2048 - CodeRange && Cal.CodeY1[i] <= 2048 + CodeRange)
                                         {
-                                            ChartBtm[ch].C.Series[3].Points.AddXY(Cal.CodeY1[i], Cal.TiltX[i]); //  Tilt 
-                                            ChartBtm[ch].C.Series[4].Points.AddXY(Cal.CodeY1[i], Cal.TiltY[i]); //  Tilt 
-                                            ChartBtm[ch].C.Series[5].Points.AddXY(Cal.CodeY1[i], Cal.TiltZ[i]); //  Tilt 
+                                            //ChartBtm[ch].C.Series[3].Points.AddXY(Cal.CodeY1[i], Cal.TiltX[i]); //  Tilt 
+                                            //ChartBtm[ch].C.Series[4].Points.AddXY(Cal.CodeY1[i], Cal.TiltY[i]); //  Tilt 
+                                            //ChartBtm[ch].C.Series[5].Points.AddXY(Cal.CodeY1[i], Cal.TiltZ[i]); //  Tilt 
                                         }
                                     }
                                 });
@@ -466,7 +466,7 @@ namespace FZ4P
                                         {
                                             ChartBtm[ch].C.Series[6].Points.AddXY(Cal.CodeZ[i], Cal.TiltX[i]); //  Tilt 
                                             ChartBtm[ch].C.Series[7].Points.AddXY(Cal.CodeZ[i], Cal.TiltY[i]); //  Tilt 
-                                            ChartBtm[ch].C.Series[8].Points.AddXY(Cal.CodeZ[i], Cal.TiltZ[i]); //  Tilt 
+                                          //  ChartBtm[ch].C.Series[8].Points.AddXY(Cal.CodeZ[i], Cal.TiltZ[i]); //  Tilt 
                                         }
                                     }
                                 });
@@ -3233,9 +3233,9 @@ namespace FZ4P
                             PassFails[j].Results[(int)SpecItem.AF_Ratedstroke].Val = forword + backword;
                             PassFails[j].Results[(int)SpecItem.AF_Sensitivity].Val = Cal.CalSensitivity(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
                             PassFails[j].Results[(int)SpecItem.AF_Linearity].Val = Cal.CalLinearity(Cal.CodeZ, Cal.StrokeZ, Condition.AFLinMinRange, Condition.AFLinMaxRange, Condition.AFLinMinStep,
-                                Condition.AFLinMaxStep, Condition.AFLinMode);
+                                Condition.AFLinMaxStep, Condition.AFLinMinStroke, Condition.AFLinMaxStroke, Condition.AFLinMode);
                             PassFails[j].Results[(int)SpecItem.AF_Hysteresis].Val = Cal.CalHysteresis(Cal.CodeZ, Cal.StrokeZ, Condition.AFHysMinRange, Condition.AFHysMaxRange, Condition.AFHysMinStep,
-                                Condition.AFhysMaxStep, Condition.AFHysMode);
+                                Condition.AFhysMaxStep, Condition.AFHysMinStroke, Condition.AFHysMaxStroke, Condition.AFHysMode);
                             PassFails[j].Results[(int)SpecItem.AF_MaxCurrent].Val = Cal.CalMaxCurrent(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
                             PassFails[j].Results[(int)SpecItem.AF_HoldingCurrent].Val = Cal.CalHoldingCurrent(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
                             PassFails[j].Results[(int)SpecItem.AF_CrosstalkX].Val = Cal.CalCrosstalk(Cal.CodeZ, Cal.StrokeX, Condition.iAFCodeRange, Condition.iAFCodeRange);
@@ -3253,9 +3253,9 @@ namespace FZ4P
                             PassFails[j].Results[(int)SpecItem.OISX_Ratedstroke].Val = forword + backword;
                             PassFails[j].Results[(int)SpecItem.OISX_Sensitivity].Val = Cal.CalSensitivity(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXStrokeRange);
                             PassFails[j].Results[(int)SpecItem.OISX_Linearity].Val = Cal.CalLinearity(Cal.CodeX, Cal.StrokeX, Condition.XLinMinRange, Condition.XLinMaxRange, Condition.XLinMinStep, 
-                                Condition.XLinMaxStep, Condition.XLinMode);
+                                Condition.XLinMaxStep, Condition.XLinMinStroke, Condition.XLinMaxStroke, Condition.XLinMode);
                             PassFails[j].Results[(int)SpecItem.OISX_Hysteresis].Val = Cal.CalHysteresis(Cal.CodeX, Cal.StrokeX, Condition.XHysMinRange, Condition.XHysMaxRange, Condition.XHysMinStep,
-                                Condition.XHysMaxStep, Condition.XHysMode);
+                                Condition.XHysMaxStep, Condition.XHysMinStroke, Condition.XHysMaxStroke, Condition.XHysMode);
                             PassFails[j].Results[(int)SpecItem.OISX_MaxCurrent].Val = Cal.CalMaxCurrent(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXStrokeRange);
                             PassFails[j].Results[(int)SpecItem.OISX_CenteringCurrent].Val = Cal.CalCenterCurrent(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXCodeRange);
                             PassFails[j].Results[(int)SpecItem.OISX_CrosstalkY].Val = Cal.CalCrosstalk(Cal.CodeX, Cal.StrokeY, Condition.iXCodeRange, Condition.iXCodeRange);
@@ -3274,9 +3274,9 @@ namespace FZ4P
 
                             PassFails[j].Results[(int)SpecItem.OISY_Sensitivity].Val = Cal.CalSensitivity(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
                             PassFails[j].Results[(int)SpecItem.OISY_Linearity].Val = Cal.CalLinearity(Cal.CodeY1, Cal.StrokeY, Condition.YLinMinRange, Condition.YLinMaxRange, Condition.YLinMinStep, 
-                                Condition.YLinMaxStep, Condition.YLinMode);
+                                Condition.YLinMaxStep, Condition.YLinMinStroke, Condition.YLinMaxStroke, Condition.YLinMode);
                             PassFails[j].Results[(int)SpecItem.OISY_Hysteresis].Val = Cal.CalHysteresis(Cal.CodeY1, Cal.StrokeY, Condition.YHysMinRange, Condition.YHysMaxRange, Condition.YHysMinStep,
-                                Condition.YHysMaxStep, Condition.YHysMode);
+                                Condition.YHysMaxStep, Condition.YHysMinStroke, Condition.YHysMaxStroke, Condition.YHysMode);
                             PassFails[j].Results[(int)SpecItem.OISY_MaxCurrent].Val = Cal.CalMaxCurrent(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
                             PassFails[j].Results[(int)SpecItem.OISY_CenteringCurrent].Val = Cal.CalCenterCurrent(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
                             PassFails[j].Results[(int)SpecItem.OISY_CrosstalkX].Val = Cal.CalCrosstalk(Cal.CodeY1, Cal.StrokeX, Condition.iYStrokeRange, Condition.iYStrokeRange);

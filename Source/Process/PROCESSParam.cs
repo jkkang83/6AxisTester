@@ -364,7 +364,7 @@ namespace FZ4P
             return result.dSlope;
         }
 
-        public double CalLinearity(List<int> code, List<double> stroke, int CodeMin, int CodeMax, int MinStep, int MaxStep, int Mode)
+        public double CalLinearity(List<int> code, List<double> stroke, int CodeMin, int CodeMax, int MinStep, int MaxStep, double MinStroke, double MaxStroke, int Mode)
         {
 
             double max = -9999;
@@ -379,8 +379,7 @@ namespace FZ4P
             fwdIndex = fwdIndex.OrderBy(a => a.code).ToList();
             bwdIndex = bwdIndex.OrderBy(a => a.code).ToList();
             List<SPoint> pt = new List<SPoint>();
-            pt.Add(new SPoint());
-            pt.Add(new SPoint());
+       
             SLine res = new SLine();
             if (Mode == 0)
             {
@@ -394,7 +393,7 @@ namespace FZ4P
                     }
                     if (fwdIndex[i].code <= CodeMax && fwdIndex[i + 1].code >= CodeMax)
                     {
-                        if (Math.Abs(fwdIndex[i].code - CodeMin) <= Math.Abs(fwdIndex[i + 1].code - CodeMin))
+                        if (Math.Abs(fwdIndex[i].code - CodeMax) <= Math.Abs(fwdIndex[i + 1].code - CodeMax))
                         { pt.Add(new SPoint { x = fwdIndex[i].code, y = fwdIndex[i].Val1 }); }
                         else { pt.Add(new SPoint { x = fwdIndex[i + 1].code, y = fwdIndex[i + 1].Val1 }); }
                     }
@@ -402,13 +401,32 @@ namespace FZ4P
                 }
                
             }
-            else
+            else if(Mode == 1) 
             {
                 pt.Add(new SPoint { x = fwdIndex[MinStep].code, y = fwdIndex[MinStep].Val1 });
-                pt.Add(new SPoint { x = fwdIndex[fwdIndex.Count - MaxStep].code, y = fwdIndex[fwdIndex.Count - MaxStep].Val1 });
+                pt.Add(new SPoint { x = fwdIndex[fwdIndex.Count - MaxStep - 1].code, y = fwdIndex[fwdIndex.Count - MaxStep - 1].Val1 });
 
-               
             }
+            else
+            {
+                for (int i = 0; i < fwdIndex.Count - 1; i++)
+                {
+                    if (fwdIndex[i].Val1 <= MinStroke && fwdIndex[i + 1].Val1 >= MinStroke)
+                    {
+                        if (Math.Abs(fwdIndex[i].Val1 - MinStroke) <= Math.Abs(fwdIndex[i + 1].Val1 - MinStroke))
+                        { pt.Add(new SPoint { x = fwdIndex[i].code, y = fwdIndex[i].Val1 }); }
+                        else { pt.Add(new SPoint { x = fwdIndex[i + 1].code, y = fwdIndex[i + 1].Val1 }); }
+                    }
+                    if (fwdIndex[i].Val1 <= MaxStroke && fwdIndex[i + 1].Val1 >= MaxStroke)
+                    {
+                        if (Math.Abs(fwdIndex[i].Val1 - MaxStroke) <= Math.Abs(fwdIndex[i + 1].code - MaxStroke))
+                        { pt.Add(new SPoint { x = fwdIndex[i].code, y = fwdIndex[i].Val1 }); }
+                        else { pt.Add(new SPoint { x = fwdIndex[i + 1].code, y = fwdIndex[i + 1].Val1 }); }
+                    }
+
+                }
+            }
+
             res = Line_fitting(pt);
             if (Mode == 0)
             {
@@ -422,13 +440,25 @@ namespace FZ4P
                     }
                 }
             }
-            else
+            else if(Mode == 1)
             {
                 for (int i = MinStep; i < fwdIndex.Count - MaxStep; i++)
                 {
                     double newS = res.dSlope * fwdIndex[i].code + res.dYintercept;
                     if (max < Math.Abs(newS - fwdIndex[i].Val1))
                         max = Math.Abs(newS - fwdIndex[i].Val1);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < fwdIndex.Count; i++)
+                {
+                    if (fwdIndex[i].Val1 >= MinStroke && fwdIndex[i].Val1 <= MaxStroke)
+                    {
+                        double newS = res.dSlope * fwdIndex[i].code + res.dYintercept;
+                        if (max < Math.Abs(newS - fwdIndex[i].Val1))
+                            max = Math.Abs(newS - fwdIndex[i].Val1);
+                    }
                 }
             }
                 return max;
@@ -538,7 +568,7 @@ namespace FZ4P
         //    return max;
         //}
 
-        public double CalHysteresis(List<int> code, List<double> stroke, int CodeMin, int CodeMax, int MinStep, int MaxStep, int Mode)
+        public double CalHysteresis(List<int> code, List<double> stroke, int CodeMin, int CodeMax, int MinStep, int MaxStep, double MinStroke, double MaxStroke, int Mode)
         {
 
             double max = -9999;
@@ -570,7 +600,7 @@ namespace FZ4P
                     }
                 }
             }
-            else
+            else if(Mode == 1)
             {
                 for (int i = MinStep; i < fwdIndex.Count - MaxStep; i++)
                 {
@@ -584,7 +614,24 @@ namespace FZ4P
                     }
                 }
             }
-            return max;
+            else
+            {
+                for (int i = 0; i < fwdIndex.Count; i++)
+                {
+                    for (int j = 0; j < bwdIndex.Count; j++)
+                    {
+                        if (fwdIndex[i].code == bwdIndex[j].code)
+                        {
+                            if (fwdIndex[i].Val1 >= MinStroke && fwdIndex[i].Val1 <= MaxStroke)
+                            {
+                                double hyst = Math.Abs(fwdIndex[i].Val1 - bwdIndex[j].Val1);
+                                if (max < hyst) max = hyst;
+                            }
+                        }
+                    }
+                }
+            }
+                return max;
         }
 
         public double CalResolution(List<int> code, List<double> stroke, int CodeRange, int StrokeRange)
@@ -768,8 +815,8 @@ namespace FZ4P
             }
             for (int i = 0; i < bwdIndex.Count; i++)
             {
-                double tx = bwdIndex[i].Val1 - RefFwdTiltX;
-                double ty = bwdIndex[i].Val2 - RefFwdTiltY;
+                double tx = bwdIndex[i].Val1 - RefBwdTiltX;
+                double ty = bwdIndex[i].Val2 - RefBwdtiltY;
                 double t = Math.Sqrt(Math.Pow(tx, 2) + Math.Pow(ty, 2));
                 if (MaxBwdT < t)
                     MaxBwdT = t;

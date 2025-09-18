@@ -41,7 +41,23 @@ namespace FZ4P
         public static string OptionPath = RootDir + "OptionState.txt";
         public static string YieldPath = RootDir + "Yield.txt";
         public static string CurrentPath = RootDir + "CurrPath.txt";
+        public static string PackageDir = BaseDir + "Package\\";
+        public static string PKGRelease(string srcdir, string Ext, string destdir)
+        {
 
+            string[] Arr = Directory.GetFiles(srcdir, Ext);
+            string destFile = string.Empty;
+            for (int i = 0; i < Arr.Length; i++)
+            {
+                if (Arr[i].Contains("CurrentPath ") || Arr[i].Contains("MCInfo"))
+                    continue;
+                destFile = destdir + Arr[i].Substring(srcdir.Length);
+                if (File.Exists(destFile))
+                    File.Delete(destFile);
+                File.Move(Arr[i], destFile);
+            }
+            return destFile;
+        }
         public static void SetTextLine(string path, List<string> list)
         {
             try
