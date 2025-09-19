@@ -652,55 +652,126 @@ namespace FZ4P
 
             return max;
         }
-        public double CalMaxCurrent(List<int> code, List<double> stroke, int CodeRange, int StrokeRange)
-        {
-            double max = 0;
 
-            for (int i = 2; i < code.Count; i++)
-            {
-                if (code[i] >= 2048 - CodeRange && code[i] <= 2048 + CodeRange && stroke[i] >= -StrokeRange && stroke[i] <= StrokeRange)
-                {
-                    if (Math.Abs(max) < Math.Abs(Current[i]))
-                        max = Current[i];
-                }
-            }
-            return max;
-        }
-        public double CalCenterCurrent(List<int> code, List<double> stroke, int CodeRange, int StrokeRange)
-        {
-            double min = 9999;
-            double max = 0;
 
-            for (int i = 2; i < code.Count; i++)
-            {
-                //if (code[i] >= 2048 - CodeRange && code[i] <= 2048 + CodeRange && stroke[i] >= -StrokeRange && stroke[i] <= StrokeRange)
-                if (code[i] >= 480 && code[i] <= 2895)
-                {
-                    if (min > Math.Abs(Current[i]))
-                        min = Math.Abs(Current[i]);
-                    if (max < Math.Abs(Current[i]))
-                        max = Math.Abs(Current[i]);
-                }
-            }
-            return ((max - min) / 2) + min;
-        }
-        public double CalHoldingCurrent(List<int> code, List<double> stroke, int CodeRange, int StrokeRange)
+        //public double CalMaxCurrent(List<int> code, List<double> stroke, int CodeRange, int StrokeRange)
+        //{
+        //    double max = 0;
+
+        //    for (int i = 2; i < code.Count; i++)
+        //    {
+        //        if (code[i] >= 2048 - CodeRange && code[i] <= 2048 + CodeRange && stroke[i] >= -StrokeRange && stroke[i] <= StrokeRange)
+        //        {
+        //            if (Math.Abs(max) < Math.Abs(Current[i]))
+        //                max = Current[i];
+        //        }
+        //    }
+        //    return max;
+        //}
+
+        public double[] CalCurrent(List<int> code, List<double> stroke, List<double> current, int CodeMin, int CodeMax, int MinStep, int MaxStep, double MinStroke, double MaxStroke, int Mode)
         {
             double min = 9999;
-            double max = 0;
-
-            for (int i = 2; i < code.Count; i++)
+            double max = -9999;
+            List<CalcList> fwdIndex = new List<CalcList>();
+            List<CalcList> bwdIndex = new List<CalcList>();
+            for (int i = 1; i < code.Count; i++)
             {
-                if (code[i] >= 480 && code[i] <= 2895)
+                int dy = code[i] - code[i - 1];
+                if (dy > 0) fwdIndex.Add(new CalcList { code = code[i], Val1 = stroke[i], Val2 = current[i] });
+                else bwdIndex.Add(new CalcList { code = code[i], Val1 = stroke[i], Val2 = current[i] });
+            }
+            fwdIndex = fwdIndex.OrderBy(a => a.code).ToList();
+            bwdIndex = bwdIndex.OrderBy(a => a.code).ToList();
+          
+         
+            if (Mode == 0)
+            {
+                for (int i = 0; i < fwdIndex.Count; i++)
                 {
-                    //if (min > Math.Abs(Current[i]))
-                    //    min = Math.Abs(Current[i]);
-                    if (max < Math.Abs(Current[i]))
-                        max = Math.Abs(Current[i]);
+                    if (fwdIndex[i].code >= CodeMin && fwdIndex[i].code <= CodeMax)
+                    {
+                        if (max < current[i]) { max = current[i]; }
+                        if (min > current[i]) { min = current[i]; }
+                    }
+                }
+                for (int i = 0; i < bwdIndex.Count; i++)
+                {
+                    if (bwdIndex[i].code >= CodeMin && bwdIndex[i].code <= CodeMax)
+                    {
+                        if (max < current[i]) { max = current[i]; }
+                        if (min > current[i]) { min = current[i]; }
+                    }
                 }
             }
-            return max;
+            else if (Mode == 1)
+            {
+                for (int i = MinStep; i < fwdIndex.Count - MaxStep; i++)
+                {
+                    if (max < current[i]) { max = current[i]; }
+                    if (min > current[i]) { min = current[i]; }
+                }
+                for (int i = MinStep; i < bwdIndex.Count - MaxStep; i++)
+                {
+                    if (max < current[i]) { max = current[i]; }
+                    if (min > current[i]) { min = current[i]; }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < fwdIndex.Count; i++)
+                {
+                    if (fwdIndex[i].Val1 >= MinStroke && fwdIndex[i].Val1 <= MaxStroke)
+                    {
+                        if (max < current[i]) { max = current[i]; }
+                        if (min > current[i]) { min = current[i]; }
+                    }
+                    if (bwdIndex[i].Val1 >= MinStroke && bwdIndex[i].Val1 <= MaxStroke)
+                    {
+                        if (max < current[i]) { max = current[i]; }
+                        if (min > current[i]) { min = current[i]; }
+                    }
+                }
+            }
+            return new double[] { max, min };
         }
+
+
+        //public double CalCenterCurrent(List<int> code, List<double> stroke, int CodeRange, int StrokeRange)
+        //{
+        //    double min = 9999;
+        //    double max = 0;
+
+        //    for (int i = 2; i < code.Count; i++)
+        //    {
+        //        //if (code[i] >= 2048 - CodeRange && code[i] <= 2048 + CodeRange && stroke[i] >= -StrokeRange && stroke[i] <= StrokeRange)
+        //        if (code[i] >= 480 && code[i] <= 2895)
+        //        {
+        //            if (min > Math.Abs(Current[i]))
+        //                min = Math.Abs(Current[i]);
+        //            if (max < Math.Abs(Current[i]))
+        //                max = Math.Abs(Current[i]);
+        //        }
+        //    }
+        //    return ((max - min) / 2) + min;
+        //}
+        //public double CalHoldingCurrent(List<int> code, List<double> stroke, int CodeRange, int StrokeRange)
+        //{
+        //    double min = 9999;
+        //    double max = 0;
+
+        //    for (int i = 2; i < code.Count; i++)
+        //    {
+        //        if (code[i] >= 480 && code[i] <= 2895)
+        //        {
+        //            //if (min > Math.Abs(Current[i]))
+        //            //    min = Math.Abs(Current[i]);
+        //            if (max < Math.Abs(Current[i]))
+        //                max = Math.Abs(Current[i]);
+        //        }
+        //    }
+        //    return max;
+        //}
         public double CalCrosstalk(List<int> code, List<double> stroke, int CodeRange, int StrokeRange)
         {
             double minStroke = 9999;
