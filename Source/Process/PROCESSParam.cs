@@ -691,16 +691,16 @@ namespace FZ4P
                 {
                     if (fwdIndex[i].code >= CodeMin && fwdIndex[i].code <= CodeMax)
                     {
-                        if (max < current[i]) { max = current[i]; }
-                        if (min > current[i]) { min = current[i]; }
+                        if (max < fwdIndex[i].Val2) { max = fwdIndex[i].Val2; }
+                        if (min > fwdIndex[i].Val2) { min = fwdIndex[i].Val2; }
                     }
                 }
                 for (int i = 0; i < bwdIndex.Count; i++)
                 {
                     if (bwdIndex[i].code >= CodeMin && bwdIndex[i].code <= CodeMax)
                     {
-                        if (max < current[i]) { max = current[i]; }
-                        if (min > current[i]) { min = current[i]; }
+                        if (max < bwdIndex[i].Val2) { max = bwdIndex[i].Val2; }
+                        if (min > bwdIndex[i].Val2) { min = bwdIndex[i].Val2; }
                     }
                 }
             }
@@ -708,13 +708,13 @@ namespace FZ4P
             {
                 for (int i = MinStep; i < fwdIndex.Count - MaxStep; i++)
                 {
-                    if (max < current[i]) { max = current[i]; }
-                    if (min > current[i]) { min = current[i]; }
+                    if (max < fwdIndex[i].Val2) { max = fwdIndex[i].Val2; }
+                    if (min > fwdIndex[i].Val2) { min = fwdIndex[i].Val2; }
                 }
                 for (int i = MinStep; i < bwdIndex.Count - MaxStep; i++)
                 {
-                    if (max < current[i]) { max = current[i]; }
-                    if (min > current[i]) { min = current[i]; }
+                    if (max < bwdIndex[i].Val2) { max = bwdIndex[i].Val2; }
+                    if (min > bwdIndex[i].Val2) { min = bwdIndex[i].Val2; }
                 }
             }
             else
@@ -723,13 +723,13 @@ namespace FZ4P
                 {
                     if (fwdIndex[i].Val1 >= MinStroke && fwdIndex[i].Val1 <= MaxStroke)
                     {
-                        if (max < current[i]) { max = current[i]; }
-                        if (min > current[i]) { min = current[i]; }
+                        if (max < fwdIndex[i].Val2) { max = fwdIndex[i].Val2; }
+                        if (min > fwdIndex[i].Val2) { min = fwdIndex[i].Val2; }
                     }
                     if (bwdIndex[i].Val1 >= MinStroke && bwdIndex[i].Val1 <= MaxStroke)
                     {
-                        if (max < current[i]) { max = current[i]; }
-                        if (min > current[i]) { min = current[i]; }
+                        if (max < bwdIndex[i].Val2) { max = bwdIndex[i].Val2; }
+                        if (min > bwdIndex[i].Val2) { min = bwdIndex[i].Val2; }
                     }
                 }
             }
