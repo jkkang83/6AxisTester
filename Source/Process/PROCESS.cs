@@ -1,6 +1,7 @@
 ﻿using OpenCvSharp;
 using OpenCvSharp.Dnn;
 using OpenCvSharp.Flann;
+using OpenCvSharp.XImgProc;
 using S2System.Vision;
 using System;
 using System.Collections.Generic;
@@ -129,7 +130,7 @@ namespace FZ4P
             ItemList.Add(new ActItems() { Name = "OIS Y Scan", Func = Act_ScanCode });
             ItemList.Add(new ActItems() { Name = "Gain@10Hz", Func = Act_GaindB10Hz, IsMulti = true });
             ItemList.Add(new ActItems() { Name = "Phase Margin", Func = Act_Phase_Margin, IsMulti = true });
-            ItemList.Add(new ActItems() { Name = "Gain Margin", Func = Act_Gain_Margin, IsMulti = true });
+      //      ItemList.Add(new ActItems() { Name = "Gain Margin", Func = Act_Gain_Margin, IsMulti = true });
             ItemList.Add(new ActItems() { Name = "AF Settling", Func = Act_ScanTimeCode });
             ItemList.Add(new ActItems() { Name = "AF ScanAging", Func = Act_AFScanAging });
             ItemList.Add(new ActItems() { Name = "AF PreDriving", Func = Act_PreAFDriving });
@@ -415,8 +416,8 @@ namespace FZ4P
                                         if (Cal.CodeY1[i] >= 2048 - CodeRange && Cal.CodeY1[i] <= 2048 + CodeRange)
                                         {
                                             ChartTop[ch].C.Series[1].Points.AddXY(Cal.CodeY1[i], Cal.StrokeY[i]); //  stroke
-                                            ChartTop[ch].C.Series[9].Points.AddXY(Cal.CodeY1[i], Cal.StrokeY1[i]); //  stroke 1
-                                            ChartTop[ch].C.Series[10].Points.AddXY(Cal.CodeY2[i], Cal.StrokeY2[i]); //  stroke 2
+                                         //   ChartTop[ch].C.Series[9].Points.AddXY(Cal.CodeY1[i], Cal.StrokeY1[i]); //  stroke 1
+                                           // ChartTop[ch].C.Series[10].Points.AddXY(Cal.CodeY2[i], Cal.StrokeY2[i]); //  stroke 2
                                             ChartTop[ch].C.Series[4].Points.AddXY(Cal.CodeY1[i], Cal.Current[i]); //  current
                                             ChartTop[ch].C.Series[7].Points.AddXY(Cal.CodeY1[i], Cal.HallY1[i] / 10); //  hall
                                         }
@@ -725,7 +726,13 @@ namespace FZ4P
                     errMsg[k] = "";
                     PassFails[k].FirstFailIndex = 0;
                 }
-
+                Dln.PowerOnOff(0, false);
+                Thread.Sleep(200);
+                Dln.PowerOnOff(0, true);
+                Thread.Sleep(200);
+                if (!Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x40 })) m_ChannelOn[ch] = false;
+                if (!Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 })) m_ChannelOn[ch] = false;
+                if (!Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 })) m_ChannelOn[ch] = false;
                 //m_ChannelOn[1] = false; // 1ch Test
 
                 for (int k = ch; k < ch + ChannelCnt; k++)
@@ -736,7 +743,7 @@ namespace FZ4P
                         AddLog(k, "Socket Empty");
                     }
                 }
-                if (errMsg[ch] != "" && errMsg[ch + 1] != "")
+                if (errMsg[ch] != "" /*&& errMsg[ch + 1] != ""*/)
                 {
                     return;
                 }
@@ -2152,7 +2159,8 @@ namespace FZ4P
         {
             int amp;
 
-            DrvIC.OISOn(ch, testItem, false);
+            if (!Dln.WriteArray(ch, DrvIC.XSlaveAddr, 1, 0x02, new byte[] { 0x40 })) return;
+            if (!Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 1, 0x02, new byte[] { 0x40 })) return;
 
             //X
             amp = (int)Condition.iLoppgainXAmp;
@@ -2163,7 +2171,7 @@ namespace FZ4P
             List<double> phase = new List<double>();
             freq.Add(10);
 
-            if (!DrvIC.FRA_Single(ch, "X", amp, freq, ref gain, ref phase))
+            if (!DrvIC.FRA_Single(ch, "X", amp, 2,freq, ref gain, ref phase))
             {
                 errMsg[ch] = string.Format("{0} Error", testItem);
                 m_ChannelOn[ch] = false;
@@ -2185,7 +2193,7 @@ namespace FZ4P
             phase = new List<double>();
             freq.Add(10);
 
-            if (!DrvIC.FRA_Single(ch, "Y1", amp, freq, ref gain, ref phase))
+            if (!DrvIC.FRA_Single(ch, "Y1", amp, 2, freq, ref gain, ref phase))
             {
                 errMsg[ch] = string.Format("{0} Error", testItem);
                 m_ChannelOn[ch] = false;
@@ -2224,18 +2232,15 @@ namespace FZ4P
         private void Act_Phase_Margin(int ch, string testItem)
         {
 
-
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
-            DrvIC.Move(ch, "X", 2048);
-            DrvIC.Move(ch, "Y1", 2048);
-            Thread.Sleep(100);
+            if (!Dln.WriteArray(ch, DrvIC.XSlaveAddr, 1, 0x02, new byte[] { 0x40 })) return;
+            if (!Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 1, 0x02, new byte[] { 0x40 })) return;
+            if (!Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 1, 0x02, new byte[] { 0x40 })) return;
             string axis;
             int startFreq;
             int EndFreq;
             int amp;
 
-            double phaseIndex = 0;
+            int phaseIndex = 0;
 
             List<double> freq = new List<double>();
             List<double> gain = new List<double>();
@@ -2265,7 +2270,7 @@ namespace FZ4P
                 }
             }
 
-            if (!DrvIC.FRA_Single(ch, axis, amp, freq, ref gain, ref phase))
+            if (!DrvIC.FRA_Single(ch, axis, amp, 0, freq, ref gain, ref phase))
             {
                 errMsg[ch] = string.Format("{0} Error", testItem);
                 m_ChannelOn[ch] = false;
@@ -2280,8 +2285,12 @@ namespace FZ4P
             }
             else
             {
+                double phaseRes = 0, freqRes = 0;
+                phaseRes = ((gain[phaseIndex + 1] * phase[phaseIndex]) - (gain[phaseIndex] * phase[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]);
+                freqRes = (int)(((gain[phaseIndex + 1] * freq[phaseIndex]) - (gain[phaseIndex] * freq[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]));
+
                 AddLog(ch, string.Format("FRA X Freq = {0} PM = {1}",
-                PassFails[ch].Results[(int)SpecItem.FRAX_PMFreq].Val = freq[(int)phaseIndex], PassFails[ch].Results[(int)SpecItem.FRAX_PhaseMargin].Val = 180 + (phase[(int)phaseIndex])));
+                PassFails[ch].Results[(int)SpecItem.FRAX_PMFreq].Val = freqRes, PassFails[ch].Results[(int)SpecItem.FRAX_PhaseMargin].Val = phaseRes));
 
                 SetResult(ch, (int)SpecItem.FRAX_PMFreq, (int)SpecItem.FRAX_PhaseMargin);
                 ShowDataResults(ch, "FRA X", (int)SpecItem.FRAX_PMFreq, (int)SpecItem.FRAX_PhaseMargin);
@@ -2311,7 +2320,7 @@ namespace FZ4P
                 }
             }
 
-            if (!DrvIC.FRA_Single(ch, axis, amp, freq, ref gain, ref phase))
+            if (!DrvIC.FRA_Single(ch, axis, amp, 0, freq, ref gain, ref phase))
             {
                 errMsg[ch] = string.Format("{0} Error", testItem);
                 m_ChannelOn[ch] = false;
@@ -2326,8 +2335,13 @@ namespace FZ4P
             }
             else
             {
+                double phaseRes = 0, freqRes = 0;
+                phaseRes = ((gain[phaseIndex + 1] * phase[phaseIndex]) - (gain[phaseIndex] * phase[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]);
+                freqRes = (int)(((gain[phaseIndex + 1] * freq[phaseIndex]) - (gain[phaseIndex] * freq[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]));
+
+
                 AddLog(ch, string.Format("FRA Y1 Freq = {0} PM = {1}",
-                PassFails[ch].Results[(int)SpecItem.FRAY1_PMFreq].Val = freq[(int)phaseIndex], PassFails[ch].Results[(int)SpecItem.FRAY1_PhaseMargin].Val = 180 + (phase[(int)phaseIndex])));
+                PassFails[ch].Results[(int)SpecItem.FRAY1_PMFreq].Val = freqRes, PassFails[ch].Results[(int)SpecItem.FRAY1_PhaseMargin].Val = phaseRes));
 
                 SetResult(ch, (int)SpecItem.FRAY1_PMFreq, (int)SpecItem.FRAY1_PhaseMargin);
                 ShowDataResults(ch, "FRA Y1", (int)SpecItem.FRAY1_PMFreq, (int)SpecItem.FRAY1_PhaseMargin);
@@ -2401,7 +2415,7 @@ namespace FZ4P
                 }
             }
 
-            if (!DrvIC.FRA_Single(ch, axis, amp, freq, ref gain, ref phase))
+            if (!DrvIC.FRA_Single(ch, axis, amp, 0, freq, ref gain, ref phase))
             {
                 errMsg[ch] = string.Format("{0} Error", testItem);
                 m_ChannelOn[ch] = false;
@@ -2415,8 +2429,13 @@ namespace FZ4P
             }
             else
             {
+                double phaseRes = 0, freqRes = 0;
+                phaseRes = ((gain[phaseIndex + 1] * phase[phaseIndex]) - (gain[phaseIndex] * phase[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]);
+                freqRes = (int)(((gain[phaseIndex + 1] * freq[phaseIndex]) - (gain[phaseIndex] * freq[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]));
+
+
                 AddLog(ch, string.Format("FRA AF Freq = {0} PM = {1}",
-                      PassFails[ch].Results[(int)SpecItem.FRAAF_PMFreq].Val = freq[(int)phaseIndex], PassFails[ch].Results[(int)SpecItem.FRAAF_PhaseMargin].Val = 180 + (phase[(int)phaseIndex])));
+                      PassFails[ch].Results[(int)SpecItem.FRAAF_PMFreq].Val = freqRes, PassFails[ch].Results[(int)SpecItem.FRAAF_PhaseMargin].Val = phaseRes));
 
                 SetResult(ch, (int)SpecItem.FRAAF_PMFreq, (int)SpecItem.FRAAF_PhaseMargin);
                 ShowDataResults(ch, "FRA AF", (int)SpecItem.FRAAF_PMFreq, (int)SpecItem.FRAAF_PhaseMargin);
@@ -2444,125 +2463,125 @@ namespace FZ4P
             }
             return 0;
         }
-        public int FindGainIndex(List<double> phase)
-        {
-            for (int i = 0; i < phase.Count; i++)
-            {
-                if (phase[i] >= 0)
-                {
-                    if (i == 0) return 0;
-                    return i - 1;
-                }
-            }
-            return 0;
-        }
-        private void Act_Gain_Margin(int ch, string testItem)
-        {
-            string axis;
-            int startFreq;
-            int EndFreq;
-            int amp;
+        //public int FindGainIndex(List<double> phase)
+        //{
+        //    for (int i = 0; i < phase.Count; i++)
+        //    {
+        //        if (phase[i] >= 0)
+        //        {
+        //            if (i == 0) return 0;
+        //            return i - 1;
+        //        }
+        //    }
+        //    return 0;
+        //}
+        //private void Act_Gain_Margin(int ch, string testItem)
+        //{
+        //    string axis;
+        //    int startFreq;
+        //    int EndFreq;
+        //    int amp;
 
-            DrvIC.OISOn(ch, testItem, false);
-            //X
-            axis = "X";
-            startFreq = Condition.iXGainFrom;
-            EndFreq = Condition.iXGainTo;
-            amp = (int)Condition.iXAmplitudeGain;
+        //    DrvIC.OISOn(ch, testItem, false);
+        //    //X
+        //    axis = "X";
+        //    startFreq = Condition.iXGainFrom;
+        //    EndFreq = Condition.iXGainTo;
+        //    amp = (int)Condition.iXAmplitudeGain;
 
-            AddLog(ch, string.Format("{0} FRA ==", axis));
+        //    AddLog(ch, string.Format("{0} FRA ==", axis));
 
-            List<double> freq = new List<double>();
-            List<double> gain = new List<double>();
-            List<double> phase = new List<double>();
+        //    List<double> freq = new List<double>();
+        //    List<double> gain = new List<double>();
+        //    List<double> phase = new List<double>();
 
-            for (int i = 0; i < Condition.iGainLoop; i++)
-            {
-                while (true)
-                {
-                    freq.Add(startFreq);
-                    startFreq -= Condition.iGainStep;
-                    if (startFreq < EndFreq) break;
+        //    for (int i = 0; i < Condition.iGainLoop; i++)
+        //    {
+        //        while (true)
+        //        {
+        //            freq.Add(startFreq);
+        //            startFreq -= Condition.iGainStep;
+        //            if (startFreq < EndFreq) break;
 
-                }
-            }
-            if (!DrvIC.FRA_Single(ch, axis, amp, freq, ref gain, ref phase))
-            {
-                errMsg[ch] = string.Format("{0} Error", testItem);
-                m_ChannelOn[ch] = false;
-            }
-            int gainIndex = FindGainIndex(phase);
-            if (gainIndex < 1)
-            {
-                AddLog(ch, "X Find Gain Margin Failed.. Freq Range Check Please.");
-                errMsg[ch] = string.Format("{0} Error", testItem);
-                m_ChannelOn[ch] = false;
-            }
-            else
-            {
-                AddLog(ch, string.Format("FRA X GM = {0}", PassFails[ch].Results[(int)SpecItem.FRAX_GainMargin].Val = Math.Abs(gain[gainIndex])));
-                SetResult(ch, (int)SpecItem.FRAX_GainMargin, (int)SpecItem.FRAX_GainMargin);
-                ShowDataResults(ch, "FRA X", (int)SpecItem.FRAX_GainMargin, (int)SpecItem.FRAX_GainMargin);
-            }
+        //        }
+        //    }
+        //    if (!DrvIC.FRA_Single(ch, axis, amp, 1, freq, ref gain, ref phase))
+        //    {
+        //        errMsg[ch] = string.Format("{0} Error", testItem);
+        //        m_ChannelOn[ch] = false;
+        //    }
+        //    int gainIndex = FindGainIndex(phase);
+        //    if (gainIndex < 1)
+        //    {
+        //        AddLog(ch, "X Find Gain Margin Failed.. Freq Range Check Please.");
+        //        errMsg[ch] = string.Format("{0} Error", testItem);
+        //        m_ChannelOn[ch] = false;
+        //    }
+        //    else
+        //    {
+        //        AddLog(ch, string.Format("FRA X GM = {0}", PassFails[ch].Results[(int)SpecItem.FRAX_GainMargin].Val = Math.Abs(gain[gainIndex])));
+        //        SetResult(ch, (int)SpecItem.FRAX_GainMargin, (int)SpecItem.FRAX_GainMargin);
+        //        ShowDataResults(ch, "FRA X", (int)SpecItem.FRAX_GainMargin, (int)SpecItem.FRAX_GainMargin);
+        //    }
 
-            //Y1
-            axis = "Y1";
-            startFreq = Condition.iYGainFrom;
-            EndFreq = Condition.iYGainTo;
-            amp = (int)Condition.iYAmplitudeGain;
-            AddLog(ch, string.Format("{0} FRA ==", axis));
+        //    //Y1
+        //    axis = "Y1";
+        //    startFreq = Condition.iYGainFrom;
+        //    EndFreq = Condition.iYGainTo;
+        //    amp = (int)Condition.iYAmplitudeGain;
+        //    AddLog(ch, string.Format("{0} FRA ==", axis));
 
-            gain = new List<double>();
-            phase = new List<double>();
+        //    gain = new List<double>();
+        //    phase = new List<double>();
 
-            if (!DrvIC.FRA_Single(ch, axis, amp, freq, ref gain, ref phase))
-            {
-                errMsg[ch] = string.Format("{0} Error", testItem);
-                m_ChannelOn[ch] = false;
-            }
-            gainIndex = FindGainIndex(phase);
-            if (gainIndex < 1)
-            {
-                AddLog(ch, "Y1 Find Gain Margin Failed.. Freq Range Check Please.");
-                errMsg[ch] = string.Format("{0} Error", testItem);
-                m_ChannelOn[ch] = false;
-            }
-            else
-            {
-                AddLog(ch, string.Format("FRA Y1 GM = {0}", PassFails[ch].Results[(int)SpecItem.FRAY1_GainMargin].Val = Math.Abs(gain[gainIndex])));
+        //    if (!DrvIC.FRA_Single(ch, axis, amp, 1, freq, ref gain, ref phase))
+        //    {
+        //        errMsg[ch] = string.Format("{0} Error", testItem);
+        //        m_ChannelOn[ch] = false;
+        //    }
+        //    gainIndex = FindGainIndex(phase);
+        //    if (gainIndex < 1)
+        //    {
+        //        AddLog(ch, "Y1 Find Gain Margin Failed.. Freq Range Check Please.");
+        //        errMsg[ch] = string.Format("{0} Error", testItem);
+        //        m_ChannelOn[ch] = false;
+        //    }
+        //    else
+        //    {
+        //        AddLog(ch, string.Format("FRA Y1 GM = {0}", PassFails[ch].Results[(int)SpecItem.FRAY1_GainMargin].Val = Math.Abs(gain[gainIndex])));
 
-                SetResult(ch, (int)SpecItem.FRAY1_PMFreq, (int)SpecItem.FRAY1_GainMargin);
-                ShowDataResults(ch, "FRA Y1", (int)SpecItem.FRAY1_PMFreq, (int)SpecItem.FRAY1_GainMargin);
-            }
+        //        SetResult(ch, (int)SpecItem.FRAY1_PMFreq, (int)SpecItem.FRAY1_GainMargin);
+        //        ShowDataResults(ch, "FRA Y1", (int)SpecItem.FRAY1_PMFreq, (int)SpecItem.FRAY1_GainMargin);
+        //    }
 
-            //Y2
-            //axis = "Y2";
-            //AddLog(ch, string.Format("{0} FRA ==", axis));
+        //    //Y2
+        //    //axis = "Y2";
+        //    //AddLog(ch, string.Format("{0} FRA ==", axis));
 
-            //gain = new List<double>();
-            //phase = new List<double>();
+        //    //gain = new List<double>();
+        //    //phase = new List<double>();
 
-            //if (!DrvIC.FRA_Single(ch, axis, amp, freq, ref gain, ref phase))
-            //{
-            //    errMsg[ch] = string.Format("{0} Error", testItem);
-            //    m_ChannelOn[ch] = false;
-            //}
-            //gainIndex = FindGainIndex(phase);
-            //if (gainIndex < 1)
-            //{
-            //    AddLog(ch, "Y2 Find Gain Margin Failed.. Freq Range Check Please.");
-            //    errMsg[ch] = string.Format("{0} Error", testItem);
-            //    m_ChannelOn[ch] = false;
-            //}
-            //else
-            //{
+        //    //if (!DrvIC.FRA_Single(ch, axis, amp, freq, ref gain, ref phase))
+        //    //{
+        //    //    errMsg[ch] = string.Format("{0} Error", testItem);
+        //    //    m_ChannelOn[ch] = false;
+        //    //}
+        //    //gainIndex = FindGainIndex(phase);
+        //    //if (gainIndex < 1)
+        //    //{
+        //    //    AddLog(ch, "Y2 Find Gain Margin Failed.. Freq Range Check Please.");
+        //    //    errMsg[ch] = string.Format("{0} Error", testItem);
+        //    //    m_ChannelOn[ch] = false;
+        //    //}
+        //    //else
+        //    //{
 
-            //    AddLog(ch, string.Format("FRA Y2 GM = {0}", Spec.PassFails[ch].Results[(int)SpecItem.FRAY2_GainMargin].Val = Math.Abs(gain[gainIndex])));
+        //    //    AddLog(ch, string.Format("FRA Y2 GM = {0}", Spec.PassFails[ch].Results[(int)SpecItem.FRAY2_GainMargin].Val = Math.Abs(gain[gainIndex])));
 
-            //    Spec.SetResult(ch, (int)SpecItem.FRAY2_GainMargin, (int)SpecItem.FRAY2_GainMargin);
-            //    ShowDataResults(ch, "FRA Y2");
-            //}
-        }
+        //    //    Spec.SetResult(ch, (int)SpecItem.FRAY2_GainMargin, (int)SpecItem.FRAY2_GainMargin);
+        //    //    ShowDataResults(ch, "FRA Y2");
+        //    //}
+        //}
 
         public void ServoDecenter(int port, string name)
         {
@@ -3418,7 +3437,7 @@ namespace FZ4P
                             PassFails[j].Results[(int)SpecItem.OISY_Hysteresis].Val = Cal.CalHysteresis(Cal.CodeY1, Cal.StrokeY, Condition.YHysMinRange, Condition.YHysMaxRange, Condition.YHysMinStep,
                                 Condition.YHysMaxStep, Condition.YHysMinStroke, Condition.YHysMaxStroke, Condition.YHysMode);
                         
-                            double[] MtoM = Cal.CalCurrent(Cal.CodeY1, Cal.StrokeY1, Cal.Current, Condition.YCurrMinRange, Condition.YCurrMaxRange, Condition.YCurrMinStep, Condition.YCurrMaxStep,
+                            double[] MtoM = Cal.CalCurrent(Cal.CodeY1, Cal.StrokeY, Cal.Current, Condition.YCurrMinRange, Condition.YCurrMaxRange, Condition.YCurrMinStep, Condition.YCurrMaxStep,
                             Condition.YCurrMinStroke, Condition.YCurrMaxStroke, Condition.YCurrMode);
 
                             PassFails[j].Results[(int)SpecItem.OISY_MaxCurrent].Val = MtoM[0]; //Cal.CalMaxCurrent(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);

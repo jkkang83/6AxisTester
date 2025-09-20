@@ -862,7 +862,7 @@ namespace FZ4P
             Dln.ReadArray(ch, addr, 0x84, data);
             return ((data[0] << 8) + data[1]) >> 3;
         }
-        public bool FRA_Single(int ch, string name, int amp, List<double> freq, ref List<double> gain, ref List<double> phase)
+        public bool FRA_Single(int ch, string name, int amp, int mode ,List<double> freq, ref List<double> gain, ref List<double> phase)
         {
             int addr;
             int sAddr;
@@ -923,12 +923,21 @@ namespace FZ4P
                 if (!Set_Freq(ch, (int)freq[i])) return false;
 
                 gain.Add(Get_Gain(ch));
-
                 phase.Add(Get_Phase(ch));
-
                 Process.AddLog(ch, string.Format("{0} FRA Freq : {1} gain : {2:0.00} phase : {3:0.00}", axis, freq[i], gain[i], phase[i]));
-            }
+                if(i > 0)
+                {
+                    if (mode == 0)
+                    {
+                        if (gain[i] * gain[i - 1] <= 0) { Process.AddLog(ch, "Zero Cross Detected."); break; }
 
+                    }
+                    else if(mode == 1)
+                    {
+                        if (phase[i] * phase[i - 1] <= 0) { Process.AddLog(ch, "Zero Cross Detected."); break; }
+                    }
+                }
+            }
             if (!FRAModeDisable(ch)) return false;
             
             return true;
@@ -1305,6 +1314,9 @@ namespace FZ4P
             val /= 128;
             if (val > 256)
                 val -= 512;
+            val = 180 + val;
+            if (val > 180) val = 360 - val;
+            if (val < -180) val += 360;
             return val;
         }
 

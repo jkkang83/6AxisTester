@@ -316,6 +316,7 @@
             this.groupBox3.Controls.Add(this.btnFOVLeft);
             this.groupBox3.Controls.Add(this.btnFOVDown);
             this.groupBox3.Controls.Add(this.btnFitFOV);
+            this.groupBox3.Enabled = false;
             this.groupBox3.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.groupBox3.Location = new System.Drawing.Point(316, 280);
             this.groupBox3.Name = "groupBox3";
@@ -613,6 +614,7 @@
             // 
             // label10
             // 
+            this.label10.Enabled = false;
             this.label10.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.label10.ForeColor = System.Drawing.Color.White;
             this.label10.Location = new System.Drawing.Point(156, 175);
@@ -625,6 +627,7 @@
             // label9
             // 
             this.label9.AutoSize = true;
+            this.label9.Enabled = false;
             this.label9.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.label9.ForeColor = System.Drawing.Color.White;
             this.label9.Location = new System.Drawing.Point(153, 153);
@@ -636,6 +639,7 @@
             // tbGrabbedFrame
             // 
             this.tbGrabbedFrame.BackColor = System.Drawing.Color.LightGray;
+            this.tbGrabbedFrame.Enabled = false;
             this.tbGrabbedFrame.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tbGrabbedFrame.Location = new System.Drawing.Point(253, 151);
             this.tbGrabbedFrame.Name = "tbGrabbedFrame";
@@ -647,6 +651,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
+            this.label8.Enabled = false;
             this.label8.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.label8.ForeColor = System.Drawing.Color.White;
             this.label8.Location = new System.Drawing.Point(155, 127);
@@ -658,6 +663,7 @@
             // tbFrameToGrab
             // 
             this.tbFrameToGrab.BackColor = System.Drawing.Color.White;
+            this.tbFrameToGrab.Enabled = false;
             this.tbFrameToGrab.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tbFrameToGrab.Location = new System.Drawing.Point(253, 125);
             this.tbFrameToGrab.Name = "tbFrameToGrab";
@@ -668,6 +674,7 @@
             // label11
             // 
             this.label11.AutoSize = true;
+            this.label11.Enabled = false;
             this.label11.Font = new System.Drawing.Font("Arial", 20F, System.Drawing.FontStyle.Bold);
             this.label11.ForeColor = System.Drawing.Color.Red;
             this.label11.Location = new System.Drawing.Point(293, 106);
@@ -695,6 +702,7 @@
             // cbContinuosMode
             // 
             this.cbContinuosMode.AutoSize = true;
+            this.cbContinuosMode.Enabled = false;
             this.cbContinuosMode.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.cbContinuosMode.ForeColor = System.Drawing.Color.White;
             this.cbContinuosMode.Location = new System.Drawing.Point(163, 346);
@@ -708,6 +716,7 @@
             // cbLiveWithMarks
             // 
             this.cbLiveWithMarks.AutoSize = true;
+            this.cbLiveWithMarks.Enabled = false;
             this.cbLiveWithMarks.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.cbLiveWithMarks.ForeColor = System.Drawing.Color.White;
             this.cbLiveWithMarks.Location = new System.Drawing.Point(163, 371);
@@ -721,6 +730,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
+            this.label6.Enabled = false;
             this.label6.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label6.ForeColor = System.Drawing.Color.GreenYellow;
             this.label6.Location = new System.Drawing.Point(588, 594);
@@ -733,6 +743,7 @@
             // 
             this.tbMasterTX.BackColor = System.Drawing.Color.GreenYellow;
             this.tbMasterTX.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tbMasterTX.Enabled = false;
             this.tbMasterTX.Font = new System.Drawing.Font("Calibri", 10F, System.Drawing.FontStyle.Bold);
             this.tbMasterTX.Location = new System.Drawing.Point(620, 595);
             this.tbMasterTX.Name = "tbMasterTX";
@@ -744,6 +755,7 @@
             // label41
             // 
             this.label41.AutoSize = true;
+            this.label41.Enabled = false;
             this.label41.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label41.ForeColor = System.Drawing.Color.GreenYellow;
             this.label41.Location = new System.Drawing.Point(588, 612);
@@ -756,6 +768,7 @@
             // 
             this.tbMasterTY.BackColor = System.Drawing.Color.GreenYellow;
             this.tbMasterTY.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tbMasterTY.Enabled = false;
             this.tbMasterTY.Font = new System.Drawing.Font("Calibri", 10F, System.Drawing.FontStyle.Bold);
             this.tbMasterTY.Location = new System.Drawing.Point(620, 613);
             this.tbMasterTY.Name = "tbMasterTY";
@@ -767,6 +780,7 @@
             // cbSetTXTYwithMaster
             // 
             this.cbSetTXTYwithMaster.AutoSize = true;
+            this.cbSetTXTYwithMaster.Enabled = false;
             this.cbSetTXTYwithMaster.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.cbSetTXTYwithMaster.ForeColor = System.Drawing.Color.GreenYellow;
             this.cbSetTXTYwithMaster.Location = new System.Drawing.Point(318, 522);
@@ -780,6 +794,7 @@
             // label42
             // 
             this.label42.AutoSize = true;
+            this.label42.Enabled = false;
             this.label42.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label42.ForeColor = System.Drawing.Color.GreenYellow;
             this.label42.Location = new System.Drawing.Point(666, 612);
@@ -791,6 +806,7 @@
             // label43
             // 
             this.label43.AutoSize = true;
+            this.label43.Enabled = false;
             this.label43.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label43.ForeColor = System.Drawing.Color.GreenYellow;
             this.label43.Location = new System.Drawing.Point(666, 594);
@@ -863,6 +879,7 @@
             this.grbCalibration.Controls.Add(this.label1);
             this.grbCalibration.Controls.Add(this.btnAutoCal);
             this.grbCalibration.Controls.Add(this.btnEastView);
+            this.grbCalibration.Enabled = false;
             this.grbCalibration.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.grbCalibration.ForeColor = System.Drawing.Color.Black;
             this.grbCalibration.Location = new System.Drawing.Point(724, 513);
@@ -1078,6 +1095,7 @@
             this.groupBox4.Controls.Add(this.btnRightPos);
             this.groupBox4.Controls.Add(this.btnDownPos);
             this.groupBox4.Controls.Add(this.btnUpPos);
+            this.groupBox4.Enabled = false;
             this.groupBox4.Font = new System.Drawing.Font("맑은 고딕", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.groupBox4.Location = new System.Drawing.Point(724, 280);
             this.groupBox4.Name = "groupBox4";
@@ -1236,6 +1254,7 @@
             // cbDrawReference
             // 
             this.cbDrawReference.AutoSize = true;
+            this.cbDrawReference.Enabled = false;
             this.cbDrawReference.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.cbDrawReference.ForeColor = System.Drawing.Color.Coral;
             this.cbDrawReference.Location = new System.Drawing.Point(163, 322);
@@ -1250,6 +1269,7 @@
             // 
             this.BaseUpBtn.BackColor = System.Drawing.Color.DeepSkyBlue;
             this.BaseUpBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.BaseUpBtn.Enabled = false;
             this.BaseUpBtn.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.BaseUpBtn.Font = new System.Drawing.Font("맑은 고딕", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.BaseUpBtn.ForeColor = System.Drawing.Color.White;
@@ -1265,6 +1285,7 @@
             // 
             this.SidePushloadBtn.BackColor = System.Drawing.Color.DeepSkyBlue;
             this.SidePushloadBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.SidePushloadBtn.Enabled = false;
             this.SidePushloadBtn.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SidePushloadBtn.Font = new System.Drawing.Font("맑은 고딕", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.SidePushloadBtn.ForeColor = System.Drawing.Color.White;
@@ -1280,6 +1301,7 @@
             // 
             this.PogoPinloadBtn.BackColor = System.Drawing.Color.DeepSkyBlue;
             this.PogoPinloadBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.PogoPinloadBtn.Enabled = false;
             this.PogoPinloadBtn.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.PogoPinloadBtn.Font = new System.Drawing.Font("맑은 고딕", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.PogoPinloadBtn.ForeColor = System.Drawing.Color.White;
@@ -1295,6 +1317,7 @@
             // 
             this.SidePushUnloadBtn.BackColor = System.Drawing.Color.DeepSkyBlue;
             this.SidePushUnloadBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.SidePushUnloadBtn.Enabled = false;
             this.SidePushUnloadBtn.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SidePushUnloadBtn.Font = new System.Drawing.Font("맑은 고딕", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.SidePushUnloadBtn.ForeColor = System.Drawing.Color.White;
@@ -1310,6 +1333,7 @@
             // 
             this.BaseDownBtn.BackColor = System.Drawing.Color.DeepSkyBlue;
             this.BaseDownBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.BaseDownBtn.Enabled = false;
             this.BaseDownBtn.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.BaseDownBtn.Font = new System.Drawing.Font("맑은 고딕", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.BaseDownBtn.ForeColor = System.Drawing.Color.White;
@@ -1325,6 +1349,7 @@
             // 
             this.PogoPinUnloadBtn.BackColor = System.Drawing.Color.DeepSkyBlue;
             this.PogoPinUnloadBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.PogoPinUnloadBtn.Enabled = false;
             this.PogoPinUnloadBtn.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.PogoPinUnloadBtn.Font = new System.Drawing.Font("맑은 고딕", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.PogoPinUnloadBtn.ForeColor = System.Drawing.Color.White;
@@ -1341,6 +1366,7 @@
             this.btnChangeCrop.BackColor = System.Drawing.Color.Indigo;
             this.btnChangeCrop.BackgroundImage = global::FZ4P.Properties.Resources.BtnGN;
             this.btnChangeCrop.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnChangeCrop.Enabled = false;
             this.btnChangeCrop.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnChangeCrop.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.btnChangeCrop.ForeColor = System.Drawing.Color.Black;
@@ -1402,6 +1428,7 @@
             this.button9.BackColor = System.Drawing.Color.DeepSkyBlue;
             this.button9.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("button9.BackgroundImage")));
             this.button9.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.button9.Enabled = false;
             this.button9.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.button9.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.button9.ForeColor = System.Drawing.Color.White;
@@ -1434,6 +1461,7 @@
             this.button2.BackColor = System.Drawing.Color.DodgerBlue;
             this.button2.BackgroundImage = global::FZ4P.Properties.Resources.BtnLightBlueN;
             this.button2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.button2.Enabled = false;
             this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.button2.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.button2.ForeColor = System.Drawing.Color.DarkOrange;
@@ -1450,6 +1478,7 @@
             this.btnOpenResultBin.BackColor = System.Drawing.Color.DodgerBlue;
             this.btnOpenResultBin.BackgroundImage = global::FZ4P.Properties.Resources.BtnLightBlueN;
             this.btnOpenResultBin.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnOpenResultBin.Enabled = false;
             this.btnOpenResultBin.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnOpenResultBin.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.btnOpenResultBin.ForeColor = System.Drawing.Color.DarkOrange;
@@ -1470,6 +1499,7 @@
             this.btnInitialTilt.BackColor = System.Drawing.Color.DodgerBlue;
             this.btnInitialTilt.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnInitialTilt.BackgroundImage")));
             this.btnInitialTilt.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnInitialTilt.Enabled = false;
             this.btnInitialTilt.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnInitialTilt.Font = new System.Drawing.Font("맑은 고딕", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.btnInitialTilt.ForeColor = System.Drawing.Color.GreenYellow;
@@ -1490,6 +1520,7 @@
             this.btnSetMasterTilt.BackColor = System.Drawing.Color.DodgerBlue;
             this.btnSetMasterTilt.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnSetMasterTilt.BackgroundImage")));
             this.btnSetMasterTilt.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnSetMasterTilt.Enabled = false;
             this.btnSetMasterTilt.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnSetMasterTilt.Font = new System.Drawing.Font("맑은 고딕", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.btnSetMasterTilt.ForeColor = System.Drawing.Color.GreenYellow;
@@ -1510,6 +1541,7 @@
             this.button4.BackColor = System.Drawing.Color.DodgerBlue;
             this.button4.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("button4.BackgroundImage")));
             this.button4.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.button4.Enabled = false;
             this.button4.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.button4.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.button4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -1530,6 +1562,7 @@
             this.button11.BackColor = System.Drawing.SystemColors.ControlDarkDark;
             this.button11.BackgroundImage = global::FZ4P.Properties.Resources.BtnKN;
             this.button11.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.button11.Enabled = false;
             this.button11.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.button11.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.button11.ForeColor = System.Drawing.Color.White;
@@ -1550,6 +1583,7 @@
             this.btnAutoLearn.BackColor = System.Drawing.Color.Green;
             this.btnAutoLearn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnAutoLearn.BackgroundImage")));
             this.btnAutoLearn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnAutoLearn.Enabled = false;
             this.btnAutoLearn.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnAutoLearn.Font = new System.Drawing.Font("Calibri", 14F, System.Drawing.FontStyle.Bold);
             this.btnAutoLearn.ForeColor = System.Drawing.Color.Chartreuse;
@@ -1806,6 +1840,7 @@
             this.MotionStageBtn.BackColor = System.Drawing.Color.Green;
             this.MotionStageBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("MotionStageBtn.BackgroundImage")));
             this.MotionStageBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.MotionStageBtn.Enabled = false;
             this.MotionStageBtn.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.MotionStageBtn.Font = new System.Drawing.Font("Calibri", 14F, System.Drawing.FontStyle.Bold);
             this.MotionStageBtn.ForeColor = System.Drawing.Color.Chartreuse;
@@ -1845,6 +1880,7 @@
             this.grbVolumetric.Controls.Add(this.label3);
             this.grbVolumetric.Controls.Add(this.label2);
             this.grbVolumetric.Controls.Add(this.tbXrange);
+            this.grbVolumetric.Enabled = false;
             this.grbVolumetric.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.grbVolumetric.ForeColor = System.Drawing.Color.Black;
             this.grbVolumetric.Location = new System.Drawing.Point(316, 785);
@@ -2140,6 +2176,7 @@
             // cbBench
             // 
             this.cbBench.AutoSize = true;
+            this.cbBench.Enabled = false;
             this.cbBench.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Bold);
             this.cbBench.ForeColor = System.Drawing.Color.White;
             this.cbBench.Location = new System.Drawing.Point(163, 218);
@@ -2153,6 +2190,7 @@
             // label16
             // 
             this.label16.AutoSize = true;
+            this.label16.Enabled = false;
             this.label16.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label16.ForeColor = System.Drawing.Color.GreenYellow;
             this.label16.Location = new System.Drawing.Point(666, 630);
@@ -2164,6 +2202,7 @@
             // label17
             // 
             this.label17.AutoSize = true;
+            this.label17.Enabled = false;
             this.label17.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label17.ForeColor = System.Drawing.Color.GreenYellow;
             this.label17.Location = new System.Drawing.Point(588, 630);
@@ -2176,6 +2215,7 @@
             // 
             this.tbMasterTZ.BackColor = System.Drawing.Color.GreenYellow;
             this.tbMasterTZ.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tbMasterTZ.Enabled = false;
             this.tbMasterTZ.Font = new System.Drawing.Font("Calibri", 10F, System.Drawing.FontStyle.Bold);
             this.tbMasterTZ.Location = new System.Drawing.Point(620, 631);
             this.tbMasterTZ.Name = "tbMasterTZ";
@@ -2187,6 +2227,7 @@
             // label19
             // 
             this.label19.AutoSize = true;
+            this.label19.Enabled = false;
             this.label19.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label19.ForeColor = System.Drawing.Color.GreenYellow;
             this.label19.Location = new System.Drawing.Point(556, 630);
@@ -2198,6 +2239,7 @@
             // label20
             // 
             this.label20.AutoSize = true;
+            this.label20.Enabled = false;
             this.label20.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label20.ForeColor = System.Drawing.Color.GreenYellow;
             this.label20.Location = new System.Drawing.Point(486, 630);
@@ -2210,6 +2252,7 @@
             // 
             this.tbMasterZ.BackColor = System.Drawing.Color.GreenYellow;
             this.tbMasterZ.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tbMasterZ.Enabled = false;
             this.tbMasterZ.Font = new System.Drawing.Font("Calibri", 10F, System.Drawing.FontStyle.Bold);
             this.tbMasterZ.Location = new System.Drawing.Point(510, 631);
             this.tbMasterZ.Name = "tbMasterZ";
@@ -2221,6 +2264,7 @@
             // label21
             // 
             this.label21.AutoSize = true;
+            this.label21.Enabled = false;
             this.label21.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label21.ForeColor = System.Drawing.Color.GreenYellow;
             this.label21.Location = new System.Drawing.Point(556, 612);
@@ -2232,6 +2276,7 @@
             // label22
             // 
             this.label22.AutoSize = true;
+            this.label22.Enabled = false;
             this.label22.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label22.ForeColor = System.Drawing.Color.GreenYellow;
             this.label22.Location = new System.Drawing.Point(556, 594);
@@ -2243,6 +2288,7 @@
             // label23
             // 
             this.label23.AutoSize = true;
+            this.label23.Enabled = false;
             this.label23.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label23.ForeColor = System.Drawing.Color.GreenYellow;
             this.label23.Location = new System.Drawing.Point(487, 612);
@@ -2255,6 +2301,7 @@
             // 
             this.tbMasterY.BackColor = System.Drawing.Color.GreenYellow;
             this.tbMasterY.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tbMasterY.Enabled = false;
             this.tbMasterY.Font = new System.Drawing.Font("Calibri", 10F, System.Drawing.FontStyle.Bold);
             this.tbMasterY.Location = new System.Drawing.Point(510, 613);
             this.tbMasterY.Name = "tbMasterY";
@@ -2266,6 +2313,7 @@
             // label24
             // 
             this.label24.AutoSize = true;
+            this.label24.Enabled = false;
             this.label24.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label24.ForeColor = System.Drawing.Color.GreenYellow;
             this.label24.Location = new System.Drawing.Point(486, 594);
@@ -2278,6 +2326,7 @@
             // 
             this.tbMasterX.BackColor = System.Drawing.Color.GreenYellow;
             this.tbMasterX.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tbMasterX.Enabled = false;
             this.tbMasterX.Font = new System.Drawing.Font("Calibri", 10F, System.Drawing.FontStyle.Bold);
             this.tbMasterX.Location = new System.Drawing.Point(510, 595);
             this.tbMasterX.Name = "tbMasterX";
@@ -2290,6 +2339,7 @@
             // 
             this.MasterList.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(8)))), ((int)(((byte)(16)))), ((int)(((byte)(32)))));
             this.MasterList.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.MasterList.Enabled = false;
             this.MasterList.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.MasterList.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(188)))), ((int)(((byte)(196)))), ((int)(((byte)(224)))));
             this.MasterList.FormattingEnabled = true;
@@ -2307,6 +2357,7 @@
             // 
             this.btnAddMaster.BackColor = System.Drawing.Color.DodgerBlue;
             this.btnAddMaster.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnAddMaster.Enabled = false;
             this.btnAddMaster.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnAddMaster.Font = new System.Drawing.Font("맑은 고딕", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.btnAddMaster.ForeColor = System.Drawing.Color.GreenYellow;
@@ -2322,6 +2373,7 @@
             // 
             this.btnDeleteMaster.BackColor = System.Drawing.Color.DodgerBlue;
             this.btnDeleteMaster.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnDeleteMaster.Enabled = false;
             this.btnDeleteMaster.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnDeleteMaster.Font = new System.Drawing.Font("맑은 고딕", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.btnDeleteMaster.ForeColor = System.Drawing.Color.GreenYellow;
@@ -2337,6 +2389,7 @@
             // 
             this.txtMsaterNum.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(232)))), ((int)(((byte)(232)))), ((int)(((byte)(236)))));
             this.txtMsaterNum.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.txtMsaterNum.Enabled = false;
             this.txtMsaterNum.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.txtMsaterNum.ForeColor = System.Drawing.Color.Red;
             this.txtMsaterNum.Location = new System.Drawing.Point(592, 522);
@@ -2349,6 +2402,7 @@
             // label26
             // 
             this.label26.AutoSize = true;
+            this.label26.Enabled = false;
             this.label26.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label26.Location = new System.Drawing.Point(507, 522);
             this.label26.Name = "label26";
@@ -2360,6 +2414,7 @@
             // 
             this.button3.BackColor = System.Drawing.Color.Indigo;
             this.button3.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.button3.Enabled = false;
             this.button3.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.button3.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.button3.ForeColor = System.Drawing.Color.White;
@@ -2374,6 +2429,7 @@
             // label27
             // 
             this.label27.AutoSize = true;
+            this.label27.Enabled = false;
             this.label27.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label27.ForeColor = System.Drawing.Color.NavajoWhite;
             this.label27.Location = new System.Drawing.Point(556, 752);
@@ -2385,6 +2441,7 @@
             // label28
             // 
             this.label28.AutoSize = true;
+            this.label28.Enabled = false;
             this.label28.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label28.ForeColor = System.Drawing.Color.NavajoWhite;
             this.label28.Location = new System.Drawing.Point(486, 752);
@@ -2397,6 +2454,7 @@
             // 
             this.tbEulerSZ.BackColor = System.Drawing.Color.MistyRose;
             this.tbEulerSZ.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tbEulerSZ.Enabled = false;
             this.tbEulerSZ.Font = new System.Drawing.Font("Calibri", 10F, System.Drawing.FontStyle.Bold);
             this.tbEulerSZ.Location = new System.Drawing.Point(510, 753);
             this.tbEulerSZ.Name = "tbEulerSZ";
@@ -2408,6 +2466,7 @@
             // label29
             // 
             this.label29.AutoSize = true;
+            this.label29.Enabled = false;
             this.label29.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label29.ForeColor = System.Drawing.Color.NavajoWhite;
             this.label29.Location = new System.Drawing.Point(556, 734);
@@ -2419,6 +2478,7 @@
             // label30
             // 
             this.label30.AutoSize = true;
+            this.label30.Enabled = false;
             this.label30.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label30.ForeColor = System.Drawing.Color.NavajoWhite;
             this.label30.Location = new System.Drawing.Point(556, 716);
@@ -2430,6 +2490,7 @@
             // label31
             // 
             this.label31.AutoSize = true;
+            this.label31.Enabled = false;
             this.label31.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label31.ForeColor = System.Drawing.Color.NavajoWhite;
             this.label31.Location = new System.Drawing.Point(487, 734);
@@ -2442,6 +2503,7 @@
             // 
             this.tbEulerSY.BackColor = System.Drawing.Color.MistyRose;
             this.tbEulerSY.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tbEulerSY.Enabled = false;
             this.tbEulerSY.Font = new System.Drawing.Font("Calibri", 10F, System.Drawing.FontStyle.Bold);
             this.tbEulerSY.Location = new System.Drawing.Point(510, 735);
             this.tbEulerSY.Name = "tbEulerSY";
@@ -2453,6 +2515,7 @@
             // label32
             // 
             this.label32.AutoSize = true;
+            this.label32.Enabled = false;
             this.label32.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label32.ForeColor = System.Drawing.Color.NavajoWhite;
             this.label32.Location = new System.Drawing.Point(486, 716);
@@ -2465,6 +2528,7 @@
             // 
             this.tbEulerSX.BackColor = System.Drawing.Color.MistyRose;
             this.tbEulerSX.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tbEulerSX.Enabled = false;
             this.tbEulerSX.Font = new System.Drawing.Font("Calibri", 10F, System.Drawing.FontStyle.Bold);
             this.tbEulerSX.Location = new System.Drawing.Point(510, 717);
             this.tbEulerSX.Name = "tbEulerSX";
@@ -2476,6 +2540,7 @@
             // label33
             // 
             this.label33.AutoSize = true;
+            this.label33.Enabled = false;
             this.label33.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label33.ForeColor = System.Drawing.Color.NavajoWhite;
             this.label33.Location = new System.Drawing.Point(666, 752);
@@ -2487,6 +2552,7 @@
             // label34
             // 
             this.label34.AutoSize = true;
+            this.label34.Enabled = false;
             this.label34.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label34.ForeColor = System.Drawing.Color.NavajoWhite;
             this.label34.Location = new System.Drawing.Point(588, 752);
@@ -2499,6 +2565,7 @@
             // 
             this.tbEulerPsi.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.tbEulerPsi.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tbEulerPsi.Enabled = false;
             this.tbEulerPsi.Font = new System.Drawing.Font("Calibri", 10F, System.Drawing.FontStyle.Bold);
             this.tbEulerPsi.ForeColor = System.Drawing.Color.MistyRose;
             this.tbEulerPsi.Location = new System.Drawing.Point(620, 753);
@@ -2511,6 +2578,7 @@
             // label35
             // 
             this.label35.AutoSize = true;
+            this.label35.Enabled = false;
             this.label35.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label35.ForeColor = System.Drawing.Color.NavajoWhite;
             this.label35.Location = new System.Drawing.Point(666, 734);
@@ -2522,6 +2590,7 @@
             // label36
             // 
             this.label36.AutoSize = true;
+            this.label36.Enabled = false;
             this.label36.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label36.ForeColor = System.Drawing.Color.NavajoWhite;
             this.label36.Location = new System.Drawing.Point(666, 716);
@@ -2533,6 +2602,7 @@
             // label37
             // 
             this.label37.AutoSize = true;
+            this.label37.Enabled = false;
             this.label37.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label37.ForeColor = System.Drawing.Color.NavajoWhite;
             this.label37.Location = new System.Drawing.Point(588, 734);
@@ -2545,6 +2615,7 @@
             // 
             this.tbEulerTheta.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.tbEulerTheta.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tbEulerTheta.Enabled = false;
             this.tbEulerTheta.Font = new System.Drawing.Font("Calibri", 10F, System.Drawing.FontStyle.Bold);
             this.tbEulerTheta.ForeColor = System.Drawing.Color.MistyRose;
             this.tbEulerTheta.Location = new System.Drawing.Point(620, 735);
@@ -2557,6 +2628,7 @@
             // label38
             // 
             this.label38.AutoSize = true;
+            this.label38.Enabled = false;
             this.label38.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.label38.ForeColor = System.Drawing.Color.NavajoWhite;
             this.label38.Location = new System.Drawing.Point(588, 716);
@@ -2569,6 +2641,7 @@
             // 
             this.tbEulerPhi.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.tbEulerPhi.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tbEulerPhi.Enabled = false;
             this.tbEulerPhi.Font = new System.Drawing.Font("Calibri", 10F, System.Drawing.FontStyle.Bold);
             this.tbEulerPhi.ForeColor = System.Drawing.Color.MistyRose;
             this.tbEulerPhi.Location = new System.Drawing.Point(620, 717);
@@ -2582,6 +2655,7 @@
             // 
             this.btnApplyEulerAngle.BackColor = System.Drawing.Color.DeepSkyBlue;
             this.btnApplyEulerAngle.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnApplyEulerAngle.Enabled = false;
             this.btnApplyEulerAngle.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnApplyEulerAngle.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.btnApplyEulerAngle.ForeColor = System.Drawing.Color.MistyRose;
