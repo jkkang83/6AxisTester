@@ -1,4 +1,5 @@
-﻿using OpenCvSharp.Dnn;
+﻿using OpenCvSharp;
+using OpenCvSharp.Dnn;
 using OpenCvSharp.Flann;
 using S2System.Vision;
 using System;
@@ -130,6 +131,9 @@ namespace FZ4P
             ItemList.Add(new ActItems() { Name = "Phase Margin", Func = Act_Phase_Margin, IsMulti = true });
             ItemList.Add(new ActItems() { Name = "Gain Margin", Func = Act_Gain_Margin, IsMulti = true });
             ItemList.Add(new ActItems() { Name = "AF Settling", Func = Act_ScanTimeCode });
+            ItemList.Add(new ActItems() { Name = "AF ScanAging", Func = Act_AFScanAging });
+            ItemList.Add(new ActItems() { Name = "AF PreDriving", Func = Act_PreAFDriving });
+            ItemList.Add(new ActItems() { Name = "Hall Decenter", Func = Act_HallDecenter });
 
             m__G = Global.GetInstance();
         }
@@ -916,7 +920,87 @@ namespace FZ4P
         {
             AFOpenLoopAging(0);
         }
+        void Act_AFScanAging(int ch, string testItem)
+        {
+            AddLog(ch, "<<<  AF Scan aging Start  >>>");
+            AddLog(ch, $"Start aging {Condition.AFSCanAgingCount} cycle for AF Driving");
+            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 });
+            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 });
+            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 });
+            DrvIC.Move(ch, "AF", 2048);
+            Thread.Sleep(100);
 
+            int curPos = 2047;
+            List<int> code = new List<int>();
+
+            do
+            {
+                code.Add(curPos);
+                curPos -= Condition.AFScanAgingStep;
+            } while (curPos > Condition.AFScanAgingMin);         
+            code.Add(Condition.AFScanAgingMin);
+            curPos += Condition.AFScanAgingStep;
+            do
+            {
+                code.Add(curPos);
+                curPos += Condition.AFScanAgingStep;
+            } while (curPos < Condition.AFScanAgingMax);
+            code.Add(Condition.AFScanAgingMax);
+            curPos -= Condition.AFScanAgingStep;
+
+            do
+            {
+                code.Add(curPos);
+                curPos -= Condition.AFScanAgingStep;
+            } while (curPos > 2047);
+            code.Add(2047);
+
+            for (int i = 0; i < Condition.AFSCanAgingCount; i++)
+            {              
+                for (int j = 0; j < code.Count; j++)
+                {
+                    DrvIC.Move(ch, "AF", code[j]);
+                    Thread.Sleep(Condition.AFScanAgingDelay);
+                }
+              
+            }
+            AddLog(ch, "<<<  AF Scan aging End  >>>");
+        }
+        void Act_PreAFDriving(int ch, string testItem)
+        {
+            LEDs_All_On(0, true);
+            AddLog(ch, "AF Pre Driving");
+            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 });
+            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 });
+            FindResult res = new FindResult();
+         
+
+            int[] code = new int[] { 2048,  1600, 320, 160, 0, 3995, 4075, 4085, 4095 }; //4, 8
+
+            for (int i = 0; i < Condition.AFPReDrvCount; i++)
+            {
+                double[] MtoM = new double[2];
+                for (int j = 0; j < code.Length; j++)
+                {
+                    DrvIC.Move(ch, "AF", code[j]);
+                    Thread.Sleep(Condition.AFPreDrvDelay);
+                    if(j == 4)
+                    {
+                        STATIC.fVision.m__G.oCam[0].GrabA(0);
+                        res = STATIC.fVision.MeasureTxTyTz(0, "AF", true);
+                        MtoM[0] = res.cz[0];
+                    }
+                    if(j == 8)
+                    {
+                        STATIC.fVision.m__G.oCam[0].GrabA(0);
+                        res = STATIC.fVision.MeasureTxTyTz(0, "AF", true);
+                        MtoM[1] = res.cz[0];
+                    }
+                }
+                AddLog(ch, $"{i + 1} scan stroke : {Math.Abs(MtoM[1] - MtoM[0]).ToString("F3")}");
+            }
+            LEDs_All_On(0, false);
+        }
 
         private void Act_AFInit(int ch, string testItem)
         {
@@ -1032,7 +1116,7 @@ namespace FZ4P
      
         void Act_CloseLoopAging(int ch, string testitem)
         {
-            CloseLoopAging(0);
+            CloseLoopAging(0, Condition.CLAgingMode);
         }
         private void Act_AFEPA(int ch, string testItem)
         {
@@ -1449,44 +1533,59 @@ namespace FZ4P
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x0B, new byte[] { DataBackup });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xAE, new byte[] { 0x00 });
         }
-        void CloseLoopAging(int ch)
+        void CloseLoopAging(int ch, int mode)
         {
-            Random rnd = new Random();
-
             int AFMin = Condition.CLAgingAFMin, AFMax = Condition.CLAgingAFMax, OISMin = Condition.CLAgingOISMin, OISMax = Condition.CLAgingOISMax, count = Condition.CLAgingCount;
             int delay = delay = 1000000 / Condition.CLAgingFreq / 2 / 1000;
-
 
             AddLog(ch, $"AF Range : {AFMin} - {AFMax}");
             AddLog(ch, $"OIS Range : {OISMin} - {OISMax}");
             AddLog(ch, $"Aging Count : {count}, Freq : {Condition.CLAgingFreq}");
 
-
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
-            
+
             DrvIC.Move(ch, "AF", 2048);
             DrvIC.Move(ch, "X", 2048);
             DrvIC.Move(ch, "Y", 2048);
-
             Thread.Sleep(100);
-            for (int i = 0; i < count; i++)
+            if (mode == 0)
             {
-                DrvIC.Move(ch, "AF", AFMin);
-                DrvIC.Move(ch, "X", rnd.Next(OISMin, OISMax));
-                DrvIC.Move(ch, "Y", rnd.Next(OISMin, OISMax));
-                Thread.Sleep(delay);
-                DrvIC.Move(ch, "AF", AFMax);
-                DrvIC.Move(ch, "X", rnd.Next(OISMin, OISMax));
-                DrvIC.Move(ch, "Y", rnd.Next(OISMin, OISMax));
-                Thread.Sleep(delay);
+                for (int i = 0; i < count; i++)
+                {
+                    DrvIC.Move(ch, "AF", AFMin);
+                    DrvIC.Move(ch, "X", OISMin);
+                    DrvIC.Move(ch, "Y", OISMin);
+                    Thread.Sleep(delay);
+                    DrvIC.Move(ch, "AF", AFMax);
+                    DrvIC.Move(ch, "X", OISMax);
+                    DrvIC.Move(ch, "Y", OISMax);
+                    Thread.Sleep(delay);
+                }
             }
+            else
+            {
+                Random rnd = new Random();
+                for (int i = 0; i < count; i++)
+                {
+                    DrvIC.Move(ch, "AF", AFMin);
+                    DrvIC.Move(ch, "X", rnd.Next(OISMin, OISMax));
+                    DrvIC.Move(ch, "Y", rnd.Next(OISMin, OISMax));
+                    Thread.Sleep(delay);
+                    DrvIC.Move(ch, "AF", AFMax);
+                    DrvIC.Move(ch, "X", rnd.Next(OISMin, OISMax));
+                    DrvIC.Move(ch, "Y", rnd.Next(OISMin, OISMax));
+                    Thread.Sleep(delay);
+                }
+            }
+
+
             DrvIC.Move(ch, "AF", 2048);
             DrvIC.Move(ch, "X", 2048);
             DrvIC.Move(ch, "Y", 2048);
 
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x40 });
+         //   Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x40 });
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 });
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 });
 
@@ -2124,6 +2223,13 @@ namespace FZ4P
         }
         private void Act_Phase_Margin(int ch, string testItem)
         {
+
+
+            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
+            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
+            DrvIC.Move(ch, "X", 2048);
+            DrvIC.Move(ch, "Y1", 2048);
+            Thread.Sleep(100);
             string axis;
             int startFreq;
             int EndFreq;
@@ -2508,7 +2614,43 @@ namespace FZ4P
             LEDs_All_On(port, false);
         }
 
+        public void Act_HallDecenter(int port, string name)
+        {
+            int ch = port * 2;
+            LEDs_All_On(port, true);
+            FindResult[] fX = new FindResult[2] { new FindResult(), new FindResult() };
+            FindResult[] fY = new FindResult[2] { new FindResult(), new FindResult() };
 
+            STATIC.DrvIC.OISOn(0, "AF", true);
+            DrvIC.Move(0, "AF", 2048);
+            STATIC.DrvIC.OISOn(0, "X", true);
+            STATIC.DrvIC.OISOn(0, "Y", true);
+            Thread.Sleep(100);
+
+           
+            STATIC.fVision.m__G.oCam[0].GrabA(0);
+            fX[0] = STATIC.fVision.MeasureTxTyTz(0, "X", true);
+            fY[0] = STATIC.fVision.MeasureTxTyTz(0, "Y", true);
+
+            STATIC.DrvIC.OISOn(0, "AF", true);
+            DrvIC.Move(0, "AF", 512);
+            STATIC.DrvIC.OISOn(0, "X", true);
+            STATIC.DrvIC.OISOn(0, "Y", true);
+            Thread.Sleep(100);
+
+            STATIC.fVision.m__G.oCam[0].GrabA(0);
+            fX[1] = STATIC.fVision.MeasureTxTyTz(0, "X", true);
+            fY[1] = STATIC.fVision.MeasureTxTyTz(0, "Y", true);
+
+            PassFails[0].Results[(int)SpecItem.x_HallDecenter].Val = fX[0].cx[0] - fX[1].cx[0];
+            PassFails[0].Results[(int)SpecItem.y_HallDecenter].Val = fY[0].cy[0] - fY[1].cy[0];
+
+         
+            SetResult(0, (int)SpecItem.x_HallDecenter, (int)SpecItem.y_HallDecenter);
+            ShowDataResults(0, "Hall Decenter", (int)SpecItem.x_HallDecenter, (int)SpecItem.y_HallDecenter);
+
+            LEDs_All_On(port, false);
+        }
         public void MakeWaveform(string name)
         {
             for (int k = 0; k < ChannelCnt; k++)
@@ -2642,10 +2784,7 @@ namespace FZ4P
             {
                 switch (name)
                 {
-                    case "AF Scan":
-                    case "AF Scan2":
-                    case "AF Scan3":
-                    case "AF Scan4":
+                    case "AF Scan":               
                         for (int j = ch; j < ch + ChannelCnt; j++)
                         {
                             if (!m_ChannelOn[j]) continue;
@@ -2656,12 +2795,7 @@ namespace FZ4P
                         }
                         Thread.Sleep(Condition.iDrvStepIntervalZ);
                         break;
-                    case "OIS X Scan":
-                    case "OIS X Scan2":
-                    case "OIS X Scan3":
-                    case "OIS X Scan4":
-                    case "OIS X Linearity Comp":
-                    case "OIS X Linearity Comp2":
+                    case "OIS X Scan":                
                         for (int j = ch; j < ch + ChannelCnt; j++)
                         {
                             if (!m_ChannelOn[j]) continue;
@@ -2672,12 +2806,7 @@ namespace FZ4P
                         }
                         Thread.Sleep(Condition.iDrvStepIntervalX);
                         break;
-                    case "OIS Y Scan":
-                    case "OIS Y Scan2":
-                    case "OIS Y Scan3":
-                    case "OIS Y Scan4":
-                    case "OIS Y Linearity Comp":
-                    case "OIS Y Linearity Comp2":
+                    case "OIS Y Scan":              
                         for (int j = ch; j < ch + ChannelCnt; j++)
                         {
                             if (!m_ChannelOn[j]) continue;
@@ -2688,8 +2817,7 @@ namespace FZ4P
                         }
                         Thread.Sleep(Condition.iDrvStepIntervalY);
                         break;
-                    case "OIS Matrix Scan":
-                        break;
+                  
                 }
             }
         }
@@ -2726,11 +2854,13 @@ namespace FZ4P
                                 if (name.Contains("X"))
                                 {
                                     DrvIC.Move(j, "X", Cal.CodeX[framCnt[port]]);
+                                    DrvIC.Move(j, "Y", 2048);
                                 }
                                 else if (name.Contains("Y"))
                                 {
+                                    DrvIC.Move(j, "X", 2048);
                                     DrvIC.Move(j, "Y1", Cal.CodeY1[framCnt[port]]);
-                                    DrvIC.Move(j, "Y2", Cal.CodeY2[framCnt[port]]);
+                                    
                                 }
                                 else if (name.Contains("AF"))
                                 {
@@ -3236,8 +3366,14 @@ namespace FZ4P
                                 Condition.AFLinMaxStep, Condition.AFLinMinStroke, Condition.AFLinMaxStroke, Condition.AFLinMode);
                             PassFails[j].Results[(int)SpecItem.AF_Hysteresis].Val = Cal.CalHysteresis(Cal.CodeZ, Cal.StrokeZ, Condition.AFHysMinRange, Condition.AFHysMaxRange, Condition.AFHysMinStep,
                                 Condition.AFhysMaxStep, Condition.AFHysMinStroke, Condition.AFHysMaxStroke, Condition.AFHysMode);
-                            PassFails[j].Results[(int)SpecItem.AF_MaxCurrent].Val = Cal.CalMaxCurrent(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
-                            PassFails[j].Results[(int)SpecItem.AF_HoldingCurrent].Val = Cal.CalHoldingCurrent(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
+
+
+                            double[] MtoM = Cal.CalCurrent(Cal.CodeZ, Cal.StrokeZ, Cal.Current, Condition.AFCurrMinRange, Condition.AFCurrMaxRange, Condition.AFCurrMinStep, Condition.AFCurrMaxStep,
+                                Condition.AFCurrMinStroke, Condition.AFCurrMaxStroke, Condition.AFCurrMode);
+
+                            PassFails[j].Results[(int)SpecItem.AF_MaxCurrent].Val = MtoM[0]; //Cal.CalMaxCurrent(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.AF_MinCurrent].Val = MtoM[1];
+                            //     PassFails[j].Results[(int)SpecItem.AF_HoldingCurrent].Val = Cal.CalHoldingCurrent(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
                             PassFails[j].Results[(int)SpecItem.AF_CrosstalkX].Val = Cal.CalCrosstalk(Cal.CodeZ, Cal.StrokeX, Condition.iAFCodeRange, Condition.iAFCodeRange);
                             PassFails[j].Results[(int)SpecItem.AF_CrosstalkY].Val = Cal.CalCrosstalk(Cal.CodeZ, Cal.StrokeY, Condition.iAFCodeRange, Condition.iAFCodeRange);
                             PassFails[j].Results[(int)SpecItem.AF_CrosstalkR].Val = Cal.CalCrosstalkR(Cal.CodeZ, Cal.StrokeX, Cal.StrokeY, Condition.iAFCodeRange, Condition.iAFCodeRange);
@@ -3256,8 +3392,12 @@ namespace FZ4P
                                 Condition.XLinMaxStep, Condition.XLinMinStroke, Condition.XLinMaxStroke, Condition.XLinMode);
                             PassFails[j].Results[(int)SpecItem.OISX_Hysteresis].Val = Cal.CalHysteresis(Cal.CodeX, Cal.StrokeX, Condition.XHysMinRange, Condition.XHysMaxRange, Condition.XHysMinStep,
                                 Condition.XHysMaxStep, Condition.XHysMinStroke, Condition.XHysMaxStroke, Condition.XHysMode);
-                            PassFails[j].Results[(int)SpecItem.OISX_MaxCurrent].Val = Cal.CalMaxCurrent(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXStrokeRange);
-                            PassFails[j].Results[(int)SpecItem.OISX_CenteringCurrent].Val = Cal.CalCenterCurrent(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXCodeRange);
+
+                            double[] MtoM = Cal.CalCurrent(Cal.CodeX, Cal.StrokeX, Cal.Current, Condition.XCurrMinRange, Condition.XCurrMaxRange, Condition.XCurrMinStep, Condition.XCurrMaxStep,
+                              Condition.XCurrMinStroke, Condition.XCurrMaxStroke, Condition.XCurrMode);
+                            PassFails[j].Results[(int)SpecItem.OISX_MaxCurrent].Val = MtoM[0]; //Cal.CalMaxCurrent(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.OISX_MinCurrent].Val = MtoM[1];
+                            // PassFails[j].Results[(int)SpecItem.OISX_CenteringCurrent].Val = Cal.CalCenterCurrent(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXCodeRange);
                             PassFails[j].Results[(int)SpecItem.OISX_CrosstalkY].Val = Cal.CalCrosstalk(Cal.CodeX, Cal.StrokeY, Condition.iXCodeRange, Condition.iXCodeRange);
                             PassFails[j].Results[(int)SpecItem.OISX_CrosstalkZ].Val = Cal.CalCrosstalk(Cal.CodeX, Cal.StrokeZ, Condition.iXCodeRange, Condition.iXCodeRange);
                             PassFails[j].Results[(int)SpecItem.OISX_CrosstalkR].Val = Cal.CalCrosstalkR(Cal.CodeX, Cal.StrokeY, Cal.StrokeZ, Condition.iXCodeRange, Condition.iXCodeRange);
@@ -3277,8 +3417,13 @@ namespace FZ4P
                                 Condition.YLinMaxStep, Condition.YLinMinStroke, Condition.YLinMaxStroke, Condition.YLinMode);
                             PassFails[j].Results[(int)SpecItem.OISY_Hysteresis].Val = Cal.CalHysteresis(Cal.CodeY1, Cal.StrokeY, Condition.YHysMinRange, Condition.YHysMaxRange, Condition.YHysMinStep,
                                 Condition.YHysMaxStep, Condition.YHysMinStroke, Condition.YHysMaxStroke, Condition.YHysMode);
-                            PassFails[j].Results[(int)SpecItem.OISY_MaxCurrent].Val = Cal.CalMaxCurrent(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
-                            PassFails[j].Results[(int)SpecItem.OISY_CenteringCurrent].Val = Cal.CalCenterCurrent(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
+                        
+                            double[] MtoM = Cal.CalCurrent(Cal.CodeY1, Cal.StrokeY1, Cal.Current, Condition.YCurrMinRange, Condition.YCurrMaxRange, Condition.YCurrMinStep, Condition.YCurrMaxStep,
+                            Condition.YCurrMinStroke, Condition.YCurrMaxStroke, Condition.YCurrMode);
+
+                            PassFails[j].Results[(int)SpecItem.OISY_MaxCurrent].Val = MtoM[0]; //Cal.CalMaxCurrent(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.OISY_MinCurrent].Val = MtoM[1];
+                            //   PassFails[j].Results[(int)SpecItem.OISY_CenteringCurrent].Val = Cal.CalCenterCurrent(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
                             PassFails[j].Results[(int)SpecItem.OISY_CrosstalkX].Val = Cal.CalCrosstalk(Cal.CodeY1, Cal.StrokeX, Condition.iYStrokeRange, Condition.iYStrokeRange);
                             PassFails[j].Results[(int)SpecItem.OISY_CrosstalkZ].Val = Cal.CalCrosstalk(Cal.CodeY1, Cal.StrokeZ, Condition.iYStrokeRange, Condition.iYStrokeRange);
                             PassFails[j].Results[(int)SpecItem.OISY_CrosstalkR].Val = Cal.CalCrosstalkR(Cal.CodeY1, Cal.StrokeX, Cal.StrokeZ, Condition.iYStrokeRange, Condition.iYStrokeRange);

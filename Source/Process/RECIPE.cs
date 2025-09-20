@@ -205,6 +205,20 @@ namespace FZ4P
         [Condition("CL Aging", "OIS Max", "", "", "-")] public int CLAgingOISMax { get; set; } = 4000;
         [Condition("CL Aging", "Frequency", "", "", "-")] public int CLAgingFreq { get; set; } = 10;
         [Condition("CL Aging", "Count", "", "", "-")] public int CLAgingCount { get; set; } = 10;
+        [Condition("CL Aging", "Mode", "", "", "0:M-m / 1:Rand")] public int CLAgingMode { get; set; } = 0;
+
+
+        [Condition("AF Scan Aging", "AF Min", "", "", "-")] public int AFScanAgingMin { get; set; } = 0;
+        [Condition("AF Scan Aging", "AF Max", "", "", "-")] public int AFScanAgingMax { get; set; } = 4095;    
+        [Condition("AF Scan Aging", "delay", "", "", "-")] public int AFScanAgingDelay { get; set; } = 30;
+        [Condition("AF Scan Aging", "Count", "", "", "-")] public int AFSCanAgingCount { get; set; } = 3;
+        [Condition("AF Scan Aging", "Step", "", "", "-")] public int AFScanAgingStep { get; set; } = 256;
+
+
+        [Condition("AF Pre Driving", "delay", "", "", "-")] public int AFPreDrvDelay { get; set; } = 30;
+        [Condition("AF Pre Driving", "Count", "", "", "-")] public int AFPReDrvCount { get; set; } = 3;
+     
+
 
         [Condition("AF EPA", "POSVT", "", "", "code")] public int AFPOSVT { get; set; } = 256;
         [Condition("AF EPA", "NEGVT", "", "", "code")] public int AFNEGVT { get; set; } = 256;
@@ -287,6 +301,14 @@ namespace FZ4P
         [Condition("AF Hysteresis", "Max Stroke", "", "", "um")] public double AFHysMaxStroke { get; set; } = 310;
         [Condition("AF Hysteresis", "Mode", "", "", "0:CodeRange / 1:Step / 2:um")] public int AFHysMode { get; set; } = 0;
 
+        [Condition("AF Current", "Min Range", "", "", "code")] public int AFCurrMinRange { get; set; } = 200;
+        [Condition("AF Current", "Max Range", "", "", "code")] public int AFCurrMaxRange { get; set; } = 3900;
+        [Condition("AF Current", "Min Step", "", "", "_")] public int AFCurrMinStep { get; set; } = 0;
+        [Condition("AF Current", "Max Step", "", "", "_")] public int AFCurrMaxStep { get; set; } = 0;
+        [Condition("AF Current", "Min Stroke", "", "", "um")] public double AFCurrMinStroke { get; set; } = -310;
+        [Condition("AF Current", "Max Stroke", "", "", "um")] public double AFCurrMaxStroke { get; set; } = 310;
+        [Condition("AF Current", "Mode", "", "", "0:CodeRange / 1:Step / 2:um")] public int AFCurrMode { get; set; } = 0;
+
         [Condition("X Linearity", "Min Range", "", "", "code")] public int XLinMinRange { get; set; } = 648;
         [Condition("X Linearity", "Max Range", "", "", "code")] public int XLinMaxRange { get; set; } = 3448;
         [Condition("X Linearity", "Min Step", "", "", "_")] public int XLinMinStep { get; set; } = 0;
@@ -303,6 +325,14 @@ namespace FZ4P
         [Condition("X Hysteresis", "Max Stroke", "", "", "um")] public double XHysMaxStroke { get; set; } = 310;
         [Condition("X Hysteresis", "Mode", "", "", "0:CodeRange / 1:Step / 2:um")] public int XHysMode { get; set; } = 0;
 
+        [Condition("X Current", "Min Range", "", "", "code")] public int XCurrMinRange { get; set; } = 200;
+        [Condition("X Current", "Max Range", "", "", "code")] public int XCurrMaxRange { get; set; } = 3900;
+        [Condition("X Current", "Min Step", "", "", "_")] public int XCurrMinStep { get; set; } = 0;
+        [Condition("X Current", "Max Step", "", "", "_")] public int XCurrMaxStep { get; set; } = 0;
+        [Condition("X Current", "Min Stroke", "", "", "um")] public double XCurrMinStroke { get; set; } = -310;
+        [Condition("X Current", "Max Stroke", "", "", "um")] public double XCurrMaxStroke { get; set; } = 310;
+        [Condition("X Current", "Mode", "", "", "0:CodeRange / 1:Step / 2:um")] public int XCurrMode { get; set; } = 0;
+
         [Condition("Y Linearity", "Min Range", "", "", "code")] public int YLinMinRange { get; set; } = 648;
         [Condition("Y Linearity", "Max Range", "", "", "code")] public int YLinMaxRange { get; set; } = 3448;
         [Condition("Y Linearity", "Min Step", "", "", "_")] public int YLinMinStep { get; set; } = 0;
@@ -318,6 +348,14 @@ namespace FZ4P
         [Condition("Y Hysteresis", "Min Stroke", "", "", "_")] public double YHysMinStroke { get; set; } = -310;
         [Condition("Y Hysteresis", "Max Stroke", "", "", "_")] public double YHysMaxStroke { get; set; } = 310;
         [Condition("Y Hysteresis", "Mode", "", "", "0:CodeRange / 1:Step / 2:um")] public int YHysMode { get; set; } = 0;
+
+        [Condition("Y Current", "Min Range", "", "", "code")] public int YCurrMinRange { get; set; } = 200;
+        [Condition("Y Current", "Max Range", "", "", "code")] public int YCurrMaxRange { get; set; } = 3900;
+        [Condition("Y Current", "Min Step", "", "", "_")] public int YCurrMinStep { get; set; } = 0;
+        [Condition("Y Current", "Max Step", "", "", "_")] public int YCurrMaxStep { get; set; } = 0;
+        [Condition("Y Current", "Min Stroke", "", "", "um")] public double YCurrMinStroke { get; set; } = -310;
+        [Condition("Y Current", "Max Stroke", "", "", "um")] public double YCurrMaxStroke { get; set; } = 310;
+        [Condition("Y Current", "Mode", "", "", "0:CodeRange / 1:Step / 2:um")] public int YCurrMode { get; set; } = 0;
 
 
         [Condition("I2C", "I2C Clock", "", "", "KHz")] public int iI2Cclock { get; set; } = 400;
@@ -341,6 +379,7 @@ namespace FZ4P
         [Spec("X", "Hysteresis", "um")] OISX_Hysteresis,
         [Spec("X", "Centering Current", "mA")] OISX_CenteringCurrent,
         [Spec("X", "Max Current", "mA")] OISX_MaxCurrent,
+        [Spec("X", "Min Current", "mA")] OISX_MinCurrent,
         [Spec("X", "Crosstalk Y", "um")] OISX_CrosstalkY,
         [Spec("X", "Crosstalk Z", "um")] OISX_CrosstalkZ,
         [Spec("X", "Crosstalk R", "um")] OISX_CrosstalkR,
@@ -354,6 +393,7 @@ namespace FZ4P
         [Spec("Y", "Hysteresis", "um")] OISY_Hysteresis,
         [Spec("Y", "Centering Current", "mA")] OISY_CenteringCurrent,
         [Spec("Y", "Max Current", "mA")] OISY_MaxCurrent,
+        [Spec("Y", "Min Current", "mA")] OISY_MinCurrent,
         [Spec("Y", "Crosstalk X", "um")] OISY_CrosstalkX,
         [Spec("Y", "Crosstalk Z", "um")] OISY_CrosstalkZ,
         [Spec("Y", "Crosstalk R", "um")] OISY_CrosstalkR,
@@ -367,6 +407,7 @@ namespace FZ4P
         [Spec("AF", "Hysteresis", "um")] AF_Hysteresis,
         [Spec("AF", "Holding Currnet", "mA")] AF_HoldingCurrent,
         [Spec("AF", "Max Current", "mA")] AF_MaxCurrent,
+        [Spec("AF", "Min Current", "mA")] AF_MinCurrent,
         [Spec("AF", "Crosstalk X", "um")] AF_CrosstalkX,
         [Spec("AF", "Crosstalk Y", "um")] AF_CrosstalkY,
         [Spec("AF", "Crosstalk R", "um")] AF_CrosstalkR,
@@ -411,7 +452,8 @@ namespace FZ4P
         [Spec("FRA Y2", "Ringing Result", "#")] RingingY2_Result,
         [Spec("FRA Y2", "Ringing Time", "#")] RingingY2_Time,
 
-       
+        [Spec("Hall Decenter", "X Decenter", "um")] x_HallDecenter,
+        [Spec("Hall Decenter", "Y Decenter", "um")] y_HallDecenter,
 
         [Spec("Servo Decenter", "X Decenter", "um")] x_ServoDecenter,
         [Spec("Servo Decenter", "Y Decenter", "um")] y_ServoDecenter,
