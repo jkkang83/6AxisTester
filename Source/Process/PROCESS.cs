@@ -3170,86 +3170,89 @@ namespace FZ4P
                         double centertX = 0;
                         double centertY = 0;
                         double centertZ = 0;
-                        if (Option.FixedCenter)
+
+                        bool isCentered = false;
+                        for (int i = 2; i < fCount; i++)
                         {
-                            int centerPoint = 0;
-                            for (int i = 0; i < fCount; i++)
+                            if (name.Contains("X"))
                             {
-                                if (name.Contains("X"))
+                                if (Cal.CodeX[i] == 2048)
                                 {
-                                    centerPoint = HallParam[j].XHmid;
+                                    centerX = result[i].cx[j];
+                                    centerY = result[i].cy[j];
+                                    centerZ = result[i].cz[j];
+                                    centertX = result[i].tx[j];
+                                    centertY = result[i].ty[j];
+                                    centertZ = result[i].tz[j];
+                                    centerY1 = result[i].cy1[j];
+                                    centerY2 = result[i].cy2[j];
+                                    isCentered = true;
+                                    break;
                                 }
-                                else if (name.Contains("Y"))
-                                {
-                                    centerPoint = HallParam[j].YHmid;
-                                }
-
                             }
-                            centerX = result[centerPoint].cx[j]; centerY = result[centerPoint].cy[j];
-                            centerY1 = result[centerPoint].cy1[j]; centerY2 = result[centerPoint].cy2[j];
-                        }
-                        else
-                        {
-                            bool isCentered = false;
-                            for (int i = 2; i < fCount; i++)
+                            else if (name.Contains("Y"))
                             {
-                                if (name.Contains("X"))
+                                if (Cal.CodeY1[i] == 2048)
                                 {
-                                    if (Cal.CodeX[i] == 2048)
-                                    {
-                                        centerX = result[i].cx[j];
-                                        centerY = result[i].cy[j];
-                                        centerZ = result[i].cz[j];
-                                        centertX = result[i].tx[j];
-                                        centertY = result[i].ty[j];
-                                        centertZ = result[i].tz[j];
-                                        centerY1 = result[i].cy1[j];
-                                        centerY2 = result[i].cy2[j];
-                                        isCentered = true;
-                                        break;
-                                    }
+                                    centerX = result[i].cx[j];
+                                    centerY = result[i].cy[j];
+                                    centerZ = result[i].cz[j];
+                                    centertX = result[i].tx[j];
+                                    centertY = result[i].ty[j];
+                                    centertZ = result[i].tz[j];
+                                    centerY1 = result[i].cy1[j];
+                                    centerY2 = result[i].cy2[j];
+                                    isCentered = true;
+                                    break;
                                 }
-                                else if (name.Contains("Y"))
-                                {
-                                    if (Cal.CodeY1[i] == 2048)
-                                    {
-                                        centerX = result[i].cx[j];
-                                        centerY = result[i].cy[j];
-                                        centerZ = result[i].cz[j];
-                                        centertX = result[i].tx[j];
-                                        centertY = result[i].ty[j];
-                                        centertZ = result[i].tz[j];
-                                        centerY1 = result[i].cy1[j];
-                                        centerY2 = result[i].cy2[j];
-                                        isCentered = true;
-                                        break;
-                                    }
-                                }
-                                else if (name.Contains("AF"))
-                                {
-                                    if (Cal.CodeZ[i] == 2048)
-                                    {
-                                        centerX = result[i].cx[j];
-                                        centerY = result[i].cy[j];
-                                        centerZ = result[i].cz[j];
-                                        centertX = result[i].tx[j];
-                                        centertY = result[i].ty[j];
-                                        centertZ = result[i].tz[j];
-                                        centerY1 = result[i].cy1[j];
-                                        centerY2 = result[i].cy2[j];
-                                        isCentered = true;
-                                        break;
-                                    }
-                                }
-
-
                             }
-                            if (!isCentered)
+                            else if (name.Contains("AF"))
                             {
-                                AddLog(j, string.Format("Center Code Data Failed"));
+                                if (Cal.CodeZ[i] == 2048)
+                                {
+                                    centerX = result[i].cx[j];
+                                    centerY = result[i].cy[j];
+                                    centerZ = result[i].cz[j];
+                                    centertX = result[i].tx[j];
+                                    centertY = result[i].ty[j];
+                                    centertZ = result[i].tz[j];
+                                    centerY1 = result[i].cy1[j];
+                                    centerY2 = result[i].cy2[j];
+                                    isCentered = true;
+                                    break;
+                                }
                             }
+
 
                         }
+                        if (!isCentered)
+                        {
+                            AddLog(j, string.Format("Center Code Data Failed"));
+                        }
+
+                        //if (Option.FixedCenter)
+                        //{
+                        //    int centerPoint = 0;
+                        //    for (int i = 0; i < fCount; i++)
+                        //    {
+                        //        if (name.Contains("X"))
+                        //        {
+                        //            centerPoint = HallParam[j].XHmid;
+                        //        }
+                        //        else if (name.Contains("Y"))
+                        //        {
+                        //            centerPoint = HallParam[j].YHmid;
+                        //        }
+
+                        //    }
+                        //    centerX = result[centerPoint].cx[j]; centerY = result[centerPoint].cy[j];
+                        //    centerY1 = result[centerPoint].cy1[j]; centerY2 = result[centerPoint].cy2[j];
+                        //}
+                        //else
+                        //{
+
+
+                        //}
                         for (int i = 0; i < fCount; i++)
                         {
                             Cal.StrokeX[i] = result[i].cx[j] - centerX;
@@ -3388,9 +3391,9 @@ namespace FZ4P
                             PassFails[j].Results[(int)SpecItem.AF_MaxCurrent].Val = MtoM[0]; //Cal.CalMaxCurrent(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
                             PassFails[j].Results[(int)SpecItem.AF_MinCurrent].Val = MtoM[1];
                             //     PassFails[j].Results[(int)SpecItem.AF_HoldingCurrent].Val = Cal.CalHoldingCurrent(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
-                            //PassFails[j].Results[(int)SpecItem.AF_CrosstalkX].Val = Cal.CalCrosstalk(Cal.CodeZ, Cal.StrokeX, Condition.iAFCodeRange, Condition.iAFCodeRange);
-                            //PassFails[j].Results[(int)SpecItem.AF_CrosstalkY].Val = Cal.CalCrosstalk(Cal.CodeZ, Cal.StrokeY, Condition.iAFCodeRange, Condition.iAFCodeRange);
-                            //PassFails[j].Results[(int)SpecItem.AF_CrosstalkR].Val = Cal.CalCrosstalkR(Cal.CodeZ, Cal.StrokeX, Cal.StrokeY, Condition.iAFCodeRange, Condition.iAFCodeRange);
+                            PassFails[j].Results[(int)SpecItem.AF_CrosstalkX].Val = Cal.CalCrosstalkAF(Cal.CodeZ, Cal.StrokeZ, Cal.StrokeX, Condition.iAFCodeRange, Condition.iAFStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.AF_CrosstalkY].Val = Cal.CalCrosstalkAF(Cal.CodeZ, Cal.StrokeZ, Cal.StrokeY, Condition.iAFCodeRange, Condition.iAFStrokeRange);
+                            PassFails[j].Results[(int)SpecItem.AF_CrosstalkR].Val = Cal.CalCrosstalkR(Cal.CodeZ, Cal.StrokeX, Cal.StrokeY, Condition.iAFCodeRange, Condition.iAFStrokeRange);
                             PassFails[j].Results[(int)SpecItem.AF_Rolling].Val = Cal.CalRolling(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange);
                             PassFails[j].Results[(int)SpecItem.AF_Tilt].Val = Cal.CalTilt(Cal.CodeZ, Cal.TiltX, Cal.TiltY, Condition.TiltMinCode, Condition.TiltMaxCode, Condition.TiltRefCode);
                             SetResult(j, (int)SpecItem.AF_Ratedstroke, (int)SpecItem.AF_Tilt);
@@ -3413,7 +3416,7 @@ namespace FZ4P
                             PassFails[j].Results[(int)SpecItem.OISX_MinCurrent].Val = MtoM[1];
                             // PassFails[j].Results[(int)SpecItem.OISX_CenteringCurrent].Val = Cal.CalCenterCurrent(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXCodeRange);
 
-                            double[] xtalkRes = Cal.CalCrosstalk(Cal.CodeX, Cal.StrokeY, Condition.iXCodeRange, Condition.iXCodeRange);
+                            double[] xtalkRes = Cal.CalCrosstalk(Cal.CodeX, Cal.StrokeX, Cal.StrokeY, Condition.iXCodeRange, Condition.iXStrokeRange);
 
                             PassFails[j].Results[(int)SpecItem.OISX_CrosstalkY].Val = xtalkRes[0];
                             PassFails[j].Results[(int)SpecItem.OISX_CrosstalkY_dB].Val = xtalkRes[1];
@@ -3446,7 +3449,7 @@ namespace FZ4P
                             //   PassFails[j].Results[(int)SpecItem.OISY_CenteringCurrent].Val = Cal.CalCenterCurrent(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
                        //     PassFails[j].Results[(int)SpecItem.OISY_CrosstalkX].Val = Cal.CalCrosstalk(Cal.CodeY1, Cal.StrokeX, Condition.iYStrokeRange, Condition.iYStrokeRange);
 
-                            double[] xtalkRes = Cal.CalCrosstalk(Cal.CodeY1, Cal.StrokeX, Condition.iYCodeRange, Condition.iYCodeRange);
+                            double[] xtalkRes = Cal.CalCrosstalk(Cal.CodeY1, Cal.StrokeY, Cal.StrokeX, Condition.iYCodeRange, Condition.iYCodeRange);
 
                             PassFails[j].Results[(int)SpecItem.OISY_CrosstalkX].Val = xtalkRes[0];
                             PassFails[j].Results[(int)SpecItem.OISY_CrosstalkX_dB].Val = xtalkRes[1];

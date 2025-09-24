@@ -780,19 +780,19 @@ namespace FZ4P
         //    }
         //    return max;
         //}
-        public double[] CalCrosstalk(List<int> code, List<double> stroke, int CodeRange, int StrokeRange)
+        public double[] CalCrosstalk(List<int> code, List<double> Stroke, List<double> CrossStroke, int CodeRange, int StrokeRange)
         {
             double minStroke = 9999;
             double maxStroke = -9999;
 
             for (int i = 0; i < code.Count; i++)
             {
-                if (code[i] >= 2048 - CodeRange && code[i] <= 2048 + CodeRange && stroke[i] >= -StrokeRange && stroke[i] <= StrokeRange)
+                if (code[i] >= 2048 - CodeRange && code[i] <= 2048 + CodeRange && Stroke[i] >= -StrokeRange && Stroke[i] <= StrokeRange)
                 {
-                    if (minStroke > stroke[i])
-                        minStroke = stroke[i];
-                    if (maxStroke < stroke[i])
-                        maxStroke = stroke[i];
+                    if (minStroke > CrossStroke[i])
+                        minStroke = CrossStroke[i];
+                    if (maxStroke < CrossStroke[i])
+                        maxStroke = CrossStroke[i];
                 }
             }
 
@@ -807,6 +807,27 @@ namespace FZ4P
           //  return Math.Abs(maxStroke - minStroke);
 
         }
+
+        public double CalCrosstalkAF(List<int> code, List<double> stroke, List<double> crossstroke, int CodeRange, int StrokeRange)
+        {
+            double minStroke = 9999;
+            double maxStroke = -9999;
+
+            for (int i = 0; i < code.Count; i++)
+            {
+                if (code[i] >= 2048 - CodeRange && code[i] <= 2048 + CodeRange && stroke[i] >= -StrokeRange && stroke[i] <= StrokeRange)
+                {
+                    if (minStroke > crossstroke[i])
+                        minStroke = crossstroke[i];
+                    if (maxStroke < crossstroke[i])
+                        maxStroke = crossstroke[i];
+                }
+            }
+
+            return Math.Abs(maxStroke - minStroke);
+
+        }
+
         public double CalCrosstalkR(List<int> code, List<double> stroke1, List<double> stroke2, int CodeRange, int StrokeRange)
         {
             double minR = 9999;

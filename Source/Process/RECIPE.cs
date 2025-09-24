@@ -145,7 +145,7 @@ namespace FZ4P
 
         [Option("Save Raw Data")] public bool SaveRawData { get; set; }
         [Option("Screen Capture")] public bool ScreenCapture { get; set; }
-        [Option("Fixed Center")] public bool FixedCenter { get; set; }
+  //      [Option("Fixed Center")] public bool FixedCenter { get; set; }
         [Option("Write Result to DriverIC")] public bool WriteResultToDriverIC { get; set; }
         [Option("Safety Sensor Enable")] public bool SafeSensor { get; set; }
         [Option("AF Dir Reverse")] public bool AFDirReverse { get; set; }
