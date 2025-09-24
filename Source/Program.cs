@@ -23,6 +23,9 @@ namespace FZ4P
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
                 Application.Run(new F_Main());
+
+                mutex.ReleaseMutex();
+                System.Diagnostics.Process.GetCurrentProcess().Kill();
             }
             else
             {
