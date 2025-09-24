@@ -217,9 +217,9 @@ namespace FZ4P
 
         [Condition("AF Pre Driving", "delay", "", "", "-")] public int AFPreDrvDelay { get; set; } = 30;
         [Condition("AF Pre Driving", "Count", "", "", "-")] public int AFPReDrvCount { get; set; } = 3;
-     
 
 
+        [Condition("AF EPA", "Target Stroke", "", "", "code")] public int AFEPATarget { get; set; } = 700;
         [Condition("AF EPA", "POSVT", "", "", "code")] public int AFPOSVT { get; set; } = 256;
         [Condition("AF EPA", "NEGVT", "", "", "code")] public int AFNEGVT { get; set; } = 256;
 
@@ -381,8 +381,11 @@ namespace FZ4P
         [Spec("X", "Max Current", "mA")] OISX_MaxCurrent,
         [Spec("X", "Min Current", "mA")] OISX_MinCurrent,
         [Spec("X", "Crosstalk Y", "um")] OISX_CrosstalkY,
-        [Spec("X", "Crosstalk Z", "um")] OISX_CrosstalkZ,
-        [Spec("X", "Crosstalk R", "um")] OISX_CrosstalkR,
+        [Spec("X", "Crosstalk Y dB", "dB")] OISX_CrosstalkY_dB,
+        [Spec("X", "Crosstalk Y P2P", "um")] OISX_CrosstalkY_P2P,
+        [Spec("X", "Crosstalk Y P2P dB", "dB")] OISX_CrosstalkYP2P_dB,
+        //[Spec("X", "Crosstalk Z", "um")] OISX_CrosstalkZ,
+        //[Spec("X", "Crosstalk R", "um")] OISX_CrosstalkR,
         [Spec("X", "Rolling", "min")] OISX_Rolling,
 
         [Spec("Y", "Rated Stroke", "um")] OISY_Ratedstroke,
@@ -395,8 +398,11 @@ namespace FZ4P
         [Spec("Y", "Max Current", "mA")] OISY_MaxCurrent,
         [Spec("Y", "Min Current", "mA")] OISY_MinCurrent,
         [Spec("Y", "Crosstalk X", "um")] OISY_CrosstalkX,
-        [Spec("Y", "Crosstalk Z", "um")] OISY_CrosstalkZ,
-        [Spec("Y", "Crosstalk R", "um")] OISY_CrosstalkR,
+        [Spec("Y", "Crosstalk X dB", "dB")] OISY_CrosstalkX_dB,
+        [Spec("Y", "Crosstalk X P2P", "um")] OISY_CrosstalkX_P2P,
+        [Spec("Y", "Crosstalk X P2P dB", "dB")] OISY_CrosstalkXP2P_dB,
+        //[Spec("Y", "Crosstalk Z", "um")] OISY_CrosstalkZ,
+        //[Spec("Y", "Crosstalk R", "um")] OISY_CrosstalkR,
         [Spec("Y", "Rolling", "min")] OISY_Rolling,
 
         [Spec("AF", "Rated Stroke", "um")] AF_Ratedstroke,

@@ -419,7 +419,7 @@ namespace FZ4P
                     }
                     if (fwdIndex[i].Val1 <= MaxStroke && fwdIndex[i + 1].Val1 >= MaxStroke)
                     {
-                        if (Math.Abs(fwdIndex[i].Val1 - MaxStroke) <= Math.Abs(fwdIndex[i + 1].code - MaxStroke))
+                        if (Math.Abs(fwdIndex[i].Val1 - MaxStroke) <= Math.Abs(fwdIndex[i + 1].Val1 - MaxStroke))
                         { pt.Add(new SPoint { x = fwdIndex[i].code, y = fwdIndex[i].Val1 }); }
                         else { pt.Add(new SPoint { x = fwdIndex[i + 1].code, y = fwdIndex[i + 1].Val1 }); }
                     }
@@ -726,12 +726,20 @@ namespace FZ4P
                         if (max < fwdIndex[i].Val2) { max = fwdIndex[i].Val2; }
                         if (min > fwdIndex[i].Val2) { min = fwdIndex[i].Val2; }
                     }
+                   
+                }
+
+                for (int i = 0; i < bwdIndex.Count; i++)
+                {
                     if (bwdIndex[i].Val1 >= MinStroke && bwdIndex[i].Val1 <= MaxStroke)
                     {
                         if (max < bwdIndex[i].Val2) { max = bwdIndex[i].Val2; }
                         if (min > bwdIndex[i].Val2) { min = bwdIndex[i].Val2; }
                     }
                 }
+
+
+              
             }
             return new double[] { max, min };
         }
@@ -772,7 +780,7 @@ namespace FZ4P
         //    }
         //    return max;
         //}
-        public double CalCrosstalk(List<int> code, List<double> stroke, int CodeRange, int StrokeRange)
+        public double[] CalCrosstalk(List<int> code, List<double> stroke, int CodeRange, int StrokeRange)
         {
             double minStroke = 9999;
             double maxStroke = -9999;
@@ -788,7 +796,15 @@ namespace FZ4P
                 }
             }
 
-            return Math.Abs(maxStroke - minStroke);
+            double crosstalk = Math.Max(Math.Abs(maxStroke), Math.Abs(minStroke));
+            double crosstalkLog = 20 * Math.Log10(StrokeRange * 2 / crosstalk);
+            double crosstalkp2p =  Math.Abs(maxStroke - minStroke);
+            double crosstalkp2plog = 20 * Math.Log(StrokeRange * 2 / crosstalkp2p);
+
+            return new double[4] { crosstalk, crosstalkLog, crosstalkp2p, crosstalkp2plog };
+
+
+          //  return Math.Abs(maxStroke - minStroke);
 
         }
         public double CalCrosstalkR(List<int> code, List<double> stroke1, List<double> stroke2, int CodeRange, int StrokeRange)
