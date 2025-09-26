@@ -11758,57 +11758,63 @@ private void button15_Click(object sender, EventArgs e)
         }
         private void ShowSchematics()
         {
-            if (!File.Exists(mLastSchematicFile))
-                return;
+            try
+            {
+                if (!File.Exists(mLastSchematicFile))
+                    return;
 
-            //Mat tmpImg = Cv2.ImRead(mLastSchematicFile);
-            Mat tmpGray = new Mat(mLastSchematicFile, ImreadModes.Grayscale);
+                //Mat tmpImg = Cv2.ImRead(mLastSchematicFile);
+                Mat tmpGray = new Mat(mLastSchematicFile, ImreadModes.Grayscale);
 
-            //Mat tmpGray = new Mat();
+                //Mat tmpGray = new Mat();
 
-            mSchematicOverlayedImg = new Mat();
-            mSchematicImg = new Mat(tmpGray.Height + 100, tmpGray.Width + 100, MatType.CV_8UC1, Scalar.Black);
+                mSchematicOverlayedImg = new Mat();
+                mSchematicImg = new Mat(tmpGray.Height + 100, tmpGray.Width + 100, MatType.CV_8UC1, Scalar.Black);
 
-            //try
-            //{
-            //    Cv2.CvtColor(tmpImg, tmpGray, ColorConversionCodes.BGR2GRAY);
-            //}
-            //catch (Exception le)
-            //{
-            //    tmpImg.CopyTo(tmpGray);
-            //}
-            mMarkerEffectiveRc = new Rect(50, 50, tmpGray.Width, tmpGray.Height);
+                //try
+                //{
+                //    Cv2.CvtColor(tmpImg, tmpGray, ColorConversionCodes.BGR2GRAY);
+                //}
+                //catch (Exception le)
+                //{
+                //    tmpImg.CopyTo(tmpGray);
+                //}
+                mMarkerEffectiveRc = new Rect(50, 50, tmpGray.Width, tmpGray.Height);
 
-            Mat lSchmatic = mSchematicImg.SubMat(mMarkerEffectiveRc);
-            tmpGray.CopyTo(lSchmatic);
+                Mat lSchmatic = mSchematicImg.SubMat(mMarkerEffectiveRc);
+                tmpGray.CopyTo(lSchmatic);
 
-            Cv2.CvtColor(mSchematicImg, mSchematicOverlayedImg, ColorConversionCodes.GRAY2RGB);
+                Cv2.CvtColor(mSchematicImg, mSchematicOverlayedImg, ColorConversionCodes.GRAY2RGB);
 
-            int x = mSchematicOverlayedImg.Width;
-            int y = mSchematicOverlayedImg.Height;
+                int x = mSchematicOverlayedImg.Width;
+                int y = mSchematicOverlayedImg.Height;
 
 
-            Cv2.PutText(mSchematicOverlayedImg, "N", new OpenCvSharp.Point(x - 20, y / 2 - 8), HersheyFonts.HersheyPlain, 1.2, Scalar.FromRgb(32, 32, 255), 2);
-            Cv2.PutText(mSchematicOverlayedImg, "W", new OpenCvSharp.Point(x / 2 - 8, 19), HersheyFonts.HersheyPlain, 1.2, Scalar.FromRgb(0, 255, 0), 2);
-            Cv2.PutText(mSchematicOverlayedImg, "S", new OpenCvSharp.Point(8, y / 2 - 8), HersheyFonts.HersheyPlain, 1.2, Scalar.FromRgb(255, 32, 32), 2);
-            Cv2.PutText(mSchematicOverlayedImg, "E", new OpenCvSharp.Point(x / 2 - 8, y - 7), HersheyFonts.HersheyPlain, 1.2, Scalar.FromRgb(255, 0, 255), 2);
-            Cv2.PutText(mSchematicOverlayedImg, "tN", new OpenCvSharp.Point(x - 30, 3 * y / 4 - 14), HersheyFonts.HersheyPlain, 1.2, Scalar.FromRgb(32, 32, 255), 2);
-            Cv2.PutText(mSchematicOverlayedImg, "tS", new OpenCvSharp.Point(8, 3 * y / 4 - 14), HersheyFonts.HersheyPlain, 1.2, Scalar.FromRgb(255, 32, 32), 2);
-            Cv2.Line(mSchematicOverlayedImg, 50, y / 2, x - 50, y / 2, Scalar.White, 1, LineTypes.Link4);
-            Cv2.Line(mSchematicOverlayedImg, x / 2, 50, x / 2, y - 50, Scalar.White, 1, LineTypes.Link4);
+                Cv2.PutText(mSchematicOverlayedImg, "N", new OpenCvSharp.Point(x - 20, y / 2 - 8), HersheyFonts.HersheyPlain, 1.2, Scalar.FromRgb(32, 32, 255), 2);
+                Cv2.PutText(mSchematicOverlayedImg, "W", new OpenCvSharp.Point(x / 2 - 8, 19), HersheyFonts.HersheyPlain, 1.2, Scalar.FromRgb(0, 255, 0), 2);
+                Cv2.PutText(mSchematicOverlayedImg, "S", new OpenCvSharp.Point(8, y / 2 - 8), HersheyFonts.HersheyPlain, 1.2, Scalar.FromRgb(255, 32, 32), 2);
+                Cv2.PutText(mSchematicOverlayedImg, "E", new OpenCvSharp.Point(x / 2 - 8, y - 7), HersheyFonts.HersheyPlain, 1.2, Scalar.FromRgb(255, 0, 255), 2);
+                Cv2.PutText(mSchematicOverlayedImg, "tN", new OpenCvSharp.Point(x - 30, 3 * y / 4 - 14), HersheyFonts.HersheyPlain, 1.2, Scalar.FromRgb(32, 32, 255), 2);
+                Cv2.PutText(mSchematicOverlayedImg, "tS", new OpenCvSharp.Point(8, 3 * y / 4 - 14), HersheyFonts.HersheyPlain, 1.2, Scalar.FromRgb(255, 32, 32), 2);
+                Cv2.Line(mSchematicOverlayedImg, 50, y / 2, x - 50, y / 2, Scalar.White, 1, LineTypes.Link4);
+                Cv2.Line(mSchematicOverlayedImg, x / 2, 50, x / 2, y - 50, Scalar.White, 1, LineTypes.Link4);
 
-            Bitmap myImage = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(mSchematicOverlayedImg);
+                Bitmap myImage = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(mSchematicOverlayedImg);
 
-            pictureBox6.Image = myImage;
-            pictureBox6.SizeMode = PictureBoxSizeMode.StretchImage;
-            mbSchematicPicture = true;
+                pictureBox6.Image = myImage;
+                pictureBox6.SizeMode = PictureBoxSizeMode.StretchImage;
+                mbSchematicPicture = true;
 
-            mMarkerEffectiveRc.X = (int)(mMarkerEffectiveRc.X * (double)pictureBox6.Width / (double)mSchematicImg.Width);
-            mMarkerEffectiveRc.Y = (int)(mMarkerEffectiveRc.Y * (double)pictureBox6.Height / (double)mSchematicImg.Height);
-            mMarkerEffectiveRc.Width = (int)(mMarkerEffectiveRc.Width * (double)pictureBox6.Width / (double)mSchematicImg.Width);
-            mMarkerEffectiveRc.Height = (int)(mMarkerEffectiveRc.Height * (double)pictureBox6.Height / (double)mSchematicImg.Height);
+                mMarkerEffectiveRc.X = (int)(mMarkerEffectiveRc.X * (double)pictureBox6.Width / (double)mSchematicImg.Width);
+                mMarkerEffectiveRc.Y = (int)(mMarkerEffectiveRc.Y * (double)pictureBox6.Height / (double)mSchematicImg.Height);
+                mMarkerEffectiveRc.Width = (int)(mMarkerEffectiveRc.Width * (double)pictureBox6.Width / (double)mSchematicImg.Width);
+                mMarkerEffectiveRc.Height = (int)(mMarkerEffectiveRc.Height * (double)pictureBox6.Height / (double)mSchematicImg.Height);
 
-            SetInitialMarkerPosition(pictureBox6.Width, pictureBox6.Height);
+                SetInitialMarkerPosition(pictureBox6.Width, pictureBox6.Height);
+            }
+            catch(Exception ex)
+            { MessageBox.Show(ex.ToString()); }
+        
         }
         private void button21_Click(object sender, EventArgs e)
         {

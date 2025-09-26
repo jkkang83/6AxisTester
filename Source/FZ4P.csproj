@@ -7,7 +7,7 @@
     <ProjectGuid>{26750997-64CE-4A91-988A-CBA18CC2A08B}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>FZ4P</RootNamespace>
-    <AssemblyName>FZ4P</AssemblyName>
+    <AssemblyName>6AxisTester</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
