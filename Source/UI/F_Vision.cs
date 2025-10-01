@@ -34,7 +34,7 @@ using static alglib;
 using static FAutoLearn.FAutoLearn;
 using static FAutoLearn.FZMath;
 using static MotorizedStage_SK_PI.F_Motion_SK_PI;
-using static S2System.Vision.MILlib;
+using static S2System.Vision.MILlib; 
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 using Axis = MotorizedStage_SK_PI.Axis;
 using Button = System.Windows.Forms.Button;
@@ -12105,7 +12105,7 @@ namespace FZ4P
                             lstr += "TXtoTZ\t" + TXtoTZab[1].ToString("E5") + "\r\n";
                         }
 
-
+                       
 
                         // ScaleNTheta 업데이트
                         if (isRemote)

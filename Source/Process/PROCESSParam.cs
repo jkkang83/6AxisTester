@@ -313,14 +313,14 @@ namespace FZ4P
             Name = name;
         }
         // mode 0 : code, mode 1 : stroke
-        public double CalFwdStoke(List<int> code, List<double> stroke)
+        public double CalFwdStoke(List<int> code, List<double> stroke, int centerCode)
         {
             double min = 9999;
             double max = -9999;
 
             for (int i = 2; i < code.Count / 2; i++)
             {
-                if (code[i] >= 2048)
+                if (code[i] >= centerCode)
                 {
                     if (min > stroke[i])
                         min = stroke[i];
@@ -330,13 +330,13 @@ namespace FZ4P
             }
             return Math.Abs(max - min);
         }
-        public double CalBwdStoke(List<int> code, List<double> stroke)
+        public double CalBwdStoke(List<int> code, List<double> stroke, int centerCode)
         {
             double min = 9999;
             double max = -9999;
             for (int i = code.Count / 2; i < code.Count; i++)
             {
-                if (code[i] <= 2048)
+                if (code[i] <= centerCode)
                 {
                     if (min > stroke[i])
                         min = stroke[i];
@@ -347,13 +347,13 @@ namespace FZ4P
 
             return Math.Abs(max - min);
         }
-        public double CalSensitivity(List<int> code, List<double> stroke, int CodeRange, int StrokeRange)
+        public double CalSensitivity(List<int> code, List<double> stroke, int CodeRange, int StrokeRange, int centerCode)
         {
             List<SPoint> point = new List<SPoint>();
 
             for (int i = 2; i < code.Count; i++)
             {
-                if (code[i] >= 2048 - CodeRange && code[i] <= 2048 + CodeRange && stroke[i] >= -StrokeRange && stroke[i] <= StrokeRange)
+                if (code[i] >= centerCode - CodeRange && code[i] <= centerCode + CodeRange && stroke[i] >= -StrokeRange && stroke[i] <= StrokeRange)
                 {
                     point.Add(new SPoint() { x = code[i], y = stroke[i] });
                 }
@@ -634,14 +634,14 @@ namespace FZ4P
                 return max;
         }
 
-        public double CalResolution(List<int> code, List<double> stroke, int CodeRange, int StrokeRange)
+        public double CalResolution(List<int> code, List<double> stroke, int CodeRange, int StrokeRange, int centerCode)
         {
             double Resolution = 0;
             double max = -9999;
 
             for (int i = 0; i < code.Count; i++)
             {
-                if (code[i] >= 2048 - CodeRange && code[i] <= 2048 + CodeRange && stroke[i] >= -StrokeRange && stroke[i] <= StrokeRange)
+                if (code[i] >= centerCode - CodeRange && code[i] <= centerCode + CodeRange && stroke[i] >= -StrokeRange && stroke[i] <= StrokeRange)
                 {
                     if (i > 1 && (code[i] != code[i - 1]))
                         Resolution = (stroke[i] - stroke[i - 1]) / (code[i] - code[i - 1]);
@@ -780,14 +780,14 @@ namespace FZ4P
         //    }
         //    return max;
         //}
-        public double[] CalCrosstalk(List<int> code, List<double> Stroke, List<double> CrossStroke, int CodeRange, int StrokeRange)
+        public double[] CalCrosstalk(List<int> code, List<double> Stroke, List<double> CrossStroke, int CodeRange, int StrokeRange, int centerCode)
         {
             double minStroke = 9999;
             double maxStroke = -9999;
 
             for (int i = 0; i < code.Count; i++)
             {
-                if (code[i] >= 2048 - CodeRange && code[i] <= 2048 + CodeRange && Stroke[i] >= -StrokeRange && Stroke[i] <= StrokeRange)
+                if (code[i] >= centerCode - CodeRange && code[i] <= centerCode + CodeRange && Stroke[i] >= -StrokeRange && Stroke[i] <= StrokeRange)
                 {
                     if (minStroke > CrossStroke[i])
                         minStroke = CrossStroke[i];
@@ -808,14 +808,14 @@ namespace FZ4P
 
         }
 
-        public double CalCrosstalkAF(List<int> code, List<double> stroke, List<double> crossstroke, int CodeRange, int StrokeRange)
+        public double CalCrosstalkAF(List<int> code, List<double> stroke, List<double> crossstroke, int CodeRange, int StrokeRange, int centerCode)
         {
             double minStroke = 9999;
             double maxStroke = -9999;
 
             for (int i = 0; i < code.Count; i++)
             {
-                if (code[i] >= 2048 - CodeRange && code[i] <= 2048 + CodeRange && stroke[i] >= -StrokeRange && stroke[i] <= StrokeRange)
+                if (code[i] >= centerCode - CodeRange && code[i] <= centerCode + CodeRange && stroke[i] >= -StrokeRange && stroke[i] <= StrokeRange)
                 {
                     if (minStroke > crossstroke[i])
                         minStroke = crossstroke[i];
@@ -828,14 +828,14 @@ namespace FZ4P
 
         }
 
-        public double CalCrosstalkR(List<int> code, List<double> stroke1, List<double> stroke2, int CodeRange, int StrokeRange)
+        public double CalCrosstalkR(List<int> code, List<double> stroke1, List<double> stroke2, int CodeRange, int StrokeRange, int centerCode)
         {
             double minR = 9999;
             double maxR = -9999;
 
             for (int i = 0; i < code.Count; i++)
             {
-                if (code[i] >= 2048 - CodeRange && code[i] <= 2048 + CodeRange)
+                if (code[i] >= centerCode - CodeRange && code[i] <= centerCode + CodeRange)
                 {
                     double news = Math.Sqrt( Math.Pow( stroke1[i], 2) + Math.Pow(stroke2[i], 2));
                     if (minR > news)
@@ -848,14 +848,14 @@ namespace FZ4P
             return Math.Abs(maxR - minR);
 
         }
-        public double CalRolling(List<int> x, List<double> y, int CodeRange, int StrokeRange)
+        public double CalRolling(List<int> x, List<double> y, int CodeRange, int StrokeRange, int centerCode)
         {
             double minTilt = 9999;
             double maxTilt = -9999;
 
             for (int i = 2; i < x.Count; i++)
             {
-                if (x[i] >= 2048 - CodeRange && x[i] <= 2048 + CodeRange && y[i] >= -StrokeRange && y[i] <= StrokeRange)
+                if (x[i] >= centerCode - CodeRange && x[i] <= centerCode + CodeRange && y[i] >= -StrokeRange && y[i] <= StrokeRange)
                 {
                     if (minTilt > TiltZ[i])
                         minTilt = TiltZ[i];
@@ -932,6 +932,26 @@ namespace FZ4P
             return Math.Max(MaxFwdT, MaxBwdT);
 
         }
+
+        public double CalSlopeForOISShift(List<int> x, List<double> y)
+        {
+
+            List<SPoint> pt = new List<SPoint>();
+
+            for (int i = 0; i < x.Count; i++)
+            {
+                if (i >= 15 && i <= 20)
+                {
+                    pt.Add(new SPoint { x = x[i], y = y[i] });
+
+                }
+            }
+            SLine res = Line_fitting(pt);
+            return res.dSlope;
+
+        }
+
+
     }
     public class ChartList
     {

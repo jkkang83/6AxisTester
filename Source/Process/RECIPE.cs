@@ -463,6 +463,12 @@ namespace FZ4P
 
         [Spec("Servo Decenter", "X Decenter", "um")] x_ServoDecenter,
         [Spec("Servo Decenter", "Y Decenter", "um")] y_ServoDecenter,
+
+        [Spec("OIS Shift", "X Shift", "um")] x_Shift,
+        [Spec("OIS Shift", "Y Shift", "um")] y_Shift,
+        [Spec("OIS Shift", "X Limit", "code")] x_Limit,
+        [Spec("OIS Shift", "Y Limit", "code")] y_Limit,
+
         Length,
 
     };

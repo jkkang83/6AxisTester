@@ -32,13 +32,15 @@ namespace FZ4P
             XOriginAddr = 0x0A;
             Y1OriginAddr = 0x0E;
             Y2OriginAddr = 0x4E;
-
+            
+            //1C33
             //AFSlaveAddr = 0x0C;
             //XSlaveAddr = 0x0E;
             //Y1SlaveAddr = 0x4E;
             //Y2SlaveAddr = 0x6C;
             //FRA_Addr = 0x14;
 
+            //SU2810
             AFSlaveAddr = 0x28;
             XSlaveAddr = 0x70;
             Y1SlaveAddr = 0x30;
@@ -92,8 +94,12 @@ namespace FZ4P
 
                 if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x02, new byte[] { data })) return;
                 Process.AddLog(ch, string.Format("Write Mem : 0x{0:X2} Y1Data : 0x{1:X2}", 0x02, data));
-                //if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x02, new byte[] { data })) return;
-                //Process.AddLog(ch, string.Format("Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0x02, data));
+
+                if(Y2SlaveAddr != 0x00)
+                {
+                    if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x02, new byte[] { data })) return;
+                    Process.AddLog(ch, string.Format("Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0x02, data));
+                }
             }
             else if(name.Contains("ALL"))
             {
@@ -111,7 +117,9 @@ namespace FZ4P
                 if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0x02, new byte[] { data })) return;
                 if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0x02, new byte[] { data })) return;
                 if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x02, new byte[] { data })) return;
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x02, new byte[] { data })) return;
+                if (Y2SlaveAddr != 0x00) { if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x02, new byte[] { data })) return; }
+                
+                
             }
         }
         public bool Store(int ch, int Mode = 0)
@@ -264,7 +272,9 @@ namespace FZ4P
             Dln.ReadArray(ch, Y2SlaveAddr, 1, 0x03, rDdata);
             Process.AddLog(ch, string.Format("Read 0x03 :  0x{0:X2}", rDdata[0]));
             bool bChange = true;
-            if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0xAE, new byte[] { 0x3B }))  bChange = false;         
+
+            if (Y2SlaveAddr != 0x00) { if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0xAE, new byte[] { 0x3B })) bChange = false; }
+         
             if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0xAE, new byte[] { 0x3B })) bChange = false;           
             if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0xAE, new byte[] { 0x3B })) bChange = false;
             if(bChange)
@@ -273,22 +283,26 @@ namespace FZ4P
                 return true;
             }
 
-            //Y2 Change ==
-            if (!Dln.WriteArray(ch, Y2OriginAddr, 1, 0xAE, new byte[] { 0x3B })) return false;
-            Process.AddLog(ch, string.Format("Setting Mode = Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0xAE, 0x3B));
+            if (Y2SlaveAddr != 0x00)
+            {
+                //Y2 Change ==
+                if (!Dln.WriteArray(ch, Y2OriginAddr, 1, 0xAE, new byte[] { 0x3B })) return false;
+                Process.AddLog(ch, string.Format("Setting Mode = Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0xAE, 0x3B));
 
-            if (!Dln.WriteArray(ch, Y2OriginAddr, 1, 0x0B, new byte[] { 0x04 })) return false; // 02 : Normal, 04 : Reverse
-            Process.AddLog(ch, string.Format("Set Pin Mode = Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0x0B, 0x04));
+                if (!Dln.WriteArray(ch, Y2OriginAddr, 1, 0x0B, new byte[] { 0x04 })) return false; // 02 : Normal, 04 : Reverse
+                Process.AddLog(ch, string.Format("Set Pin Mode = Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0x0B, 0x04));
 
-            if (!Dln.WriteArray(ch, Y2OriginAddr, 1, 0x0A, new byte[] { 0x30 })) return false; // Setting Slave Address
-            Process.AddLog(ch, string.Format("Setting Slave Address = Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0x0A, 0x30));
+                if (!Dln.WriteArray(ch, Y2OriginAddr, 1, 0x0A, new byte[] { 0x30 })) return false; // Setting Slave Address
+                Process.AddLog(ch, string.Format("Setting Slave Address = Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0x0A, 0x30));
 
-            Thread.Sleep(200); 
+                Thread.Sleep(200);
 
-            if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x03, new byte[] { 0x01 })) return false; // Store Memory
+                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x03, new byte[] { 0x01 })) return false; // Store Memory
 
-            Process.AddLog(ch, string.Format("Store Memory = Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x03, 0x01));
-            Process.AddLog(ch, string.Format("Y2 SlaveAddr Change FinIsh."));
+                Process.AddLog(ch, string.Format("Store Memory = Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x03, 0x01));
+                Process.AddLog(ch, string.Format("Y2 SlaveAddr Change FinIsh."));
+            }
+       
 
             //Y1 Change ==
             if (!Dln.WriteArray(ch, Y1OriginAddr, 1, 0xAE, new byte[] { 0x3B })) return false;
@@ -334,7 +348,7 @@ namespace FZ4P
             // Y2 : 6C -> 4E
 
             bool bChange = true;
-            if (!Dln.WriteArray(ch, Y2OriginAddr, 1, 0xAE, new byte[] { 0x3B })) bChange = false;
+            if (Y2SlaveAddr != 0x00) { if (!Dln.WriteArray(ch, Y2OriginAddr, 1, 0xAE, new byte[] { 0x3B })) bChange = false; } 
             if (!Dln.WriteArray(ch, Y1OriginAddr, 1, 0xAE, new byte[] { 0x3B })) bChange = false;
             if (!Dln.WriteArray(ch, XOriginAddr, 1, 0xAE, new byte[] { 0x3B })) bChange = false;
             if (bChange)
@@ -378,398 +392,33 @@ namespace FZ4P
             Process.AddLog(ch, string.Format("Store Memory = Write Mem : 0x{0:X2} Y1Data : 0x{1:X2}", 0x03, 0x01));
             Process.AddLog(ch, string.Format("Y1 SlaveAddr Restore FinIsh."));
 
-            //Y2 Restore ==
-            if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0xAE, new byte[] { 0x3B })) return false;
-            Process.AddLog(ch, string.Format("Setting Mode = Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0xAE, 0x3B));
 
-            if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x0B, new byte[] { 0x04 })) return false; // 02 : Normal, 04 : Reverse
-            Process.AddLog(ch, string.Format("Set Pin Mode = Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0x0B, 0x04));
+            if(Y2SlaveAddr != 0x00)
+            {
+                //Y2 Restore ==
+                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0xAE, new byte[] { 0x3B })) return false;
+                Process.AddLog(ch, string.Format("Setting Mode = Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0xAE, 0x3B));
 
-            if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x0A, new byte[] { 0x00 })) return false; // Setting Slave Address
-            Process.AddLog(ch, string.Format("Setting Slave Address = Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0x0A, 0x00));
+                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x0B, new byte[] { 0x04 })) return false; // 02 : Normal, 04 : Reverse
+                Process.AddLog(ch, string.Format("Set Pin Mode = Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0x0B, 0x04));
 
-            Thread.Sleep(200);
+                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x0A, new byte[] { 0x00 })) return false; // Setting Slave Address
+                Process.AddLog(ch, string.Format("Setting Slave Address = Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0x0A, 0x00));
 
-            if (!Dln.WriteArray(ch, Y2OriginAddr, 1, 0x03, new byte[] { 0x01 })) return false; // Store Memory
+                Thread.Sleep(200);
 
-            Process.AddLog(ch, string.Format("Store Memory = Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x03, 0x01));
-            Process.AddLog(ch, string.Format("Y2 SlaveAddr Restore FinIsh."));
+                if (!Dln.WriteArray(ch, Y2OriginAddr, 1, 0x03, new byte[] { 0x01 })) return false; // Store Memory
+
+                Process.AddLog(ch, string.Format("Store Memory = Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x03, 0x01));
+                Process.AddLog(ch, string.Format("Y2 SlaveAddr Restore FinIsh."));
+            }
+
+          
 
             return true;
         }
      
-        public bool PIDSetting(int ch, List<object[]> param, int Mode = 0)
-        {
-            byte[] rDdata;
-            if (Mode == 0) //AF
-            {
-                Process.AddLog(ch, string.Format("AF PID Initial Start == "));
-
-                Process.AddLog(ch, string.Format("Go to Standby mode == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x02, 0x40));
-                if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0x02, new byte[] { 0x40 })) return false;
-                Thread.Sleep(3);
-
-                Process.AddLog(ch, string.Format("Change to Setting mode == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0xAE, 0x3B));
-                if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0xAE, new byte[] { 0x3B })) return false;
-
-                Process.AddLog(ch, string.Format("EPA enable & I2C SET setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x0B, 0xC2));
-
-                if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0x0B, new byte[] { 0xC2 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x0A, 0x01));
-                if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0x0A, new byte[] { 0x01 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x08, 0xE1));
-                if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0x08, new byte[] { 0xE1 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x09, 0x84));
-                if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0x09, new byte[] { 0x84 })) return false;
-
-                for (int i = 0; i < param.Count; i++)
-                {
-                    int addr = Convert.ToUInt16(param[i][0].ToString(), 16);
-                    int data = Convert.ToUInt16(param[i][1].ToString(), 16);
-                    Thread.Sleep(10);
-                    if (!Dln.WriteArray(ch, AFSlaveAddr, 1, addr, new byte[] { (byte)data })) return false;
-                    Thread.Sleep(10);
-                    Process.AddLog(ch, string.Format("Write Pid , Mem : 0x{0:X2} Data : 0x{1:X2}", addr, data));
-                }
-
-                Process.AddLog(ch, string.Format("Function register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0xCA, 0x46));
-                if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0xCA, new byte[] { 0x46 })) return false;
-
-                Process.AddLog(ch, string.Format("Function register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0xCB, 0xD8));
-                if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0xCB, new byte[] { 0xD8 })) return false;
-
-                Process.AddLog(ch, string.Format("Function register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0xCC, 0x40));
-                if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0xCC, new byte[] { 0x40 })) return false;
-
-                Process.AddLog(ch, string.Format("Function register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0xCD, 0x32));
-                if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0xCD, new byte[] { 0x32 })) return false;
-
-                Process.AddLog(ch, string.Format("Function register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0xCE, 0x00));
-                if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0xCE, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Function register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x3D, 0x10));
-                if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0x3D, new byte[] { 0x10 })) return false;
-
-                Process.AddLog(ch, string.Format("Temp. setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0xC9, 0x00));
-                if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0xC9, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Temp. setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x02, 0x80));
-                if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0x02, new byte[] { 0x80 })) return false;
-                Thread.Sleep(50);
-
-                rDdata = new byte[1];
-                Dln.ReadArray(ch, AFSlaveAddr, 1, 0x70, rDdata);
-                Process.AddLog(ch, string.Format("Temp. setting == Read Mem : 0x{0:X2} Data : 0x{1:X2}", 0x70, rDdata[0]));
-
-                Process.AddLog(ch, string.Format("Temp. setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0xC9, rDdata[0]));
-                if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0xC9, new byte[] { rDdata[0] })) return false;
-
-                Process.AddLog(ch, string.Format("Calibration instruction == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x0C, 0x62));
-                if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0x0C, new byte[] { 0x62 })) return false;
-
-                Process.AddLog(ch, string.Format("Calibration instruction == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x02, 0x18));
-                if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0x02, new byte[] { 0x18 })) return false;
-                Thread.Sleep(150);
-
-                rDdata = new byte[1];
-                Dln.ReadArray(ch, AFSlaveAddr, 1, 0x19, rDdata);
-                Process.AddLog(ch, string.Format("Calibration instruction == Read Mem : 0x{0:X2} Data : 0x{1:X2}", 0x19, rDdata[0]));
-
-                byte[] calData = new byte[1];
-                calData[0] = (byte)(((byte)((byte)(rDdata[0] - 0x80) * 2)) + 0x80);
-                if (calData[0] > 0x80 || calData[0] < 0xB0)
-                {
-                    Process.AddLog(ch, string.Format("Calibration instruction == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x19, calData[0]));
-                    if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0x19, new byte[] { calData[0] })) return false;
-                }
-                else
-                {
-                    Process.AddLog(ch, string.Format("Calibration instruction is net between 80h and B0h"));
-                    return false;
-                }
-
-                Process.AddLog(ch, string.Format("Product ID == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0xF3, 0x1E));
-                if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0xF3, new byte[] { 0x1E })) return false;
-                Thread.Sleep(22);
-
-                if (!Store(ch, 0)) return false;
-
-                Process.AddLog(ch, string.Format("Release Setting mode == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0xAE, 0x00));
-                if (!Dln.WriteArray(ch, AFSlaveAddr, 1, 0xAE, new byte[] { 0x00 })) return false;
-            }
-            else if (Mode == 1) // X
-            {
-                Process.AddLog(ch, string.Format("X PID Initial Start == "));
-
-                Process.AddLog(ch, string.Format("Change to Setting mode == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0xAE, 0x3B));
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0xAE, new byte[] { 0x3B })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x0B, 0x12));
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0x0B, new byte[] { 0x12 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x0A, 0x05));
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0x0A, new byte[] { 0x05 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x0C, 0x62));
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0x0C, new byte[] { 0x62 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x0D, 0xC0));
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0x0D, new byte[] { 0xC0 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x08, 0x01));
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0x08, new byte[] { 0x01 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x09, 0x00));
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0x09, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x34, 0x00));
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0x34, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x35, 0xC1));
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0x35, new byte[] { 0xC1 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x0E, 0x00));
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0x0E, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x0F, 0x00));
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0x0F, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x24, 0x00));
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0x24, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x25, 0xFF));
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0x25, new byte[] { 0xFF })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x2F, 0x00));
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0x2F, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x30, 0x00));
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0x30, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x31, 0x00));
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0x31, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x3E, 0x9A));
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0x3E, new byte[] { 0x9A })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0xFE, 0x0A));
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0xFE, new byte[] { 0x0A })) return false;
-                Thread.Sleep(20);
-
-                for (int i = 0; i < param.Count; i++)
-                {
-                    int addr = Convert.ToUInt16(param[i][0].ToString(), 16);
-                    int data = Convert.ToUInt16(param[i][1].ToString(), 16);
-                    Thread.Sleep(10);
-                    if (!Dln.WriteArray(ch, XSlaveAddr, 1, addr, new byte[] { (byte)data })) return false;
-                    Thread.Sleep(10);
-                    Process.AddLog(ch, string.Format("Write Pid , Mem : 0x{0:X2} Data : 0x{1:X2}", addr, data));
-                }
-
-                Process.AddLog(ch, string.Format("Calibration instruction == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x02, 0x09));
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0x02, new byte[] { 0x09 })) return false;
-                Thread.Sleep(150);
-
-                rDdata = new byte[1];
-                Dln.ReadArray(ch, XSlaveAddr, 1, 0x19, rDdata);
-                Process.AddLog(ch, string.Format("Calibration instruction == Read Mem : 0x{0:X2} Data : 0x{1:X2}", 0x19, rDdata[0]));
-
-                int wData = (int)(rDdata[0] * 0.8);
-
-                Process.AddLog(ch, string.Format("Calibration instruction == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x19, wData));
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0x02, new byte[] { (byte)(rDdata[0] * 0.8) })) return false;
-
-                Dln.ReadArray(ch, XSlaveAddr, 1, 0x04, rDdata);
-                Process.AddLog(ch, string.Format("Calibration instruction == Read Mem : 0x{0:X2} Data : 0x{1:X2}", 0x04, rDdata[0]));
-
-                Dln.ReadArray(ch, XSlaveAddr, 1, 0x06, rDdata);
-                Process.AddLog(ch, string.Format("Calibration instruction == Read Mem : 0x{0:X2} Data : 0x{1:X2}", 0x06, rDdata[0]));
-
-                if (!Store(ch, 1)) return false;
-
-                Process.AddLog(ch, string.Format("Release Setting mode == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0xAE, 0x00));
-                if (!Dln.WriteArray(ch, XSlaveAddr, 1, 0xAE, new byte[] { 0x00 })) return false;
-
-            }
-            else // Y
-            {
-                Process.AddLog(ch, string.Format("Y1 PID Initial Start == "));
-
-                Process.AddLog(ch, string.Format("Change to Setting mode == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0xAE, 0x3B));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0xAE, new byte[] { 0x3B })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x0B, 0x14));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x0B, new byte[] { 0x14 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x0A, 0x06));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x0A, new byte[] { 0x06 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x0C, 0x62));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x0C, new byte[] { 0x62 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x0D, 0xC0));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x0D, new byte[] { 0xC0 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x08, 0x01));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x08, new byte[] { 0x01 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x09, 0x00));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x09, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x34, 0x00));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x34, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x35, 0xC1));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x35, new byte[] { 0xC1 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x0E, 0x00));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x0E, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x0F, 0x00));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x0F, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x24, 0x00));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x24, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x25, 0x00));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x25, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x2F, 0x00));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x2F, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x30, 0x00));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x30, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x31, 0x00));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x31, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x3E, 0x9A));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x3E, new byte[] { 0x9A })) return false;
-
-                for (int i = 0; i < param.Count; i++)
-                {
-                    int addr = Convert.ToUInt16(param[i][0].ToString(), 16);
-                    int data = Convert.ToUInt16(param[i][1].ToString(), 16);
-                    Thread.Sleep(10);
-                    if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, addr, new byte[] { (byte)data })) return false;
-                    Thread.Sleep(10);
-                    Process.AddLog(ch, string.Format("Write Pid , Mem : 0x{0:X2} Data : 0x{1:X2}", addr, data));
-                }
-
-                if (!Store(ch, 2)) return false;
-
-                Process.AddLog(ch, string.Format("Release Setting mode == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0xAE, 0x00));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0xAE, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Y2 PID Initial Start == "));
-
-                Process.AddLog(ch, string.Format("Change to Setting mode == Write Mem : 0x{0:X2} Y1Data : 0x{1:X2}", 0xAE, 0x3B));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0xAE, new byte[] { 0x3B })) return false;
-
-                Process.AddLog(ch, string.Format("Change to Setting mode == Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0xAE, 0x3B));
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0xAE, new byte[] { 0x3B })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x0B, 0x04));
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x0B, new byte[] { 0x04 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x0A, 0x36));
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x0A, new byte[] { 0x36 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x0C, 0x62));
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x0C, new byte[] { 0x62 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x0D, 0xC0));
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x0D, new byte[] { 0xC0 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x08, 0x01));
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x08, new byte[] { 0x01 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x09, 0x00));
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x09, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x34, 0x00));
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x34, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("SETTING register setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x35, 0xC1));
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x35, new byte[] { 0xC1 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x0E, 0x00));
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x0E, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x0F, 0x00));
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x0F, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x24, 0x00));
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x24, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x25, 0x00));
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x25, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x2F, 0x00));
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x2F, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x30, 0x00));
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x30, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x31, 0x00));
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x31, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Register initial setting == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x3E, 0x9A));
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x3E, new byte[] { 0x9A })) return false;
-
-                for (int i = 0; i < param.Count; i++)
-                {
-                    int addr = Convert.ToUInt16(param[i][0].ToString(), 16);
-                    int data = Convert.ToUInt16(param[i][2].ToString(), 16);
-                    Thread.Sleep(10);
-                    if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, addr, new byte[] { (byte)data })) return false;
-                    Thread.Sleep(10);
-                    Process.AddLog(ch, string.Format("Write Pid , Mem : 0x{0:X2} Data : 0x{1:X2}", addr, data));
-                }
-
-                Process.AddLog(ch, string.Format("Calibration instruction == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x02, 0x01));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x02, new byte[] { 0x01 })) return false;
-
-                Process.AddLog(ch, string.Format("Calibration instruction == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x02, 0x01));
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x02, new byte[] { 0x01 })) return false;
-
-                Thread.Sleep(150);
-
-                Process.AddLog(ch, string.Format("Calibration instruction == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x19, 0x00));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0x19, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Calibration instruction == Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x02, 0x00));
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0x19, new byte[] { 0x00 })) return false;
-
-                rDdata = new byte[1];
-
-                Dln.ReadArray(ch, Y1SlaveAddr, 1, 0x04, rDdata);
-                Process.AddLog(ch, string.Format("Calibration instruction == Read Mem : 0x{0:X2} Y1Data : 0x{1:X2}", 0x04, rDdata[0]));
-
-                Dln.ReadArray(ch, Y1SlaveAddr, 1, 0x06, rDdata);
-                Process.AddLog(ch, string.Format("Calibration instruction == Read Mem : 0x{0:X2} Y1Data : 0x{1:X2}", 0x06, rDdata[0]));
-
-                Dln.ReadArray(ch, Y2SlaveAddr, 1, 0x04, rDdata);
-                Process.AddLog(ch, string.Format("Calibration instruction == Read Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0x04, rDdata[0]));
-
-                Dln.ReadArray(ch, Y2SlaveAddr, 1, 0x06, rDdata);
-                Process.AddLog(ch, string.Format("Calibration instruction == Read Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0x06, rDdata[0]));
-
-                if (!Store(ch, 2)) return false;
-
-                Process.AddLog(ch, string.Format("Release Setting mode == Write Mem : 0x{0:X2} Y1Data : 0x{1:X2}", 0xAE, 0x00));
-                if (!Dln.WriteArray(ch, Y1SlaveAddr, 1, 0xAE, new byte[] { 0x00 })) return false;
-
-                Process.AddLog(ch, string.Format("Release Setting mode == Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0xAE, 0x00));
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 1, 0xAE, new byte[] { 0x00 })) return false;
-            }
-            return true;
-        }
     
-      
         public bool Move(int ch, string name, int pos, bool openLoop = false)
         {
             int data = pos << 4;
@@ -789,12 +438,18 @@ namespace FZ4P
             }
             else if (name.Contains("Y2"))
             {
-               // if (!Dln.WriteArray(ch, Y2SlaveAddr, 0x00, buff)) return false;
+                if(Y2SlaveAddr != 0x00)
+                {
+                    if (!Dln.WriteArray(ch, Y2SlaveAddr, 0x00, buff)) return false;
+                }
             }
             else if (name.Contains("Y"))
             {
                 if (!Dln.WriteArray(ch, Y1SlaveAddr, 0x00, buff)) return false;
-                // if (!Dln.WriteArray(ch, Y2SlaveAddr, 0x00, buff)) return false;
+                if (Y2SlaveAddr != 0x00)
+                {
+                    if (!Dln.WriteArray(ch, Y2SlaveAddr, 0x00, buff)) return false;
+                }
             }
             return true;
         }
@@ -817,12 +472,18 @@ namespace FZ4P
             }
             else if (name.Contains("Y2"))
             {
-               // if (!Dln.WriteArray(ch, Y2SlaveAddr, 0x00, buff)) return false;
+                if (Y2SlaveAddr != 0x00)
+                {
+                    if (!Dln.WriteArray(ch, Y2SlaveAddr, 0x00, buff)) return false;
+                }
             }
             else if (name.Contains("Y"))
             {
                 if (!Dln.WriteArray(ch, Y1SlaveAddr, 0x00, buff)) return false;
-             //  if (!Dln.WriteArray(ch, Y2SlaveAddr, 0x00, buff)) return false;
+                if (Y2SlaveAddr != 0x00)
+                {
+                    if (!Dln.WriteArray(ch, Y2SlaveAddr, 0x00, buff)) return false;
+                }
             }
             return true;
         }
@@ -832,10 +493,11 @@ namespace FZ4P
             if (name.Contains("AF")) addr = AFSlaveAddr;
             else if (name.Contains("X")) addr = XSlaveAddr;
             else if (name.Contains("Y")) addr = Y1SlaveAddr;
-         //   else if (name.Contains("Y2")) addr = Y2SlaveAddr;
+            else if (name.Contains("Y2")) addr = Y2SlaveAddr;
 
             byte[] data = new byte[2];
-            Dln.ReadArray(ch, addr, 0x84, data);
+            if(Y2SlaveAddr != 0x00)
+                Dln.ReadArray(ch, addr, 0x84, data);
             return ((data[0] << 8) + data[1]) >> 4;
         }
         public int ReadHall_Openloop(int ch, string name)
@@ -844,10 +506,11 @@ namespace FZ4P
             if (name.Contains("AF")) addr = AFSlaveAddr;
             else if (name.Contains("X")) addr = XSlaveAddr;
             else if (name.Contains("Y")) addr = Y1SlaveAddr;
-          //  else if (name.Contains("Y2")) addr = Y2SlaveAddr;
+            else if (name.Contains("Y2")) addr = Y2SlaveAddr;
 
             byte[] data = new byte[2];
-            Dln.ReadArray(ch, addr, 0x80, data);
+            if (Y2SlaveAddr != 0x00)
+                Dln.ReadArray(ch, addr, 0x84, data);
             return ((data[0] << 8) + data[1]) >> 4;
         }
         public int ReadHall_13bit(int ch, string name)
@@ -859,7 +522,8 @@ namespace FZ4P
             else if (name.Contains("Y2")) addr = Y2SlaveAddr;
 
             byte[] data = new byte[2];
-            Dln.ReadArray(ch, addr, 0x84, data);
+            if (Y2SlaveAddr != 0x00)
+                Dln.ReadArray(ch, addr, 0x84, data);
             return ((data[0] << 8) + data[1]) >> 3;
         }
         public bool FRA_Single(int ch, string name, int amp, int mode ,List<double> freq, ref List<double> gain, ref List<double> phase)
@@ -929,12 +593,12 @@ namespace FZ4P
                 {
                     if (mode == 0)
                     {
-                        if (gain[i] * gain[i - 1] <= 0) { Process.AddLog(ch, "Zero Cross Detected."); break; }
+                        if (gain[i] * gain[i - 1] <= 0 && gain[i - 1] < 0) { Process.AddLog(ch, "Zero Cross Detected."); break; }
 
                     }
                     else if(mode == 1)
                     {
-                        if (phase[i] * phase[i - 1] <= 0) { Process.AddLog(ch, "Zero Cross Detected."); break; }
+                        if (phase[i] * phase[i - 1] <= 0 && phase[i - 1] < 0) { Process.AddLog(ch, "Zero Cross Detected."); break; }
                     }
                 }
             }
@@ -1265,7 +929,7 @@ namespace FZ4P
 
             return true;
         }
-        private bool FRAModeDisable(int ch)
+        public bool FRAModeDisable(int ch)
         {
             Process.AddLog(ch, string.Format("FRA Mode Disable"));
             if (!Dln.WriteArray(ch, FRA_Addr, 1, 0xA8, new byte[] { 0x00 })) return false;
