@@ -255,8 +255,7 @@ namespace FZ4P
                 }
             }
             return true;
-        }
-    
+        }   
         public bool ChangeSlaveAddr(int ch)
         {
             // Y2 : 4E -> 6C
@@ -417,8 +416,7 @@ namespace FZ4P
 
             return true;
         }
-     
-    
+        
         public bool Move(int ch, string name, int pos, bool openLoop = false)
         {
             int data = pos << 4;
@@ -492,7 +490,7 @@ namespace FZ4P
             int addr = 0x00;
             if (name.Contains("AF")) addr = AFSlaveAddr;
             else if (name.Contains("X")) addr = XSlaveAddr;
-            else if (name.Contains("Y")) addr = Y1SlaveAddr;
+            else if (name.Contains("Y1")) addr = Y1SlaveAddr;
             else if (name.Contains("Y2")) addr = Y2SlaveAddr;
 
             byte[] data = new byte[2];
@@ -500,19 +498,7 @@ namespace FZ4P
                 Dln.ReadArray(ch, addr, 0x84, data);
             return ((data[0] << 8) + data[1]) >> 4;
         }
-        public int ReadHall_Openloop(int ch, string name)
-        {
-            int addr = 0x00;
-            if (name.Contains("AF")) addr = AFSlaveAddr;
-            else if (name.Contains("X")) addr = XSlaveAddr;
-            else if (name.Contains("Y")) addr = Y1SlaveAddr;
-            else if (name.Contains("Y2")) addr = Y2SlaveAddr;
-
-            byte[] data = new byte[2];
-            if (Y2SlaveAddr != 0x00)
-                Dln.ReadArray(ch, addr, 0x84, data);
-            return ((data[0] << 8) + data[1]) >> 4;
-        }
+        
         public int ReadHall_13bit(int ch, string name)
         {
             int addr = 0x00;

@@ -3000,8 +3000,8 @@ namespace FZ4P
                 Thread.Sleep(100);
                 for (int j = 0; j < 6; j++)
                 {
-                    tmphallX[j] = DrvIC.ReadHall_Openloop(ch, "X");
-                    tmphallY[j] = DrvIC.ReadHall_Openloop(ch, "Y");
+                    tmphallX[j] = DrvIC.ReadHall(ch, "X");
+                    tmphallY[j] = DrvIC.ReadHall(ch, "Y");
                     hallX[i] += tmphallX[j];
                     hallY[i] += tmphallY[j];
                 }
