@@ -676,6 +676,9 @@ namespace FZ4P
                 IsRun[0] = true;
                 while (true)
                 {
+                    ClearChart();
+                    foreach (var l in ViewLog) l.Clear();
+
                     Task tasks = null;
                     tasks = Task.Factory.StartNew(() => LoadTestUnload(0));
                     Task.WaitAll(tasks);
@@ -1174,8 +1177,12 @@ namespace FZ4P
                         {
                             Cal.HallX[framCnt[port]] = DrvIC.ReadHall(j, "X");
                             Cal.HallY1[framCnt[port]] = DrvIC.ReadHall(j, "Y1");
-                            // Cal.HallY2[framCnt[port]] = DrvIC.ReadHall(j, "Y2");
-                            Cal.HallZ[framCnt[port]] = DrvIC.ReadHall(j, "AF");
+                            if(DrvIC.Y2SlaveAddr != 0x00) Cal.HallY2[framCnt[port]] = DrvIC.ReadHall(j, "Y2");
+
+
+
+
+                                Cal.HallZ[framCnt[port]] = DrvIC.ReadHall(j, "AF");
                             //Get Hall
                             if (name.Contains("X"))
                             {
