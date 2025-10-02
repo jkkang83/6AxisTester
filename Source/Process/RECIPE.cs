@@ -245,16 +245,27 @@ namespace FZ4P
 
 
         [Condition("PM", "Loop", "", "", "#")] public int iFRAloop { get; set; } = 1;
-        [Condition("PM", "Step", "", "", "Hz")] public int iFRAstep { get; set; } = 5;
+        [Condition("PM", "Step", "", "", "%")] public int iFRAstep { get; set; } = 5;
         [Condition("PM", "AF Chirp from", "", "", "Hz")] public int iAFChirpFrom { get; set; } = 250;
         [Condition("PM", "AF Chirp to", "", "", "Hz")] public int iAFChirpTo { get; set; } = 100;
         [Condition("PM", "AF Drv Amp", "", "", "mV")] public double iAFAmplitude { get; set; } = 75;
         [Condition("PM", "X Chirp from", "", "", "Hz")] public int iXChirpFrom { get; set; } = 250;
         [Condition("PM", "X Chirp to", "", "", "Hz")] public int iXChirpTo { get; set; } = 100;
-        [Condition("PM", "X Drv Amp", "", "", "mV")] public double iXAmplitude { get; set; } = 75;
+        [Condition("PM", "X Drv Amp", "", "", "mV")] public int iXAmplitude { get; set; } = 75;
         [Condition("PM", "Y Chirp from", "", "", "Hz")] public int iYChirpFrom { get; set; } = 250;
         [Condition("PM", "Y Chirp to", "", "", "Hz")] public int iYChirpTo { get; set; } = 100;
-        [Condition("PM", "Y Drv Amp", "", "", "mV")] public double iYAmplitude { get; set; } = 75;
+        [Condition("PM", "Y Drv Amp", "", "", "mV")] public int iYAmplitude { get; set; } = 75;
+
+       
+        [Condition("High PM", "Step", "", "", "%")] public int iHighFRAstep { get; set; } = 5;    
+        [Condition("High PM", "X Chirp from", "", "", "Hz")] public int iHighXChirpFrom { get; set; } = 250;
+        [Condition("High PM", "X Chirp to", "", "", "Hz")] public int iHighXChirpTo { get; set; } = 100;
+        [Condition("High PM", "X Drv Amp", "", "", "mV")] public int iHighXAmplitude { get; set; } = 75;
+        [Condition("High PM", "Y Chirp from", "", "", "Hz")] public int iHighYChirpFrom { get; set; } = 250;
+        [Condition("High PM", "Y Chirp to", "", "", "Hz")] public int iHighYChirpTo { get; set; } = 100;
+        [Condition("High PM", "Y Drv Amp", "", "", "mV")] public int iHighYAmplitude { get; set; } = 75;
+
+
 
         [Condition("GM", "Loop", "", "", "#")] public int iGainLoop { get; set; } = 1;
         [Condition("GM", "Step", "", "", "Hz")] public int iGainStep { get; set; } = 5;
@@ -267,6 +278,7 @@ namespace FZ4P
 
         [Condition("LG @ 10Hz", "X Amp", "", "", "mV")] public double iLoppgainXAmp { get; set; } = 60;
         [Condition("LG @ 10Hz", "Y Amp", "", "", "mV")] public double iLoppgainYAmp { get; set; } = 60;
+
 
         [Condition("Sine Wave", "SIN THD", "", "", "code")] public int SIN_THD { get; set; } = 150;
         [Condition("Sine Wave", "SIN CNT ERR", "", "", "cnt")] public int SIN_CNT_ERR { get; set; } = 1;
@@ -433,6 +445,8 @@ namespace FZ4P
 
         [Spec("FRA X", "PM Frequency", "Hz")] FRAX_PMFreq,
         [Spec("FRA X", "Phase Margin", "deg")] FRAX_PhaseMargin,
+        [Spec("FRA X", "PM Frequency High", "Hz")] FRAX_PMFreq_High,
+        [Spec("FRA X", "Phase Margin High", "deg")] FRAX_PhaseMargin_High,
         [Spec("FRA X", "Gain @ 10Hz", "db")] FRAX_Gain10Hz,
         [Spec("FRA X", "Gain Margin", "db")] FRAX_GainMargin,
         [Spec("FRA X", "Sinewave Result", "#")] SineWaveX_Result,
@@ -442,6 +456,8 @@ namespace FZ4P
 
         [Spec("FRA Y1", "PM Frequency", "Hz")] FRAY1_PMFreq,
         [Spec("FRA Y1", "Phase Margin", "deg")] FRAY1_PhaseMargin,
+        [Spec("FRA Y1", "PM Frequency High", "Hz")] FRAY1_PMFreq_High,
+        [Spec("FRA Y1", "Phase Margin High", "deg")] FRAY1_PhaseMargin_High,
         [Spec("FRA Y1", "Gain @ 10Hz", "db")] FRAY1_Gain10Hz,
         [Spec("FRA Y1", "Gain Margin", "db")] FRAY1_GainMargin,
         [Spec("FRA Y1", "Sinewave Result", "#")] SineWaveY1_Result,
@@ -451,6 +467,8 @@ namespace FZ4P
 
         [Spec("FRA Y2", "PM Frequency", "Hz")] FRAY2_PMFreq,
         [Spec("FRA Y2", "Phase Margin", "deg")] FRAY2_PhaseMargin,
+        [Spec("FRA Y2", "PM Frequency High", "Hz")] FRAY2_PMFreq_High,
+        [Spec("FRA Y2", "Phase Margin High", "deg")] FRAY2_PhaseMargin_High,
         [Spec("FRA Y2", "Gain @ 10Hz", "db")] FRAY2_Gain10Hz,
         [Spec("FRA Y2", "Gain Margin", "db")] FRAY2_GainMargin,
         [Spec("FRA Y2", "Sinewave Result", "#")] SineWaveY2_Result,

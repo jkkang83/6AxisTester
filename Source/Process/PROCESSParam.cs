@@ -780,14 +780,14 @@ namespace FZ4P
         //    }
         //    return max;
         //}
-        public double[] CalCrosstalk(List<int> code, List<double> Stroke, List<double> CrossStroke, int CodeRange, int StrokeRange, int centerCode)
+        public double[] CalCrosstalk(List<int> code, List<double> Stroke, List<double> CrossStroke, int CodeRange, int StrokeRange, int CenterCode)
         {
             double minStroke = 9999;
             double maxStroke = -9999;
 
             for (int i = 0; i < code.Count; i++)
             {
-                if (code[i] >= centerCode - CodeRange && code[i] <= centerCode + CodeRange && Stroke[i] >= -StrokeRange && Stroke[i] <= StrokeRange)
+                if (code[i] >= CenterCode - CodeRange && code[i] <= CenterCode + CodeRange && Stroke[i] >= -StrokeRange && Stroke[i] <= StrokeRange)
                 {
                     if (minStroke > CrossStroke[i])
                         minStroke = CrossStroke[i];
@@ -796,15 +796,20 @@ namespace FZ4P
                 }
             }
 
-            double crosstalk = Math.Max(Math.Abs(maxStroke), Math.Abs(minStroke));
-            double crosstalkLog = 20 * Math.Log10(StrokeRange * 2 / crosstalk);
-            double crosstalkp2p =  Math.Abs(maxStroke - minStroke);
-            double crosstalkp2plog = 20 * Math.Log(StrokeRange * 2 / crosstalkp2p);
+            double crosstalk = 0;
+            if (Math.Abs(maxStroke) >= Math.Abs(minStroke))
+                crosstalk = maxStroke;
+            else if (Math.Abs(maxStroke) < Math.Abs(minStroke))
+                crosstalk = minStroke;
+
+            double crosstalkLog = 20 * Math.Log10(StrokeRange * 2 / Math.Abs(crosstalk));
+            double crosstalkp2p = Math.Abs(maxStroke - minStroke);
+            double crosstalkp2plog = 20 * Math.Log10(StrokeRange * 2 / crosstalkp2p);
 
             return new double[4] { crosstalk, crosstalkLog, crosstalkp2p, crosstalkp2plog };
 
 
-          //  return Math.Abs(maxStroke - minStroke);
+            //  return Math.Abs(maxStroke - minStroke);
 
         }
 
@@ -864,7 +869,7 @@ namespace FZ4P
                 }
             }
 
-            return Math.Abs(maxTilt - minTilt);
+            return Math.Abs(maxTilt - minTilt) / 60.0;
 
         }
         public double CalTilt(List<int> x, List<double> TiltX, List<double> TiltY ,int CodeMin, int CodeMax, int RefCode)

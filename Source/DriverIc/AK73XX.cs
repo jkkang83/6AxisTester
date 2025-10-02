@@ -32,20 +32,20 @@ namespace FZ4P
             XOriginAddr = 0x0A;
             Y1OriginAddr = 0x0E;
             Y2OriginAddr = 0x4E;
-            
+
             //1C33
-            //AFSlaveAddr = 0x0C;
-            //XSlaveAddr = 0x0E;
-            //Y1SlaveAddr = 0x4E;
-            //Y2SlaveAddr = 0x6C;
-            //FRA_Addr = 0x14;
+            AFSlaveAddr = 0x0C;
+            XSlaveAddr = 0x0E;
+            Y1SlaveAddr = 0x4E;
+            Y2SlaveAddr = 0x6C;
+            FRA_Addr = 0x14;
 
             //SU2810
-            AFSlaveAddr = 0x28;
-            XSlaveAddr = 0x70;
-            Y1SlaveAddr = 0x30;
-            Y2SlaveAddr = 0x00;
-            FRA_Addr = 0x14;
+            //AFSlaveAddr = 0x28;
+            //XSlaveAddr = 0x70;
+            //Y1SlaveAddr = 0x30;
+            //Y2SlaveAddr = 0x00;
+            //FRA_Addr = 0x14;
         }
         public void OISOn(int ch, string name, bool isOn)
         {
@@ -415,8 +415,7 @@ namespace FZ4P
           
 
             return true;
-        }
-        
+        }        
         public bool Move(int ch, string name, int pos, bool openLoop = false)
         {
             int data = pos << 4;
@@ -512,20 +511,22 @@ namespace FZ4P
                 Dln.ReadArray(ch, addr, 0x84, data);
             return ((data[0] << 8) + data[1]) >> 3;
         }
-        public bool FRA_Single(int ch, string name, int amp, int mode ,List<double> freq, ref List<double> gain, ref List<double> phase)
+
+
+        public bool FRA_Single(int ch, string name, int amp, int mode, List<double> freq, ref List<double> gain, ref List<double> phase)
         {
             int addr;
             int sAddr;
             string axis;
             if (name.Contains("X"))
             {
-                addr = 0xE0;
+                addr = 0x1C;
                 sAddr = XSlaveAddr;
                 axis = "X";
             }
-            else if(name.Contains("Y1"))
+            else if (name.Contains("Y1"))
             {
-                addr = 0x60;
+                addr = 0x9C;
                 sAddr = Y1SlaveAddr;
                 axis = "Y1";
             }
@@ -537,7 +538,7 @@ namespace FZ4P
             }
             else if (name.Contains("AF"))
             {
-                addr = 0x50;
+                addr = 0x18;
                 sAddr = AFSlaveAddr;
                 axis = "AF";
             }
@@ -573,25 +574,113 @@ namespace FZ4P
                 if (!Set_Freq(ch, (int)freq[i])) return false;
 
                 gain.Add(Get_Gain(ch));
+
                 phase.Add(Get_Phase(ch));
+
                 Process.AddLog(ch, string.Format("{0} FRA Freq : {1} gain : {2:0.00} phase : {3:0.00}", axis, freq[i], gain[i], phase[i]));
-                if(i > 0)
+
+                if (i > 0)
                 {
                     if (mode == 0)
                     {
                         if (gain[i] * gain[i - 1] <= 0 && gain[i - 1] < 0) { Process.AddLog(ch, "Zero Cross Detected."); break; }
 
                     }
-                    else if(mode == 1)
+                    else if (mode == 1)
                     {
                         if (phase[i] * phase[i - 1] <= 0 && phase[i - 1] < 0) { Process.AddLog(ch, "Zero Cross Detected."); break; }
                     }
                 }
+
             }
+
             if (!FRAModeDisable(ch)) return false;
-            
+
             return true;
         }
+
+
+
+        //public bool FRA_Single(int ch, string name, int amp, int mode ,List<double> freq, ref List<double> gain, ref List<double> phase)
+        //{
+        //    int addr;
+        //    int sAddr;
+        //    string axis;
+        //    if (name.Contains("X"))
+        //    {
+        //        addr = 0xE0;
+        //        sAddr = XSlaveAddr;
+        //        axis = "X";
+        //    }
+        //    else if(name.Contains("Y1"))
+        //    {
+        //        addr = 0x60;
+        //        sAddr = Y1SlaveAddr;
+        //        axis = "Y1";
+        //    }
+        //    else if (name.Contains("Y2"))
+        //    {
+        //        addr = 0xD8;
+        //        sAddr = Y2SlaveAddr;
+        //        axis = "Y2";
+        //    }
+        //    else if (name.Contains("AF"))
+        //    {
+        //        addr = 0x50;
+        //        sAddr = AFSlaveAddr;
+        //        axis = "AF";
+        //    }
+        //    else
+        //        return false;
+
+        //    SetSlaveAddr(ch, addr);
+
+        //    byte[] data = new byte[1];
+
+        //    if (!Dln.WriteArray(ch, sAddr, 1, 0x02, new byte[] { 0x40 })) return false;
+        //    Thread.Sleep(10);
+        //    // Process.AddLog(ch, string.Format("Setting Mode = Write Mem : 0x{0:X2} {1}Data : 0x{2:X2}", 0xAE, axis, 0x3B));
+
+        //    if (!Dln.WriteArray(ch, sAddr, 1, 0xAE, new byte[] { 0x3B })) return false;
+        //    Process.AddLog(ch, string.Format("Setting Mode = Write Mem : 0x{0:X2} {1}Data : 0x{2:X2}", 0xAE, axis, 0x3B));
+
+        //    Dln.ReadArray(ch, sAddr, 1, 0x4B, data);
+        //    Process.AddLog(ch, string.Format("Read Mem : 0x{0:X2} Data : 0x{1:X2}", 0x4C, data[0]));
+
+
+        //    if ((data[0] & 8) == 8)
+        //    {
+        //        if (!FRAModeDisable(ch)) return false;
+        //    }
+
+        //    if (!FRAModeEnable(ch, sAddr)) return false;
+
+        //    if (!Set_Amp(ch, amp)) return false;
+
+        //    for (int i = 0; i < freq.Count; i++)
+        //    {
+        //        if (!Set_Freq(ch, (int)freq[i])) return false;
+
+        //        gain.Add(Get_Gain(ch));
+        //        phase.Add(Get_Phase(ch));
+        //        Process.AddLog(ch, string.Format("{0} FRA Freq : {1} gain : {2:0.00} phase : {3:0.00}", axis, freq[i], gain[i], phase[i]));
+        //        if(i > 0)
+        //        {
+        //            if (mode == 0)
+        //            {
+        //                if (gain[i] * gain[i - 1] <= 0 && gain[i - 1] < 0) { Process.AddLog(ch, "Zero Cross Detected."); break; }
+
+        //            }
+        //            else if(mode == 1)
+        //            {
+        //                if (phase[i] * phase[i - 1] <= 0 && phase[i - 1] < 0) { Process.AddLog(ch, "Zero Cross Detected."); break; }
+        //            }
+        //        }
+        //    }
+        //    if (!FRAModeDisable(ch)) return false;
+
+        //    return true;
+        //}
         public bool Sine_Wave_Test(int ch, string name, int mode, int SIN_THD, int CNT_ERR, int SIN_FREQ, int SIN_AMP, int SIN_CYCL, ref List<int> result)
         {
             byte addr = 0x1C;
