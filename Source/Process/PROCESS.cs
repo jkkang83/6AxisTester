@@ -676,6 +676,9 @@ namespace FZ4P
                 IsRun[0] = true;
                 while (true)
                 {
+                    ClearChart();
+                    foreach (var l in ViewLog) l.Clear();
+
                     Task tasks = null;
                     tasks = Task.Factory.StartNew(() => LoadTestUnload(0));
                     Task.WaitAll(tasks);
@@ -3620,8 +3623,17 @@ namespace FZ4P
             else
             {
                 double phaseRes = 0, freqRes = 0;
-                phaseRes = ((gain[phaseIndex + 1] * phase[phaseIndex]) - (gain[phaseIndex] * phase[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]);
-                freqRes = (int)(((gain[phaseIndex + 1] * freq[phaseIndex]) - (gain[phaseIndex] * freq[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]));
+             
+                if(phaseIndex == gain.Count - 1)
+                {
+                    phaseRes = phase[phaseIndex];
+                    freqRes = freq[phaseIndex];
+                }
+                else
+                {
+                    phaseRes = ((gain[phaseIndex + 1] * phase[phaseIndex]) - (gain[phaseIndex] * phase[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]);
+                    freqRes = (int)(((gain[phaseIndex + 1] * freq[phaseIndex]) - (gain[phaseIndex] * freq[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]));
+                }
 
                 AddLog(ch, string.Format("FRA X Freq = {0} PM = {1}",
                 PassFails[ch].Results[(int)SpecItem.FRAX_PMFreq].Val = freqRes, PassFails[ch].Results[(int)SpecItem.FRAX_PhaseMargin].Val = phaseRes));
@@ -3670,8 +3682,17 @@ namespace FZ4P
             else
             {
                 double phaseRes = 0, freqRes = 0;
-                phaseRes = ((gain[phaseIndex + 1] * phase[phaseIndex]) - (gain[phaseIndex] * phase[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]);
-                freqRes = (int)(((gain[phaseIndex + 1] * freq[phaseIndex]) - (gain[phaseIndex] * freq[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]));
+                if (phaseIndex == gain.Count - 1)
+                {
+                    phaseRes = phase[phaseIndex];
+                    freqRes = freq[phaseIndex];
+                }
+                else
+                {
+                    phaseRes = ((gain[phaseIndex + 1] * phase[phaseIndex]) - (gain[phaseIndex] * phase[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]);
+                    freqRes = (int)(((gain[phaseIndex + 1] * freq[phaseIndex]) - (gain[phaseIndex] * freq[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]));
+                }
+
 
 
                 AddLog(ch, string.Format("FRA Y1 Freq = {0} PM = {1}",
@@ -3720,9 +3741,16 @@ namespace FZ4P
             else
             {
                 double phaseRes = 0, freqRes = 0;
-                phaseRes = ((gain[phaseIndex + 1] * phase[phaseIndex]) - (gain[phaseIndex] * phase[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]);
-                freqRes = (int)(((gain[phaseIndex + 1] * freq[phaseIndex]) - (gain[phaseIndex] * freq[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]));
-
+                if (phaseIndex == gain.Count - 1)
+                {
+                    phaseRes = phase[phaseIndex];
+                    freqRes = freq[phaseIndex];
+                }
+                else
+                {
+                    phaseRes = ((gain[phaseIndex + 1] * phase[phaseIndex]) - (gain[phaseIndex] * phase[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]);
+                    freqRes = (int)(((gain[phaseIndex + 1] * freq[phaseIndex]) - (gain[phaseIndex] * freq[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]));
+                }
 
                 AddLog(ch, string.Format("FRA Y2 Freq = {0} PM = {1}",
                       PassFails[ch].Results[(int)SpecItem.FRAY2_PMFreq].Val = freqRes, PassFails[ch].Results[(int)SpecItem.FRAY2_PhaseMargin].Val = phaseRes));
@@ -3772,8 +3800,16 @@ namespace FZ4P
             else
             {
                 double phaseRes = 0, freqRes = 0;
-                phaseRes = ((gain[phaseIndex + 1] * phase[phaseIndex]) - (gain[phaseIndex] * phase[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]);
-                freqRes = (int)(((gain[phaseIndex + 1] * freq[phaseIndex]) - (gain[phaseIndex] * freq[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]));
+                if (phaseIndex == gain.Count - 1)
+                {
+                    phaseRes = phase[phaseIndex];
+                    freqRes = freq[phaseIndex];
+                }
+                else
+                {
+                    phaseRes = ((gain[phaseIndex + 1] * phase[phaseIndex]) - (gain[phaseIndex] * phase[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]);
+                    freqRes = (int)(((gain[phaseIndex + 1] * freq[phaseIndex]) - (gain[phaseIndex] * freq[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]));
+                }
 
                 AddLog(ch, string.Format("FRA X Freq = {0} PM = {1}",
                 PassFails[ch].Results[(int)SpecItem.FRAX_PMFreq_High].Val = freqRes, PassFails[ch].Results[(int)SpecItem.FRAX_PhaseMargin_High].Val = phaseRes));
@@ -3822,8 +3858,16 @@ namespace FZ4P
             else
             {
                 double phaseRes = 0, freqRes = 0;
-                phaseRes = ((gain[phaseIndex + 1] * phase[phaseIndex]) - (gain[phaseIndex] * phase[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]);
-                freqRes = (int)(((gain[phaseIndex + 1] * freq[phaseIndex]) - (gain[phaseIndex] * freq[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]));
+                if (phaseIndex == gain.Count - 1)
+                {
+                    phaseRes = phase[phaseIndex];
+                    freqRes = freq[phaseIndex];
+                }
+                else
+                {
+                    phaseRes = ((gain[phaseIndex + 1] * phase[phaseIndex]) - (gain[phaseIndex] * phase[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]);
+                    freqRes = (int)(((gain[phaseIndex + 1] * freq[phaseIndex]) - (gain[phaseIndex] * freq[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]));
+                }
 
 
                 AddLog(ch, string.Format("FRA Y1 Freq = {0} PM = {1}",
@@ -3872,10 +3916,16 @@ namespace FZ4P
             else
             {
                 double phaseRes = 0, freqRes = 0;
-                phaseRes = ((gain[phaseIndex + 1] * phase[phaseIndex]) - (gain[phaseIndex] * phase[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]);
-                freqRes = (int)(((gain[phaseIndex + 1] * freq[phaseIndex]) - (gain[phaseIndex] * freq[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]));
-
-
+                if (phaseIndex == gain.Count - 1)
+                {
+                    phaseRes = phase[phaseIndex];
+                    freqRes = freq[phaseIndex];
+                }
+                else
+                {
+                    phaseRes = ((gain[phaseIndex + 1] * phase[phaseIndex]) - (gain[phaseIndex] * phase[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]);
+                    freqRes = (int)(((gain[phaseIndex + 1] * freq[phaseIndex]) - (gain[phaseIndex] * freq[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]));
+                }
                 AddLog(ch, string.Format("FRA Y2 Freq = {0} PM = {1}",
                       PassFails[ch].Results[(int)SpecItem.FRAY2_PMFreq_High].Val = freqRes, PassFails[ch].Results[(int)SpecItem.FRAY2_PhaseMargin_High].Val = phaseRes));
 
@@ -3921,10 +3971,16 @@ namespace FZ4P
             else
             {
                 double phaseRes = 0, freqRes = 0;
-                phaseRes = ((gain[phaseIndex + 1] * phase[phaseIndex]) - (gain[phaseIndex] * phase[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]);
-                freqRes = (int)(((gain[phaseIndex + 1] * freq[phaseIndex]) - (gain[phaseIndex] * freq[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]));
-
-
+                if (phaseIndex == gain.Count - 1)
+                {
+                    phaseRes = phase[phaseIndex];
+                    freqRes = freq[phaseIndex];
+                }
+                else
+                {
+                    phaseRes = ((gain[phaseIndex + 1] * phase[phaseIndex]) - (gain[phaseIndex] * phase[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]);
+                    freqRes = (int)(((gain[phaseIndex + 1] * freq[phaseIndex]) - (gain[phaseIndex] * freq[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]));
+                }
                 AddLog(ch, string.Format("FRA AF Freq = {0} PM = {1}",
                       PassFails[ch].Results[(int)SpecItem.FRAAF_PMFreq].Val = freqRes, PassFails[ch].Results[(int)SpecItem.FRAAF_PhaseMargin].Val = phaseRes));
 
@@ -3955,7 +4011,7 @@ namespace FZ4P
                     return i - 1;
                 }
             }
-            return 0;
+            return gain.Count - 1;
         }
         //public int FindGainIndex(List<double> phase)
         //{
