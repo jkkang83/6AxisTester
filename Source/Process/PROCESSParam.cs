@@ -118,7 +118,15 @@ namespace FZ4P
         }
         public void Clear()
         {
-            box.Text = "";
+            if (box.InvokeRequired)
+            {
+                box.BeginInvoke((MethodInvoker)delegate
+                {
+                    box.Text = string.Empty;
+                });
+            }
+            else box.Text = string.Empty;
+
         }
     }
     public class InfoButton

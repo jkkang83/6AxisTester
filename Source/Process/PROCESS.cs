@@ -677,7 +677,11 @@ namespace FZ4P
                 IsRun[0] = true;
                 while (true)
                 {
-                    ClearChart();
+                 //   ClearChart();
+
+
+
+
                     foreach (var l in ViewLog) l.Clear();
 
                     Task tasks = null;
