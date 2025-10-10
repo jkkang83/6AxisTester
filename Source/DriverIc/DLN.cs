@@ -333,17 +333,13 @@ namespace FZ4P
                 STATIC.Process.AddLog(0, $"Power On");
 
                 lock (I2cLock) DLNgpio[2].Pins[9].Direction = 1;
-                //   DLNgpio[0].Pins[31].OutputValue = 1;
-                //DLNgpio[port * 2].Pins[9].OutputValue = 1;
-                //DLNgpio[port * 2].Pins[31].OutputValue = 1;
+              
             }
             else
             {
                 STATIC.Process.AddLog(0, $"Power Off");
                 lock (I2cLock) DLNgpio[2].Pins[9].Direction = 0;
-                // DLNgpio[0].Pins[31].OutputValue = 0;
-                //DLNgpio[port * 2].Pins[9].OutputValue = 0;
-                //DLNgpio[port * 2].Pins[31].OutputValue = 0;
+              
             }
         }
         public double GetCurrent(int ch, int mode)
@@ -366,30 +362,7 @@ namespace FZ4P
             }
             return res;
         }
-        public bool WriteArray(int ch, int slaveAddr, int memCnt, int memAddr, byte[] data)
-        {
-            while (m_bOccupied)
-            {
-                Thread.Sleep(1);
-            }
-            m_bOccupied = true;
-            try
-            {
-                if (Process.IsVirtual)
-                {
-                    m_bOccupied = false;
-                    return true;
-                }
-                if (DLNi2c[ch + 1] != null) DLNi2c[ch + 1].Write(slaveAddr, memCnt, memAddr, data);
-                m_bOccupied = false;
-                return true;
-            }
-            catch
-            {
-                m_bOccupied = false;
-                return false;
-            }
-        }
+   
         public bool WriteArray(int ch, int slaveAddr, int memAddr, byte[] data)
         {
 
@@ -409,30 +382,7 @@ namespace FZ4P
                 return false;
             }
         }
-        public bool ReadArray(int ch, int slaveAddr, int memCnt, int memAddr, byte[] data)
-        {
-            while (m_bOccupied)
-            {
-                Thread.Sleep(1);
-            }
-            m_bOccupied = true;
-            try
-            {
-                if (Process.IsVirtual)
-                {
-                    m_bOccupied = false;
-                    return true;
-                }
-                if (DLNi2c[ch + 1] != null) DLNi2c[ch + 1].Read(slaveAddr, memCnt, memAddr, data);
-                m_bOccupied = false;
-                return true;
-            }
-            catch
-            {
-                m_bOccupied = false;
-                return false;
-            }
-        }
+   
         public bool ReadArray(int ch, int slaveAddr, int memAddr, byte[] data)
         {
 

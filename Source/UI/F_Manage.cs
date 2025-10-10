@@ -590,8 +590,8 @@ namespace FZ4P
 
         private void SuddenStop_Click(object sender, EventArgs e)
         {
-            //Process.SuddenStop = true;
-            STATIC.fVision.m__G.oCam[0].GrabB();
+            Process.SuddenStop = true;
+        
         }
         public bool IsTestOn = false;
         private void button2_Click(object sender, EventArgs e)

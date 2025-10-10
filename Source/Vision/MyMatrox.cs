@@ -1637,13 +1637,37 @@ namespace S2System.Vision
 
             //MIL.MbufClear(milImageDisp, 0);  //
             MIL.MdigGrab(milDigitizer, milCommonImageGrab[i]);    //
-         //   MIL.MdigGrabWait(milDigitizer, MIL.M_GRAB_FRAME_END); //   카메라 없을 경우 에러남. 에러 처리 필요. 
+                                                                  //     MIL.MdigGrabWait(milDigitizer, MIL.M_GRAB_FRAME_END); //   카메라 없을 경우 에러남. 에러 처리 필요. 
 
             //MIL.MbufCopy(milCommonImageGrab[i], milImageDisp);
 
             OnGrab = false;
             //            MIL.MbufCopy(milXstepImageGrab[0], milImageDisp);
         }
+        public void GrabAOnManual(int i = 0)
+        {
+            if (IsLiveA == true)
+            {
+                HaltA();
+                Thread.Sleep(1);
+            }
+
+            while (OnGrab)
+            {
+                Thread.Sleep(1);
+            }
+            OnGrab = true;
+
+            //MIL.MbufClear(milImageDisp, 0);  //
+            MIL.MdigGrab(milDigitizer, milCommonImageGrab[i]);    //
+            MIL.MdigGrabWait(milDigitizer, MIL.M_GRAB_FRAME_END); //   카메라 없을 경우 에러남. 에러 처리 필요. 
+
+            //MIL.MbufCopy(milCommonImageGrab[i], milImageDisp);
+
+            OnGrab = false;
+            //            MIL.MbufCopy(milXstepImageGrab[0], milImageDisp);
+        }
+
         public void GrabName(string name, int i = 0)
         {
             if (IsLiveA == true)
@@ -1704,27 +1728,7 @@ namespace S2System.Vision
             OnGrab = false;
             //            MIL.MbufCopy(milXstepImageGrab[0], milImageDisp);
         }
-        public void GrabC(int i = 0)
-        {
-            if (IsLiveA == true)
-            {
-                HaltA();
-                Thread.Sleep(1);
-            }
-
-            while (OnGrab)
-            {
-                Thread.Sleep(1);
-            }
-            OnGrab = true;
-
-            //MIL.MbufClear(milImageDisp, 0);  //
-            MIL.MdigGrab(milDigitizer, milCommonImageGrab[i]);    //
-            //MIL.MdigGrabWait(milDigitizer, MIL.M_GRAB_FRAME_END); //   카메라 없을 경우 에러남. 에러 처리 필요. 
-
-            OnGrab = false;
-            //            MIL.MbufCopy(milXstepImageGrab[0], milImageDisp);
-        }
+     
         public void GrabD(int i = 0)
         {
             MIL.MdigGrab(milDigitizer, milCommonImageGrab[i]);    //

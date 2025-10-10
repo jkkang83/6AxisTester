@@ -4282,7 +4282,7 @@ namespace FZ4P
             double[] cy2 = new double[8];
             int res0 = 0;
 
-            m__G.oCam[0].GrabA();
+            m__G.oCam[0].GrabAOnManual();
 
             m__G.oCam[0].FineCOG(true, 0, 0);
 

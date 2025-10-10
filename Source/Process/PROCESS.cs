@@ -147,25 +147,55 @@ namespace FZ4P
 
 
         #region Default
-        public void ShowDataResults(int ch, string key, int start, int end)
+        public void ShowDataResults(int ch, int start, int end)
         {
+            for (int i = start; i < end + 1; i++)
+            {
+                if (!Spec.specList[i].OnOff) continue;
+
+                double lmin, lmax;
+                lmin = Convert.ToDouble(Spec.specList[i].MinSpec);
+                lmax = Convert.ToDouble(Spec.specList[i].MaxSpec);
+
+                if (PassFails[ch].Results[i].Val < lmin || PassFails[ch].Results[i].Val > lmax || double.IsNaN(PassFails[ch].Results[i].Val))
+                {
+                    PassFails[ch].Results[i].msg = Spec.specList[i].Category + "_" + Spec.specList[i].DisplayName;
+                    PassFails[ch].Results[i].bPass = false;
+                    PassFails[ch].TotalFail += string.Format("{0}'", i + 1);
+                }
+                else
+                {
+                    PassFails[ch].Results[i].msg = "";
+                    PassFails[ch].Results[i].bPass = true;
+
+                }
+            }
+            for (int i = start; i < end + 1; i++)
+            {
+                if (!PassFails[ch].Results[i].bPass)
+                {
+                    if (PassFails[ch].FirstFailIndex == 0)
+                    {
+                        PassFails[ch].FirstFailIndex = (i + 1);
+                        PassFails[ch].FirstFail = PassFails[ch].Results[i].msg;
+                    }
+
+                    int failCnt = Convert.ToInt32(Spec.specList[i].FailCnt); failCnt++;
+                    Spec.specList[i].FailCnt = failCnt;
+                }
+            }
+
+
             if (ResultDataGrid.InvokeRequired)
             {
                 ResultDataGrid.BeginInvoke((MethodInvoker)delegate
                 {
                     for (int i = start; i <= end; i++)
                     {
-                        if (Spec.specList[i].Category != key) continue;
+                       
                         if (PassFails[ch].Results[i].Val != 0)
                         {
-                            if (key.Contains("FRA") || key.Contains("Gyro"))
-                            {
-                                ResultDataGrid[ch + 4, i].Value = PassFails[ch].Results[i].Val.ToString("F1");
-                            }
-                            else
-                            {
-                                ResultDataGrid[ch + 4, i].Value = PassFails[ch].Results[i].Val.ToString("F3");
-                            }
+                            ResultDataGrid[ch + 4, i].Value = PassFails[ch].Results[i].Val.ToString("F3");
                         }
                         if (PassFails[ch].Results[i].bPass) ResultDataGrid[ch + 4, i].Style.BackColor = Color.White;
                         else ResultDataGrid[ch + 4, i].Style.BackColor = Color.Orange;
@@ -178,17 +208,10 @@ namespace FZ4P
             {
                 for (int i = start; i <= end; i++)
                 {
-                    if (Spec.specList[i].Category != key) continue;
+                 
                     if (PassFails[ch].Results[i].Val != 0)
                     {
-                        if (key.Contains("FRA") || key.Contains("Gyro"))
-                        {
-                            ResultDataGrid[ch + 4, i].Value = PassFails[ch].Results[i].Val.ToString("F1");
-                        }
-                        else
-                        {
-                            ResultDataGrid[ch + 4, i].Value = PassFails[ch].Results[i].Val.ToString("F3");
-                        }
+                        ResultDataGrid[ch + 4, i].Value = PassFails[ch].Results[i].Val.ToString("F3");
                     }
                     if (PassFails[ch].Results[i].bPass) ResultDataGrid[ch + 4, i].Style.BackColor = Color.White;
                     else ResultDataGrid[ch + 4, i].Style.BackColor = Color.Orange;
@@ -295,44 +318,7 @@ namespace FZ4P
                 PassFails[ch].Results[i].msg = ""; PassFails[ch].Results[i].bPass = true;
             }
         }
-        public void SetResult(int ch, int start, int end)
-        {
-            for (int i = start; i < end + 1; i++)
-            {
-                if (!Spec.specList[i].OnOff) continue;
-
-                double lmin, lmax;
-                lmin = Convert.ToDouble(Spec.specList[i].MinSpec);
-                lmax = Convert.ToDouble(Spec.specList[i].MaxSpec);
-
-                if (PassFails[ch].Results[i].Val < lmin || PassFails[ch].Results[i].Val > lmax || double.IsNaN(PassFails[ch].Results[i].Val))
-                {
-                    PassFails[ch].Results[i].msg = Spec.specList[i].Category + "_" + Spec.specList[i].DisplayName;
-                    PassFails[ch].Results[i].bPass = false;
-                    PassFails[ch].TotalFail += string.Format("{0}'", i + 1);
-                }
-                else
-                {
-                    PassFails[ch].Results[i].msg = "";
-                    PassFails[ch].Results[i].bPass = true;
-
-                }
-            }
-            for (int i = start; i < end + 1; i++)
-            {
-                if (!PassFails[ch].Results[i].bPass)
-                {
-                    if (PassFails[ch].FirstFailIndex == 0)
-                    {
-                        PassFails[ch].FirstFailIndex = (i + 1);
-                        PassFails[ch].FirstFail = PassFails[ch].Results[i].msg;
-                    }
-
-                    int failCnt = Convert.ToInt32(Spec.specList[i].FailCnt); failCnt++;
-                    Spec.specList[i].FailCnt = failCnt;
-                }
-            }
-        }
+       
         public void ShowDataResultsInit(int ch)
         {
             if (ResultDataGrid.InvokeRequired)
@@ -679,9 +665,6 @@ namespace FZ4P
                 {
                  //   ClearChart();
 
-
-
-
                     foreach (var l in ViewLog) l.Clear();
 
                     Task tasks = null;
@@ -730,7 +713,7 @@ namespace FZ4P
                 int ch = port * 2;
                 DrvIC.FRAModeDisable(ch);
                 byte[] b = new byte[1];
-                Dln.ReadArray(0, DrvIC.XSlaveAddr, 1, 0xE5, b);
+                Dln.ReadArray(0, DrvIC.XSlaveAddr, 0xE5, b);
                 AddLog(ch, $"AF Best Pos = {b[0] << 2}");
                 BestAFPos = b[0] << 4;
                 int count = Condition.ToDoList.Count;
@@ -1655,8 +1638,8 @@ namespace FZ4P
                             PassFails[j].Results[(int)SpecItem.AF_CrosstalkR].Val = Cal.CalCrosstalkR(Cal.CodeZ, Cal.StrokeX, Cal.StrokeY, Condition.iAFCodeRange, Condition.iAFStrokeRange, AFCenter);
                             PassFails[j].Results[(int)SpecItem.AF_Rolling].Val = Cal.CalRolling(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange, AFCenter);
                             PassFails[j].Results[(int)SpecItem.AF_Tilt].Val = Cal.CalTilt(Cal.CodeZ, Cal.TiltX, Cal.TiltY, Condition.TiltMinCode, Condition.TiltMaxCode, Condition.TiltRefCode);
-                            SetResult(j, (int)SpecItem.AF_Ratedstroke, (int)SpecItem.AF_Tilt);
-                            ShowDataResults(j, "AF", (int)SpecItem.AF_Ratedstroke, (int)SpecItem.AF_Tilt);
+                         
+                            ShowDataResults(j, (int)SpecItem.AF_Ratedstroke, (int)SpecItem.AF_Tilt);
                         }
                         else if (name.Contains("OIS X"))
                         {
@@ -1684,13 +1667,13 @@ namespace FZ4P
                             //PassFails[j].Results[(int)SpecItem.OISX_CrosstalkZ].Val = Cal.CalCrosstalk(Cal.CodeX, Cal.StrokeZ, Condition.iXCodeRange, Condition.iXCodeRange);
                             //PassFails[j].Results[(int)SpecItem.OISX_CrosstalkR].Val = Cal.CalCrosstalkR(Cal.CodeX, Cal.StrokeY, Cal.StrokeZ, Condition.iXCodeRange, Condition.iXCodeRange);
                             PassFails[j].Results[(int)SpecItem.OISX_Rolling].Val = Cal.CalRolling(Cal.CodeX, Cal.StrokeX, Condition.iXCodeRange, Condition.iXStrokeRange, OISCenter);
-                            SetResult(j, (int)SpecItem.OISX_Ratedstroke, (int)SpecItem.OISX_Rolling);
-                            ShowDataResults(j, "X", (int)SpecItem.OISX_Ratedstroke, (int)SpecItem.OISX_Rolling);
+                           
+                            ShowDataResults(j, (int)SpecItem.OISX_Ratedstroke, (int)SpecItem.OISX_Rolling);
                             SlopeX = Cal.CalSlopeForOISShift(Cal.CodeX, Cal.StrokeX);
 
                             PassFails[j].Results[(int)SpecItem.x_HallDecenter].Val = (forword - backword) / 2.0;
-                            SetResult(j, (int)SpecItem.x_HallDecenter, (int)SpecItem.x_HallDecenter);
-                            ShowDataResults(j, "Hall Decenter", (int)SpecItem.x_HallDecenter, (int)SpecItem.x_HallDecenter);
+                          
+                            ShowDataResults(j, (int)SpecItem.x_HallDecenter, (int)SpecItem.x_HallDecenter);
                         }
                         else if (name.Contains("OIS Y"))
                         {
@@ -1723,13 +1706,13 @@ namespace FZ4P
                             //PassFails[j].Results[(int)SpecItem.OISY_CrosstalkR].Val = Cal.CalCrosstalkR(Cal.CodeY1, Cal.StrokeX, Cal.StrokeZ, Condition.iYStrokeRange, Condition.iYStrokeRange);
                             PassFails[j].Results[(int)SpecItem.OISY_Rolling].Val = Cal.CalRolling(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange, OISCenter);
 
-                            SetResult(j, (int)SpecItem.OISY_Ratedstroke, (int)SpecItem.OISY_Rolling);
-                            ShowDataResults(j, "Y", (int)SpecItem.OISY_Ratedstroke, (int)SpecItem.OISY_Rolling);
+                          
+                            ShowDataResults(j, (int)SpecItem.OISY_Ratedstroke, (int)SpecItem.OISY_Rolling);
                             SlopeY = Cal.CalSlopeForOISShift(Cal.CodeY1, Cal.StrokeY);
 
                             PassFails[j].Results[(int)SpecItem.y_HallDecenter].Val = (forword - backword) / 2.0;
-                            SetResult(j, (int)SpecItem.y_HallDecenter, (int)SpecItem.y_HallDecenter);
-                            ShowDataResults(j, "Hall Decenter", (int)SpecItem.y_HallDecenter, (int)SpecItem.y_HallDecenter);
+                           
+                            ShowDataResults(j, (int)SpecItem.y_HallDecenter, (int)SpecItem.y_HallDecenter);
 
                         }
                         AddChart(j, name);
@@ -1877,8 +1860,8 @@ namespace FZ4P
                                 //===========================================================================
                                 PassFails[j].Results[(int)SpecItem.AF_SettillingTime].Val = settling;
 
-                                SetResult(j, (int)SpecItem.AF_SettillingTime, (int)SpecItem.AF_SettillingTime);
-                                ShowDataResults(j, "AF", (int)SpecItem.AF_SettillingTime, (int)SpecItem.AF_SettillingTime);
+           
+                                ShowDataResults(j, (int)SpecItem.AF_SettillingTime, (int)SpecItem.AF_SettillingTime);
                                 break;
                         }
                         AddChart(j, name);
@@ -2139,13 +2122,13 @@ namespace FZ4P
                     Thread.Sleep(Condition.AFPreDrvDelay);
                     if (j == 4)
                     {
-                        STATIC.fVision.m__G.oCam[0].GrabA(0);
+                        STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
                         res = STATIC.fVision.MeasureTxTyTz(0, "AF", true);
                         MtoM[0] = res.cz[0];
                     }
                     if (j == 8)
                     {
-                        STATIC.fVision.m__G.oCam[0].GrabA(0);
+                        STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
                         res = STATIC.fVision.MeasureTxTyTz(0, "AF", true);
                         MtoM[1] = res.cz[0];
                     }
@@ -2306,7 +2289,7 @@ namespace FZ4P
                 Thread.Sleep(50);
             }
 
-            STATIC.fVision.m__G.oCam[0].GrabA(0);
+            STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
             res = STATIC.fVision.MeasureTxTyTz(0, "AF", true);
 
             InitPos = res.cz[0];
@@ -2319,7 +2302,7 @@ namespace FZ4P
             {
                 DrvIC.Move(ch, "AF", pos);
                 Thread.Sleep(100);
-                STATIC.fVision.m__G.oCam[0].GrabA(0);
+                STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
                 res = STATIC.fVision.MeasureTxTyTz(0, "AF", true);
 
                 AddLog(ch, $"Pos:{(int)(res.cz[0] - InitPos)}, Code:{pos}, Step:{step}");
@@ -2381,7 +2364,7 @@ namespace FZ4P
                 AddLog(ch, $"af pos(t, c) : {4095},{DrvIC.ReadHall(ch, "AF")}");
                 Thread.Sleep(50);
             }
-            STATIC.fVision.m__G.oCam[0].GrabA(0);
+            STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
             res = STATIC.fVision.MeasureTxTyTz(0, "AF", true);
 
             EndPos = res.cz[0];
@@ -2399,7 +2382,7 @@ namespace FZ4P
 
                 DrvIC.Move(ch, "AF", pos);
                 Thread.Sleep(100);
-                STATIC.fVision.m__G.oCam[0].GrabA(0);
+                STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
                 res = STATIC.fVision.MeasureTxTyTz(0, "AF", true);
 
                 AddLog(ch, $"Pos:{(int)(res.cz[0] - EndPos)}, Code:{pos}, Step:{step}");
@@ -2534,11 +2517,7 @@ namespace FZ4P
                 Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x03, new byte[] { 0x10 });
                 Thread.Sleep(200);
                 Dln.ReadArray(ch, DrvIC.AFSlaveAddr, 0x4B, rbuf);
-                if ((byte)(rbuf[0] & 0x04) == 0x00)
-                {
-
-                }
-                else
+                if ((byte)(rbuf[0] & 0x04) != 0x00)
                 {
                     m__G.m_ChannelOn[ch] = false;
                     PassFails[ch].FirstFailIndex = (int)NonSpecItem.Store_Fail;
@@ -2546,6 +2525,7 @@ namespace FZ4P
                     AddLog(ch, "Store fail");
                     return;
                 }
+            
 
             }
             else
@@ -2563,11 +2543,7 @@ namespace FZ4P
                 Dln.WriteArray(ch, addr, 0x03, new byte[] { 0x10 });
                 Thread.Sleep(50);
                 Dln.ReadArray(ch, addr, 0x4B, rbuf);
-                if ((byte)(rbuf[0] & 0x04) == 0x00)
-                {
-
-                }
-                else
+                if ((byte)(rbuf[0] & 0x04) != 0x00)
                 {
                     m__G.m_ChannelOn[ch] = false;
                     PassFails[ch].FirstFailIndex = (int)NonSpecItem.Store_Fail;
@@ -2575,6 +2551,7 @@ namespace FZ4P
                     AddLog(ch, "Store fail");
                     return;
                 }
+                
             }
             AddLog(ch, "Store finish");
         }
@@ -2827,7 +2804,7 @@ namespace FZ4P
                     currCode = end;
                 STATIC.DrvIC.Move(0, Axis, currCode);
                 Thread.Sleep(delay);
-                STATIC.fVision.m__G.oCam[0].GrabA(0);
+                STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
                 tmpres = STATIC.fVision.MeasureTxTyTz(0, Axis, true);
                 target.Add(currCode);
                 ReadHall.Add(DrvIC.ReadHall(ch, Axis));
@@ -2932,7 +2909,7 @@ namespace FZ4P
                     currCode = end;
                 STATIC.DrvIC.Move(0, "AF", currCode);
                 Thread.Sleep(delay);
-                STATIC.fVision.m__G.oCam[0].GrabA(0);
+                STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
                 tmpres = STATIC.fVision.MeasureTxTyTz(0, "AF", true);
                 target.Add(currCode);
                 ReadHall.Add(DrvIC.ReadHall(ch, "AF"));
@@ -3285,8 +3262,8 @@ namespace FZ4P
         {
             int amp;
 
-            if (!Dln.WriteArray(ch, DrvIC.XSlaveAddr, 1, 0x02, new byte[] { 0x40 })) return;
-            if (!Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 1, 0x02, new byte[] { 0x40 })) return;
+            if (!Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 })) return;
+            if (!Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 })) return;
 
             //X
             amp = (int)Condition.iLoppgainXAmp;
@@ -3306,9 +3283,7 @@ namespace FZ4P
             {
                 AddLog(ch, string.Format("FRA X Gain10Hz = {0:0.000}",
                     PassFails[ch].Results[(int)SpecItem.FRAX_Gain10Hz].Val = gain[0]));
-
-                SetResult(ch, (int)SpecItem.FRAX_Gain10Hz, (int)SpecItem.FRAX_Gain10Hz);
-                ShowDataResults(ch, "FRA X", (int)SpecItem.FRAX_Gain10Hz, (int)SpecItem.FRAX_Gain10Hz);
+                ShowDataResults(ch, (int)SpecItem.FRAX_Gain10Hz, (int)SpecItem.FRAX_Gain10Hz);
             }
             //Y1
             amp = (int)Condition.iLoppgainYAmp;
@@ -3328,9 +3303,7 @@ namespace FZ4P
             {
                 AddLog(ch, string.Format("FRA Y1 Gain10Hz = {0:0.000}",
                 PassFails[ch].Results[(int)SpecItem.FRAY1_Gain10Hz].Val = gain[0]));
-
-                SetResult(ch, (int)SpecItem.FRAY1_Gain10Hz, (int)SpecItem.FRAY1_Gain10Hz);
-                ShowDataResults(ch, "FRA Y1", (int)SpecItem.FRAY1_Gain10Hz, (int)SpecItem.FRAY1_Gain10Hz);
+                ShowDataResults(ch, (int)SpecItem.FRAY1_Gain10Hz, (int)SpecItem.FRAY1_Gain10Hz);
             }
           //  Y2
             amp = (int)Condition.iLoppgainYAmp;
@@ -3351,8 +3324,7 @@ namespace FZ4P
                 AddLog(ch, string.Format("FRA Y2 Gain10Hz = {0:0.000}",
                 PassFails[ch].Results[(int)SpecItem.FRAY2_Gain10Hz].Val = gain[0]));
 
-                SetResult(ch, (int)SpecItem.FRAY2_Gain10Hz, (int)SpecItem.FRAY2_Gain10Hz);
-                ShowDataResults(ch, "FRA Y2", (int)SpecItem.FRAY2_Gain10Hz, (int)SpecItem.FRAY2_Gain10Hz);
+                ShowDataResults(ch, (int)SpecItem.FRAY2_Gain10Hz, (int)SpecItem.FRAY2_Gain10Hz);
             }
         }
         //private void Act_Phase_Margin(int ch, string testItem)
@@ -3573,10 +3545,10 @@ namespace FZ4P
         private void Act_Phase_Margin(int ch, string testItem)
         {
 
-            if (!Dln.WriteArray(ch, DrvIC.XSlaveAddr, 1, 0x02, new byte[] { 0x40 })) return;
-            if (!Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 1, 0x02, new byte[] { 0x40 })) return;
-            if (!Dln.WriteArray(ch, DrvIC.Y2SlaveAddr, 1, 0x02, new byte[] { 0x40 })) return;
-            if (!Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 1, 0x02, new byte[] { 0x00 })) return;
+            if (!Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 })) return;
+            if (!Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 })) return;
+            if (!Dln.WriteArray(ch, DrvIC.Y2SlaveAddr, 0x02, new byte[] { 0x40 })) return;
+            if (!Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 })) return;
             DrvIC.Move(ch, "AF", BestAFPos);
             //DrvIC.Move(ch, "X", 2048);
             //DrvIC.Move(ch, "Y1", 2048);
@@ -3647,8 +3619,7 @@ namespace FZ4P
                 AddLog(ch, string.Format("FRA X Freq = {0} PM = {1}",
                 PassFails[ch].Results[(int)SpecItem.FRAX_PMFreq].Val = freqRes, PassFails[ch].Results[(int)SpecItem.FRAX_PhaseMargin].Val = phaseRes));
 
-                SetResult(ch, (int)SpecItem.FRAX_PMFreq, (int)SpecItem.FRAX_PhaseMargin);
-                ShowDataResults(ch, "FRA X", (int)SpecItem.FRAX_PMFreq, (int)SpecItem.FRAX_PhaseMargin);
+                ShowDataResults(ch, (int)SpecItem.FRAX_PMFreq, (int)SpecItem.FRAX_PhaseMargin);
 
             }
             #endregion
@@ -3706,9 +3677,7 @@ namespace FZ4P
 
                 AddLog(ch, string.Format("FRA Y1 Freq = {0} PM = {1}",
                 PassFails[ch].Results[(int)SpecItem.FRAY1_PMFreq].Val = freqRes, PassFails[ch].Results[(int)SpecItem.FRAY1_PhaseMargin].Val = phaseRes));
-
-                SetResult(ch, (int)SpecItem.FRAY1_PMFreq, (int)SpecItem.FRAY1_PhaseMargin);
-                ShowDataResults(ch, "FRA Y1", (int)SpecItem.FRAY1_PMFreq, (int)SpecItem.FRAY1_PhaseMargin);
+                ShowDataResults(ch, (int)SpecItem.FRAY1_PMFreq, (int)SpecItem.FRAY1_PhaseMargin);
 
             }
             #endregion
@@ -3763,9 +3732,7 @@ namespace FZ4P
 
                 AddLog(ch, string.Format("FRA Y2 Freq = {0} PM = {1}",
                       PassFails[ch].Results[(int)SpecItem.FRAY2_PMFreq].Val = freqRes, PassFails[ch].Results[(int)SpecItem.FRAY2_PhaseMargin].Val = phaseRes));
-
-                SetResult(ch, (int)SpecItem.FRAY2_PMFreq, (int)SpecItem.FRAY2_PhaseMargin);
-                ShowDataResults(ch, "FRA Y2", (int)SpecItem.FRAY2_PMFreq, (int)SpecItem.FRAY2_PhaseMargin);
+                ShowDataResults(ch, (int)SpecItem.FRAY2_PMFreq, (int)SpecItem.FRAY2_PhaseMargin);
             }
             #endregion
 
@@ -3819,9 +3786,7 @@ namespace FZ4P
                 }
                 AddLog(ch, string.Format("FRA AF Freq = {0} PM = {1}",
                       PassFails[ch].Results[(int)SpecItem.FRAAF_PMFreq].Val = freqRes, PassFails[ch].Results[(int)SpecItem.FRAAF_PhaseMargin].Val = phaseRes));
-
-                SetResult(ch, (int)SpecItem.FRAAF_PMFreq, (int)SpecItem.FRAAF_PhaseMargin);
-                ShowDataResults(ch, "FRA AF", (int)SpecItem.FRAAF_PMFreq, (int)SpecItem.FRAAF_PhaseMargin);
+                ShowDataResults(ch, (int)SpecItem.FRAAF_PMFreq, (int)SpecItem.FRAAF_PhaseMargin);
 
             }
             #endregion
@@ -3833,10 +3798,10 @@ namespace FZ4P
         private void Act_Phase_Margin_High(int ch, string testItem)
         {
 
-            if (!Dln.WriteArray(ch, DrvIC.XSlaveAddr, 1, 0x02, new byte[] { 0x40 })) return;
-            if (!Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 1, 0x02, new byte[] { 0x40 })) return;
-            if (!Dln.WriteArray(ch, DrvIC.Y2SlaveAddr, 1, 0x02, new byte[] { 0x40 })) return;
-            if (!Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 1, 0x02, new byte[] { 0x00 })) return;
+            if (!Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 })) return;
+            if (!Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 })) return;
+            if (!Dln.WriteArray(ch, DrvIC.Y2SlaveAddr, 0x02, new byte[] { 0x40 })) return;
+            if (!Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 })) return;
             DrvIC.Move(ch, "AF", BestAFPos);
             //DrvIC.Move(ch, "X", 2048);
             //DrvIC.Move(ch, "Y1", 2048);
@@ -3906,9 +3871,7 @@ namespace FZ4P
 
                 AddLog(ch, string.Format("FRA X Freq = {0} PM = {1}",
                 PassFails[ch].Results[(int)SpecItem.FRAX_PMFreq_High].Val = freqRes, PassFails[ch].Results[(int)SpecItem.FRAX_PhaseMargin_High].Val = phaseRes));
-
-                SetResult(ch, (int)SpecItem.FRAX_PMFreq_High, (int)SpecItem.FRAX_PhaseMargin_High);
-                ShowDataResults(ch, "FRA X", (int)SpecItem.FRAX_PMFreq_High, (int)SpecItem.FRAX_PhaseMargin_High);
+                ShowDataResults(ch, (int)SpecItem.FRAX_PMFreq_High, (int)SpecItem.FRAX_PhaseMargin_High);
 
             }
             #endregion
@@ -3965,9 +3928,7 @@ namespace FZ4P
 
                 AddLog(ch, string.Format("FRA Y1 Freq = {0} PM = {1}",
                 PassFails[ch].Results[(int)SpecItem.FRAY1_PMFreq_High].Val = freqRes, PassFails[ch].Results[(int)SpecItem.FRAY1_PhaseMargin_High].Val = phaseRes));
-
-                SetResult(ch, (int)SpecItem.FRAY1_PMFreq_High, (int)SpecItem.FRAY1_PhaseMargin_High);
-                ShowDataResults(ch, "FRA Y1", (int)SpecItem.FRAY1_PMFreq_High, (int)SpecItem.FRAY1_PhaseMargin_High);
+                ShowDataResults(ch, (int)SpecItem.FRAY1_PMFreq_High, (int)SpecItem.FRAY1_PhaseMargin_High);
 
             }
             #endregion
@@ -4021,9 +3982,7 @@ namespace FZ4P
                 }
                 AddLog(ch, string.Format("FRA Y2 Freq = {0} PM = {1}",
                       PassFails[ch].Results[(int)SpecItem.FRAY2_PMFreq_High].Val = freqRes, PassFails[ch].Results[(int)SpecItem.FRAY2_PhaseMargin_High].Val = phaseRes));
-
-                SetResult(ch, (int)SpecItem.FRAY2_PMFreq_High, (int)SpecItem.FRAY2_PhaseMargin_High);
-                ShowDataResults(ch, "FRA Y2", (int)SpecItem.FRAY2_PMFreq_High, (int)SpecItem.FRAY2_PhaseMargin_High);
+                ShowDataResults(ch, (int)SpecItem.FRAY2_PMFreq_High, (int)SpecItem.FRAY2_PhaseMargin_High);
             }
             #endregion
      
@@ -4181,13 +4140,13 @@ namespace FZ4P
             STATIC.DrvIC.Move(0, "Y", OISCenter);
 
             Thread.Sleep(500);
-            STATIC.fVision.m__G.oCam[0].GrabA(0);
+            STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
             fX[0] = STATIC.fVision.MeasureTxTyTz(0, "X", true);
 
             STATIC.DrvIC.OISOn(0, "X", false);
             Thread.Sleep(500);
 
-            STATIC.fVision.m__G.oCam[0].GrabA(0);
+            STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
             fX[1] = STATIC.fVision.MeasureTxTyTz(0, "X", true);
 
 
@@ -4201,19 +4160,17 @@ namespace FZ4P
             STATIC.DrvIC.Move(0, "Y", OISCenter);
 
             Thread.Sleep(500);
-            STATIC.fVision.m__G.oCam[0].GrabA(0);
+            STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
             fY[0] = STATIC.fVision.MeasureTxTyTz(0, "Y", true);
 
             STATIC.DrvIC.OISOn(0, "Y", false);
 
             Thread.Sleep(500);
-            STATIC.fVision.m__G.oCam[0].GrabA(0);
+            STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
             fY[1] = STATIC.fVision.MeasureTxTyTz(0, "Y", true);
 
             PassFails[0].Results[(int)SpecItem.y_ServoDecenter].Val = fY[0].cy[0] - fY[1].cy[0];
-
-            SetResult(0, (int)SpecItem.x_ServoDecenter, (int)SpecItem.y_ServoDecenter);
-            ShowDataResults(0, "Servo Decenter", (int)SpecItem.x_ServoDecenter, (int)SpecItem.y_ServoDecenter);
+            ShowDataResults(0, (int)SpecItem.x_ServoDecenter, (int)SpecItem.y_ServoDecenter);
 
             LEDs_All_On(port, false);
         }
@@ -4245,10 +4202,10 @@ namespace FZ4P
 
             AddLog(0, $"X Slope : {slopeX.ToString("F4")}, Y Slope : {slopeY.ToString("F4")}");
 
-            Dln.WriteArray(0, DrvIC.AFSlaveAddr, 1, 0x02, new byte[] { 0x00 });
-            Dln.WriteArray(0, DrvIC.XSlaveAddr, 1, 0x02, new byte[] { 0x00 });
-            Dln.WriteArray(0, DrvIC.Y1SlaveAddr, 1, 0x02, new byte[] { 0x00 });
-            Dln.WriteArray(0, DrvIC.Y2SlaveAddr, 1, 0x02, new byte[] { 0x00 });
+            Dln.WriteArray(0, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 });
+            Dln.WriteArray(0, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
+            Dln.WriteArray(0, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
+            Dln.WriteArray(0, DrvIC.Y2SlaveAddr, 0x02, new byte[] { 0x00 });
 
             DrvIC.Move(0, "X", 2047);
             DrvIC.Move(0, "Y", 2047);
@@ -4264,7 +4221,7 @@ namespace FZ4P
             Thread.Sleep(100);
             DrvIC.Move(0, "AF", BestAFPos);
             Thread.Sleep(100);
-            STATIC.fVision.m__G.oCam[port].GrabA(0);
+            STATIC.fVision.m__G.oCam[port].GrabAOnManual(0);
             res = STATIC.fVision.MeasureTxTyTz(0, "X", true, false);
 
             RefX = res.cx[0];
@@ -4283,7 +4240,7 @@ namespace FZ4P
                 resList.Add(new FindResult());
                 DrvIC.Move(0, "AF", code[i]);
                 Thread.Sleep(100);
-                STATIC.fVision.m__G.oCam[port].GrabA(0);
+                STATIC.fVision.m__G.oCam[port].GrabAOnManual(0);
                 resList[i] = STATIC.fVision.MeasureTxTyTz(0, "X", true, false);
             }
 
@@ -4301,7 +4258,7 @@ namespace FZ4P
                 AddLog(0, $"Hall Comp X : {(int)hallcompx[i]}, Hall Comp Y : {(int)hallcompy[i]}");
             }
 
-            Dln.WriteArray(0, DrvIC.AFSlaveAddr, 1, 0x02, new byte[] { 0x00 });
+            Dln.WriteArray(0, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 });
             DrvIC.Move(0, "X", OISCenter);
             DrvIC.Move(0, "Y", OISCenter);
 
@@ -4322,7 +4279,7 @@ namespace FZ4P
                 DrvIC.Move(0, "Y", OISCenter + hallcompy[i]);
                 Thread.Sleep(100);
 
-                STATIC.fVision.m__G.oCam[port].GrabA(0);
+                STATIC.fVision.m__G.oCam[port].GrabAOnManual(0);
                 resList2[i] = STATIC.fVision.MeasureTxTyTz(0, "X", true, false);
 
 
@@ -4359,9 +4316,7 @@ namespace FZ4P
             PassFails[0].Results[(int)SpecItem.y_Shift].Val = shiftY[yValMaxIndex];
             PassFails[0].Results[(int)SpecItem.x_Limit].Val = hallcompx[xLimitMaxIndex];
             PassFails[0].Results[(int)SpecItem.y_Limit].Val = hallcompy[yLimitMaxIndex];
-
-            SetResult(0, (int)SpecItem.x_Shift, (int)SpecItem.y_Limit);
-            ShowDataResults(0, "OIS Shift", (int)SpecItem.x_Shift, (int)SpecItem.y_Limit);
+            ShowDataResults(0, (int)SpecItem.x_Shift, (int)SpecItem.y_Limit);
 
             LEDs_All_On(port, false);
         }
