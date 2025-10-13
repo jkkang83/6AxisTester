@@ -1644,7 +1644,7 @@ namespace S2System.Vision
             OnGrab = false;
             //            MIL.MbufCopy(milXstepImageGrab[0], milImageDisp);
         }
-        public void GrabAOnManual(int i = 0)
+        public void Grab(int i = 0)
         {
             if (IsLiveA == true)
             {

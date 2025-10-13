@@ -2122,14 +2122,14 @@ namespace FZ4P
                     Thread.Sleep(Condition.AFPreDrvDelay);
                     if (j == 4)
                     {
-                        STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
-                        res = STATIC.fVision.MeasureTxTyTz(0, "AF", true);
+                        STATIC.fVision.m__G.oCam[0].Grab(0);
+                        res = STATIC.fVision.MeasureTxTyTz(0);
                         MtoM[0] = res.cz[0];
                     }
                     if (j == 8)
                     {
-                        STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
-                        res = STATIC.fVision.MeasureTxTyTz(0, "AF", true);
+                        STATIC.fVision.m__G.oCam[0].Grab(0);
+                        res = STATIC.fVision.MeasureTxTyTz(0);
                         MtoM[1] = res.cz[0];
                     }
                 }
@@ -2289,8 +2289,8 @@ namespace FZ4P
                 Thread.Sleep(50);
             }
 
-            STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
-            res = STATIC.fVision.MeasureTxTyTz(0, "AF", true);
+            STATIC.fVision.m__G.oCam[0].Grab(0);
+            res = STATIC.fVision.MeasureTxTyTz(0);
 
             InitPos = res.cz[0];
             int dir = 1;
@@ -2302,8 +2302,8 @@ namespace FZ4P
             {
                 DrvIC.Move(ch, "AF", pos);
                 Thread.Sleep(100);
-                STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
-                res = STATIC.fVision.MeasureTxTyTz(0, "AF", true);
+                STATIC.fVision.m__G.oCam[0].Grab(0);
+                res = STATIC.fVision.MeasureTxTyTz(0);
 
                 AddLog(ch, $"Pos:{(int)(res.cz[0] - InitPos)}, Code:{pos}, Step:{step}");
 
@@ -2364,8 +2364,8 @@ namespace FZ4P
                 AddLog(ch, $"af pos(t, c) : {4095},{DrvIC.ReadHall(ch, "AF")}");
                 Thread.Sleep(50);
             }
-            STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
-            res = STATIC.fVision.MeasureTxTyTz(0, "AF", true);
+            STATIC.fVision.m__G.oCam[0].Grab(0);
+            res = STATIC.fVision.MeasureTxTyTz(0);
 
             EndPos = res.cz[0];
             measureStroke = Math.Abs(EndPos - InitPos);
@@ -2382,8 +2382,8 @@ namespace FZ4P
 
                 DrvIC.Move(ch, "AF", pos);
                 Thread.Sleep(100);
-                STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
-                res = STATIC.fVision.MeasureTxTyTz(0, "AF", true);
+                STATIC.fVision.m__G.oCam[0].Grab(0);
+                res = STATIC.fVision.MeasureTxTyTz(0);
 
                 AddLog(ch, $"Pos:{(int)(res.cz[0] - EndPos)}, Code:{pos}, Step:{step}");
                 //측정하고 값 기입
@@ -2804,8 +2804,8 @@ namespace FZ4P
                     currCode = end;
                 STATIC.DrvIC.Move(0, Axis, currCode);
                 Thread.Sleep(delay);
-                STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
-                tmpres = STATIC.fVision.MeasureTxTyTz(0, Axis, true);
+                STATIC.fVision.m__G.oCam[0].Grab(0);
+                tmpres = STATIC.fVision.MeasureTxTyTz(0);
                 target.Add(currCode);
                 ReadHall.Add(DrvIC.ReadHall(ch, Axis));
                 if (Axis == "X")
@@ -2909,8 +2909,8 @@ namespace FZ4P
                     currCode = end;
                 STATIC.DrvIC.Move(0, "AF", currCode);
                 Thread.Sleep(delay);
-                STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
-                tmpres = STATIC.fVision.MeasureTxTyTz(0, "AF", true);
+                STATIC.fVision.m__G.oCam[0].Grab(0);
+                tmpres = STATIC.fVision.MeasureTxTyTz(0);
                 target.Add(currCode);
                 ReadHall.Add(DrvIC.ReadHall(ch, "AF"));
                 if (index != 0)
@@ -4140,14 +4140,14 @@ namespace FZ4P
             STATIC.DrvIC.Move(0, "Y", OISCenter);
 
             Thread.Sleep(500);
-            STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
-            fX[0] = STATIC.fVision.MeasureTxTyTz(0, "X", true);
+            STATIC.fVision.m__G.oCam[0].Grab(0);
+            fX[0] = STATIC.fVision.MeasureTxTyTz(0);
 
             STATIC.DrvIC.OISOn(0, "X", false);
             Thread.Sleep(500);
 
-            STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
-            fX[1] = STATIC.fVision.MeasureTxTyTz(0, "X", true);
+            STATIC.fVision.m__G.oCam[0].Grab(0);
+            fX[1] = STATIC.fVision.MeasureTxTyTz(0);
 
 
             PassFails[0].Results[(int)SpecItem.x_ServoDecenter].Val = fX[0].cx[0] - fX[1].cx[0];
@@ -4160,14 +4160,14 @@ namespace FZ4P
             STATIC.DrvIC.Move(0, "Y", OISCenter);
 
             Thread.Sleep(500);
-            STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
-            fY[0] = STATIC.fVision.MeasureTxTyTz(0, "Y", true);
+            STATIC.fVision.m__G.oCam[0].Grab(0);
+            fY[0] = STATIC.fVision.MeasureTxTyTz(0);
 
             STATIC.DrvIC.OISOn(0, "Y", false);
 
             Thread.Sleep(500);
-            STATIC.fVision.m__G.oCam[0].GrabAOnManual(0);
-            fY[1] = STATIC.fVision.MeasureTxTyTz(0, "Y", true);
+            STATIC.fVision.m__G.oCam[0].Grab(0);
+            fY[1] = STATIC.fVision.MeasureTxTyTz(0);
 
             PassFails[0].Results[(int)SpecItem.y_ServoDecenter].Val = fY[0].cy[0] - fY[1].cy[0];
             ShowDataResults(0, (int)SpecItem.x_ServoDecenter, (int)SpecItem.y_ServoDecenter);
@@ -4221,8 +4221,8 @@ namespace FZ4P
             Thread.Sleep(100);
             DrvIC.Move(0, "AF", BestAFPos);
             Thread.Sleep(100);
-            STATIC.fVision.m__G.oCam[port].GrabAOnManual(0);
-            res = STATIC.fVision.MeasureTxTyTz(0, "X", true, false);
+            STATIC.fVision.m__G.oCam[port].Grab(0);
+            res = STATIC.fVision.MeasureTxTyTz(0);
 
             RefX = res.cx[0];
             RefY = res.cy[0];
@@ -4240,8 +4240,8 @@ namespace FZ4P
                 resList.Add(new FindResult());
                 DrvIC.Move(0, "AF", code[i]);
                 Thread.Sleep(100);
-                STATIC.fVision.m__G.oCam[port].GrabAOnManual(0);
-                resList[i] = STATIC.fVision.MeasureTxTyTz(0, "X", true, false);
+                STATIC.fVision.m__G.oCam[port].Grab(0);
+                resList[i] = STATIC.fVision.MeasureTxTyTz(0);
             }
 
             for (int i = 0; i < resList.Count; i++)
@@ -4279,8 +4279,8 @@ namespace FZ4P
                 DrvIC.Move(0, "Y", OISCenter + hallcompy[i]);
                 Thread.Sleep(100);
 
-                STATIC.fVision.m__G.oCam[port].GrabAOnManual(0);
-                resList2[i] = STATIC.fVision.MeasureTxTyTz(0, "X", true, false);
+                STATIC.fVision.m__G.oCam[port].Grab(0);
+                resList2[i] = STATIC.fVision.MeasureTxTyTz(0);
 
 
             }

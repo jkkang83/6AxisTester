@@ -4282,7 +4282,7 @@ namespace FZ4P
             double[] cy2 = new double[8];
             int res0 = 0;
 
-            m__G.oCam[0].GrabAOnManual();
+            m__G.oCam[0].Grab();
 
             m__G.oCam[0].FineCOG(true, 0, 0);
 
@@ -4566,6 +4566,7 @@ namespace FZ4P
 
             return result;
         }
+ 
         private void radioButton10Step_CheckedChanged(object sender, EventArgs e)
         {
             if (radioButton10Step.Checked)
