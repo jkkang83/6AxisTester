@@ -4498,7 +4498,7 @@ namespace FZ4P
         public double umscale = 5.5 / Global.LensMag;                           //  rad to min
         public double minscale = 180 / Math.PI * 60;                           //  rad to min
         public string ScanName = "";
-        public FindResult MeasureTxTyTz(int imgIndex, string name = "", bool bAccu = false, bool isShow = false)
+        public FindResult MeasureTxTyTz(int imgIndex, string name = "", bool bAccu = true, bool isShow = false)
         {
 
             m__G.oCam[0].mFAL.LoadFMICandidate();

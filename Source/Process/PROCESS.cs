@@ -219,6 +219,12 @@ namespace FZ4P
                 }
             }
         }
+        public void SetError(int ch, NonSpecItem item)
+        {
+            PassFails[ch].FirstFailIndex = (int)item;
+            m_ChannelOn[ch] = false;
+            errMsg[ch] = item.ToString();
+        }
         public void InitResultData()
         {
             Type dgvType = ResultDataGrid.GetType();
@@ -406,15 +412,15 @@ namespace FZ4P
                             {
                                 ChartTop[ch].C.BeginInvoke((MethodInvoker)delegate
                                 {
-                                    for (int i = 2; i < Cal.CodeY1.Count; i++)
+                                    for (int i = 2; i < Cal.CodeY.Count; i++)
                                     {
-                                        if (Cal.CodeY1[i] >= OISCenter - CodeRange && Cal.CodeY1[i] <= OISCenter + CodeRange)
+                                        if (Cal.CodeY[i] >= OISCenter - CodeRange && Cal.CodeY[i] <= OISCenter + CodeRange)
                                         {
-                                            ChartTop[ch].C.Series[1].Points.AddXY(Cal.CodeY1[i], Cal.StrokeY[i]); //  stroke
+                                            ChartTop[ch].C.Series[1].Points.AddXY(Cal.CodeY[i], Cal.StrokeY[i]); //  stroke
                                                                                                                   //   ChartTop[ch].C.Series[9].Points.AddXY(Cal.CodeY1[i], Cal.StrokeY1[i]); //  stroke 1
                                                                                                                   // ChartTop[ch].C.Series[10].Points.AddXY(Cal.CodeY2[i], Cal.StrokeY2[i]); //  stroke 2
-                                            ChartTop[ch].C.Series[4].Points.AddXY(Cal.CodeY1[i], Cal.Current[i]); //  current
-                                            ChartTop[ch].C.Series[7].Points.AddXY(Cal.CodeY1[i], Cal.HallY1[i] / 10); //  hall
+                                            ChartTop[ch].C.Series[4].Points.AddXY(Cal.CodeY[i], Cal.Current[i]); //  current
+                                            ChartTop[ch].C.Series[7].Points.AddXY(Cal.CodeY[i], Cal.HallY1[i] / 10); //  hall
                                         }
                                     }
                                 });
@@ -424,9 +430,9 @@ namespace FZ4P
                             {
                                 ChartBtm[ch].C.BeginInvoke((MethodInvoker)delegate
                                 {
-                                    for (int i = 2; i < Cal.CodeY1.Count; i++)
+                                    for (int i = 2; i < Cal.CodeY.Count; i++)
                                     {
-                                        if (Cal.CodeY1[i] >= OISCenter - CodeRange && Cal.CodeY1[i] <= OISCenter + CodeRange)
+                                        if (Cal.CodeY[i] >= OISCenter - CodeRange && Cal.CodeY[i] <= OISCenter + CodeRange)
                                         {
                                             //ChartBtm[ch].C.Series[3].Points.AddXY(Cal.CodeY1[i], Cal.TiltX[i]); //  Tilt 
                                             //ChartBtm[ch].C.Series[4].Points.AddXY(Cal.CodeY1[i], Cal.TiltY[i]); //  Tilt 
@@ -952,9 +958,7 @@ namespace FZ4P
                                 break;
                             case "OIS Y Scan":
                                 //Y1 ===========================
-                                MakeWaveformCode(ref Cal.CodeY1, Condition.iYDrvCodeMin, Condition.iYDrvCodeMax, OISCenter, Condition.iDrvYStep);
-                                //Y2 ===========================
-                                MakeWaveformCode(ref Cal.CodeY2, Condition.iY2DrvCodeMin, Condition.iY2DrvCodeMax, OISCenter, Condition.iDrvYStep);
+                                MakeWaveformCode(ref Cal.CodeY, Condition.iYDrvCodeMin, Condition.iYDrvCodeMax, OISCenter, Condition.iDrvYStep);                               
                                 break;
 
                             case "AF Settling":
@@ -1080,7 +1084,7 @@ namespace FZ4P
                             if (!m_ChannelOn[j]) continue;
                             foreach (var Cal in CalList[j])
                             {
-                                if (Cal.Name == name) DrvIC.Move(j, name, Cal.CodeY1[0]);
+                                if (Cal.Name == name) DrvIC.Move(j, name, Cal.CodeY[0]);
                             }
                         }
                         Thread.Sleep(Condition.iDrvStepIntervalY);
@@ -1119,8 +1123,8 @@ namespace FZ4P
                             else if (name.Contains("Y"))
                             {
                                 DrvIC.Move(j, "X", OISCenter);
-                                DrvIC.Move(j, "Y1", Cal.CodeY1[framCnt[port]]);
-                                if(DrvIC.Y2SlaveAddr != 0x00) DrvIC.Move(j, "Y2", Cal.CodeY1[framCnt[port]]);
+                                DrvIC.Move(j, "Y", Cal.CodeY[framCnt[port]]);
+                              
 
                             }
                             else if (name.Contains("AF"))
@@ -1167,10 +1171,7 @@ namespace FZ4P
                             Cal.HallY1[framCnt[port]] = DrvIC.ReadHall(j, "Y1");
                             if(DrvIC.Y2SlaveAddr != 0x00) Cal.HallY2[framCnt[port]] = DrvIC.ReadHall(j, "Y2");
 
-
-
-
-                                Cal.HallZ[framCnt[port]] = DrvIC.ReadHall(j, "AF");
+                            Cal.HallZ[framCnt[port]] = DrvIC.ReadHall(j, "AF");
                             //Get Hall
                             if (name.Contains("X"))
                             {
@@ -1180,7 +1181,7 @@ namespace FZ4P
                             else if (name.Contains("Y"))
                             {
                                 Cal.Current[framCnt[port]] = Dln.GetCurrent(j, 1);
-                                AddLog(j, string.Format("{0} == Code : {1}, Hall1 : {2}, Hall2 : {3}", name, Cal.CodeY1[framCnt[port]], Cal.HallY1[framCnt[port]], Cal.HallY2[framCnt[port]]));
+                                AddLog(j, string.Format("{0} == Code : {1}, Hall1 : {2}, Hall2 : {3}", name, Cal.CodeY[framCnt[port]], Cal.HallY1[framCnt[port]], Cal.HallY2[framCnt[port]]));
                             }
                             else if (name.Contains("AF"))
                             {
@@ -1204,7 +1205,7 @@ namespace FZ4P
                             }
                             else if (name.Contains("Y"))
                             {
-                                if (Cal.CodeY1.Count - 1 == framCnt[port]) IsScan[port] = false;
+                                if (Cal.CodeY.Count - 1 == framCnt[port]) IsScan[port] = false;
                             }
                             else if (name.Contains("AF"))
                             {
@@ -1379,7 +1380,7 @@ namespace FZ4P
                     }
                     else if (name.Contains("Y"))
                     {
-                        fCount = Cal.CodeY1.Count;
+                        fCount = Cal.CodeY.Count;
                     }
                     else if (name.Contains("AF"))
                     {
@@ -1436,7 +1437,7 @@ namespace FZ4P
                             }
                             else if (name.Contains("Y"))
                             {
-                                if (Cal.CodeY1[i] == OISCenter)
+                                if (Cal.CodeY[i] == OISCenter)
                                 {
                                     centerX = result[i].cx[j];
                                     centerY = result[i].cy[j];
@@ -1582,7 +1583,7 @@ namespace FZ4P
                                         if (name.Contains("Linearity"))
                                             path = string.Format(dateDir + "{0}_{1}_{2}_{3}_Lin.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
                                         else path = string.Format(dateDir + "{0}_{1}_{2}_{3}.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
-                                        string data = string.Format("{0},{1},{2},{3},{4},{5:0.000},{6:0.000},{7:0.000},{8:0.000},{9:0.000},{10:0.000},{11:0.000},{12:0.000},{13},{14},{15},{16},{17:0.000}", i, BestAFPos, Condition.iYCrossOffset, Cal.CodeY1[i], Cal.CodeY1[i],
+                                        string data = string.Format("{0},{1},{2},{3},{4},{5:0.000},{6:0.000},{7:0.000},{8:0.000},{9:0.000},{10:0.000},{11:0.000},{12:0.000},{13},{14},{15},{16},{17:0.000}", i, BestAFPos, Condition.iYCrossOffset, Cal.CodeY[i], Cal.CodeY[i],
                                                Cal.StrokeX[i], Cal.StrokeY[i], Cal.StrokeZ[i], Cal.TiltX[i], Cal.TiltY[i], Cal.TiltZ[i], Cal.StrokeY1[i], Cal.StrokeY2[i],
                                              Cal.HallX[i], Cal.HallY1[i], Cal.HallY2[i], Cal.HallZ[i], Cal.Current[i]);
                                         arry.Add(data);
@@ -1590,7 +1591,7 @@ namespace FZ4P
                                         if (i == 0)
                                             AddLog(j, string.Format("Code Y1\tCode Y2\tStroke Y1\tStroke Y2\t\tTx\tTy\tTz"));
 
-                                        AddLog(j, string.Format("{0}\t{1}\t{2:0.000}\t{3:0.000}\t{4:0.000}\t{5:0.000}\t{6:0.000}", Cal.CodeY1[i], Cal.CodeY1[i], Cal.StrokeY1[i], Cal.StrokeY2[i], Cal.TiltX[i], Cal.TiltY[i], Cal.TiltZ[i]));
+                                        AddLog(j, string.Format("{0}\t{1}\t{2:0.000}\t{3:0.000}\t{4:0.000}\t{5:0.000}\t{6:0.000}", Cal.CodeY[i], Cal.CodeY[i], Cal.StrokeY1[i], Cal.StrokeY2[i], Cal.TiltX[i], Cal.TiltY[i], Cal.TiltZ[i]));
                                     }
 
                                     AddLog(j, string.Format("Cross X Hall Max {0:00} X Hall Min {1:00}", Cal.HallY2.Max(), Cal.HallY2.Min()));
@@ -1681,13 +1682,13 @@ namespace FZ4P
                             backword = PassFails[j].Results[(int)SpecItem.OISY_Backwardstroke].Val = Math.Abs(Cal.StrokeY.Min()); // Cal.CalBwdStoke(Cal.CodeY1, Cal.StrokeY);
                             PassFails[j].Results[(int)SpecItem.OISY_Ratedstroke].Val = forword + backword;
 
-                            PassFails[j].Results[(int)SpecItem.OISY_Sensitivity].Val = Cal.CalSensitivity(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange, OISCenter);
-                            PassFails[j].Results[(int)SpecItem.OISY_Linearity].Val = Cal.CalLinearity(Cal.CodeY1, Cal.StrokeY, Condition.YLinMinRange, Condition.YLinMaxRange, Condition.YLinMinStep,
+                            PassFails[j].Results[(int)SpecItem.OISY_Sensitivity].Val = Cal.CalSensitivity(Cal.CodeY, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange, OISCenter);
+                            PassFails[j].Results[(int)SpecItem.OISY_Linearity].Val = Cal.CalLinearity(Cal.CodeY, Cal.StrokeY, Condition.YLinMinRange, Condition.YLinMaxRange, Condition.YLinMinStep,
                                 Condition.YLinMaxStep, Condition.YLinMinStroke, Condition.YLinMaxStroke, Condition.YLinMode);
-                            PassFails[j].Results[(int)SpecItem.OISY_Hysteresis].Val = Cal.CalHysteresis(Cal.CodeY1, Cal.StrokeY, Condition.YHysMinRange, Condition.YHysMaxRange, Condition.YHysMinStep,
+                            PassFails[j].Results[(int)SpecItem.OISY_Hysteresis].Val = Cal.CalHysteresis(Cal.CodeY, Cal.StrokeY, Condition.YHysMinRange, Condition.YHysMaxRange, Condition.YHysMinStep,
                                 Condition.YHysMaxStep, Condition.YHysMinStroke, Condition.YHysMaxStroke, Condition.YHysMode);
 
-                            double[] MtoM = Cal.CalCurrent(Cal.CodeY1, Cal.StrokeY, Cal.Current, Condition.YCurrMinRange, Condition.YCurrMaxRange, Condition.YCurrMinStep, Condition.YCurrMaxStep,
+                            double[] MtoM = Cal.CalCurrent(Cal.CodeY, Cal.StrokeY, Cal.Current, Condition.YCurrMinRange, Condition.YCurrMaxRange, Condition.YCurrMinStep, Condition.YCurrMaxStep,
                             Condition.YCurrMinStroke, Condition.YCurrMaxStroke, Condition.YCurrMode);
 
                             PassFails[j].Results[(int)SpecItem.OISY_MaxCurrent].Val = MtoM[0]; //Cal.CalMaxCurrent(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
@@ -1695,7 +1696,7 @@ namespace FZ4P
                             //   PassFails[j].Results[(int)SpecItem.OISY_CenteringCurrent].Val = Cal.CalCenterCurrent(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange);
                             //     PassFails[j].Results[(int)SpecItem.OISY_CrosstalkX].Val = Cal.CalCrosstalk(Cal.CodeY1, Cal.StrokeX, Condition.iYStrokeRange, Condition.iYStrokeRange);
 
-                            double[] xtalkRes = Cal.CalCrosstalk(Cal.CodeY1, Cal.StrokeY, Cal.StrokeX, Condition.iYCodeRange, Condition.iYCodeRange, OISCenter);
+                            double[] xtalkRes = Cal.CalCrosstalk(Cal.CodeY, Cal.StrokeY, Cal.StrokeX, Condition.iYCodeRange, Condition.iYCodeRange, OISCenter);
 
                             PassFails[j].Results[(int)SpecItem.OISY_CrosstalkX].Val = xtalkRes[0];
                             PassFails[j].Results[(int)SpecItem.OISY_CrosstalkX_dB].Val = xtalkRes[1];
@@ -1704,11 +1705,11 @@ namespace FZ4P
 
                             //PassFails[j].Results[(int)SpecItem.OISY_CrosstalkZ].Val = Cal.CalCrosstalk(Cal.CodeY1, Cal.StrokeZ, Condition.iYStrokeRange, Condition.iYStrokeRange);
                             //PassFails[j].Results[(int)SpecItem.OISY_CrosstalkR].Val = Cal.CalCrosstalkR(Cal.CodeY1, Cal.StrokeX, Cal.StrokeZ, Condition.iYStrokeRange, Condition.iYStrokeRange);
-                            PassFails[j].Results[(int)SpecItem.OISY_Rolling].Val = Cal.CalRolling(Cal.CodeY1, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange, OISCenter);
+                            PassFails[j].Results[(int)SpecItem.OISY_Rolling].Val = Cal.CalRolling(Cal.CodeY, Cal.StrokeY, Condition.iYCodeRange, Condition.iYStrokeRange, OISCenter);
 
                           
                             ShowDataResults(j, (int)SpecItem.OISY_Ratedstroke, (int)SpecItem.OISY_Rolling);
-                            SlopeY = Cal.CalSlopeForOISShift(Cal.CodeY1, Cal.StrokeY);
+                            SlopeY = Cal.CalSlopeForOISShift(Cal.CodeY, Cal.StrokeY);
 
                             PassFails[j].Results[(int)SpecItem.y_HallDecenter].Val = (forword - backword) / 2.0;
                            
@@ -2232,9 +2233,7 @@ namespace FZ4P
             }
             else
             {
-                PassFails[ch].FirstFailIndex = (int)NonSpecItem.AF_Init;
-                m_ChannelOn[ch] = false;
-                errMsg[ch] = NonSpecItem.AF_Init.ToString();
+                SetError(ch, NonSpecItem.AF_Init);
                 return;
                 //Error처리
             }
@@ -2452,9 +2451,7 @@ namespace FZ4P
             { }
             else
             {
-                m__G.m_ChannelOn[ch] = false;
-                PassFails[ch].FirstFailIndex = (int)NonSpecItem.AF_EPA;
-                errMsg[ch] = NonSpecItem.AF_EPA.ToString();
+                SetError(ch, NonSpecItem.AF_EPA);             
                 return;
             }
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xAE, new byte[] { 0x00 });
@@ -2519,9 +2516,7 @@ namespace FZ4P
                 Dln.ReadArray(ch, DrvIC.AFSlaveAddr, 0x4B, rbuf);
                 if ((byte)(rbuf[0] & 0x04) != 0x00)
                 {
-                    m__G.m_ChannelOn[ch] = false;
-                    PassFails[ch].FirstFailIndex = (int)NonSpecItem.Store_Fail;
-                    errMsg[ch] = NonSpecItem.Store_Fail.ToString();
+                    SetError(ch, NonSpecItem.Store_Fail);                 
                     AddLog(ch, "Store fail");
                     return;
                 }
@@ -2545,9 +2540,7 @@ namespace FZ4P
                 Dln.ReadArray(ch, addr, 0x4B, rbuf);
                 if ((byte)(rbuf[0] & 0x04) != 0x00)
                 {
-                    m__G.m_ChannelOn[ch] = false;
-                    PassFails[ch].FirstFailIndex = (int)NonSpecItem.Store_Fail;
-                    errMsg[ch] = NonSpecItem.Store_Fail.ToString();
+                    SetError(ch, NonSpecItem.Store_Fail);
                     AddLog(ch, "Store fail");
                     return;
                 }
@@ -2835,21 +2828,12 @@ namespace FZ4P
             if (res != 0)
             {
                 AddLog(ch, $"Linearity Comp Fail");
-                m__G.m_ChannelOn[ch] = false;
+                
                 if (Axis == "X")
-                {
-                    PassFails[ch].FirstFailIndex = (int)NonSpecItem.X_LinearityComp;
-                    errMsg[ch] = NonSpecItem.X_LinearityComp.ToString();
-                }
+                    SetError(ch, NonSpecItem.X_LinearityComp);
                 else
-                {
-                    PassFails[ch].FirstFailIndex = (int)NonSpecItem.Y_LinearityComp;
-                    errMsg[ch] = NonSpecItem.Y_LinearityComp.ToString();
-                }
-
+                    SetError(ch, NonSpecItem.Y_LinearityComp);
             }
-
-
             Dln.WriteArray(ch, addr, 0xAE, new byte[] { 0x3B });
             Dln.WriteArray(ch, addr, 0x2A, new byte[] { (byte)lincoef[0] });
             Dln.WriteArray(ch, addr, 0x2B, new byte[] { (byte)lincoef[1] });
@@ -2931,12 +2915,8 @@ namespace FZ4P
             if (res != 0)
             {
                 AddLog(ch, $"Linearity Comp Fail");
-                m__G.m_ChannelOn[ch] = false;
-                PassFails[ch].FirstFailIndex = (int)NonSpecItem.AF_LinearityComp;
-                errMsg[ch] = NonSpecItem.AF_LinearityComp.ToString();
+                SetError(ch, NonSpecItem.AF_LinearityComp);
             }
-
-
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xAE, new byte[] { 0x3B });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x30, new byte[] { (byte)lincoef[0] });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x31, new byte[] { (byte)lincoef[1] });
@@ -3264,7 +3244,7 @@ namespace FZ4P
 
             if (!Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 })) return;
             if (!Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 })) return;
-
+            if (DrvIC.Y2SlaveAddr != 0x00) { if (!Dln.WriteArray(ch, DrvIC.Y2SlaveAddr, 0x02, new byte[] { 0x40 })) return; }
             //X
             amp = (int)Condition.iLoppgainXAmp;
             AddLog(ch, string.Format("X FRA =="));
@@ -3314,17 +3294,21 @@ namespace FZ4P
             phase = new List<double>();
             freq.Add(10);
 
-            if (!DrvIC.FRA_Single(ch, "Y2", amp, 2, freq, ref gain, ref phase))
+            if(DrvIC.Y2SlaveAddr != 0x00)
             {
-                errMsg[ch] = string.Format("{0} Error", testItem);
-                m_ChannelOn[ch] = false;
-            }
-            else
-            {
-                AddLog(ch, string.Format("FRA Y2 Gain10Hz = {0:0.000}",
-                PassFails[ch].Results[(int)SpecItem.FRAY2_Gain10Hz].Val = gain[0]));
+                if (!DrvIC.FRA_Single(ch, "Y2", amp, 2, freq, ref gain, ref phase))
+                {
+                    errMsg[ch] = string.Format("{0} Error", testItem);
+                    m_ChannelOn[ch] = false;
+                }
+                else
+                {
+                    AddLog(ch, string.Format("FRA Y2 Gain10Hz = {0:0.000}",
+                    PassFails[ch].Results[(int)SpecItem.FRAY2_Gain10Hz].Val = gain[0]));
 
-                ShowDataResults(ch, (int)SpecItem.FRAY2_Gain10Hz, (int)SpecItem.FRAY2_Gain10Hz);
+                    ShowDataResults(ch, (int)SpecItem.FRAY2_Gain10Hz, (int)SpecItem.FRAY2_Gain10Hz);
+                }
+
             }
         }
         //private void Act_Phase_Margin(int ch, string testItem)
@@ -3547,7 +3531,7 @@ namespace FZ4P
 
             if (!Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 })) return;
             if (!Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 })) return;
-            if (!Dln.WriteArray(ch, DrvIC.Y2SlaveAddr, 0x02, new byte[] { 0x40 })) return;
+            if (DrvIC.Y2SlaveAddr != 0x00) { if (!Dln.WriteArray(ch, DrvIC.Y2SlaveAddr, 0x02, new byte[] { 0x40 })) return; }
             if (!Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 })) return;
             DrvIC.Move(ch, "AF", BestAFPos);
             //DrvIC.Move(ch, "X", 2048);
@@ -3681,61 +3665,63 @@ namespace FZ4P
 
             }
             #endregion
-            #region Y2 PM Low
-            //Y2
-            axis = "Y2";
-            startFreq = Condition.iYChirpFrom;
-            EndFreq = Condition.iYChirpTo;
-            amp = Condition.iYAmplitude;
-
-            AddLog(ch, string.Format("{0} FRA ==", axis));
-
-            freq = new List<double>();
-            gain = new List<double>();
-            phase = new List<double>();
-
-            for (int i = 0; i < Condition.iFRAloop; i++)
+            if(DrvIC.Y2SlaveAddr != 0x00)
             {
-                while (true)
+                #region Y2 PM Low
+                //Y2
+                axis = "Y2";
+                startFreq = Condition.iYChirpFrom;
+                EndFreq = Condition.iYChirpTo;
+                amp = Condition.iYAmplitude;
+
+                AddLog(ch, string.Format("{0} FRA ==", axis));
+
+                freq = new List<double>();
+                gain = new List<double>();
+                phase = new List<double>();
+
+                for (int i = 0; i < Condition.iFRAloop; i++)
                 {
-                    freq.Add(startFreq);
-                    startFreq -= (int)(startFreq * (Condition.iFRAstep / 100f));
-                    if (startFreq < EndFreq) break;
+                    while (true)
+                    {
+                        freq.Add(startFreq);
+                        startFreq -= (int)(startFreq * (Condition.iFRAstep / 100f));
+                        if (startFreq < EndFreq) break;
+                    }
                 }
-            }
 
-            if (!DrvIC.FRA_Single(ch, axis, amp, 0, freq, ref gain, ref phase))
-            {
-                errMsg[ch] = string.Format("{0} Error", testItem);
-                m_ChannelOn[ch] = false;
-            }
-            phaseIndex = FindPhaseIndex(gain);
-            if (phaseIndex < 1)
-            {
-                AddLog(ch, "Y2 Find Phase Margin Failed.. Freq Range Check Please.");
-                errMsg[ch] = string.Format("{0} Error", testItem);
-                m_ChannelOn[ch] = false;
-            }
-            else
-            {
-                double phaseRes = 0, freqRes = 0;
-                if (phaseIndex == gain.Count - 1)
+                if (!DrvIC.FRA_Single(ch, axis, amp, 0, freq, ref gain, ref phase))
                 {
-                    phaseRes = phase[phaseIndex];
-                    freqRes = freq[phaseIndex];
+                    errMsg[ch] = string.Format("{0} Error", testItem);
+                    m_ChannelOn[ch] = false;
+                }
+                phaseIndex = FindPhaseIndex(gain);
+                if (phaseIndex < 1)
+                {
+                    AddLog(ch, "Y2 Find Phase Margin Failed.. Freq Range Check Please.");
+                    errMsg[ch] = string.Format("{0} Error", testItem);
+                    m_ChannelOn[ch] = false;
                 }
                 else
                 {
-                    phaseRes = ((gain[phaseIndex + 1] * phase[phaseIndex]) - (gain[phaseIndex] * phase[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]);
-                    freqRes = (int)(((gain[phaseIndex + 1] * freq[phaseIndex]) - (gain[phaseIndex] * freq[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]));
+                    double phaseRes = 0, freqRes = 0;
+                    if (phaseIndex == gain.Count - 1)
+                    {
+                        phaseRes = phase[phaseIndex];
+                        freqRes = freq[phaseIndex];
+                    }
+                    else
+                    {
+                        phaseRes = ((gain[phaseIndex + 1] * phase[phaseIndex]) - (gain[phaseIndex] * phase[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]);
+                        freqRes = (int)(((gain[phaseIndex + 1] * freq[phaseIndex]) - (gain[phaseIndex] * freq[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]));
+                    }
+
+                    AddLog(ch, string.Format("FRA Y2 Freq = {0} PM = {1}",
+                          PassFails[ch].Results[(int)SpecItem.FRAY2_PMFreq].Val = freqRes, PassFails[ch].Results[(int)SpecItem.FRAY2_PhaseMargin].Val = phaseRes));
+                    ShowDataResults(ch, (int)SpecItem.FRAY2_PMFreq, (int)SpecItem.FRAY2_PhaseMargin);
                 }
-
-                AddLog(ch, string.Format("FRA Y2 Freq = {0} PM = {1}",
-                      PassFails[ch].Results[(int)SpecItem.FRAY2_PMFreq].Val = freqRes, PassFails[ch].Results[(int)SpecItem.FRAY2_PhaseMargin].Val = phaseRes));
-                ShowDataResults(ch, (int)SpecItem.FRAY2_PMFreq, (int)SpecItem.FRAY2_PhaseMargin);
+                #endregion
             }
-            #endregion
-
             #region AF PM
             //AF
             axis = "AF";
@@ -3791,8 +3777,6 @@ namespace FZ4P
             }
             #endregion
 
-
-
         }
 
         private void Act_Phase_Margin_High(int ch, string testItem)
@@ -3800,7 +3784,7 @@ namespace FZ4P
 
             if (!Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 })) return;
             if (!Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 })) return;
-            if (!Dln.WriteArray(ch, DrvIC.Y2SlaveAddr, 0x02, new byte[] { 0x40 })) return;
+            if (DrvIC.Y2SlaveAddr != 0x00) { if (!Dln.WriteArray(ch, DrvIC.Y2SlaveAddr, 0x02, new byte[] { 0x40 })) return; }
             if (!Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 })) return;
             DrvIC.Move(ch, "AF", BestAFPos);
             //DrvIC.Move(ch, "X", 2048);
@@ -3932,60 +3916,62 @@ namespace FZ4P
 
             }
             #endregion
-            #region Y2 PM High
-            //Y2
-            axis = "Y2";
-            startFreq = Condition.iHighYChirpFrom;
-            EndFreq = Condition.iHighYChirpTo;
-            amp = (int)Condition.iHighYAmplitude;
-
-            AddLog(ch, string.Format("{0} FRA ==", axis));
-
-            freq = new List<double>();
-            gain = new List<double>();
-            phase = new List<double>();
-
-            for (int i = 0; i < Condition.iFRAloop; i++)
+            if (DrvIC.Y2SlaveAddr != 0x00)
             {
-                while (true)
+                #region Y2 PM High
+                //Y2
+                axis = "Y2";
+                startFreq = Condition.iHighYChirpFrom;
+                EndFreq = Condition.iHighYChirpTo;
+                amp = (int)Condition.iHighYAmplitude;
+
+                AddLog(ch, string.Format("{0} FRA ==", axis));
+
+                freq = new List<double>();
+                gain = new List<double>();
+                phase = new List<double>();
+
+                for (int i = 0; i < Condition.iFRAloop; i++)
                 {
-                    freq.Add(startFreq);
-                    startFreq -= (int)(startFreq * (Condition.iHighFRAstep / 100f));
-                    if (startFreq < EndFreq) break;
+                    while (true)
+                    {
+                        freq.Add(startFreq);
+                        startFreq -= (int)(startFreq * (Condition.iHighFRAstep / 100f));
+                        if (startFreq < EndFreq) break;
+                    }
                 }
-            }
 
-            if (!DrvIC.FRA_Single(ch, axis, amp, 0, freq, ref gain, ref phase))
-            {
-                errMsg[ch] = string.Format("{0} Error", testItem);
-                m_ChannelOn[ch] = false;
-            }
-            phaseIndex = FindPhaseIndex(gain);
-            if (phaseIndex < 1)
-            {
-                AddLog(ch, "Y2 Find Phase Margin Failed.. Freq Range Check Please.");
-                errMsg[ch] = string.Format("{0} Error", testItem);
-                m_ChannelOn[ch] = false;
-            }
-            else
-            {
-                double phaseRes = 0, freqRes = 0;
-                if (phaseIndex == gain.Count - 1)
+                if (!DrvIC.FRA_Single(ch, axis, amp, 0, freq, ref gain, ref phase))
                 {
-                    phaseRes = phase[phaseIndex];
-                    freqRes = freq[phaseIndex];
+                    errMsg[ch] = string.Format("{0} Error", testItem);
+                    m_ChannelOn[ch] = false;
+                }
+                phaseIndex = FindPhaseIndex(gain);
+                if (phaseIndex < 1)
+                {
+                    AddLog(ch, "Y2 Find Phase Margin Failed.. Freq Range Check Please.");
+                    errMsg[ch] = string.Format("{0} Error", testItem);
+                    m_ChannelOn[ch] = false;
                 }
                 else
                 {
-                    phaseRes = ((gain[phaseIndex + 1] * phase[phaseIndex]) - (gain[phaseIndex] * phase[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]);
-                    freqRes = (int)(((gain[phaseIndex + 1] * freq[phaseIndex]) - (gain[phaseIndex] * freq[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]));
+                    double phaseRes = 0, freqRes = 0;
+                    if (phaseIndex == gain.Count - 1)
+                    {
+                        phaseRes = phase[phaseIndex];
+                        freqRes = freq[phaseIndex];
+                    }
+                    else
+                    {
+                        phaseRes = ((gain[phaseIndex + 1] * phase[phaseIndex]) - (gain[phaseIndex] * phase[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]);
+                        freqRes = (int)(((gain[phaseIndex + 1] * freq[phaseIndex]) - (gain[phaseIndex] * freq[phaseIndex + 1])) / (gain[phaseIndex + 1] - gain[phaseIndex]));
+                    }
+                    AddLog(ch, string.Format("FRA Y2 Freq = {0} PM = {1}",
+                          PassFails[ch].Results[(int)SpecItem.FRAY2_PMFreq_High].Val = freqRes, PassFails[ch].Results[(int)SpecItem.FRAY2_PhaseMargin_High].Val = phaseRes));
+                    ShowDataResults(ch, (int)SpecItem.FRAY2_PMFreq_High, (int)SpecItem.FRAY2_PhaseMargin_High);
                 }
-                AddLog(ch, string.Format("FRA Y2 Freq = {0} PM = {1}",
-                      PassFails[ch].Results[(int)SpecItem.FRAY2_PMFreq_High].Val = freqRes, PassFails[ch].Results[(int)SpecItem.FRAY2_PhaseMargin_High].Val = phaseRes));
-                ShowDataResults(ch, (int)SpecItem.FRAY2_PMFreq_High, (int)SpecItem.FRAY2_PhaseMargin_High);
+                #endregion
             }
-            #endregion
-     
 
 
         }

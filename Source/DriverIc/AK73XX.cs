@@ -26,6 +26,12 @@ namespace FZ4P
         public int Y1SlaveAddr { get; set; }
         public int Y2SlaveAddr { get; set; }
         public int FRA_Addr { get; set; }
+
+        public int FRA_AFSlaveAddr { get; set; }
+        public int FRA_XSlaveAddr { get; set; }
+        public int FRA_Y1SlaveAddr { get; set; }
+        public int FRA_Y2SlaveAddr { get; set; }
+
         public AK73XX()
         {
             Name = "AK73XX";
@@ -34,18 +40,28 @@ namespace FZ4P
             Y2OriginAddr = 0x4E;
 
             //1C33
-            AFSlaveAddr = 0x0C;
-            XSlaveAddr = 0x0E;
-            Y1SlaveAddr = 0x4E;
-            Y2SlaveAddr = 0x6C;
-            FRA_Addr = 0x14;
+            //AFSlaveAddr = 0x0C;
+            //XSlaveAddr = 0x0E;
+            //Y1SlaveAddr = 0x4E;
+            //Y2SlaveAddr = 0x6C;
+            //FRA_Addr = 0x14;
+            //FRA_AFSlaveAddr = 0x18;
+            //FRA_XSlaveAddr = 0x1C;
+            //FRA_Y1SlaveAddr = 0x9C;
+            //FRA_Y2SlaveAddr = 0xD8;
+
 
             //SU2810
-            //AFSlaveAddr = 0x28;
-            //XSlaveAddr = 0x70;
-            //Y1SlaveAddr = 0x30;
-            //Y2SlaveAddr = 0x00;
-            //FRA_Addr = 0x14;
+            AFSlaveAddr = 0x28;
+            XSlaveAddr = 0x70;
+            Y1SlaveAddr = 0x30;
+            Y2SlaveAddr = 0x00;
+            FRA_Addr = 0x14;           
+            FRA_AFSlaveAddr = 0x50;
+            FRA_XSlaveAddr = 0xE0;
+            FRA_Y1SlaveAddr = 0x60;
+            FRA_Y2SlaveAddr = 0x00;
+
         }
         public void OISOn(int ch, string name, bool isOn)
         {
@@ -341,8 +357,11 @@ namespace FZ4P
             else if (name.Contains("Y2")) addr = Y2SlaveAddr;
 
             byte[] data = new byte[2];
-            if(Y2SlaveAddr != 0x00)
-                Dln.ReadArray(ch, addr, 0x84, data);
+
+            if (addr != 0x00) Dln.ReadArray(ch, addr, 0x84, data);
+            if (name == "Y2" && Y2SlaveAddr != 0x00) Dln.ReadArray(ch, addr, 0x84, data);
+        
+
             return ((data[0] << 8) + data[1]) >> 4;
         }
         
@@ -368,33 +387,32 @@ namespace FZ4P
             string axis;
             if (name.Contains("X"))
             {
-                addr = 0x1C;
+                addr = FRA_XSlaveAddr;
                 sAddr = XSlaveAddr;
                 axis = "X";
             }
             else if (name.Contains("Y1"))
             {
-                addr = 0x9C;
+                addr = FRA_Y1SlaveAddr;
                 sAddr = Y1SlaveAddr;
                 axis = "Y1";
             }
             else if (name.Contains("Y2"))
             {
-                addr = 0xD8;
+                addr = FRA_Y2SlaveAddr;
                 sAddr = Y2SlaveAddr;
                 axis = "Y2";
             }
             else if (name.Contains("AF"))
             {
-                addr = 0x18;
+                addr = FRA_AFSlaveAddr;
                 sAddr = AFSlaveAddr;
                 axis = "AF";
             }
             else
                 return false;
 
-            SetSlaveAddr(ch, addr);
-
+            if(addr != 0x00) SetSlaveAddr(ch, addr);
             byte[] data = new byte[1];
 
             if (!Dln.WriteArray(ch, sAddr, 0x02, new byte[] { 0x40 })) return false;

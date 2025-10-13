@@ -193,8 +193,8 @@ namespace FZ4P
         public string Name { get; set; }
         public List<int> CodeZ = new List<int>();
         public List<int> CodeX = new List<int>();
-        public List<int> CodeY1 = new List<int>();
-        public List<int> CodeY2 = new List<int>();
+        public List<int> CodeY = new List<int>();
+      
         public List<double> StrokeX = new List<double>();
         public List<double> StrokeY = new List<double>();
         public List<double> StrokeZ = new List<double>();
@@ -296,8 +296,7 @@ namespace FZ4P
         {
             CodeZ.Clear();
             CodeX.Clear();
-            CodeY1.Clear();
-            CodeY2.Clear();
+            CodeY.Clear();
             StrokeX.Clear();
             StrokeY.Clear();
             StrokeZ.Clear();
