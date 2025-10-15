@@ -18,6 +18,8 @@ namespace FZ4P
         public Condition Condition { get { return STATIC.Rcp.Condition; } }
         public DLN Dln { get { return STATIC.Dln; } }
         public string Name { get; set; }
+   
+        public int AFOriginAddr { get; set; }
         public int XOriginAddr { get; set; }
         public int Y1OriginAddr { get; set; }
         public int Y2OriginAddr { get; set; }
@@ -35,9 +37,11 @@ namespace FZ4P
         public AK73XX()
         {
             Name = "AK73XX";
-            XOriginAddr = 0x0A;
-            Y1OriginAddr = 0x0E;
-            Y2OriginAddr = 0x4E;
+
+            AFOriginAddr = 0x0C;
+            XOriginAddr = 0x0E;
+            Y1OriginAddr = 0x4E;
+            Y2OriginAddr = 0x00;
 
             //1C33
             //AFSlaveAddr = 0x0C;
@@ -120,166 +124,8 @@ namespace FZ4P
          
         }
        
-        public bool ChangeSlaveAddr(int ch)
-        {
-            // Y2 : 4E -> 6C
-            // Y1 : 0E -> 4E
-            // X  : 0A -> 0E
-            byte[] rDdata = new byte[1];
-            Dln.ReadArray(ch, AFSlaveAddr, 0x03, rDdata);
-            Process.AddLog(ch, string.Format("Read 0x03 :  0x{0:X2}", rDdata[0]));
-            Dln.ReadArray(ch, XSlaveAddr, 0x03, rDdata);
-            Process.AddLog(ch, string.Format("Read 0x03 :  0x{0:X2}", rDdata[0]));
-            Dln.ReadArray(ch, Y1SlaveAddr, 0x03, rDdata);
-            Process.AddLog(ch, string.Format("Read 0x03 :  0x{0:X2}", rDdata[0]));
-            Dln.ReadArray(ch, Y2SlaveAddr, 0x03, rDdata);
-            Process.AddLog(ch, string.Format("Read 0x03 :  0x{0:X2}", rDdata[0]));
-            bool bChange = true;
-
-            if (Y2SlaveAddr != 0x00) { if (!Dln.WriteArray(ch, Y2SlaveAddr, 0xAE, new byte[] { 0x3B })) bChange = false; }
-         
-            if (!Dln.WriteArray(ch, Y1SlaveAddr, 0xAE, new byte[] { 0x3B })) bChange = false;           
-            if (!Dln.WriteArray(ch, XSlaveAddr, 0xAE, new byte[] { 0x3B })) bChange = false;
-            if(bChange)
-            {
-                Process.AddLog(ch, string.Format("Already Slave Address Changed..", 0xAE, 0x3B));
-                return true;
-            }
-
-            if (Y2SlaveAddr != 0x00)
-            {
-                //Y2 Change ==
-                if (!Dln.WriteArray(ch, Y2OriginAddr, 0xAE, new byte[] { 0x3B })) return false;
-                Process.AddLog(ch, string.Format("Setting Mode = Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0xAE, 0x3B));
-
-                if (!Dln.WriteArray(ch, Y2OriginAddr, 0x0B, new byte[] { 0x04 })) return false; // 02 : Normal, 04 : Reverse
-                Process.AddLog(ch, string.Format("Set Pin Mode = Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0x0B, 0x04));
-
-                if (!Dln.WriteArray(ch, Y2OriginAddr, 0x0A, new byte[] { 0x30 })) return false; // Setting Slave Address
-                Process.AddLog(ch, string.Format("Setting Slave Address = Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0x0A, 0x30));
-
-                Thread.Sleep(200);
-
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 0x03, new byte[] { 0x01 })) return false; // Store Memory
-
-                Process.AddLog(ch, string.Format("Store Memory = Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x03, 0x01));
-                Process.AddLog(ch, string.Format("Y2 SlaveAddr Change FinIsh."));
-            }
-       
-
-            //Y1 Change ==
-            if (!Dln.WriteArray(ch, Y1OriginAddr, 0xAE, new byte[] { 0x3B })) return false;
-
-            Process.AddLog(ch, string.Format("Setting Mode = Write Mem : 0x{0:X2} Y1Data : 0x{1:X2}", 0xAE, 0x3B));
-
-            if (!Dln.WriteArray(ch, Y1OriginAddr, 0x0B, new byte[] { 0x02 })) return false; // 02 : Normal, 04 : Reverse
-            Process.AddLog(ch, string.Format("Set Pin Mode = Write Mem : 0x{0:X2} Y1Data : 0x{1:X2}", 0x0B, 0x03));
-
-            if (!Dln.WriteArray(ch, Y1OriginAddr, 0x0A, new byte[] { 0x80 })) return false; // Setting Slave Address
-            Process.AddLog(ch, string.Format("Setting Slave Address = Write Mem : 0x{0:X2} Y1Data : 0x{1:X2}", 0x0A, 0x80));
-
-            Thread.Sleep(200); 
-
-            if (!Dln.WriteArray(ch, Y1SlaveAddr, 0x03, new byte[] { 0x01 })) return false; // Store Memory
-
-            Process.AddLog(ch, string.Format("Store Memory = Write Mem : 0x{0:X2} Y1Data : 0x{1:X2}", 0x03, 0x01));
-            Process.AddLog(ch, string.Format("Y1 SlaveAddr Change FinIsh."));
-
-            //X Change ==
-            if (!Dln.WriteArray(ch, XOriginAddr, 0xAE, new byte[] { 0x3B })) return false;
-            Process.AddLog(ch, string.Format("Setting Mode = Write Mem : 0x{0:X2} XData : 0x{1:X2}", 0xAE, 0x3B));
-
-            if (!Dln.WriteArray(ch, XOriginAddr, 0x0B, new byte[] { 0x02 })) return false; // 02 : Normal, 04 : Reverse
-            Process.AddLog(ch, string.Format("Set Pin Mode = Write Mem : 0x{0:X2} XData : 0x{1:X2}", 0x0B, 0x02));
-
-            if (!Dln.WriteArray(ch, XOriginAddr, 0x0A, new byte[] { 0xF0 })) return false; // Setting Slave Address
-            Process.AddLog(ch, string.Format("Setting Slave Address = Write Mem : 0x{0:X2} XData : 0x{1:X2}", 0x0A, 0xF0));
-
-            Thread.Sleep(200);
-
-            if (!Dln.WriteArray(ch, XSlaveAddr, 0x03, new byte[] { 0x01 })) return false; // Store Memory
-
-            Process.AddLog(ch, string.Format("Store Memory = Write Mem : 0x{0:X2} XData : 0x{1:X2}", 0x03, 0x01));
-            Process.AddLog(ch, string.Format("X SlaveAddr Change FinIsh."));
-
-            return true;
-        }
-        public bool RestoreSlaveAddr(int ch)
-        {
-            // X  : 0E -> 0A
-            // Y1 : 4E -> 0E
-            // Y2 : 6C -> 4E
-
-            bool bChange = true;
-            if (Y2SlaveAddr != 0x00) { if (!Dln.WriteArray(ch, Y2OriginAddr, 0xAE, new byte[] { 0x3B })) bChange = false; } 
-            if (!Dln.WriteArray(ch, Y1OriginAddr, 0xAE, new byte[] { 0x3B })) bChange = false;
-            if (!Dln.WriteArray(ch, XOriginAddr, 0xAE, new byte[] { 0x3B })) bChange = false;
-            if (bChange)
-            {
-                Process.AddLog(ch, string.Format("Already Slave Address Restored..", 0xAE, 0x3B));
-                return true;
-            }
-
-            //X Restore ==
-            if (!Dln.WriteArray(ch, XSlaveAddr, 0xAE, new byte[] { 0x3B })) return false;
-            Process.AddLog(ch, string.Format("Setting Mode = Write Mem : 0x{0:X2} XData : 0x{1:X2}", 0xAE, 0x3B));
-
-            if (!Dln.WriteArray(ch, XSlaveAddr, 0x0B, new byte[] { 0x02 })) return false; // 02 : Normal, 04 : Reverse
-            Process.AddLog(ch, string.Format("Set Pin Mode = Write Mem : 0x{0:X2} XData : 0x{1:X2}", 0x0B, 0x02));
-
-            if (!Dln.WriteArray(ch, XSlaveAddr, 0x0A, new byte[] { 0x00 })) return false; // Setting Slave Address
-            Process.AddLog(ch, string.Format("Setting Slave Address = Write Mem : 0x{0:X2} XData : 0x{1:X2}", 0x0A, 0x00));
-
-            Thread.Sleep(200);
-
-            if (!Dln.WriteArray(ch, XOriginAddr, 0x03, new byte[] { 0x01 })) return false; // Store Memory
-
-            Process.AddLog(ch, string.Format("Store Memory = Write Mem : 0x{0:X2} XData : 0x{1:X2}", 0x03, 0x01));
-            Process.AddLog(ch, string.Format("X SlaveAddr Restore FinIsh."));
-
-            //Y1 Restore ==
-            if (!Dln.WriteArray(ch, Y1SlaveAddr, 0xAE, new byte[] { 0x3B })) return false;
-
-            Process.AddLog(ch, string.Format("Setting Mode = Write Mem : 0x{0:X2} Y1Data : 0x{1:X2}", 0xAE, 0x3B));
-
-            if (!Dln.WriteArray(ch, Y1SlaveAddr, 0x0B, new byte[] { 0x02 })) return false; // 02 : Normal, 04 : Reverse
-            Process.AddLog(ch, string.Format("Set Pin Mode = Write Mem : 0x{0:X2} Y1Data : 0x{1:X2}", 0x0B, 0x03));
-
-            if (!Dln.WriteArray(ch, Y1SlaveAddr, 0x0A, new byte[] { 0x00 })) return false; // Setting Slave Address
-            Process.AddLog(ch, string.Format("Setting Slave Address = Write Mem : 0x{0:X2} Y1Data : 0x{1:X2}", 0x0A, 0x00));
-
-            Thread.Sleep(200);
-
-            if (!Dln.WriteArray(ch, Y1OriginAddr, 0x03, new byte[] { 0x01 })) return false; // Store Memory
-
-            Process.AddLog(ch, string.Format("Store Memory = Write Mem : 0x{0:X2} Y1Data : 0x{1:X2}", 0x03, 0x01));
-            Process.AddLog(ch, string.Format("Y1 SlaveAddr Restore FinIsh."));
-
-
-            if(Y2SlaveAddr != 0x00)
-            {
-                //Y2 Restore ==
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 0xAE, new byte[] { 0x3B })) return false;
-                Process.AddLog(ch, string.Format("Setting Mode = Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0xAE, 0x3B));
-
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 0x0B, new byte[] { 0x04 })) return false; // 02 : Normal, 04 : Reverse
-                Process.AddLog(ch, string.Format("Set Pin Mode = Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0x0B, 0x04));
-
-                if (!Dln.WriteArray(ch, Y2SlaveAddr, 0x0A, new byte[] { 0x00 })) return false; // Setting Slave Address
-                Process.AddLog(ch, string.Format("Setting Slave Address = Write Mem : 0x{0:X2} Y2Data : 0x{1:X2}", 0x0A, 0x00));
-
-                Thread.Sleep(200);
-
-                if (!Dln.WriteArray(ch, Y2OriginAddr, 0x03, new byte[] { 0x01 })) return false; // Store Memory
-
-                Process.AddLog(ch, string.Format("Store Memory = Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x03, 0x01));
-                Process.AddLog(ch, string.Format("Y2 SlaveAddr Restore FinIsh."));
-            }
-
-          
-
-            return true;
-        }        
+      
+     
         public bool Move(int ch, string name, int pos, bool openLoop = false)
         {
             int data = pos << 4;
@@ -353,8 +199,9 @@ namespace FZ4P
             int addr = 0x00;
             if (name.Contains("AF")) addr = AFSlaveAddr;
             else if (name.Contains("X")) addr = XSlaveAddr;
-            else if (name.Contains("Y1")) addr = Y1SlaveAddr;
             else if (name.Contains("Y2")) addr = Y2SlaveAddr;
+            else if (name.Contains("Y1") || name.Contains("Y")) addr = Y1SlaveAddr;
+         
 
             byte[] data = new byte[2];
 
@@ -364,7 +211,23 @@ namespace FZ4P
 
             return ((data[0] << 8) + data[1]) >> 4;
         }
-        
+        public int ReadHallOpenLoop(int ch, string name)
+        {
+            int addr = 0x00;
+            if (name.Contains("AF")) addr = AFSlaveAddr;
+            else if (name.Contains("X")) addr = XSlaveAddr;
+            else if (name.Contains("Y2")) addr = Y2SlaveAddr;
+            else if (name.Contains("Y1") || name.Contains("Y")) addr = Y1SlaveAddr;
+
+
+            byte[] data = new byte[2];
+
+            if (addr != 0x00) Dln.ReadArray(ch, addr, 0x80, data);
+            if (name == "Y2" && Y2SlaveAddr != 0x00) Dln.ReadArray(ch, addr, 0x84, data);
+
+
+            return ((data[0] << 8) + data[1]) >> 4;
+        }
         public int ReadHall_13bit(int ch, string name)
         {
             int addr = 0x00;
@@ -547,279 +410,7 @@ namespace FZ4P
 
         //    return true;
         //}
-        public bool Sine_Wave_Test(int ch, string name, int mode, int SIN_THD, int CNT_ERR, int SIN_FREQ, int SIN_AMP, int SIN_CYCL, ref List<int> result)
-        {
-            byte addr = 0x1C;
-            try
-            {
-                if (name.Contains("X"))
-                {
-                    addr = 0x1C;
-                    if (!Dln.WriteArray(ch, FRA_Addr, 0x6F, new byte[] { addr })) return false;
-                    if (mode == 0)
-                    {
-                        if (!Dln.WriteArray(ch, FRA_Addr, 0xAD, new byte[] { 0x51 })) return false;
-                    }
-                    else if (mode == 2)
-                    {
-                        if (!Dln.WriteArray(ch, FRA_Addr, 0xAD, new byte[] { 0x53 })) return false;
-                    }
-                }
-                else if (name.Contains("Y1"))
-                {
-                    addr = 0x9C;
-                    if (!Dln.WriteArray(ch, FRA_Addr, 0x89, new byte[] { addr })) return false;
-                    if (mode == 1)
-                    {
-                        if (!Dln.WriteArray(ch, FRA_Addr, 0xAD, new byte[] { 0x52 })) return false;
-                    }
-                    else if (mode == 2)
-                    {
-                        if (!Dln.WriteArray(ch, FRA_Addr, 0xAD, new byte[] { 0x53 })) return false;
-                    }
-                }
-                else if (name.Contains("Y2"))
-                {
-                    addr = 0xD8;
-                    if (!Dln.WriteArray(ch, FRA_Addr, 0x89, new byte[] { addr })) return false;
-                    if (mode == 1)
-                    {
-                        if (!Dln.WriteArray(ch, FRA_Addr, 0xAD, new byte[] { 0x52 })) return false;
-                    }
-                    else if (mode == 2)
-                    {
-                        if (!Dln.WriteArray(ch, FRA_Addr, 0xAD, new byte[] { 0x53 })) return false;
-                    }
-                }
-                else
-                    return false;
-
-                Thread.Sleep(2);
-                if (!Dln.WriteArray(ch, FRA_Addr, 0x60, new byte[] { (byte)SIN_THD })) return false;
-                if (!Dln.WriteArray(ch, FRA_Addr, 0x61, new byte[] { (byte)CNT_ERR })) return false;
-                if (!Dln.WriteArray(ch, FRA_Addr, 0x62, new byte[] { (byte)SIN_FREQ })) return false;
-                if (!Dln.WriteArray(ch, FRA_Addr, 0x63, new byte[] { (byte)SIN_AMP })) return false;
-                if (!Dln.WriteArray(ch, FRA_Addr, 0x64, new byte[] { (byte)SIN_CYCL })) return false;
-
-                string tmpStr = "Sine thr = " + SIN_THD + "\r\n"
-                    + "Sine Cnt Error = " + CNT_ERR + "\r\n"
-                    + "Sine Freq = " + SIN_FREQ + "\r\n"
-                    + "Sine Amp = " + SIN_AMP + "\r\n"
-                    + "Sine Cycle = " + SIN_CYCL;
-
-                Process.AddLog(ch, tmpStr);
-
-                if (!Dln.WriteArray(ch, FRA_Addr, 0xA8, new byte[] { 0xC5 })) return false;
-
-                double LimitTime = 50 + ((double)(((SIN_CYCL >> 4) & 0x0F) + (SIN_CYCL & 0x0F)) / SIN_FREQ * 1000);
-                Process.AddLog(ch, string.Format("SinewWave Test Time = {0} ms", LimitTime.ToString("F3")));
-                Thread.Sleep((int)LimitTime);
-                if (!Dln.WriteArray(ch, FRA_Addr, 0xA8, new byte[] { 0x00 })) return false;
-                Thread.Sleep(1);
-
-                if (!Dln.WriteArray(ch, FRA_Addr, 0xAD, new byte[] { 0x00 })) return false;
-                Thread.Sleep(2);
-
-                byte[] data = new byte[1];
-                byte[] data2 = new byte[2];
-
-                if (name.Contains("X"))
-                {
-                    Dln.ReadArray(ch, FRA_Addr, 0xE4, data2);
-                    result.Add(data2[0] + (data2[1] << 8));
-                    Process.AddLog(ch, string.Format("X SineWave Max Count = {0}", result[0]));
-                    Dln.ReadArray(ch, FRA_Addr, 0x6E, data); 
-                    result.Add(data[0]);
-                    Process.AddLog(ch, string.Format("Sinewave Result = {0}", data[0]));
-
-                    if (!Dln.WriteArray(ch, XSlaveAddr, 0xAF, new byte[] { 0xEE })) return false;
-                    if (!Dln.WriteArray(ch, XSlaveAddr, 0xAF, new byte[] { 0xCE })) return false;
-                }
-                else if (name.Contains("Y1"))
-                {
-                    Dln.ReadArray(ch, FRA_Addr, 0xE6, data2);
-                    result.Add(data2[0] + (data2[1] << 8));
-                    Process.AddLog(ch, string.Format("Y1 SineWave Max Count = {0}", result[0]));
-
-                    Dln.ReadArray(ch, FRA_Addr, 0x6E, data); result.Add(data[0]);
-                    Process.AddLog(ch, string.Format("Sinewave Result = {0}", data[0]));
-                    if (!Dln.WriteArray(ch, Y1SlaveAddr, 0xAF, new byte[] { 0xEE })) return false;
-                    if (!Dln.WriteArray(ch, Y1SlaveAddr, 0xAF, new byte[] { 0xCE })) return false;
-                }
-                else if (name.Contains("Y2"))
-                {
-                    Dln.ReadArray(ch, FRA_Addr, 0xE6, data2);
-                    result.Add(data2[0] + (data2[1] << 8));
-                    Process.AddLog(ch, string.Format("Y2 SineWave Max Count = {0}", result[0]));
-
-                    Dln.ReadArray(ch, FRA_Addr, 0x6E, data); result.Add(data[0]);
-                    Process.AddLog(ch, string.Format("Sinewave Result = {0}", data[0]));
-                    if (!Dln.WriteArray(ch, Y2SlaveAddr, 0xAF, new byte[] { 0xEE })) return false;
-                    if (!Dln.WriteArray(ch, Y2SlaveAddr, 0xAF, new byte[] { 0xCE })) return false;
-                }
-                else
-                    return false;
-
-                return true;
-            }
-            catch
-            {
-                if (name.Contains("X"))
-                {
-                    if (!Dln.WriteArray(ch, XSlaveAddr, 0xAF, new byte[] { 0xEE })) return false;
-                    if (!Dln.WriteArray(ch, XSlaveAddr, 0xAF, new byte[] { 0xCE })) return false;
-                }
-                else if (name.Contains("Y1"))
-                {
-                    if (!Dln.WriteArray(ch, Y1SlaveAddr, 0xAF, new byte[] { 0xEE })) return false;
-                    if (!Dln.WriteArray(ch, Y1SlaveAddr, 0xAF, new byte[] { 0xCE })) return false;
-                }
-                else if (name.Contains("Y2"))
-                {
-                    if (!Dln.WriteArray(ch, Y2SlaveAddr, 0xAF, new byte[] { 0xEE })) return false;
-                    if (!Dln.WriteArray(ch, Y2SlaveAddr, 0xAF, new byte[] { 0xCE })) return false;
-                }
-                else
-                    return false;
-
-                return false;
-            }
-        }
-        public bool Ringing_Test(int ch, string name, int mode, int RNG_THD, int RNG_STVT, int RNG_METM, int RNG_WSEC, ref List<int> result)
-        {
-            byte addr = 0x1C;
-            try
-            {
-                if (name.Contains("X"))
-                {
-                    addr = 0x1C;
-                    if (!Dln.WriteArray(ch, FRA_Addr , 0x6F, new byte[] { addr })) return false;
-                    if (mode == 0)
-                    {
-                        if (!Dln.WriteArray(ch, FRA_Addr, 0xAD, new byte[] { 0x21 })) return false;
-                    }
-                    else if (mode == 2)
-                    {
-                        if (!Dln.WriteArray(ch, FRA_Addr, 0xAD, new byte[] { 0x23 })) return false;
-                    }
-                }
-                else if (name.Contains("Y1"))
-                {
-                    addr = 0x9C;
-                    if (!Dln.WriteArray(ch, FRA_Addr, 0x6F, new byte[] { addr })) return false;
-                    if (mode == 1)
-                    {
-                        if (!Dln.WriteArray(ch, FRA_Addr, 0xAD, new byte[] { 0x22 })) return false;
-                    }
-                    else if (mode == 2)
-                    {
-                        if (!Dln.WriteArray(ch, FRA_Addr, 0xAD, new byte[] { 0x23 })) return false;
-                    }
-                }
-                else if (name.Contains("Y2"))
-                {
-                    addr = 0xD8;
-                    if (!Dln.WriteArray(ch, FRA_Addr, 0x6F, new byte[] { addr })) return false;
-                    if (mode == 1)
-                    {
-                        if (!Dln.WriteArray(ch, FRA_Addr, 0xAD, new byte[] { 0x22 })) return false;
-                    }
-                    else if (mode == 2)
-                    {
-                        if (!Dln.WriteArray(ch, FRA_Addr, 0xAD, new byte[] { 0x23 })) return false;
-                    }
-                }
-                else
-                    return false;
-
-                Thread.Sleep(2);
-                if (!Dln.WriteArray(ch, FRA_Addr, 0x65, new byte[] { (byte)RNG_THD })) return false;
-                if (!Dln.WriteArray(ch, FRA_Addr, 0x66, new byte[] { (byte)RNG_STVT })) return false;
-                if (!Dln.WriteArray(ch, FRA_Addr, 0x68, new byte[] { (byte)RNG_METM })) return false;
-                if (!Dln.WriteArray(ch, FRA_Addr, 0x69, new byte[] { (byte)RNG_WSEC })) return false;
-
-                string tmpStr = "Rng thr = " + RNG_THD + "\r\n"
-                              + "Rng Start Position = " + RNG_STVT + "\r\n"
-                              + "Rng METM = " + RNG_METM + "\r\n"
-                              + "Rng WSEC = " + RNG_WSEC;
-
-                Process.AddLog(ch, tmpStr);
-
-                if (!Dln.WriteArray(ch, FRA_Addr, 0xA8, new byte[] { 0xC5 })) return false;
-
-                double LimitTime = 100 + RNG_METM + RNG_WSEC;
-                Process.AddLog(ch, string.Format("Ringing Test Time = {0} ms", LimitTime.ToString("F3")));
-                Thread.Sleep((int)LimitTime);
-                if (!Dln.WriteArray(ch, FRA_Addr, 0xA8, new byte[] { 0x00 })) return false;
-                Thread.Sleep(1);
-                if (!Dln.WriteArray(ch, FRA_Addr, 0xAD, new byte[] { 0x00 })) return false;
-                Thread.Sleep(2);
-
-                byte[] data = new byte[1];
-
-                if (name.Contains("X"))
-                {
-                    Dln.ReadArray(ch, FRA_Addr, 0x9C, data);
-                    Process.AddLog(ch, string.Format("RNG OK X = {0}", data[0]));
-                    result.Add(RNG_METM + RNG_WSEC - data[0]);
-                    Process.AddLog(ch, string.Format("Ringing Time X = {0}", result[0]));
-
-                    Dln.ReadArray(ch, FRA_Addr, 0x6E, data); result.Add(data[0]);
-                    Process.AddLog(ch, string.Format("Ringing Result = {0}", data[0]));
-                    if (!Dln.WriteArray(ch, XSlaveAddr, 0xAF, new byte[] { 0xEE })) return false;
-                    if (!Dln.WriteArray(ch, XSlaveAddr, 0xAF, new byte[] { 0xCE })) return false;
-                }
-                else if (name.Contains("Y1"))
-                {
-                    Dln.ReadArray(ch, FRA_Addr, 0x9D, data);
-                    Process.AddLog(ch, string.Format("RNG OK Y1 = {0}", data[0]));
-                    result.Add(RNG_METM + RNG_WSEC - data[0]);
-                    Process.AddLog(ch, string.Format("Ringing Time Y1 = {0}", result[0]));
-
-                    Dln.ReadArray(ch, FRA_Addr, 0x6E, data); result.Add(data[0]);
-                    Process.AddLog(ch, string.Format("Ringing Result = {0}", data[0]));
-                    if (!Dln.WriteArray(ch, Y1SlaveAddr, 0xAF, new byte[] { 0xEE })) return false;
-                    if (!Dln.WriteArray(ch, Y1SlaveAddr, 0xAF, new byte[] { 0xCE })) return false;
-                }
-                else if (name.Contains("Y2"))
-                {
-                    Dln.ReadArray(ch, FRA_Addr, 0x9D, data);
-                    Process.AddLog(ch, string.Format("RNG OK Y2 = {0}", data[0]));
-                    result.Add(RNG_METM + RNG_WSEC - data[0]);
-                    Process.AddLog(ch, string.Format("Ringing Time Y2 = {0}", result[0]));
-
-                    Dln.ReadArray(ch, FRA_Addr, 0x6E, data); result.Add(data[0]);
-                    Process.AddLog(ch, string.Format("Ringing Result = {0}", data[0]));
-                    if (!Dln.WriteArray(ch, Y2SlaveAddr, 0xAF, new byte[] { 0xEE })) return false;
-                    if (!Dln.WriteArray(ch, Y2SlaveAddr, 0xAF, new byte[] { 0xCE })) return false;
-                }
-                else
-                    return false;
-                return true;
-            }
-            catch
-            {
-                if (name.Contains("X"))
-                {
-                    if (!Dln.WriteArray(ch, XSlaveAddr, 0xAF, new byte[] { 0xEE })) return false;
-                    if (!Dln.WriteArray(ch, XSlaveAddr, 0xAF, new byte[] { 0xCE })) return false;
-                }
-                else if (name.Contains("Y1"))
-                {
-                    if (!Dln.WriteArray(ch, Y1SlaveAddr, 0xAF, new byte[] { 0xEE })) return false;
-                    if (!Dln.WriteArray(ch, Y1SlaveAddr, 0xAF, new byte[] { 0xCE })) return false;
-                }
-                else if (name.Contains("Y2"))
-                {
-                    if (!Dln.WriteArray(ch, Y2SlaveAddr, 0xAF, new byte[] { 0xEE })) return false;
-                    if (!Dln.WriteArray(ch, Y2SlaveAddr, 0xAF, new byte[] { 0xCE })) return false;
-                }
-                else
-                    return false;
-
-                return false;
-            }
-        }
+      
        
 
         private bool SetSlaveAddr(int ch, int addr)

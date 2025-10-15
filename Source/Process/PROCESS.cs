@@ -702,7 +702,7 @@ namespace FZ4P
                 DrvIC.FRAModeDisable(ch);
                 byte[] b = new byte[1];
                 Dln.ReadArray(0, DrvIC.XSlaveAddr, 0xE5, b);
-                AddLog(ch, $"AF Best Pos = {b[0] << 2}");
+                AddLog(ch, $"AF Best Pos = {b[0] << 4}");
                 BestAFPos = b[0] << 4;
                 int count = Condition.ToDoList.Count;
                 if (count == 0)
@@ -722,11 +722,14 @@ namespace FZ4P
                 Dln.PowerOnOff(0, true);
                 Thread.Sleep(200);
 
-                if (!Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x40 })) m_ChannelOn[ch] = false;
-                if (!Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 })) m_ChannelOn[ch] = false;
-                if (!Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 })) m_ChannelOn[ch] = false;
-                if (DrvIC.Y2SlaveAddr != 0x00) { if (!Dln.WriteArray(ch, DrvIC.Y2SlaveAddr, 0x02, new byte[] { 0x40 })) m_ChannelOn[ch] = false; }
-                //m_ChannelOn[1] = false; // 1ch Test
+                if (!Dln.WriteArray(ch, DrvIC.AFOriginAddr, 0x02, new byte[] { 0x40 }) && !Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x40 })) m_ChannelOn[ch] = false;
+                if (!Dln.WriteArray(ch, DrvIC.XOriginAddr, 0x02, new byte[] { 0x40 }) && !Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 })) m_ChannelOn[ch] = false;
+                if (!Dln.WriteArray(ch, DrvIC.Y1OriginAddr, 0x02, new byte[] { 0x40 }) && !Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 })) m_ChannelOn[ch] = false;
+                if (DrvIC.Y2SlaveAddr != 0x00)
+                {
+                    if (!Dln.WriteArray(ch, DrvIC.Y2OriginAddr, 0x02, new byte[] { 0x40 })
+                        && !Dln.WriteArray(ch, DrvIC.Y2SlaveAddr, 0x02, new byte[] { 0x40 })) m_ChannelOn[ch] = false;
+                }
 
                 for (int k = ch; k < ch + ChannelCnt; k++)
                 {
@@ -2031,6 +2034,15 @@ namespace FZ4P
             LEDs_All_On(port, false);
             if (!Option.WriteResultToDriverIC) Process_CalcTimeTest(port, testItem);
         }
+        FindResult Measure()
+        {
+            FindResult res = new FindResult();
+
+            STATIC.fVision.m__G.oCam[0].Grab(0);
+            res = STATIC.fVision.MeasureTxTyTz(0);
+            return res; 
+        }
+
         #endregion
 
 

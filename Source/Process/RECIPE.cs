@@ -280,19 +280,20 @@ namespace FZ4P
         [Condition("LG @ 10Hz", "Y Amp", "", "", "mV")] public double iLoppgainYAmp { get; set; } = 60;
 
 
-        [Condition("Sine Wave", "SIN THD", "", "", "code")] public int SIN_THD { get; set; } = 150;
-        [Condition("Sine Wave", "SIN CNT ERR", "", "", "cnt")] public int SIN_CNT_ERR { get; set; } = 1;
+        [Condition("Sine Wave", "SIN THD", "", "", "code")] public int SIN_THD { get; set; } = 90;
+        [Condition("Sine Wave", "SIN CNT ERR", "", "", "cnt")] public int SIN_CNT_ERR { get; set; } = 0;
         [Condition("Sine Wave", "SIN FREQ", "", "", "Hz")] public int SIN_FREQ { get; set; } = 5;
         [Condition("Sine Wave", "SIN AMP", "", "", "mV")] public int SIN_AMP { get; set; } = 58;
         [Condition("Sine Wave", "SIN CYCL", "", "", "#")] public int SIN_CYCL { get; set; } = 18;
-        [Condition("Sine Wave", "SIN AXIS", "", "", "0:X 1:Y 2:Both")] public int SIN_AXIS { get; set; } = 0;
+        [Condition("Sine Wave", "SIN AXIS", "", "", "0:X 1:Y 2:Both")] public int SIN_AXIS { get; set; } = 2;
+        [Condition("Sine Wave", "ErrCnt Spec", "", "", "")] public int SIN_Spec { get; set; } = 0;
 
         [Condition("Ringing", "RNG THD", "", "", "code")] public int RNG_THD { get; set; } = 20;
         [Condition("Ringing", "RNG STVT", "", "", "%")] public int RNG_STVT { get; set; } = 90;
         [Condition("Ringing", "RNG METM", "", "", "msec")] public int RNG_METM { get; set; } = 100;
         [Condition("Ringing", "RNG WSEC", "", "", "msec")] public int RNG_WSEC { get; set; } = 50;
-        [Condition("Ringing", "RNG AXIS", "", "", "0:X 1:Y 2:Both")] public int RNG_AXIS { get; set; } = 0;
-
+        [Condition("Ringing", "RNG AXIS", "", "", "0:X 1:Y 2:Both")] public int RNG_AXIS { get; set; } = 2;
+        [Condition("Ringing", "RNG StabilizeTime Spec", "", "", "")] public int RNG_StabilizerSpec { get; set; } = 100;
         [Condition("Tilt", "Ref Code", "", "", "code")] public int TiltRefCode { get; set; } = 1000;
         [Condition("Tilt", "Min Range", "", "", "code")] public int TiltMinCode { get; set; } = 200;
         [Condition("Tilt", "Max Range", "", "", "code")] public int TiltMaxCode { get; set; } = 3900;
@@ -369,6 +370,11 @@ namespace FZ4P
         [Condition("Y Current", "Max Stroke", "", "", "um")] public double YCurrMaxStroke { get; set; } = 310;
         [Condition("Y Current", "Mode", "", "", "0:CodeRange / 1:Step / 2:um")] public int YCurrMode { get; set; } = 0;
 
+        [Condition("Temp. Test", "Min Spec", "", "", "_")] public double TempMinSpec { get; set; } = -20;
+        [Condition("Temp. Test", "Max Spec", "", "", "_")] public double TempMaxSpec { get; set; } = 40;
+        [Condition("Temp. Test", "Val Spec", "", "", "_")] public double TempValSpec { get; set; } = 20;
+
+        [Condition("Servo Decenter", "AF Position", "", "", "code")] public int ServoDecenterAFPos { get; set; } = 1252;
 
         [Condition("I2C", "I2C Clock", "", "", "KHz")] public int iI2Cclock { get; set; } = 400;
 
@@ -499,6 +505,9 @@ namespace FZ4P
         AF_LinearityComp,
         X_LinearityComp,
         Y_LinearityComp,
+        Temperature_Test,
+        AutoTest,
+        NVM_Verify_NG,
     }
     public class Spec
     {
