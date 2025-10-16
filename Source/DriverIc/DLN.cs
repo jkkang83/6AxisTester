@@ -342,6 +342,14 @@ namespace FZ4P
               
             }
         }
+
+        public void PowerSequence(int port)
+        {
+            PowerOnOff(0, false);
+            Thread.Sleep(200);
+            PowerOnOff(0, true);
+            Thread.Sleep(200);
+        }
         public double GetCurrent(int ch, int mode)
         {
             double res = 0;

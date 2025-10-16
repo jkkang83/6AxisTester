@@ -1,21 +1,161 @@
-﻿using MathNet.Numerics.Optimization.TrustRegion;
+﻿using Dln;
+using MathNet.Numerics.Financial;
+using MathNet.Numerics.Optimization.TrustRegion;
 using OpenCvSharp.Dnn;
 using OpenCvSharp.Flann;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics;
+using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Xml.Linq;
+using System.Xml.Schema;
+using static alglib;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
 namespace FZ4P
 {
     public partial class Process
     {
+        List<byte[]> AFPID = new List<byte[]>
+        {
+            new byte[2]{ 0x0B, 0xE2 },
+            new byte[2]{ 0x0A, 0x73 },
+            new byte[2]{ 0x08, 0x85 },
+            new byte[2]{ 0x09, 0x8C },
+            new byte[2]{ 0x10, 0x29 },
+            new byte[2]{ 0x11, 0x3E },
+            new byte[2]{ 0x12, 0x96 },
+            new byte[2]{ 0x13, 0x24 },
+            new byte[2]{ 0x14, 0x18 },
+            new byte[2]{ 0x15, 0x26 },
+            new byte[2]{ 0x16, 0x20 },
+            new byte[2]{ 0x17, 0x4B },
+            new byte[2]{ 0x18, 0x14 },
+            new byte[2]{ 0x1A, 0x00 },
+            new byte[2]{ 0x1B, 0x54 },
+            new byte[2]{ 0x1C, 0xDC },
+            new byte[2]{ 0x1D, 0xCD },
+            new byte[2]{ 0x1E, 0xD7 },
+            new byte[2]{ 0x1F, 0x1F },
+            new byte[2]{ 0x20, 0x18 },
+            new byte[2]{ 0x21, 0x1D },
+            new byte[2]{ 0x22, 0x14 },
+            new byte[2]{ 0x23, 0x32 },
+            new byte[2]{ 0x24, 0x50 },
+            new byte[2]{ 0x25, 0x9B },
+            new byte[2]{ 0x26, 0xCD },
+            new byte[2]{ 0x27, 0xC3 },
+            new byte[2]{ 0x28, 0x71 },
+            new byte[2]{ 0x29, 0xDF },
+            new byte[2]{ 0x2A, 0x34 },
+            new byte[2]{ 0x2B, 0xC3 },
+            new byte[2]{ 0x2C, 0x8E },
+            new byte[2]{ 0x2D, 0x21 },
+            new byte[2]{ 0x2E, 0x3D },
+            new byte[2]{ 0x2F, 0x7A },
+            new byte[2]{ 0xC0, 0x10 },
+            new byte[2]{ 0xC1, 0x57 },
+            new byte[2]{ 0xC2, 0x70 },
+            new byte[2]{ 0xC3, 0x50 },
+            new byte[2]{ 0xC4, 0xD0 },
+            new byte[2]{ 0xC5, 0x50 },
+            new byte[2]{ 0xC6, 0xD7 },
+            new byte[2]{ 0xC7, 0x50 },
+            new byte[2]{ 0xC8, 0x0A },
+            new byte[2]{ 0xCA, 0x46 },
+            new byte[2]{ 0xCB, 0xD8 },
+            new byte[2]{ 0xCC, 0x40 },
+            new byte[2]{ 0xCD, 0x32 },
+            new byte[2]{ 0xCE, 0x00 },
+            new byte[2]{ 0x3D, 0x06 },
 
+        };
+        
+        List<byte[]> OISPID = new List<byte[]> 
+        {
+            new byte[4] { 0x0B, 0x12, 0x14, 0x00 },
+            new byte[4] { 0x0A, 0x59, 0x59, 0x01 },
+            new byte[4] { 0x0C, 0x62, 0x62, 0x01 },
+            new byte[4] { 0x08, 0x09, 0x09, 0x01 },
+            new byte[4] { 0x09, 0x00, 0x00, 0x01 },
+            new byte[4] { 0x24, 0x6C, 0x6C, 0x01 },
+            new byte[4] { 0x25, 0x2F, 0x2F, 0x01 },
+            new byte[4] { 0x5D, 0x60, 0x60, 0x00 }, //안함
+            new byte[4] { 0x5E, 0x00, 0x00, 0x01 },
+            new byte[4] { 0x5F, 0x00, 0x04, 0x01 },
+            new byte[4] { 0x60, 0x00, 0x00, 0x01 },
+            new byte[4] { 0x61, 0x00, 0x00, 0x01 },
+            new byte[4] { 0x6B, 0x00, 0x00, 0x01 },
+            new byte[4] { 0x6C, 0x00, 0x00, 0x01 },
+            new byte[4] { 0x6D, 0x00, 0x00, 0x01 },
+            new byte[4] { 0x6E, 0x00, 0x00, 0x01 },
+            new byte[4] { 0x6F, 0x00, 0x00, 0x01 },
+            new byte[4] { 0xD8, 0x00, 0x00, 0x01 },
+            new byte[4] { 0xD9, 0x00, 0x00, 0x01 },
+            new byte[4] { 0xDA, 0x00, 0x00, 0x01 },
+            new byte[4] { 0xDB, 0x00, 0x00, 0x01 },
+            new byte[4] { 0xDC, 0x00, 0x00, 0x01 },
+            new byte[4] { 0xDD, 0x00, 0x00, 0x01 },
+            new byte[4] { 0x0D, 0x00, 0x00, 0x00 }, //안함
+            new byte[4] { 0x0E, 0x00, 0x00, 0x00 }, //안함
+            new byte[4] { 0x0F, 0x00, 0x00, 0x00 }, //안함
+            new byte[4] { 0x3E, 0x85, 0x85, 0x01 },
+            new byte[4] { 0x10, 0x55, 0x50, 0x01 },
+            new byte[4] { 0x11, 0x2D, 0x2D, 0x01 },
+            new byte[4] { 0x12, 0xFA, 0xF5, 0x01 },
+            new byte[4] { 0x13, 0x18, 0x19, 0x01 },
+            new byte[4] { 0x14, 0x19, 0x18, 0x01 },
+            new byte[4] { 0x15, 0x50, 0x50, 0x01 },
+            new byte[4] { 0x16, 0x25, 0x25, 0x01 },
+            new byte[4] { 0x17, 0x6E, 0x6E, 0x01 },
+            new byte[4] { 0x18, 0xB3, 0xB4, 0x01 },
+            new byte[4] { 0x1A, 0xC2, 0xC3, 0x01 },
+            new byte[4] { 0x1B, 0xA6, 0xC0, 0x01 },
+            new byte[4] { 0x1C, 0x7D, 0x7C, 0x01 },
+            new byte[4] { 0x1D, 0x57, 0x3A, 0x01 },
+            new byte[4] { 0x1E, 0x3C, 0x37, 0x01 },
+            new byte[4] { 0x1F, 0x33, 0x6C, 0x01 },
+            new byte[4] { 0x20, 0x86, 0x8F, 0x01 },
+            new byte[4] { 0x21, 0x2B, 0x53, 0x01 },
+            new byte[4] { 0x22, 0x3D, 0x39, 0x01 },
+            new byte[4] { 0x23, 0xA5, 0x47, 0x01 },
+            new byte[4] { 0x27, 0x92, 0x92, 0x01 },
+            new byte[4] { 0x28, 0x92, 0x92, 0x00 }, //안함
+            new byte[4] { 0x29, 0x18, 0x18, 0x01 },
+            new byte[4] { 0x2A, 0x00, 0x00, 0x00 }, //안함
+            new byte[4] { 0x2B, 0x00, 0x00, 0x00 }, //안함
+            new byte[4] { 0x2C, 0x00, 0x00, 0x00 }, //안함
+            new byte[4] { 0x2D, 0x00, 0x00, 0x00 }, //안함
+            new byte[4] { 0x2E, 0x00, 0x00, 0x00 }, //안함
+            new byte[4] { 0x2F, 0x00, 0x00, 0x00 }, //안함
+            new byte[4] { 0x30, 0x00, 0x00, 0x00 }, //안함
+            new byte[4] { 0x31, 0x00, 0x00, 0x00 }, //안함
+            new byte[4] { 0x32, 0x00, 0x00, 0x00 }, //안함
+            new byte[4] { 0x33, 0x00, 0x00, 0x00 }, //안함
+            new byte[4] { 0x34, 0x00, 0x00, 0x00 }, //안함
+            new byte[4] { 0x35, 0x00, 0x00, 0x00 }, //안함
+            new byte[4] { 0x36, 0x00, 0x00, 0x00 }, //안함
+            new byte[4] { 0x37, 0xFC, 0x04, 0x01 },
+            new byte[4] { 0x50, 0xEF, 0xEF, 0x00 }, //안함
+            new byte[4] { 0x51, 0xFF, 0xFF, 0x01 },
+            new byte[4] { 0x52, 0x40, 0x40, 0x01 },
+            new byte[4] { 0x53, 0x28, 0x1E, 0x01 },
+            new byte[4] { 0x54, 0x01, 0x01, 0x01 },
+            new byte[4] { 0x55, 0x78, 0x50, 0x01 },
+            new byte[4] { 0x56, 0x7D, 0x8C, 0x01 },
+            new byte[4] { 0x57, 0xFA, 0xF5, 0x01 },
+            new byte[4] { 0x58, 0xFA, 0xF5, 0x01 },
+            new byte[4] { 0x59, 0x2D, 0x2D, 0x01 },
+            new byte[4] { 0x5A, 0x50, 0x3C, 0x01 },
+            new byte[4] { 0x5B, 0xFF, 0xFF, 0x01 },
+            new byte[4] { 0x5C, 0x32, 0x32, 0x01 }
+        };
         void AddSequence()
         {
             ItemList.Add(new ActItems() { Name = "AF OpenLoopAging", Func = Act_AFOpenLoopAging, IsMulti = true });
@@ -45,81 +185,132 @@ namespace FZ4P
             ItemList.Add(new ActItems() { Name = "OIS OpenLoop Test", Func = OISOpenLoopTest, IsMulti = true });
             ItemList.Add(new ActItems() { Name = "Auto Test", Func = AutoTest, IsMulti = true });
             ItemList.Add(new ActItems() { Name = "OIS Sensitivity Test", Func = OISSensitivityTest, IsMulti = true });
+            ItemList.Add(new ActItems() { Name = "PID Verify", Func = PID_Verify, IsMulti = true });
+            ItemList.Add(new ActItems() { Name = "IME Test", Func = IME_Test, IsMulti = true });
+            ItemList.Add(new ActItems() { Name = "through Peak 25", Func = throughFRA, IsMulti = true });
         }
 
         #region AddSeq
 
-        void OISOpenLoopTest(int ch, string testItem)
+        void oisOL(int ch, int axis)
         {
+            string axisName = axis == 0 ? "X" : "Y";
+            int addr = axis == 0 ? DrvIC.XSlaveAddr : DrvIC.Y1SlaveAddr;
+            int test_time = Condition.OISOLMoveDelay; int test_size = (Condition.OISOLtp2 - Condition.OISOLtp1) / Condition.OISOLStepNum;
+            int open_data = 0; int open_input;
+            ushort open_output;
+            int t_count;
+            int[] start_pos = new int[2] { 0, 0 };
+            int[] end_pos = new int[2] { 512, 512 };
+            int[] square = new int[500];
+            uint sum_square;
+            int[] Ya = new int[500]; int[] Yb = new int[500]; int[] height = new int[500];
+            int dc_count_rising, dc_count_falling = 0, dc_count;
+            short[,] dc_value = new short[2, 200];
+            uint square_spec = (uint)Condition.OISOLSpec;
+            byte dc_result;
+
+
+            AddLog(ch, $"{axisName} Open test start.");
+
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x00, new byte[] { 0x80, 0x00 });
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x00, new byte[] { 0x80, 0x00 });
+            DrvIC.Move(ch, "X", 2048);
+            DrvIC.Move(ch, "Y", 2048);
             Thread.Sleep(100);
 
-            List<int> code = new List<int>();
-            List<int> ReadhallX = new List<int>();
-            List<int> ReadhallY = new List<int>();
-            int start = 0, end = 4080;
-            int index = 0;
+            Dln.WriteArray(ch, addr, 0xAE, new byte[] { 0x3B });
+            Dln.WriteArray(ch, addr, 0xA6, new byte[] { 0x7B });
+            Dln.WriteArray(ch, addr, 0x02, new byte[] { 0x00 });
+
+            byte[] rbuf2 = new byte[2];
+            dc_count_rising = 0;
+            for (open_input = start_pos[0]; open_input < end_pos[1]; open_input += test_size)
+            {
+                int pos = open_input << 7;
+                Dln.WriteArray(ch, addr, 0x00, new byte[] { (byte)(pos >> 8), (byte)pos });
+                Thread.Sleep(test_time);
+                Dln.ReadArray(ch, addr, 0x80, rbuf2);
+                open_output = (ushort)((rbuf2[0] << 8) + rbuf2[1]);
+                open_data = open_output >> 3;
+                if (open_data > 0x1000) { open_data -= 0x2000; }
+
+                if ((open_input >= Condition.OISOLtp1) && (open_input <= Condition.OISOLtp2))
+                {
+                    dc_value[0, dc_count_rising] = (short)open_data;
+                    dc_count_rising++;
+
+                }
+            }
+            dc_count = dc_count_rising;
+            dc_count_rising--;
+            dc_count_falling = dc_count_rising;
+            for (open_input -= test_size; open_input >= start_pos[0]; open_input -= test_size)
+            {
+                int pos = open_input << 7;
+                Dln.WriteArray(ch, addr, 0x00, new byte[] { (byte)(pos >> 8), (byte)pos });
+                Thread.Sleep(test_time);
+                Dln.ReadArray(ch, addr, 0x80, rbuf2);
+                open_output = (ushort)((rbuf2[0] << 8) + rbuf2[1]);
+                open_data = open_output >> 3;
+                if (open_data > 0x1000) { open_data -= 0x2000; }
+                if ((open_input >= Condition.OISOLtp1) && (open_input <= Condition.OISOLtp2))
+                {
+                    dc_value[1, dc_count_falling] = (short)open_data;
+                    dc_count_falling--;
+
+                }
+            }
+            AddLog(ch, $"dc_count : {dc_count}");
+            Dln.WriteArray(ch, addr, 0xA6, new byte[] { 0x00 });
+            t_count = 0;
+            byte[] rbuf = new byte[1];
             while (true)
             {
-                int currCode = start + (index * 120);
-                if (currCode > end)
-                    currCode = end;
-                code.Add(currCode);
-                if (currCode >= end) break;
-                index++;
+                Dln.ReadArray(ch, addr, 0x4C, rbuf);
+                dc_result = rbuf[0];
+                Thread.Sleep(1);
+                if ((dc_result & 0x10) == 0x00) break;
+                t_count++;
+                if(t_count > 100)
+                {
+                    SetError(ch, NonSpecItem.OIS_Openloop_Test);
+                    return;
+                }
             }
-            index = 0;
-            while (true)
+            Dln.WriteArray(ch, addr, 0xAE, new byte[] { 0x00 });
+            dc_result = 0;
+            sum_square = 0;
+            for (int i = 0; i < dc_count - 1; i++)
             {
-                int currCode = end - (index * 120);
-                if (currCode < start)
-                    currCode = start;
-                code.Add(currCode);
-                if (currCode <= start) break;
-                index++;
+                Ya[i] = dc_value[1, i] - dc_value[0, i];
+                Yb[i] = dc_value[1, i + 1] - dc_value[0, i + 1];
+                height[i] = test_size;
+                square[i] = ((Ya[i] + Yb[i]) * height[i]) >> 1;
+                sum_square += (uint)Math.Abs(square[i]);
             }
-
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x3B });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xA6, new byte[] { 0x7B });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
-            for (int i = 0; i < code.Count; i++)
+            sum_square = (sum_square / 10);
+            AddLog(ch, $"sum square : {sum_square}");
+            if (sum_square > square_spec || sum_square <= 0)
             {
-                DrvIC.Move(ch, "X", code[i]);
-                Thread.Sleep(30);
-                ReadhallX.Add(DrvIC.ReadHallOpenLoop(ch, "X"));
+                dc_result = 0x01;
+                AddLog(ch, $"NG Over DC SR, {square_spec}");
+                SetError(ch, NonSpecItem.OIS_Openloop_Test);
             }
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xA6, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 });
-
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x00, new byte[] { 0x80, 0x00 });
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x00, new byte[] { 0x80, 0x00 });
-
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xAE, new byte[] { 0x3B });
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xA6, new byte[] { 0x7B });
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
-
-            for (int i = 0; i < code.Count; i++)
-            {
-                DrvIC.Move(ch, "Y", code[i]);
-                Thread.Sleep(30);
-                ReadhallY.Add(DrvIC.ReadHallOpenLoop(ch, "Y"));
-            }
-
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xA6, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 });
-
+            AddLog(ch, $"[Final] {axisName} sum square : {sum_square}, result : {dc_result}");
+            Dln.WriteArray(ch, addr, 0x02, new byte[] { 0x40 });
+            DrvIC.Move(ch, "X", 2048);
+            DrvIC.Move(ch, "Y", 2048);
+            Thread.Sleep(100);
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x00, new byte[] { 0x80, 0x00 });
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x00, new byte[] { 0x80, 0x00 });
+            AddLog(ch, $"{axisName} Open test end.");
+        }
 
+        void OISOpenLoopTest(int ch, string testItem)
+        {
+            if (m__G.m_ChannelOn[ch]) oisOL(ch, 0);
+            if (m__G.m_ChannelOn[ch]) oisOL(ch, 1);
         }
 
         void TempTest(int ch, string testItem)
@@ -266,6 +457,7 @@ namespace FZ4P
             { SetError(ch, NonSpecItem.Temperature_Test); return; }
             if (xVariation > Condition.TempValSpec || yVariation > Condition.TempValSpec || AFVariation > Condition.TempValSpec)
             { SetError(ch, NonSpecItem.Temperature_Test); return; }
+         
 
         }
         void RestoreSlaveAddr(int ch, string testItem)
@@ -619,70 +811,18 @@ namespace FZ4P
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x40 });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xA6, new byte[] { 0x00 });
 
-            AddLog(ch, "Setting register setting");
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x0A, new byte[] { 0x73 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x0B, new byte[] { 0xE2 });          
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x08, new byte[] { 0x85 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x09, new byte[] { 0x8C });
-
             AF_EPA_Reset(ch);
             AF_LinearityComp_Reset(ch);
-
-            //PID Update - 나중에 파일로 처리
             AddLog(ch, "PID parameter setting");
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x10, new byte[] { 0x29 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x11, new byte[] { 0x3E });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x12, new byte[] { 0x96 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x13, new byte[] { 0x24 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x14, new byte[] { 0x18 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x15, new byte[] { 0x26 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x16, new byte[] { 0x20 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x17, new byte[] { 0x4B });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x18, new byte[] { 0x14 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x1A, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x1B, new byte[] { 0x5A });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x1C, new byte[] { 0xDC });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x1D, new byte[] { 0xCD });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x1E, new byte[] { 0xD7 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x1F, new byte[] { 0x1F });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x20, new byte[] { 0x18 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x21, new byte[] { 0x1D });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x22, new byte[] { 0x14 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x23, new byte[] { 0x32 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x24, new byte[] { 0x50 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x25, new byte[] { 0x9B });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x26, new byte[] { 0xCD });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x27, new byte[] { 0xC3 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x28, new byte[] { 0x71 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x29, new byte[] { 0xDF });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x2A, new byte[] { 0x34 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x2B, new byte[] { 0xC3 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x2C, new byte[] { 0x8E });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x2D, new byte[] { 0x21 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x2E, new byte[] { 0x3D });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x2F, new byte[] { 0x7A });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xC0, new byte[] { 0x10 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xC1, new byte[] { 0x57 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xC2, new byte[] { 0x70 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xC3, new byte[] { 0x50 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xC4, new byte[] { 0xD0 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xC5, new byte[] { 0x50 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xC6, new byte[] { 0xD7 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xC7, new byte[] { 0x50 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xC8, new byte[] { 0x0A });
-
-            AddLog(ch, "Function register setting");
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xCA, new byte[] { 0x46 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xCB, new byte[] { 0xD8 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xCC, new byte[] { 0x40 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xCD, new byte[] { 0x32 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xCE, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x3D, new byte[] { 0x06 });
+            for (int i = 0; i < AFPID.Count; i++)
+            {
+                Dln.WriteArray(ch, DrvIC.AFSlaveAddr, AFPID[i][0], new byte[] { AFPID[i][1] });
+            }
 
             AddLog(ch, "Temp register setting");
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xC9, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x80 });
-            Thread.Sleep(50);
+            Thread.Sleep(10);
             Dln.ReadArray(ch, DrvIC.AFSlaveAddr, 0x70, rbuf);
             AddLog(ch, $"Read 0x70 : 0x{rbuf[0].ToString("X")}");
 
@@ -710,14 +850,11 @@ namespace FZ4P
                 //Error처리
             }
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xF3, new byte[] { 0x1E });
-            Thread.Sleep(30);
+            Thread.Sleep(10);
             Store(ch, 0);
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xAE, new byte[] { 0x00 });
-            Dln.PowerOnOff(0, false);
-            Thread.Sleep(200);
-            Dln.PowerOnOff(0, true);
-            Thread.Sleep(100);
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x40 });
+            Dln.PowerSequence(0);
+            AK7314_ICReset(0);
             CheckData(ch, 0);
         }
 
@@ -1052,7 +1189,7 @@ namespace FZ4P
             {
                 AddLog(ch, "X Linearity Comp Reset");
                 Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x3B });
-                Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xAE, new byte[] { 0x3B });
+               
 
                 Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x2A, new byte[] { 0x00 });
                 Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x2B, new byte[] { 0x00 });
@@ -1073,6 +1210,7 @@ namespace FZ4P
             else
             {
                 AddLog(ch, "Y Linearity Comp Reset");
+                Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xAE, new byte[] { 0x3B });
                 Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x2A, new byte[] { 0x00 });
                 Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x2B, new byte[] { 0x00 });
                 Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x2C, new byte[] { 0x00 });
@@ -1545,113 +1683,24 @@ namespace FZ4P
 
             CheckData(ch, 1);
             CheckData(ch, 2);
-            #region PID
-
-            List<byte[]> PID = new List<byte[]>();
-            PID.Add(new byte[3] { 0x10, 0x55, 0x50 });
-            PID.Add(new byte[3] { 0x11, 0x2D, 0x2D });
-            PID.Add(new byte[3] { 0x12, 0xFA, 0xF5 });
-            PID.Add(new byte[3] { 0x13, 0x18, 0x19 });
-            PID.Add(new byte[3] { 0x14, 0x19, 0x18 });
-            PID.Add(new byte[3] { 0x15, 0x50, 0x50 });
-            PID.Add(new byte[3] { 0x16, 0x25, 0x25 });
-            PID.Add(new byte[3] { 0x17, 0x6E, 0x6E });
-            PID.Add(new byte[3] { 0x18, 0xB3, 0xB4 });
-            PID.Add(new byte[3] { 0x1A, 0xC2, 0xC3 });
-            PID.Add(new byte[3] { 0x1B, 0xA6, 0xC0 });
-            PID.Add(new byte[3] { 0x1C, 0x7D, 0x7C });
-            PID.Add(new byte[3] { 0x1D, 0x57, 0x3A });
-            PID.Add(new byte[3] { 0x1E, 0x3C, 0x37 });
-            PID.Add(new byte[3] { 0x1F, 0x33, 0x6C });
-            PID.Add(new byte[3] { 0x20, 0x86, 0x8F });
-            PID.Add(new byte[3] { 0x21, 0x2B, 0x53 });
-            PID.Add(new byte[3] { 0x22, 0x3D, 0x39 });
-            PID.Add(new byte[3] { 0x23, 0xA5, 0x47 });
-            PID.Add(new byte[3] { 0x27, 0x92, 0x92 });
-            PID.Add(new byte[3] { 0x28, 0x92, 0x92 });
-            PID.Add(new byte[3] { 0x29, 0x18, 0x18 });
-            PID.Add(new byte[3] { 0x2A, 0x00, 0x00 });
-            PID.Add(new byte[3] { 0x2B, 0x00, 0x00 });
-            PID.Add(new byte[3] { 0x2C, 0x00, 0x00 });
-            PID.Add(new byte[3] { 0x2D, 0x00, 0x00 });
-            PID.Add(new byte[3] { 0x2E, 0x00, 0x00 });
-            PID.Add(new byte[3] { 0x2F, 0x00, 0x00 });
-            PID.Add(new byte[3] { 0x30, 0x00, 0x00 });
-            PID.Add(new byte[3] { 0x31, 0x00, 0x00 });
-            PID.Add(new byte[3] { 0x32, 0x00, 0x00 });
-            PID.Add(new byte[3] { 0x33, 0x00, 0x00 });
-            PID.Add(new byte[3] { 0x34, 0x00, 0x00 });
-            PID.Add(new byte[3] { 0x35, 0x00, 0x00 });
-            PID.Add(new byte[3] { 0x36, 0x00, 0x00 });
-            PID.Add(new byte[3] { 0x37, 0xFC, 0x04 });
-            PID.Add(new byte[3] { 0x50, 0xEF, 0xEF });
-            PID.Add(new byte[3] { 0x51, 0xFF, 0xFF });
-            PID.Add(new byte[3] { 0x52, 0x40, 0x40 });
-            PID.Add(new byte[3] { 0x53, 0x28, 0x1E });
-            PID.Add(new byte[3] { 0x54, 0x01, 0x01 });
-            PID.Add(new byte[3] { 0x55, 0x78, 0x50 });
-            PID.Add(new byte[3] { 0x56, 0x7D, 0x8C });
-            PID.Add(new byte[3] { 0x57, 0xFA, 0xF5 });
-            PID.Add(new byte[3] { 0x58, 0xFA, 0xF5 });
-            PID.Add(new byte[3] { 0x59, 0x2D, 0x2D });
-            PID.Add(new byte[3] { 0x5A, 0x50, 0x3C });
-            PID.Add(new byte[3] { 0x5B, 0xFF, 0xFF });
-            PID.Add(new byte[3] { 0x5C, 0x32, 0x32 });
-
-            #endregion
-
 
             byte[] rbuf = new byte[2];
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 });
 
-            //Set I2C Volt = 1.8V
             DrvIC.Move(ch, "AF", BestAFPos);
             AddLog(ch, $"Move AF Best Position : {BestAFPos}");
             Thread.Sleep(100);
 
-            AddLog(ch, $"X/Y Setting register setting");
+            AddLog(ch, $"X PID parameter setting");
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x3B });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0A, new byte[] { 0x59 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0B, new byte[] { 0x12 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0C, new byte[] { 0x62 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x08, new byte[] { 0x09 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x09, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x24, new byte[] { 0x6C });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x25, new byte[] { 0x2F });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x5D, new byte[] { 0x60 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x5E, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x5F, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x60, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x61, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x6B, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x6C, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x6D, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x6E, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x6F, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xD8, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xD9, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xDA, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xDB, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xDC, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xDD, new byte[] { 0x00 });
 
-            AddLog(ch, $"X Register initial setting");
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0D, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0E, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0F, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x3E, new byte[] { 0x85 });
+            for (int i = 0; i < OISPID.Count; i++)
+                Dln.WriteArray(ch, DrvIC.XSlaveAddr, OISPID[i][0], new byte[] { OISPID[i][1] });
+
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xFE, new byte[] { 0x0B });
             Thread.Sleep(20);
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xFF, new byte[] { 0x33 });
             Thread.Sleep(20);
-
-            AddLog(ch, $"X PID parameter setting");
-            for (int i = 0; i < PID.Count; i++)
-                Dln.WriteArray(ch, DrvIC.XSlaveAddr, PID[i][0], new byte[] { PID[i][1] });
-
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 });
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 });
-            Thread.Sleep(10);
 
             AddLog(ch, $"X Calibration instruction");
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x09 });
@@ -1666,53 +1715,15 @@ namespace FZ4P
 
 
 
-
-
+            AddLog(ch, $"Y PID parameter setting");
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xAE, new byte[] { 0x3B });
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x0B, new byte[] { 0x14 });           
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x0A, new byte[] { 0x59 });        
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x0C, new byte[] { 0x62 });
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x08, new byte[] { 0x09 });           
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x09, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x24, new byte[] { 0x6C });
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x25, new byte[] { 0x2F });
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x5D, new byte[] { 0x60 });          
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x5E, new byte[] { 0x00 });        
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x5F, new byte[] { 0x04 });       
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x60, new byte[] { 0x00 });     
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x61, new byte[] { 0x00 });        
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x6B, new byte[] { 0x00 });         
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x6C, new byte[] { 0x00 });           
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x6D, new byte[] { 0x00 });           
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x6E, new byte[] { 0x00 });         
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x6F, new byte[] { 0x00 });       
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xD8, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xD9, new byte[] { 0x00 });          
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xDA, new byte[] { 0x00 });         
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xDB, new byte[] { 0x00 });         
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xDC, new byte[] { 0x00 });         
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xDD, new byte[] { 0x00 });
 
-            AddLog(ch, $"Y Register initial setting");
+            for (int i = 0; i < OISPID.Count; i++)
+                Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, OISPID[i][0], new byte[] { OISPID[i][2] });
 
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x0D, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x0E, new byte[] { 0x00 });
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x0F, new byte[] { 0x00 });         
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x3E, new byte[] { 0x85 });
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xFE, new byte[] { 0x0B });
             Thread.Sleep(20);
 
-
-
-
-
-            AddLog(ch, $"Y PID parameter setting");
-            for (int i = 0; i < PID.Count; i++)
-                Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, PID[i][0], new byte[] { PID[i][2] });
-
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 });
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 });
-            Thread.Sleep(10);
 
             AddLog(ch, $"Y Calibration instruction");
 
@@ -1725,11 +1736,10 @@ namespace FZ4P
             Store(ch, 2);
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xAE, new byte[] { 0x00 });
 
-
-            Dln.PowerOnOff(0, false);
-            Thread.Sleep(200);
-            Dln.PowerOnOff(0, true);
-            Thread.Sleep(100);
+            Dln.PowerSequence(0);
+            AK7314_ICReset(ch);
+            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 });
+            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 });
             CheckData(ch, 1);
             CheckData(ch, 2);
         }
@@ -1812,14 +1822,14 @@ namespace FZ4P
         private void Act_Phase_Margin(int ch, string testItem)
         {
 
-            if (!Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 })) return;
-            if (!Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 })) return;
-            if (DrvIC.Y2SlaveAddr != 0x00) { if (!Dln.WriteArray(ch, DrvIC.Y2SlaveAddr, 0x02, new byte[] { 0x40 })) return; }
+            if (!Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 })) return;
+            if (!Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 })) return;
+            if (DrvIC.Y2SlaveAddr != 0x00) { if (!Dln.WriteArray(ch, DrvIC.Y2SlaveAddr, 0x02, new byte[] { 0x00 })) return; }
             if (!Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 })) return;
             DrvIC.Move(ch, "AF", BestAFPos);
-            //DrvIC.Move(ch, "X", 2048);
-            //DrvIC.Move(ch, "Y1", 2048);
-            //DrvIC.Move(ch, "Y2", 2048);
+            DrvIC.Move(ch, "X", 2048);
+            DrvIC.Move(ch, "Y", 2048);
+          //  DrvIC.Move(ch, "Y2", 2048);
             Thread.Sleep(200);
 
             string axis;
@@ -1890,6 +1900,16 @@ namespace FZ4P
 
             }
             #endregion
+
+            if (!Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 })) return;
+            if (!Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 })) return;
+            if (DrvIC.Y2SlaveAddr != 0x00) { if (!Dln.WriteArray(ch, DrvIC.Y2SlaveAddr, 0x02, new byte[] { 0x00 })) return; }
+            if (!Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 })) return;
+            DrvIC.Move(ch, "AF", BestAFPos);
+            DrvIC.Move(ch, "X", 2048);
+            DrvIC.Move(ch, "Y", 2048);
+            //  DrvIC.Move(ch, "Y2", 2048);
+            Thread.Sleep(200);
             #region Y PM Low
             //Y1
             axis = "Y1";
@@ -2005,6 +2025,16 @@ namespace FZ4P
                 }
                 #endregion
             }
+
+            if (!Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 })) return;
+            if (!Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 })) return;
+            if (DrvIC.Y2SlaveAddr != 0x00) { if (!Dln.WriteArray(ch, DrvIC.Y2SlaveAddr, 0x02, new byte[] { 0x00 })) return; }
+            if (!Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 })) return;
+            DrvIC.Move(ch, "AF", BestAFPos);
+            DrvIC.Move(ch, "X", 2048);
+            DrvIC.Move(ch, "Y", 2048);
+            //  DrvIC.Move(ch, "Y2", 2048);
+            Thread.Sleep(200);
             #region AF PM
             //AF
             axis = "AF";
@@ -2601,15 +2631,20 @@ namespace FZ4P
             int SinXMaxCount = int.MaxValue, SinYMaxCount = int.MaxValue, SinXNGCnt = int.MaxValue, SinYNGCnt = int.MaxValue, SinResult = int.MaxValue;
             int RNGOKX = int.MaxValue, RNGOKY = int.MaxValue, RNGTimeX = int.MaxValue, RNGTimeY = int.MaxValue, RNGResult = int.MaxValue;
             byte[] rbuf = new byte[1];
-            byte X0BBackData, Y0BBackData;
+            byte X0BBackData = 0x12, Y0BBackData = 0x14;
+
+        
             try
             {
-                if(Condition.SIN_AXIS == 0)
+                Dln.WriteArray(ch, DrvIC.FRA_Addr, 0x00, new byte[] { 0x01 });
+                Dln.WriteArray(ch, DrvIC.FRA_Addr, 0x00, new byte[] { 0x00 });
+                if (Condition.SIN_AXIS == 0)
                 {
+
                     Dln.WriteArray(ch, DrvIC.FRA_Addr, 0x6F, new byte[] { 0xE0 });
                     Dln.WriteArray(ch, DrvIC.FRA_Addr, 0xAD, new byte[] { 0x51 });
                 }
-                else if(Condition.SIN_AXIS == 1)
+                else if (Condition.SIN_AXIS == 1)
                 {
                     Dln.WriteArray(ch, DrvIC.FRA_Addr, 0x6F, new byte[] { 0x60 });
                     Dln.WriteArray(ch, DrvIC.FRA_Addr, 0xAD, new byte[] { 0x52 });
@@ -2622,18 +2657,21 @@ namespace FZ4P
                 }
                 Thread.Sleep(2);
 
+
+
+            
                 Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x3B });
-                Dln.ReadArray(ch, DrvIC.XSlaveAddr, 0x0B, rbuf);
-                X0BBackData = rbuf[0];
-                Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0B, new byte[] { (byte)(rbuf[0] | 0x08) });
+                //Dln.ReadArray(ch, DrvIC.XSlaveAddr, 0x0B, rbuf);
+                //X0BBackData = rbuf[0];
+                Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0B, new byte[] { (byte)(X0BBackData | 0x08) });
                 Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x00 });
                 Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x00, new byte[] { 0x80 });
                 Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
 
                 Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xAE, new byte[] { 0x3B });
-                Dln.ReadArray(ch, DrvIC.Y1SlaveAddr, 0x0B, rbuf);
-                Y0BBackData = rbuf[0];
-                Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x0B, new byte[] { (byte)(rbuf[0] | 0x08) });
+                //Dln.ReadArray(ch, DrvIC.Y1SlaveAddr, 0x0B, rbuf);
+                //Y0BBackData = rbuf[0];
+                Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x0B, new byte[] { (byte)(Y0BBackData | 0x08) });
                 Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xAE, new byte[] { 0x00 });
                 Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x00, new byte[] { 0x80 });
                 Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
@@ -2739,18 +2777,18 @@ namespace FZ4P
                 Thread.Sleep(2);
 
                 Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x3B });
-                Dln.ReadArray(ch, DrvIC.XSlaveAddr, 0x0B, rbuf);
-                X0BBackData = rbuf[0];
-                Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0B, new byte[] { (byte)(rbuf[0] | 0x08) });
+                //Dln.ReadArray(ch, DrvIC.XSlaveAddr, 0x0B, rbuf);
+                //X0BBackData = rbuf[0];
+                Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x0B, new byte[] { (byte)(X0BBackData | 0x08) });
                 Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x00 });
                 Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x00, new byte[] { 0xE6 });
                 Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x01, new byte[] { 0x60 });
                 Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
 
                 Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xAE, new byte[] { 0x3B });
-                Dln.ReadArray(ch, DrvIC.Y1SlaveAddr, 0x0B, rbuf);
-                Y0BBackData = rbuf[0];
-                Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x0B, new byte[] { (byte)(rbuf[0] | 0x08) });
+                //Dln.ReadArray(ch, DrvIC.Y1SlaveAddr, 0x0B, rbuf);
+                //Y0BBackData = rbuf[0];
+                Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x0B, new byte[] { (byte)(Y0BBackData | 0x08) });
                 Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xAE, new byte[] { 0x00 });
                 Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x00, new byte[] { 0xE6 });
                 Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x01, new byte[] { 0x60 });
@@ -2836,6 +2874,8 @@ namespace FZ4P
                 }
                 if (!Dln.WriteArray(ch, DrvIC.FRA_Addr, 0xAF, new byte[] { 0xCE })) return;
 
+                CheckData(ch, 1);
+                CheckData(ch, 2);
 
             }
             catch
@@ -2855,9 +2895,12 @@ namespace FZ4P
             List<byte> yVal = new List<byte>();
             List<int> xHall = new List<int>();
             List<int> yHall = new List<int>();
-            
+            List<int> checkRegX = new List<int>();
+            List<int> checkRegY = new List<int>();
+
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x00, new byte[] { 0x80, 0x00 });
+            Thread.Sleep(100);
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
 
@@ -2872,16 +2915,15 @@ namespace FZ4P
                 yVal.Add(rbuf[0]);
                 xHall.Add(DrvIC.ReadHall(ch, "X"));              
                 yHall.Add(DrvIC.ReadHall(ch, "Y"));
+                checkRegX.Add(xVal[i] & 0x07);
+                checkRegY.Add(yVal[i] & 0x07);
             }
 
             for (int i = 0; i < xVal.Count; i++)
             {
-                AddLog(ch, $"{i}, 0x{xVal[i].ToString("X2")}, 0x{yVal[i].ToString("X2")} ({xHall[i]}, {yHall[i]})");
+                AddLog(ch, $"{i * 2}, 0x{xVal[i].ToString("X2")}, 0x{yVal[i].ToString("X2")} ({xHall[i]}, {yHall[i]})");
+                AddLog(ch, $"{i * 2 + 1}, 0x{checkRegX[i].ToString("X2")}, 0x{checkRegY[i].ToString("X2")} ({xHall[i]}, {yHall[i]})");
             }
-
-
-          
-
 
         }
         private void Act_OISShift2(int port, string testItem)
@@ -2975,25 +3017,25 @@ namespace FZ4P
             //Write to Memory drift data
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x3B});
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xE5, new byte[] { (byte)(BestAFPos >> 4) });
-            Thread.Sleep(10);
+            Thread.Sleep(20);
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xE4, new byte[] { 0x01 });
-            Thread.Sleep(10);
+            Thread.Sleep(20);
             for (int i = 0; i < 18; i++)
             {
                 Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xE6 + i, new byte[] { 0x00 });
-                Thread.Sleep(10);
+                Thread.Sleep(20);
             }
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x00 });
 
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xAE, new byte[] { 0x3B });
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xE5, new byte[] { (byte)(BestAFPos >> 4) });
-            Thread.Sleep(10);
+            Thread.Sleep(20);
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xE4, new byte[] { 0x01 });
-            Thread.Sleep(10);
+            Thread.Sleep(20);
             for (int i = 0; i < 18; i++)
             {
                 Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xE6 + i, new byte[] { 0x00 });
-                Thread.Sleep(10);
+                Thread.Sleep(20);
             }
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xAE, new byte[] { 0x00 });
 
@@ -3002,7 +3044,9 @@ namespace FZ4P
 
             byte[] xData = new byte[18];
             byte[] yData = new byte[18];
-
+            byte[] CheckxData = new byte[18];
+            byte[] CheckyData = new byte[18];
+            byte[] rbuf = new byte[1];
             for (int i = 0; i < 9; i++)
             {
                 xData[i * 2] = (byte)XDiff[i];
@@ -3011,18 +3055,395 @@ namespace FZ4P
                 yData[i * 2] = (byte)YDiff[i];
                 yData[i * 2 + 1] = (byte)(YDiff[i] >> 8);
             }
-            
-            
-            
+
             for (int i = 0; i < 18; i++)
             {
                
                 Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xE6 + i, new byte[] { xData[i] });
-                Thread.Sleep(10);
+                Thread.Sleep(20);
                 Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xE6 + i, new byte[] { yData[i] });
-                Thread.Sleep(10);
+                Thread.Sleep(20);
+            }
+            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x00 });
+            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xAE, new byte[] { 0x00 });
+
+            Dln.ReadArray(ch, DrvIC.XSlaveAddr, 0xE5, rbuf);
+            if(BestAFPos != rbuf[0] << 4)
+            {
+                AddLog(ch, "NVM Data verify Fail");
+                SetError(ch, NonSpecItem.NVM_Verify_NG);
+                return;
+            }
+            Dln.ReadArray(ch, DrvIC.Y1SlaveAddr, 0xE5, rbuf);
+            if (BestAFPos != rbuf[0] << 4)
+            {
+                AddLog(ch, "NVM Data verify Fail");
+                SetError(ch, NonSpecItem.NVM_Verify_NG);
+                return;
+            }
+            Dln.ReadArray(ch, DrvIC.XSlaveAddr, 0xE4, rbuf);
+            if (0x01 != rbuf[0])
+            {
+                AddLog(ch, "NVM Data verify Fail");
+                SetError(ch, NonSpecItem.NVM_Verify_NG);
+                return;
+            }
+            Dln.ReadArray(ch, DrvIC.Y1SlaveAddr, 0xE4, rbuf);
+            if (0x01 != rbuf[0])
+            {
+                AddLog(ch, "NVM Data verify Fail");
+                SetError(ch, NonSpecItem.NVM_Verify_NG);
+                return;
+            }
+
+
+            for (int i = 0; i < 18; i++)
+            {
+                Dln.ReadArray(ch, DrvIC.XSlaveAddr, 0xE6 + i, rbuf);
+                CheckxData[i] = rbuf[0];
+                Dln.ReadArray(ch, DrvIC.Y1SlaveAddr, 0xE6 + i, rbuf);
+                CheckyData[i] = rbuf[0];
+            }
+            for (int i = 0; i < 9; i++)
+            {
+                int xdata = CheckxData[i * 2] + (CheckxData[i * 2 + 1] << 8);
+                if (xdata > 32768) xdata = xdata - 65536;
+                int ydata  = CheckyData[i * 2] + (CheckyData[i * 2 + 1] << 8);
+                if (ydata > 32768) ydata = ydata - 65536;
+                if (xdata != XDiff[i])
+                {
+                    AddLog(ch, "NVM Data verify Fail");
+                    SetError(ch, NonSpecItem.NVM_Verify_NG);
+                    return;
+                }
+                if (ydata != YDiff[i])
+                {
+                    AddLog(ch, "NVM Data verify Fail");
+                    SetError(ch, NonSpecItem.NVM_Verify_NG);
+                    return;
+                }
             }
         }
+
+        void PID_Verify(int ch, string testItem)
+        {
+            byte[] rbuf = new byte[1];
+            Dln.PowerSequence(0);
+            AK7314_ICReset(ch);
+            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 });
+            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 });
+
+            Dln.ReadArray(ch, DrvIC.AFSlaveAddr, 0x03, rbuf);
+            int afid = rbuf[0];
+            if(afid != 0x1E)
+            {
+                AddLog(ch, $"Error, AF IC is not AK7314, 0x{afid.ToString("X2")}");
+                SetError(ch, NonSpecItem.PID_Verify_NG);
+            }
+            for (int i = 0; i < AFPID.Count; i++)
+            {
+                Dln.ReadArray(ch, DrvIC.AFSlaveAddr, AFPID[i][0], rbuf);
+                if (AFPID[i][1] != rbuf[0])
+                {
+                    AddLog(ch, "AF PID Verify NG");
+                    AddLog(ch, $"Addr : 0x{AFPID[i][0].ToString("X2")}, rdata : 0x{rbuf[0].ToString("X2")}, wdata : 0x{AFPID[i][1].ToString("X2")}");
+                    SetError(ch, NonSpecItem.PID_Verify_NG);
+                }
+            }
+
+            Dln.ReadArray(ch, DrvIC.XSlaveAddr, 0x03, rbuf);
+            int xid = rbuf[0];
+            if (xid != 0x85)
+            {
+                AddLog(ch, $"Error, AF IC is not AK7326, 0x{afid.ToString("X2")}");
+                SetError(ch, NonSpecItem.PID_Verify_NG);
+            }
+
+            for (int i = 0; i < OISPID.Count; i++)
+            {
+                Dln.ReadArray(ch, DrvIC.XSlaveAddr, OISPID[i][0], rbuf);
+                if (OISPID[i][3] != 0x00)
+                {
+                    if (OISPID[i][1] != rbuf[0])
+                    {
+                        AddLog(ch, "X PID Verify NG");
+                        AddLog(ch, $"Addr : 0x{OISPID[i][0].ToString("X2")}, rdata : 0x{rbuf[0].ToString("X2")}, wdata : 0x{OISPID[i][1].ToString("X2")}");
+                        SetError(ch, NonSpecItem.PID_Verify_NG);
+                    }
+                }
+               
+            }
+
+            Dln.ReadArray(ch, DrvIC.XSlaveAddr, 0x03, rbuf);
+            int yid = rbuf[0];
+            if (yid != 0x85)
+            {
+                AddLog(ch, $"Error, AF IC is not AK7326, 0x{afid.ToString("X2")}");
+                SetError(ch, NonSpecItem.PID_Verify_NG);
+            }
+            for (int i = 0; i < OISPID.Count; i++)
+            {
+                Dln.ReadArray(ch, DrvIC.Y1SlaveAddr, OISPID[i][0], rbuf);
+                if (OISPID[i][3] != 0x00)
+                {
+                    if (OISPID[i][2] != rbuf[0])
+                    {                                            
+                        AddLog(ch, "Y PID Verify NG");
+                        AddLog(ch, $"Addr : 0x{OISPID[i][0].ToString("X2")}, rdata : 0x{rbuf[0].ToString("X2")}, wdata : 0x{OISPID[i][2].ToString("X2")}");
+                        SetError(ch, NonSpecItem.PID_Verify_NG);
+                    }
+
+                }
+            }
+
+        
+         
+       
+        }
+        void IME_Test(int ch, string testItem)
+        {
+            int OISStroke = Condition.IMEOISStroke;
+            AK7314_ICReset(ch);
+            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x00, new byte[] { 0x80, 0x00 });
+            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x00, new byte[] { 0x80, 0x00 });
+            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
+            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
+            Thread.Sleep(10);
+            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 });
+            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
+            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
+            Thread.Sleep(50);
+
+            byte[] rbuf = new byte[1];
+          
+            byte[] X_PNCAL = new byte[2];
+            byte[] Y_PNCAL = new byte[2];
+
+            int XPCAL = 0, XNCAL = 0;
+            int YPCAL = 0, YNCAL = 0;
+            int XIME = 0, YIME = 0;
+
+            Dln.ReadArray(ch, DrvIC.XSlaveAddr, 0x04, rbuf);
+            X_PNCAL[0] = rbuf[0];
+            Dln.ReadArray(ch, DrvIC.XSlaveAddr, 0x06, rbuf);
+            X_PNCAL[1] = rbuf[0];
+            Dln.ReadArray(ch, DrvIC.Y1SlaveAddr, 0x04, rbuf);
+            Y_PNCAL[0] = rbuf[0];
+            Dln.ReadArray(ch, DrvIC.Y1SlaveAddr, 0x06, rbuf);
+            Y_PNCAL[1] = rbuf[0];
+
+            XPCAL = (X_PNCAL[0] < 128) ? (X_PNCAL[0] * 2) : ((X_PNCAL[0] * 2) - 512);
+            XNCAL = (X_PNCAL[1] < 128) ? (X_PNCAL[1] * 2) : ((X_PNCAL[1] * 2) - 512);
+            YPCAL = (Y_PNCAL[0] < 128) ? (X_PNCAL[0] * 2) : ((X_PNCAL[0] * 2) - 512);
+            YNCAL = (Y_PNCAL[1] < 128) ? (Y_PNCAL[1] * 2) : ((Y_PNCAL[1] * 2) - 512); 
+
+            XIME = (((OISStroke * XPCAL) / (XPCAL - XNCAL)) - (OISStroke / 2));
+            YIME = (((OISStroke * YPCAL) / (YPCAL - YNCAL)) - (OISStroke / 2));
+
+            AddLog(ch, $"Stroke : {OISStroke}, {XIME}, {YIME}");
+
+            if ((XIME < Condition.IMEMinThd) || (XIME > Condition.IMEMaxThd)) // -220 ~ 220
+            {
+                AddLog(ch, "X IME Test NG");
+                SetError(ch, NonSpecItem.IME_Test_NG);
+            }
+            if ((YIME < Condition.IMEMinThd) || (YIME > Condition.IMEMaxThd)) // -220 ~ 220
+            {
+                AddLog(ch, "Y IME Test NG");
+                SetError(ch, NonSpecItem.IME_Test_NG);
+            }
+
+        }
+
+        void AK7314_ICReset(int ch)
+        {
+            byte[] rbuf = new byte[1];
+            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x40 });
+            Thread.Sleep(50);
+            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x03, new byte[] { 0x10 });
+            Thread.Sleep(100);
+            Dln.ReadArray(ch, DrvIC.AFSlaveAddr, 0x4B, rbuf);
+            if ((byte)(rbuf[0] & 0x04) != 0x00)
+            {
+                SetError(ch, NonSpecItem.Store_Fail);
+                AddLog(ch, "Store fail");
+                return;
+            }
+            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 });
+            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x00, new byte[] { 0x80, 0x00 });
+            Thread.Sleep(50);
+        }
+
+        void throughFRA_Enable(int ch, int axis)
+        {
+            byte[] rbuf = new byte[1];
+            int addr = axis == 0 ? DrvIC.XSlaveAddr : DrvIC.Y1SlaveAddr;
+            int check_count = 0;
+            Dln.WriteArray(ch, addr, 0xAE, new byte[] { 0x3B });
+            Dln.WriteArray(ch, DrvIC.FRA_Addr, 0x56, new byte[] { 0x80 });
+            Dln.WriteArray(ch, DrvIC.FRA_Addr, 0xAD, new byte[] { 0x02 });
+            Thread.Sleep(5);
+            Dln.WriteArray(ch, DrvIC.FRA_Addr, 0x54, new byte[] { 0x0F });
+            Dln.WriteArray(ch, DrvIC.FRA_Addr, 0x55, new byte[] { 0x00 });
+            Thread.Sleep(5);
+            
+            while(true)
+            {
+                Dln.ReadArray(ch, DrvIC.FRA_Addr, 0x4C, rbuf);
+                Thread.Sleep(1);
+                if ((rbuf[0] & 0x10) == 0x10)
+                    break;
+                check_count++;
+                if (check_count > 100) { AddLog(ch, "FRA Mode change timeout"); }
+            }
+            Dln.WriteArray(ch, DrvIC.FRA_Addr, 0xA8, new byte[] { 0xC5 });
+            Thread.Sleep(150);
+        }
+        void throughFRA_disable(int ch, int axis)
+        {
+            int addr = axis == 0 ? DrvIC.XSlaveAddr : DrvIC.Y1SlaveAddr;
+            Dln.WriteArray(ch, DrvIC.FRA_Addr, 0xA8, new byte[] { 0x00 });
+            Dln.WriteArray(ch, DrvIC.FRA_Addr, 0xAF, new byte[] { 0xEE });
+            Thread.Sleep(5);
+            Dln.WriteArray(ch, DrvIC.FRA_Addr, 0xAD, new byte[] { 0xFF });
+            Thread.Sleep(15);
+            Dln.WriteArray(ch, addr, 0xAE, new byte[] { 0x00 });
+            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
+            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
+            DrvIC.Move(ch, "X", 2048);
+            DrvIC.Move(ch, "Y", 2048);
+        }
+        void throughFRA_gain(int ch, int axis)
+        {
+            string axisName = axis == 0 ? "X" : "Y";
+            int addr = axis == 0 ? DrvIC.XSlaveAddr : DrvIC.Y1SlaveAddr;
+            int fraAddr = axis == 0 ? DrvIC.FRA_XSlaveAddr : DrvIC.FRA_Y1SlaveAddr;
+            DrvIC.Move(ch, "AF", 2048);
+            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 });
+            DrvIC.Move(ch, "X", 2048);
+            DrvIC.Move(ch, "Y", 2048);
+            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
+            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
+            Thread.Sleep(100);
+           
+            AddLog(ch, $"Amp : {Condition.throughPeakAmp}");
+            AddLog(ch, $"Test Freq : {Condition.throughPeakFreq}");
+            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
+            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
+            DrvIC.Move(ch, "AF", 2048);
+            DrvIC.Move(ch, "X", 2048);
+            DrvIC.Move(ch, "Y", 2048);
+            Thread.Sleep(300);
+
+            DrvIC.SetSlaveAddr(ch, fraAddr);
+            AddLog(ch, $"{axisName} Test start");
+
+            Dln.WriteArray(ch, addr, 0x02, new byte[] { 0x40 });
+            Thread.Sleep(30);
+            Dln.WriteArray(ch, addr, 0xAE, new byte[] { 0x3B });
+            throughFRA_Enable(ch, axis);
+            DrvIC.Set_Amp(ch, Condition.throughPeakAmp);
+            AddLog(ch, $"Amp\tFreq\tGain");
+            DrvIC.Set_Freq(ch, Condition.throughPeakFreq);
+            Thread.Sleep(100 + 5000 / Condition.throughPeakFreq + 10);
+            double gain = DrvIC.Get_Gain(ch);
+            AddLog(ch, $"{Condition.throughPeakAmp}\t{Condition.throughPeakFreq}\t{gain.ToString("F2")}");
+            throughFRA_disable(ch, axis);
+            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
+            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
+            Thread.Sleep(30);
+            Dln.WriteArray(ch, DrvIC.FRA_Addr, 0x00, new byte[] { 0x01 });
+            Dln.WriteArray(ch, DrvIC.FRA_Addr, 0x00, new byte[] { 0x00 });
+            Thread.Sleep(30);
+        }
+
+        void throughFRA(int ch, string testItem)
+        {
+            throughFRA_gain(ch, 0);
+            throughFRA_gain(ch, 1);
+        }
+
+        void OISPM(int ch, int axis)
+        {
+            int addr = axis == 0 ? DrvIC.XSlaveAddr : DrvIC.Y1SlaveAddr;
+            int FRAaddr = axis == 0 ? DrvIC.FRA_XSlaveAddr : DrvIC.FRA_Y1SlaveAddr;
+            string axisName = axis == 0 ? "X" : "Y";
+
+            int startFreq = axis == 0 ? Condition.iXChirpFrom : Condition.iYChirpFrom;
+            int finalFreq = axis == 0 ? Condition.iYChirpTo : Condition.iYChirpTo;
+
+
+
+            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
+            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
+
+            DrvIC.Move(ch, "X", 2048);
+            DrvIC.Move(ch, "Y", 2048);
+            Thread.Sleep(100);
+
+            DrvIC.SetSlaveAddr(ch, FRAaddr);
+
+            int freqVal, freqTemp = 0, gainTemp, freqPM, freq_index = 0;
+            int oldFreq;
+            int[] before_after_zero_freq = new int[2] { startFreq, finalFreq };
+            double gainVal, pm_val, phaseTemp, prepm = 0, pmindex = 180;
+            double[] before_after_zero_gain = new double[2] { 0, 0 };
+
+            AddLog(ch, $"{axisName} PM Test start");
+
+            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 });
+            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 });
+            Thread.Sleep(30);
+            Dln.WriteArray(ch, addr, 0xAE, new byte[] { 0x3B });
+            DrvIC.FRAModeEnable(ch);
+            DrvIC.Set_Amp(ch, Condition.iXAmplitude);
+            AddLog(ch, $"Amp\tFreq\tGain\tP/M");
+            for (oldFreq = freqVal = startFreq; freqVal < finalFreq; freqVal -= freqTemp)
+            {
+                DrvIC.Set_Freq(ch, freqVal);
+                Thread.Sleep(1000 / oldFreq + 5000 / freqVal + 10);
+                oldFreq = freqVal;
+
+                gainVal = DrvIC.Get_Gain(ch);
+                pm_val = DrvIC.Get_Phase(ch);
+
+                AddLog(ch, $"{Condition.iXAmplitude}\t{freqVal}\t{gainVal}\t{pm_val}");
+                if(gainVal > 0)
+                {
+                    if((freqVal != startFreq) && (before_after_zero_gain[0] < 0))
+                    {
+                        pm_val = ((gainVal * prepm) - (before_after_zero_gain[0] * pm_val)) / (gainVal - before_after_zero_gain[0]);
+                        freqPM = (int)(((gainVal * before_after_zero_freq[0]) - (before_after_zero_gain[0] * freqVal)) / (gainVal - before_after_zero_gain[0]));
+
+                        before_after_zero_freq[1] = freqVal;
+                        before_after_zero_gain[1] = gainVal;
+                        freq_index++;
+                        break;
+                    }
+                    else
+                    {
+                        before_after_zero_freq[0] = freqVal;
+                        before_after_zero_gain[0] = gainVal;
+                        if((gainVal < 4) && (pm_val < pmindex))
+                        {
+                            pmindex = pm_val;
+                            freq_index = freqVal;
+                        }
+                    }
+                }
+                else
+                {
+                    before_after_zero_freq[0] = freqVal;
+                    before_after_zero_gain[0] = gainVal;
+                }
+                if(pm_val < mini)
+
+            }
+        }
+
+
+
+
 
         #endregion
     }

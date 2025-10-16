@@ -294,13 +294,15 @@ namespace FZ4P
                 if (!FRAModeDisable(ch)) return false;
             }
 
-            if (!FRAModeEnable(ch, sAddr)) return false;
+            if (!FRAModeEnable(ch)) return false;
 
             if (!Set_Amp(ch, amp)) return false;
-
+            int oldfreq = (int)freq[0];
             for (int i = 0; i < freq.Count; i++)
             {
                 if (!Set_Freq(ch, (int)freq[i])) return false;
+                Thread.Sleep((int)(1000 / oldfreq + 5000 / freq[i] + 15));
+                oldfreq = (int)freq[i];
 
                 gain.Add(Get_Gain(ch));
 
@@ -413,7 +415,7 @@ namespace FZ4P
       
        
 
-        private bool SetSlaveAddr(int ch, int addr)
+        public bool SetSlaveAddr(int ch, int addr)
         {
             Process.AddLog(ch, string.Format("Set Slave Addr"));
             if (!Dln.WriteArray(ch, FRA_Addr, 0x00, new byte[] { 0x01 })) return false;
@@ -425,7 +427,7 @@ namespace FZ4P
 
             return true;
         }
-        private bool FRAModeEnable(int ch, int addr)
+        public bool FRAModeEnable(int ch)
         {
             Process.AddLog(ch, string.Format("FRA Mode Enable"));
             if (!Dln.WriteArray(ch, FRA_Addr, 0x56, new byte[] { 0x80 })) return false;
@@ -440,11 +442,7 @@ namespace FZ4P
             Process.AddLog(ch, string.Format("Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x55, 0x00));
             Thread.Sleep(5);
 
-            byte[] data = new byte[1];
-
-            Dln.ReadArray(ch, addr, 0x4B, data);
-            Process.AddLog(ch, string.Format("Read Mem : 0x{0:X2} Data : 0x{1:X2}", 0x4B, data[0]));
-
+          
             if (!Dln.WriteArray(ch, FRA_Addr, 0xA8, new byte[] { 0xC5 })) return false;
             Process.AddLog(ch, string.Format("Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0xA8, 0xC5));
             Thread.Sleep(1000);
@@ -466,7 +464,7 @@ namespace FZ4P
 
             return true;
         }
-        private bool Set_Amp(int ch, int val)
+        public bool Set_Amp(int ch, int val)
         {
             int data = val << 6;
 
@@ -475,7 +473,7 @@ namespace FZ4P
 
             return true;
         }
-        private bool Set_Freq(int ch, int val)
+        public bool Set_Freq(int ch, int val)
         {
             int data = val << 1;
 
@@ -485,14 +483,14 @@ namespace FZ4P
 
             return true;
         }
-        private double Get_Gain(int ch)
+        public double Get_Gain(int ch)
         {
             byte[] data = new byte[3];
             Dln.ReadArray(ch, FRA_Addr, 0x94, data);
             double val = (data[0] << 16) + (data[1] << 8) + data[2];
             return Math.Log10(val / 65536) * 20;
         }
-        private double Get_Phase(int ch)
+        public  double Get_Phase(int ch)
         {
             byte[] data = new byte[2];
             Dln.ReadArray(ch, FRA_Addr, 0x98, data);
@@ -505,6 +503,10 @@ namespace FZ4P
             if (val < -180) val += 360;
             return val;
         }
+
+       
+
+
 
     }
 }

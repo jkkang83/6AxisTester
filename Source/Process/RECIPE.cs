@@ -265,8 +265,6 @@ namespace FZ4P
         [Condition("High PM", "Y Chirp to", "", "", "Hz")] public int iHighYChirpTo { get; set; } = 100;
         [Condition("High PM", "Y Drv Amp", "", "", "mV")] public int iHighYAmplitude { get; set; } = 75;
 
-
-
         [Condition("GM", "Loop", "", "", "#")] public int iGainLoop { get; set; } = 1;
         [Condition("GM", "Step", "", "", "Hz")] public int iGainStep { get; set; } = 5;
         [Condition("GM", "X Chirp from", "", "", "Hz")] public int iXGainFrom { get; set; } = 400;
@@ -275,6 +273,10 @@ namespace FZ4P
         [Condition("GM", "Y Chirp from", "", "", "Hz")] public int iYGainFrom { get; set; } = 250;
         [Condition("GM", "Y Chirp to", "", "", "Hz")] public int iYGainTo { get; set; } = 100;
         [Condition("GM", "Y Drv Amplitude", "", "", "mV")] public double iYAmplitudeGain { get; set; } = 60;
+
+        [Condition("through Peak Hz", "Amp", "", "", "mV")] public int throughPeakAmp { get; set; } = 60;
+        [Condition("through Peak Hz", "Freq", "", "", "Hz")] public int throughPeakFreq { get; set; } = 25;
+
 
         [Condition("LG @ 10Hz", "X Amp", "", "", "mV")] public double iLoppgainXAmp { get; set; } = 60;
         [Condition("LG @ 10Hz", "Y Amp", "", "", "mV")] public double iLoppgainYAmp { get; set; } = 60;
@@ -375,6 +377,15 @@ namespace FZ4P
         [Condition("Temp. Test", "Val Spec", "", "", "_")] public double TempValSpec { get; set; } = 20;
 
         [Condition("Servo Decenter", "AF Position", "", "", "code")] public int ServoDecenterAFPos { get; set; } = 1252;
+        [Condition("IME Test", "Min Thd", "", "", "_")] public int IMEMinThd { get; set; } = -220;
+        [Condition("IME Test", "Max Thd", "", "", "_")] public int IMEMaxThd { get; set; } = 220;
+        [Condition("IME Test", "OIS Stroke", "", "", "_")] public int IMEOISStroke { get; set; } = 900;
+
+        [Condition("OIS Openloop Test", "Step Num", "", "", "_")] public int OISOLStepNum { get; set; } = 20;
+        [Condition("OIS Openloop Test", "Move Delay", "", "", "_")] public int OISOLMoveDelay { get; set; } = 30;
+        [Condition("OIS Openloop Test", "tp1", "", "", "_")] public int OISOLtp1 { get; set; } = 100;
+        [Condition("OIS Openloop Test", "tp2", "", "", "_")] public int OISOLtp2 { get; set; } = 400;
+        [Condition("OIS Openloop Test", "Spec", "", "", "_")] public int OISOLSpec { get; set; } = 90000;
 
         [Condition("I2C", "I2C Clock", "", "", "KHz")] public int iI2Cclock { get; set; } = 400;
 
@@ -508,6 +519,9 @@ namespace FZ4P
         Temperature_Test,
         AutoTest,
         NVM_Verify_NG,
+        PID_Verify_NG,
+        IME_Test_NG,
+        OIS_Openloop_Test,
     }
     public class Spec
     {

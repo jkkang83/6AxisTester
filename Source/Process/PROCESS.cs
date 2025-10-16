@@ -717,10 +717,7 @@ namespace FZ4P
                     errMsg[k] = "";
                     PassFails[k].FirstFailIndex = 0;
                 }
-                Dln.PowerOnOff(0, false);
-                Thread.Sleep(200);
-                Dln.PowerOnOff(0, true);
-                Thread.Sleep(200);
+                Dln.PowerSequence(port);
 
                 if (!Dln.WriteArray(ch, DrvIC.AFOriginAddr, 0x02, new byte[] { 0x40 }) && !Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x40 })) m_ChannelOn[ch] = false;
                 if (!Dln.WriteArray(ch, DrvIC.XOriginAddr, 0x02, new byte[] { 0x40 }) && !Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 })) m_ChannelOn[ch] = false;
@@ -827,6 +824,7 @@ namespace FZ4P
                 if (m_ChannelOn[k])
                 {
                     m_StrIndex[k] = (yield.LastSampleNum + k + 1).ToString();
+                    AddLog(k, "\r\n");
                     AddLog(k, m_StrIndex[k] + ">> " + testItem + " Start");
                 }
             }
@@ -884,6 +882,7 @@ namespace FZ4P
                 {
                     double ellipse = (double)sw.ElapsedMilliseconds / 1000;
                     AddLog(k, string.Format("{0}\t{1:0.000} sec", testItem, ellipse));
+                    AddLog(k, "\r\n");
                     ItemList[index].Time = ellipse.ToString("F3");
                 }
             }
