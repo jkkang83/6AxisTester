@@ -158,6 +158,8 @@ namespace FZ4P
     public class Condition
     {
         [Condition("ToDoList", "", "", "", "")] public List<string> ToDoList { get; set; } = new List<string>();
+        [Condition("PID", "OIS PID Ver.", "", "", "_")] public int OISPIDVer { get; set; } = 11;
+        [Condition("PID", "AF PID Ver.", "", "", "_")] public int AFPIDVer { get; set; } = 11;
         [Condition("Common", "Drv AF Step", "", "", "code")] public int iDrvAFStep { get; set; } = 40;
         [Condition("Common", "Drv X Step", "", "", "code")] public int iDrvXStep { get; set; } = 400;
         [Condition("Common", "Drv Y Step", "", "", "code")] public int iDrvYStep { get; set; } = 400;
@@ -245,18 +247,25 @@ namespace FZ4P
 
 
         [Condition("PM", "Loop", "", "", "#")] public int iFRAloop { get; set; } = 1;
-        [Condition("PM", "Step", "", "", "%")] public int iFRAstep { get; set; } = 5;
+        [Condition("PM", "OIS Step", "", "", "%")] public int iOISFRAstep { get; set; } = 5;
+        [Condition("PM", "AF Step", "", "", "%")] public int iAFFRAstep { get; set; } = 5;
         [Condition("PM", "AF Chirp from", "", "", "Hz")] public int iAFChirpFrom { get; set; } = 250;
         [Condition("PM", "AF Chirp to", "", "", "Hz")] public int iAFChirpTo { get; set; } = 100;
         [Condition("PM", "AF Drv Amp", "", "", "mV")] public double iAFAmplitude { get; set; } = 75;
+        [Condition("PM", "AF Gain Th", "", "", "_")] public int PMAFGainTH { get; set; } = 0;
         [Condition("PM", "X Chirp from", "", "", "Hz")] public int iXChirpFrom { get; set; } = 250;
         [Condition("PM", "X Chirp to", "", "", "Hz")] public int iXChirpTo { get; set; } = 100;
         [Condition("PM", "X Drv Amp", "", "", "mV")] public int iXAmplitude { get; set; } = 75;
+        [Condition("PM", "X Min Phase", "", "", "_")] public int PMXMinPhase { get; set; } = 0;
+        [Condition("PM", "X Gain Th", "", "", "_")] public int PMXGainTH { get; set; } = 0;
         [Condition("PM", "Y Chirp from", "", "", "Hz")] public int iYChirpFrom { get; set; } = 250;
         [Condition("PM", "Y Chirp to", "", "", "Hz")] public int iYChirpTo { get; set; } = 100;
         [Condition("PM", "Y Drv Amp", "", "", "mV")] public int iYAmplitude { get; set; } = 75;
+        [Condition("PM", "Y Min Phase", "", "", "_")] public int PMYMinPhase { get; set; } = 0;
+        [Condition("PM", "Y Gain Th", "", "", "_")] public int PMYGainTH { get; set; } = 0;
 
-       
+
+
         [Condition("High PM", "Step", "", "", "%")] public int iHighFRAstep { get; set; } = 5;    
         [Condition("High PM", "X Chirp from", "", "", "Hz")] public int iHighXChirpFrom { get; set; } = 250;
         [Condition("High PM", "X Chirp to", "", "", "Hz")] public int iHighXChirpTo { get; set; } = 100;
@@ -265,17 +274,22 @@ namespace FZ4P
         [Condition("High PM", "Y Chirp to", "", "", "Hz")] public int iHighYChirpTo { get; set; } = 100;
         [Condition("High PM", "Y Drv Amp", "", "", "mV")] public int iHighYAmplitude { get; set; } = 75;
 
-        [Condition("GM", "Loop", "", "", "#")] public int iGainLoop { get; set; } = 1;
-        [Condition("GM", "Step", "", "", "Hz")] public int iGainStep { get; set; } = 5;
-        [Condition("GM", "X Chirp from", "", "", "Hz")] public int iXGainFrom { get; set; } = 400;
-        [Condition("GM", "X Chirp to", "", "", "Hz")] public int iXGainTo { get; set; } = 100;
-        [Condition("GM", "X Drv Amplitude", "", "", "mV")] public double iXAmplitudeGain { get; set; } = 60;
-        [Condition("GM", "Y Chirp from", "", "", "Hz")] public int iYGainFrom { get; set; } = 250;
-        [Condition("GM", "Y Chirp to", "", "", "Hz")] public int iYGainTo { get; set; } = 100;
-        [Condition("GM", "Y Drv Amplitude", "", "", "mV")] public double iYAmplitudeGain { get; set; } = 60;
+        [Condition("AF GM", "Chirp From", "", "", "Hz")] public int AFGMStartFreq { get; set; } = 2000;
+        [Condition("AF GM", "Chirp To", "", "", "Hz")] public int AFGMEndFreq { get; set; } = 300;
+        [Condition("AF GM", "Step", "", "", "Hz")] public int AFGMStep { get; set; } = 300;
+        [Condition("AF GM", "Amp", "", "", "mV")] public int AFGMamp { get; set; } = 40;
+
+        //[Condition("GM", "Loop", "", "", "#")] public int iGainLoop { get; set; } = 1;
+        //[Condition("GM", "Step", "", "", "Hz")] public int iGainStep { get; set; } = 5;
+        //[Condition("GM", "X Chirp from", "", "", "Hz")] public int iXGainFrom { get; set; } = 400;
+        //[Condition("GM", "X Chirp to", "", "", "Hz")] public int iXGainTo { get; set; } = 100;
+        //[Condition("GM", "X Drv Amplitude", "", "", "mV")] public double iXAmplitudeGain { get; set; } = 60;
+        //[Condition("GM", "Y Chirp from", "", "", "Hz")] public int iYGainFrom { get; set; } = 250;
+        //[Condition("GM", "Y Chirp to", "", "", "Hz")] public int iYGainTo { get; set; } = 100;
+        //[Condition("GM", "Y Drv Amplitude", "", "", "mV")] public double iYAmplitudeGain { get; set; } = 60;
 
         [Condition("through Peak Hz", "Amp", "", "", "mV")] public int throughPeakAmp { get; set; } = 60;
-        [Condition("through Peak Hz", "Freq", "", "", "Hz")] public int throughPeakFreq { get; set; } = 25;
+        [Condition("through Peak Hz", "Freq", "", "", "%")] public int throughPeakFreq { get; set; } = 5;
 
 
         [Condition("LG @ 10Hz", "X Amp", "", "", "mV")] public double iLoppgainXAmp { get; set; } = 60;
@@ -415,7 +429,7 @@ namespace FZ4P
         [Spec("X", "Crosstalk Y P2P dB", "dB")] OISX_CrosstalkYP2P_dB,
         //[Spec("X", "Crosstalk Z", "um")] OISX_CrosstalkZ,
         //[Spec("X", "Crosstalk R", "um")] OISX_CrosstalkR,
-        [Spec("X", "Rolling", "min")] OISX_Rolling,
+        [Spec("X", "Rolling", "deg")] OISX_Rolling,
 
         [Spec("Y", "Rated Stroke", "um")] OISY_Ratedstroke,
         [Spec("Y", "Forward Stroke", "um")] OISY_Forwardstroke,
@@ -432,7 +446,7 @@ namespace FZ4P
         [Spec("Y", "Crosstalk X P2P dB", "dB")] OISY_CrosstalkXP2P_dB,
         //[Spec("Y", "Crosstalk Z", "um")] OISY_CrosstalkZ,
         //[Spec("Y", "Crosstalk R", "um")] OISY_CrosstalkR,
-        [Spec("Y", "Rolling", "min")] OISY_Rolling,
+        [Spec("Y", "Rolling", "deg")] OISY_Rolling,
 
         [Spec("AF", "Rated Stroke", "um")] AF_Ratedstroke,
         [Spec("AF", "Forward Stroke", "um")] AF_Forwardstroke,
@@ -446,7 +460,7 @@ namespace FZ4P
         [Spec("AF", "Crosstalk X", "um")] AF_CrosstalkX,
         [Spec("AF", "Crosstalk Y", "um")] AF_CrosstalkY,
         [Spec("AF", "Crosstalk R", "um")] AF_CrosstalkR,
-        [Spec("AF", "Rolling", "min")] AF_Rolling,
+        [Spec("AF", "Rolling", "deg")] AF_Rolling,
         [Spec("AF", "Tilt", "min")] AF_Tilt,
         [Spec("AF", "Settling Time", "ms")] AF_SettillingTime,
        
@@ -455,10 +469,10 @@ namespace FZ4P
         [Spec("FRA AF", "Phase Margin", "deg")] FRAAF_PhaseMargin,
         [Spec("FRA AF", "Gain @ 10Hz", "db")] FRAAF_Gain10Hz,
         [Spec("FRA AF", "Gain Margin", "db")] FRAAF_GainMargin,
-        [Spec("FRA AF", "Sinewave Result", "#")] SineWaveAF_Result,
-        [Spec("FRA AF", "Sinewave Count", "#")] SineWaveAF_Count,
-        [Spec("FRA AF", "Ringing Result", "#")] RingingAF_Result,
-        [Spec("FRA AF", "Ringing Time", "#")] RingingAF_Time,
+        //[Spec("FRA AF", "Sinewave Result", "#")] SineWaveAF_Result,
+        //[Spec("FRA AF", "Sinewave Count", "#")] SineWaveAF_Count,
+        //[Spec("FRA AF", "Ringing Result", "#")] RingingAF_Result,
+        //[Spec("FRA AF", "Ringing Time", "#")] RingingAF_Time,
 
         [Spec("FRA X", "PM Frequency", "Hz")] FRAX_PMFreq,
         [Spec("FRA X", "Phase Margin", "deg")] FRAX_PhaseMargin,
@@ -466,10 +480,10 @@ namespace FZ4P
         [Spec("FRA X", "Phase Margin High", "deg")] FRAX_PhaseMargin_High,
         [Spec("FRA X", "Gain @ 10Hz", "db")] FRAX_Gain10Hz,
         [Spec("FRA X", "Gain Margin", "db")] FRAX_GainMargin,
-        [Spec("FRA X", "Sinewave Result", "#")] SineWaveX_Result,
-        [Spec("FRA X", "Sinewave Count", "#")] SineWaveX_Count,
-        [Spec("FRA X", "Ringing Result", "#")] RingingX_Result,
-        [Spec("FRA X", "Ringing Time", "#")] RingingX_Time,
+        //[Spec("FRA X", "Sinewave Result", "#")] SineWaveX_Result,
+        //[Spec("FRA X", "Sinewave Count", "#")] SineWaveX_Count,
+        //[Spec("FRA X", "Ringing Result", "#")] RingingX_Result,
+        //[Spec("FRA X", "Ringing Time", "#")] RingingX_Time,
 
         [Spec("FRA Y1", "PM Frequency", "Hz")] FRAY1_PMFreq,
         [Spec("FRA Y1", "Phase Margin", "deg")] FRAY1_PhaseMargin,
@@ -477,10 +491,14 @@ namespace FZ4P
         [Spec("FRA Y1", "Phase Margin High", "deg")] FRAY1_PhaseMargin_High,
         [Spec("FRA Y1", "Gain @ 10Hz", "db")] FRAY1_Gain10Hz,
         [Spec("FRA Y1", "Gain Margin", "db")] FRAY1_GainMargin,
-        [Spec("FRA Y1", "Sinewave Result", "#")] SineWaveY1_Result,
-        [Spec("FRA Y1", "Sinewave Count", "#")] SineWaveY1_Count,
-        [Spec("FRA Y1", "Ringing Result", "#")] RingingY1_Result,
-        [Spec("FRA Y1", "Ringing Time", "#")] RingingY1_Time,
+
+        //[Spec("FRA Y1", "Sinewave Result", "#")] SineWaveY1_Result,
+        //[Spec("FRA Y1", "Sinewave Count", "#")] SineWaveY1_Count,
+        //[Spec("FRA Y1", "Ringing Result", "#")] RingingY1_Result,
+        //[Spec("FRA Y1", "Ringing Time", "#")] RingingY1_Time,
+
+        [Spec("Throgh Peak", "X Gain", "db")] ThroughPeak_X_Gain,
+        [Spec("Throgh Peak", "Y Gain", "db")] ThroughPeak_Y_Gain,
 
         [Spec("FRA Y2", "PM Frequency", "Hz")] FRAY2_PMFreq,
         [Spec("FRA Y2", "Phase Margin", "deg")] FRAY2_PhaseMargin,
@@ -488,10 +506,10 @@ namespace FZ4P
         [Spec("FRA Y2", "Phase Margin High", "deg")] FRAY2_PhaseMargin_High,
         [Spec("FRA Y2", "Gain @ 10Hz", "db")] FRAY2_Gain10Hz,
         [Spec("FRA Y2", "Gain Margin", "db")] FRAY2_GainMargin,
-        [Spec("FRA Y2", "Sinewave Result", "#")] SineWaveY2_Result,
-        [Spec("FRA Y2", "Sinewave Count", "#")] SineWaveY2_Count,
-        [Spec("FRA Y2", "Ringing Result", "#")] RingingY2_Result,
-        [Spec("FRA Y2", "Ringing Time", "#")] RingingY2_Time,
+        //[Spec("FRA Y2", "Sinewave Result", "#")] SineWaveY2_Result,
+        //[Spec("FRA Y2", "Sinewave Count", "#")] SineWaveY2_Count,
+        //[Spec("FRA Y2", "Ringing Result", "#")] RingingY2_Result,
+        //[Spec("FRA Y2", "Ringing Time", "#")] RingingY2_Time,
 
         [Spec("Hall Decenter", "X Decenter", "um")] x_HallDecenter,
         [Spec("Hall Decenter", "Y Decenter", "um")] y_HallDecenter,

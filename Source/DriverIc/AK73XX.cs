@@ -306,7 +306,7 @@ namespace FZ4P
 
                 gain.Add(Get_Gain(ch));
 
-                phase.Add(Get_Phase(ch));
+                phase.Add(Get_Phase(ch, 0));
 
                 Process.AddLog(ch, string.Format("{0} FRA Freq : {1} gain : {2:0.00} phase : {3:0.00}", axis, freq[i], gain[i], phase[i]));
 
@@ -434,18 +434,18 @@ namespace FZ4P
             Process.AddLog(ch, string.Format("Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x56, 0x80));
             if (!Dln.WriteArray(ch, FRA_Addr, 0xAC, new byte[] { 0x01 })) return false;
             Process.AddLog(ch, string.Format("Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0xAC, 0x01));
-            Thread.Sleep(5);
+            Process.Wait(5);
 
             if (!Dln.WriteArray(ch, FRA_Addr, 0x54, new byte[] { 0x0F })) return false;
             Process.AddLog(ch, string.Format("Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x54, 0x0F));
             if (!Dln.WriteArray(ch, FRA_Addr, 0x55, new byte[] { 0x00 })) return false;
             Process.AddLog(ch, string.Format("Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0x55, 0x00));
-            Thread.Sleep(5);
+            Process.Wait(5);
 
           
             if (!Dln.WriteArray(ch, FRA_Addr, 0xA8, new byte[] { 0xC5 })) return false;
             Process.AddLog(ch, string.Format("Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0xA8, 0xC5));
-            Thread.Sleep(1000);
+            Process.Wait(1000);
 
             return true;
         }
@@ -456,11 +456,11 @@ namespace FZ4P
             Process.AddLog(ch, string.Format("Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0xA8, 0x00));
             if (!Dln.WriteArray(ch, FRA_Addr, 0xAF, new byte[] { 0xEE })) return false;
             Process.AddLog(ch, string.Format("Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0xAF, 0xEE));
-            Thread.Sleep(5);
+            Process.Wait(5);
 
             if (!Dln.WriteArray(ch, FRA_Addr, 0xAC, new byte[] { 0x00 })) return false;
             Process.AddLog(ch, string.Format("Write Mem : 0x{0:X2} Data : 0x{1:X2}", 0xAC, 0x00));
-            Thread.Sleep(15);
+            Process.Wait(15);
 
             return true;
         }
@@ -479,7 +479,7 @@ namespace FZ4P
 
             if (!Dln.WriteArray(ch, FRA_Addr, 0x50, new byte[2] { (byte)(data >> 8), (byte)(data % 256) })) return false;
 
-            Thread.Sleep(20000 / val + 10);
+            Process.Wait(20000 / val + 10);
 
             return true;
         }
@@ -490,7 +490,7 @@ namespace FZ4P
             double val = (data[0] << 16) + (data[1] << 8) + data[2];
             return Math.Log10(val / 65536) * 20;
         }
-        public  double Get_Phase(int ch)
+        public  double Get_Phase(int ch, int mode)
         {
             byte[] data = new byte[2];
             Dln.ReadArray(ch, FRA_Addr, 0x98, data);
@@ -499,9 +499,18 @@ namespace FZ4P
             if (val > 256)
                 val -= 512;
             val = 180 + val;
-            if (val > 180) val = 360 - val;
-            if (val < -180) val += 360;
-            return val;
+            if(mode == 0)
+            {
+                if (val > 180) val = 360 - val;
+                if (val < -180) val += 360;
+            }
+            else
+            {
+                if (val > 180) val = val - 360;
+                if (val < -180) val += 360;
+            }
+
+                return val;
         }
 
        

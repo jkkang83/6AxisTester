@@ -338,7 +338,7 @@ namespace FZ4P
         public void AddChart(int ch, string name)
         {
             while (ChartTop[ch].IsFalg)
-                Thread.Sleep(10);
+                Process.Wait(10);
 
             int CodeRange = 0;
 
@@ -661,7 +661,7 @@ namespace FZ4P
 
                     if (CurrentRun >= RepeatRun || SuddenStop) break;
                     CurrentRun++;
-                    Thread.Sleep(1500);
+                    Process.Wait(1500);
                 }
             }
         }
@@ -670,7 +670,7 @@ namespace FZ4P
             try
             {
                 int ch = port * 2;
-                Thread.Sleep(100);
+                Process.Wait(100);
 
                 if (Dln.IsSafeOn & Option.SafeSensor)
                 {
@@ -700,6 +700,10 @@ namespace FZ4P
                 m__G.oCam[port].ResetmCpXY();
                 int ch = port * 2;
                 DrvIC.FRAModeDisable(ch);
+                SinewaveXMaxDiff = 0;
+                SinewaveYMaxDiff = 0;
+                RingingXStabilizer = 0;
+                RingingYStabilizer = 0;
                 byte[] b = new byte[1];
                 Dln.ReadArray(0, DrvIC.XSlaveAddr, 0xE5, b);
                 AddLog(ch, $"AF Best Pos = {b[0] << 4}");
@@ -777,7 +781,7 @@ namespace FZ4P
 
                     if (!loopContinue) break;
                     else todoCnt++;
-                    Thread.Sleep(100);
+                    Process.Wait(100);
                 }
                 LEDs_All_On(port, false);
 
@@ -792,8 +796,13 @@ namespace FZ4P
                     PassFails[k].TotalTime = ellipse.ToString("F3");
                 }
 
-                if (!SuddenStop) WriteResult(port);
-
+                if (!SuddenStop)
+                {
+                    WriteResult(port);
+                    if (errMsg[0] == "" && PassFails[0].FirstFailIndex == 0)
+                        WriteUserMem(ch, 0x02);
+                    else WriteUserMem(ch, 0x09);
+                }
                 return;
             }
             catch
@@ -881,8 +890,7 @@ namespace FZ4P
                 if (m_ChannelOn[k])
                 {
                     double ellipse = (double)sw.ElapsedMilliseconds / 1000;
-                    AddLog(k, string.Format("{0}\t{1:0.000} sec", testItem, ellipse));
-                    AddLog(k, "\r\n");
+                    AddLog(k, string.Format("{0}\t{1:0.000} sec", testItem, ellipse));                
                     ItemList[index].Time = ellipse.ToString("F3");
                 }
             }
@@ -1033,7 +1041,7 @@ namespace FZ4P
 
                 }
             }
-            Thread.Sleep(100);
+            Process.Wait(100);
             //Initial Pos Move 
 
             for (int k = 0; k < 2; k++)
@@ -1049,7 +1057,7 @@ namespace FZ4P
                                 if (Cal.Name == name) DrvIC.Move(j, name, Cal.CodeZ[0]);
                             }
                         }
-                        Thread.Sleep(Condition.iDrvStepIntervalZ);
+                        Process.Wait(Condition.iDrvStepIntervalZ);
                         break;
                     case "OIS X Scan":
                         for (int j = ch; j < ch + ChannelCnt; j++)
@@ -1060,7 +1068,7 @@ namespace FZ4P
                                 if (Cal.Name == name) DrvIC.Move(j, name, Cal.CodeX[0]);
                             }
                         }
-                        Thread.Sleep(Condition.iDrvStepIntervalX);
+                        Process.Wait(Condition.iDrvStepIntervalX);
                         break;
                     case "OIS Y Scan":
                         for (int j = ch; j < ch + ChannelCnt; j++)
@@ -1071,7 +1079,7 @@ namespace FZ4P
                                 if (Cal.Name == name) DrvIC.Move(j, name, Cal.CodeY[0]);
                             }
                         }
-                        Thread.Sleep(Condition.iDrvStepIntervalY);
+                        Process.Wait(Condition.iDrvStepIntervalY);
                         break;
 
                 }
@@ -1081,7 +1089,7 @@ namespace FZ4P
         {
             int ch = port * 2;
 
-            Thread.Sleep(100);
+            Wait(100);
 
             CrossOffsetMove(port, name);
 
