@@ -401,6 +401,8 @@ namespace FZ4P
         [Condition("OIS Openloop Test", "tp2", "", "", "_")] public int OISOLtp2 { get; set; } = 400;
         [Condition("OIS Openloop Test", "Spec", "", "", "_")] public int OISOLSpec { get; set; } = 90000;
 
+        [Condition("XY Drift Test", "Spec", "", "", "code")] public int DriftTestSpec { get; set; } = 650;
+
         [Condition("I2C", "I2C Clock", "", "", "KHz")] public int iI2Cclock { get; set; } = 400;
 
         [Condition("Others", "Raw Gain", "", "", "30 ~ 512")] public int iRawGain { get; set; } = 35;
@@ -517,10 +519,25 @@ namespace FZ4P
         [Spec("Servo Decenter", "X Decenter", "um")] x_ServoDecenter,
         [Spec("Servo Decenter", "Y Decenter", "um")] y_ServoDecenter,
 
-        [Spec("OIS Shift", "X Shift", "um")] x_Shift,
-        [Spec("OIS Shift", "Y Shift", "um")] y_Shift,
-        [Spec("OIS Shift", "X Limit", "code")] x_Limit,
-        [Spec("OIS Shift", "Y Limit", "code")] y_Limit,
+        //[Spec("OIS Shift", "X Shift", "um")] x_Shift,
+        //[Spec("OIS Shift", "Y Shift", "um")] y_Shift,
+        //[Spec("OIS Shift", "X Limit", "code")] x_Limit,
+        //[Spec("OIS Shift", "Y Limit", "code")] y_Limit,
+
+        [Spec("AF NonEPA Stroke", "Stroke", "um")] AF_NonEPAStroke,
+        [Spec("Open Loop Test", "X Result", "_")] OLTestXResult,
+        [Spec("Open Loop Test", "Y Result", "_")] OLTestYResult,
+
+        //PassFailItemAdd
+        [Spec("OIS Sensitivity Test", "Result", "bool")] OISSensitivityTestRes,
+        [Spec("AF PID Verify", "Result", "bool")] AFPIDVerifyRes,
+        [Spec("OIS PID Verify", "Result", "bool")] OISPIDVerifyRes,
+        [Spec("IME Test", "X Result", "bool")] OISXIMERes,
+        [Spec("IME Test", "Y Result", "bool")] OISYIMERes,
+        [Spec("Temp Test", "X Result", "bool")] OISXTempRes,
+        [Spec("Temp Test", "Y Result", "bool")] OISYTempRes,
+        [Spec("Temp Test", "AF Result", "bool")] AFTempRes,
+        [Spec("AutoTest", "Result", "bool")] AutoTestRes,
 
         Length,
 
@@ -534,12 +551,13 @@ namespace FZ4P
         AF_LinearityComp,
         X_LinearityComp,
         Y_LinearityComp,
-        Temperature_Test,
-        AutoTest,
+     //   Temperature_Test,
+    //    AutoTest,
         NVM_Verify_NG,
-        PID_Verify_NG,
-        IME_Test_NG,
+       // PID_Verify_NG,
+       // IME_Test_NG,
         OIS_Openloop_Test,
+        DriftTestNG,
     }
     public class Spec
     {
