@@ -38,7 +38,7 @@ namespace FZ4P
             new byte[2]{ 0x17, 0x4B },
             new byte[2]{ 0x18, 0x14 },
             new byte[2]{ 0x1A, 0x00 },
-            new byte[2]{ 0x1B, 0x54 },
+            new byte[2]{ 0x1B, 0x5A },
             new byte[2]{ 0x1C, 0xDC },
             new byte[2]{ 0x1D, 0xCD },
             new byte[2]{ 0x1E, 0xD7 },
@@ -862,6 +862,7 @@ namespace FZ4P
                 {
                     AddLog(ch, "EPA Find NG");
                     SetError(ch, NonSpecItem.AF_EPA);
+                    return;
                 }
                 DrvIC.Move(ch, "AF", pos);
                 int a = DrvIC.ReadHall(ch, "AF");
@@ -911,6 +912,7 @@ namespace FZ4P
 
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x00, new byte[] { 0x80, 0x00 });
             Wait(50);
+            res = Measure();
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x00, new byte[] { 0xE6, 0xF0 });
             Wait(50);
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x00, new byte[] { 0xFA, 0xF0 });
@@ -947,6 +949,7 @@ namespace FZ4P
                 {
                     AddLog(ch, "EPA Find NG");
                     SetError(ch, NonSpecItem.AF_EPA);
+                    return;
                 }
                 DrvIC.Move(ch, "AF", pos);
                 Wait(100);
@@ -1335,7 +1338,8 @@ namespace FZ4P
             List<float> data = new List<float>();
             List<float> ReadHall = new List<float>();
             float RefData = 0;
-
+            int[] movecode = new int[] { 100, 221, 342, 463,584, 705, 826, 947, 1068, 1189, 1310, 1431, 1552,
+            1673, 1794, 1915, 2036, 2157, 2278, 2399, 2520, 2641, 2762, 2883, 3004, 3125, 3246, 3367, 3488, 3609, 3730, 3851, 3972};
 
             if (Axis == "X") { start = Condition.XLinCompStart; end = Condition.XLinCompEnd; step = Condition.XLinCompStep; delay = Condition.XLinCompMoveDelay; }
             else { start = Condition.YLinCompStart; end = Condition.YLinCompEnd; step = Condition.YLinCompStep; delay = Condition.YLinCompMoveDelay; }
@@ -1367,37 +1371,58 @@ namespace FZ4P
 
 
             Dln.WriteArray(ch, addr, 0x02, new byte[] { 0x00 });
-            DrvIC.Move(ch, Axis, start);
+            DrvIC.Move(ch, Axis, movecode[0]);
             int index = 0;
             AddLog(ch, $"Target\tPos\tReadHall");
-            while (true)
+            for (int i = 0; i < movecode.Length; i++)
             {
-                int currCode = start + (index * step);
-                if (currCode > end)
-                    currCode = end;
-                STATIC.DrvIC.Move(0, Axis, currCode);
-
+                STATIC.DrvIC.Move(0, Axis, movecode[i]);
                 Wait(delay);
                 tmpres = Measure();
-                target.Add(currCode);
+                target.Add(movecode[i]);
                 ReadHall.Add(DrvIC.ReadHall(ch, Axis));
                 if (Axis == "X")
                 {
-                    if (index != 0)
+                    if (i != 0)
                         data.Add((float)tmpres.cx[0] - RefData);
                     else { data.Add(0); RefData = (float)tmpres.cx[0]; }
                 }
                 else
                 {
-                    if (index != 0)
+                    if (i != 0)
                         data.Add((float)tmpres.cy[0] - RefData);
                     else { data.Add(0); RefData = (float)tmpres.cy[0]; }
                 }
-
-                AddLog(ch, $"{target[index]}\t{data[index].ToString("F2")}\t{ReadHall[index]}");
-                if (currCode >= end) break;
-                index++;
+                AddLog(ch, $"{target[i]}\t{data[i].ToString("F2")}\t{ReadHall[i]}");
             }
+            //while (true)
+            //{
+            //    int currCode = start + (index * step);
+            //    if (currCode > end)
+            //        currCode = end;
+            //    STATIC.DrvIC.Move(0, Axis, currCode);
+
+            //    Wait(delay);
+            //    tmpres = Measure();
+            //    target.Add(currCode);
+            //    ReadHall.Add(DrvIC.ReadHall(ch, Axis));
+            //    if (Axis == "X")
+            //    {
+            //        if (index != 0)
+            //            data.Add((float)tmpres.cx[0] - RefData);
+            //        else { data.Add(0); RefData = (float)tmpres.cx[0]; }
+            //    }
+            //    else
+            //    {
+            //        if (index != 0)
+            //            data.Add((float)tmpres.cy[0] - RefData);
+            //        else { data.Add(0); RefData = (float)tmpres.cy[0]; }
+            //    }
+
+            //    AddLog(ch, $"{target[index]}\t{data[index].ToString("F2")}\t{ReadHall[index]}");
+            //    if (currCode >= end) break;
+            //    index++;
+            //}
 
 
             DrvIC.Move(ch, Axis, OISCenter);
@@ -2414,7 +2439,7 @@ namespace FZ4P
             Wait(100);
 
             fX[1] = Measure();
-            PassFails[0].Results[(int)SpecItem.x_ServoDecenter].Val = fX[0].cx[0] - fX[1].cx[0];
+            PassFails[0].Results[(int)SpecItem.x_ServoDecenter].Val = fX[1].cx[0] - fX[0].cx[0];
 
 
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 });
@@ -3668,7 +3693,7 @@ namespace FZ4P
         }
         void WriteUserMem(int ch, int res)
         {
-            var now = DateTime.Now;
+            var now = STATIC.LogDate;
             var year = now.Year - 2000;
             var month = now.Month;
             var day = now.Day;
@@ -3751,7 +3776,7 @@ namespace FZ4P
             yWriteData[27] = (byte)RingingYStabilizer;
             yWriteData[28] = (byte)SinewaveYMaxDiff;
             yWriteData[29] = (byte)((byte)(PassFails[ch].Results[(int)SpecItem.FRAAF_PhaseMargin].Val) ^ 0x54 ^ 0xFD);
-            yWriteData[30] = 0; //AFCode
+            //yWriteData[30] = 0; //AFCode
           
 
             for (int i = 0; i < yWriteData.Length; i++)
@@ -3773,7 +3798,7 @@ namespace FZ4P
             AFWriteData[0] = (byte)res;
             AFWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val / 4);
             AFWriteData[2] = 0x1E;
-            AFWriteData[3] = 0x0A;
+            AFWriteData[3] = 0x0B;
             AFWriteData[4] = (byte)(Convert.ToInt16(Model.TesterNo) >> 8);
             AFWriteData[5] = (byte)Convert.ToInt16(Model.TesterNo);
             // 0xF7: 년(6bit) | 월(상위2bit)

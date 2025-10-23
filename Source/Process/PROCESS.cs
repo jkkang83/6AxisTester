@@ -799,9 +799,13 @@ namespace FZ4P
                 if (!SuddenStop)
                 {
                     WriteResult(port);
-                    if (errMsg[0] == "" && PassFails[0].FirstFailIndex == 0)
-                        WriteUserMem(ch, 0x02);
-                    else WriteUserMem(ch, 0x09);
+                    if(Option.WriteResultToDriverIC)
+                    {
+                        if (errMsg[0] == "" && PassFails[0].FirstFailIndex == 0)
+                            WriteUserMem(ch, 0x02);
+                        else WriteUserMem(ch, 0x09);
+                    }
+                    
                 }
                 return;
             }
@@ -1960,10 +1964,10 @@ namespace FZ4P
                 }
 
                 AddLog(j, string.Format("ch : {0}, msg : {1}, PassFail : {2}", j, errMsg[j], PassFails[j].FirstFailIndex));
-
+                STATIC.LogDate = DateTime.Now;
                 //"Time,Index,PlateBCode,LotID,ACTID,Channel,PM Index,PassFail,"
                 log += string.Format("'{0},{1},{2},{3},{4},{5},{6},{7},",
-                    DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), m_StrIndex[j], "", Model.LotID, "", j, "", PassFails[j].FirstFailIndex);
+                    STATIC.LogDate.ToString("yyyy-MM-dd HH:mm:ss.fff"), m_StrIndex[j], "", Model.LotID, "", j, "", PassFails[j].FirstFailIndex);
 
                 yield.TotlaTested++;
                 //1st Fail Item
@@ -2032,14 +2036,14 @@ namespace FZ4P
             LEDs_All_On(port, true);
             Process_ScanCodeTest(port, testItem);
             LEDs_All_On(port, false);
-            if (!Option.WriteResultToDriverIC) Process_CalcCodeTest(port, testItem);
+            Process_CalcCodeTest(port, testItem);
         }
         private void Act_ScanTimeCode(int port, string testItem)
         {
             LEDs_All_On(port, true);
             Process_ScanTimeTest(port, testItem);
             LEDs_All_On(port, false);
-            if (!Option.WriteResultToDriverIC) Process_CalcTimeTest(port, testItem);
+            Process_CalcTimeTest(port, testItem);
         }
         FindResult Measure()
         {

@@ -133,7 +133,7 @@ namespace FZ4P
                         List<string> arry = new List<string>();
                         arry.Add(Process.ViewLog[j].box.Text);
 
-                        string path = string.Format("{0}{1}_Ch{2}.txt", dateDir, DateTime.Now.ToString("yyMMddhhmmss"), j);
+                        string path = string.Format("{0}{1}_Ch{2}.txt", dateDir, STATIC.LogDate.ToString("yyMMddhhmmss"), j);
 
                         if (path != "") STATIC.SetTextLine(path, arry);
                     }

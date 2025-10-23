@@ -42,6 +42,7 @@ namespace FZ4P
         public static string YieldPath = RootDir + "Yield.txt";
         public static string CurrentPath = RootDir + "CurrPath.txt";
         public static string PackageDir = BaseDir + "Package\\";
+        public static DateTime LogDate = new DateTime();
         public static string PKGRelease(string srcdir, string Ext, string destdir)
         {
 
