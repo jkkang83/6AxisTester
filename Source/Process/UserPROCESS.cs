@@ -862,6 +862,7 @@ namespace FZ4P
                 {
                     AddLog(ch, "EPA Find NG");
                     SetError(ch, NonSpecItem.AF_EPA);
+                    return;
                 }
                 DrvIC.Move(ch, "AF", pos);
                 int a = DrvIC.ReadHall(ch, "AF");
@@ -911,6 +912,7 @@ namespace FZ4P
 
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x00, new byte[] { 0x80, 0x00 });
             Wait(50);
+            res = Measure();
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x00, new byte[] { 0xE6, 0xF0 });
             Wait(50);
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x00, new byte[] { 0xFA, 0xF0 });
@@ -947,6 +949,7 @@ namespace FZ4P
                 {
                     AddLog(ch, "EPA Find NG");
                     SetError(ch, NonSpecItem.AF_EPA);
+                    return;
                 }
                 DrvIC.Move(ch, "AF", pos);
                 Wait(100);
@@ -2414,7 +2417,7 @@ namespace FZ4P
             Wait(100);
 
             fX[1] = Measure();
-            PassFails[0].Results[(int)SpecItem.x_ServoDecenter].Val = fX[0].cx[0] - fX[1].cx[0];
+            PassFails[0].Results[(int)SpecItem.x_ServoDecenter].Val = fX[1].cx[0] - fX[0].cx[0];
 
 
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 });
@@ -3773,7 +3776,7 @@ namespace FZ4P
             AFWriteData[0] = (byte)res;
             AFWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val / 4);
             AFWriteData[2] = 0x1E;
-            AFWriteData[3] = 0x0A;
+            AFWriteData[3] = 0x0B;
             AFWriteData[4] = (byte)(Convert.ToInt16(Model.TesterNo) >> 8);
             AFWriteData[5] = (byte)Convert.ToInt16(Model.TesterNo);
             // 0xF7: 년(6bit) | 월(상위2bit)
