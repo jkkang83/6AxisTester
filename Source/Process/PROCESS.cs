@@ -705,10 +705,12 @@ namespace FZ4P
                 RingingXStabilizer = 0;
                 RingingYStabilizer = 0;
                 byte[] b = new byte[1];
-                Dln.ReadArray(0, DrvIC.XSlaveAddr, 0xE5, b);
+
+                BestAFPos = 2048;
+          //      Dln.ReadArray(0, DrvIC.XSlaveAddr, 0xE5, b);
                 AddLog(ch, $"AF Best Pos = {b[0] << 4}");
-                BestAFPos = b[0] << 4;
-                if (BestAFPos == 0) BestAFPos = 2048;
+              //  BestAFPos = b[0] << 4;
+              //  if (BestAFPos == 0) BestAFPos = 2048;
                 int count = Condition.ToDoList.Count;
                 if (count == 0)
                 {
