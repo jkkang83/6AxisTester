@@ -1263,7 +1263,7 @@ namespace FZ4P
                 DrvIC.Move(j, "AF", BestAFPos);
                 AddLog(ch, $"Move AF Best Position : {BestAFPos}");
             }
-
+            Thread.Sleep(100);
             Stopwatch sw = new Stopwatch();
             sw.Reset(); sw.Start();
             //Time Grab ===============
@@ -1323,7 +1323,8 @@ namespace FZ4P
                                 }
                             }
                         }
-                        Thread.Sleep(100);
+                        Wait(100);
+                        //Thread.Sleep(100);
                         for (int j = ch; j < ch + ChannelCnt; j++)
                         {
                             if (Cal.Name == name)
@@ -1332,7 +1333,8 @@ namespace FZ4P
                             }
                         }
                         settleRigingTime = (double)sw.ElapsedMilliseconds / 1000;
-                        Thread.Sleep(400);
+                        Wait(400);
+                        //Thread.Sleep(400);
                     }
                 IsScan[port] = false;
             });
