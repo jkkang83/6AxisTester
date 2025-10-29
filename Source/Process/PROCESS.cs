@@ -708,7 +708,7 @@ namespace FZ4P
 
                 BestAFPos = 2048;
           //      Dln.ReadArray(0, DrvIC.XSlaveAddr, 0xE5, b);
-                AddLog(ch, $"AF Best Pos = {b[0] << 4}");
+                AddLog(ch, $"AF Best Pos = {BestAFPos}");
               //  BestAFPos = b[0] << 4;
               //  if (BestAFPos == 0) BestAFPos = 2048;
                 int count = Condition.ToDoList.Count;
