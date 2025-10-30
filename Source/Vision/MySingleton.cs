@@ -119,148 +119,148 @@ namespace FZ4P
         //-------------------------------------------------------------------------------------------------------------
         private Global()
         {
-            m_RootDirectory = STATIC.BaseDir;
-            //string src = "";
-            string sLotDir = m_RootDirectory + "\\DoNotTouch";
-            //string destine = "";
+            //m_RootDirectory = STATIC.BaseDir;
+            ////string src = "";
+            //string sLotDir = m_RootDirectory + "\\DoNotTouch";
+            ////string destine = "";
+            ////if (!Directory.Exists(sLotDir))
+            ////{
+            ////    Directory.CreateDirectory(sLotDir);
+
+            ////    src = "LastGap.txt";
+            ////    destine = sLotDir + "\\" + src;
+            ////    File.Copy(src, destine);
+
+            ////    src = "PreviousRecipe.txt";
+            ////    destine = sLotDir + "\\" + src;
+            ////    File.Copy(src, destine);
+
+            ////    src = "PreviousResult.txt";
+            ////    destine = sLotDir + "\\" + "PreviousSpec.txt";
+            ////    File.Copy(src, destine);
+
+            ////    src = "LastDayResults.txt";
+            ////    destine = sLotDir + "\\" + src;
+            ////    File.Copy(src, destine);
+
+            ////    //src = "PIDupdateFileName.txt";
+            ////    //destine = sLotDir + "\\" + src;
+            ////    //File.Copy(src, destine);
+
+            ////    src = "CBstates.txt";
+            ////    destine = sLotDir + "\\" + src;
+            ////    File.Copy(src, destine);
+            ////}
+
+            //sLotDir = m_RootDirectory + "\\Package";
+            //string sLotDirFW = m_RootDirectory + "\\Package" + "\\FW";
+            //string sLotDirPreFW = m_RootDirectory + "\\Package" + "\\PreFW";
+
+
             //if (!Directory.Exists(sLotDir))
-            //{
             //    Directory.CreateDirectory(sLotDir);
+            //if (!Directory.Exists(sLotDirFW))
+            //    Directory.CreateDirectory(sLotDirFW);
+            //if (!Directory.Exists(sLotDirPreFW))
+            //    Directory.CreateDirectory(sLotDirPreFW);
 
-            //    src = "LastGap.txt";
-            //    destine = sLotDir + "\\" + src;
-            //    File.Copy(src, destine);
 
-            //    src = "PreviousRecipe.txt";
-            //    destine = sLotDir + "\\" + src;
-            //    File.Copy(src, destine);
+            //string DestFile = m_RootDirectory + "\\DriverIC\\FW";
 
-            //    src = "PreviousResult.txt";
-            //    destine = sLotDir + "\\" + "PreviousSpec.txt";
-            //    File.Copy(src, destine);
+            //string[] lFWfile = new string[2] { "", "" };
 
-            //    src = "LastDayResults.txt";
-            //    destine = sLotDir + "\\" + src;
-            //    File.Copy(src, destine);
+            //int nameIndex = sLotDirFW.Length;
+            //string[] lBinArray = Directory.GetFiles(sLotDirFW, "*.bin");
+            //for (int i = 0; i < lBinArray.Length; i++)
+            //{
 
-            //    //src = "PIDupdateFileName.txt";
-            //    //destine = sLotDir + "\\" + src;
-            //    //File.Copy(src, destine);
+            //    FileInfo fInfo = new FileInfo(lBinArray[i]);
+            //    DestFile = m_RootDirectory + "\\DriverIC\\FW" + lBinArray[i].Substring(nameIndex);   //  32K FW                                                                                                     //MessageBox.Show(DestFile);
+            //    string FilePath = m_RootDirectory + "\\DoNotTouch\\" + "FWupdateFileName.txt";
 
-            //    src = "CBstates.txt";
-            //    destine = sLotDir + "\\" + src;
-            //    File.Copy(src, destine);
+            //    StreamWriter sw = new StreamWriter(FilePath);
+            //    sw.WriteLine(DestFile);     //  32K FW File Name
+            //    sw.WriteLine(" "); //bu fw
+            //    sw.WriteLine(" "); //bu cal
+            //    sw.Close();
+            //}
+            //nameIndex = sLotDirPreFW.Length;
+            //lBinArray = Directory.GetFiles(sLotDirPreFW, "*.bin");
+            //for (int i = 0; i < lBinArray.Length; i++)
+            //{
+
+            //    FileInfo fInfo = new FileInfo(lBinArray[i]);
+            //    DestFile = m_RootDirectory + "\\DriverIC\\FW" + lBinArray[i].Substring(nameIndex);   //  32K FW                                                                                                     //MessageBox.Show(DestFile);
+            //    string FilePath = m_RootDirectory + "\\DoNotTouch\\" + "Pre_FWupdateFileName.txt";
+            //    StreamWriter sw = new StreamWriter(FilePath);
+            //    sw.WriteLine(DestFile);     //  32K FW File Name               
+            //    sw.Close();
+            //}
+            //nameIndex = sLotDir.Length;
+            //string[] lTxtArray = Directory.GetFiles(sLotDir, "*.spc");
+            //DateTime lrefTime = DateTime.Now;
+            //lrefTime = lrefTime.AddYears(-1);
+            //int latestFileIndex = -1;
+            //for (int i = 0; i < lTxtArray.Length; i++)
+            //{
+            //    FileInfo fInfo = new FileInfo(lTxtArray[i]);
+            //    //MessageBox.Show(lTxtArray[i] + " " + lrefTime.ToString("yyMMdd") + " " + fInfo.CreationTime.ToString("yyMMdd"));
+            //    if (fInfo.CreationTime >= lrefTime)
+            //        latestFileIndex = i;
+
+            //}
+            //if (latestFileIndex >= 0)
+            //{
+            //    DestFile = m_RootDirectory + "\\Spec" + lTxtArray[latestFileIndex].Substring(nameIndex);   //  32K FW
+            //    //MessageBox.Show(DestFile);
+            //    if (File.Exists(DestFile))
+            //        File.Delete(DestFile);
+
+            //    File.Move(lTxtArray[latestFileIndex], DestFile);
+            //    string FilePath = m_RootDirectory + "\\DoNotTouch\\" + "PreviousSpec.txt";
+            //    StreamWriter writer = new StreamWriter(FilePath);
+            //    writer.WriteLine(DestFile.Substring(DestFile.LastIndexOf("\\") + 1));
+            //    writer.Close();
             //}
 
-            sLotDir = m_RootDirectory + "\\Package";
-            string sLotDirFW = m_RootDirectory + "\\Package" + "\\FW";
-            string sLotDirPreFW = m_RootDirectory + "\\Package" + "\\PreFW";
+            //lTxtArray = Directory.GetFiles(sLotDir, "*.rcp");
+            //lrefTime = DateTime.Now;
+            //lrefTime = lrefTime.AddYears(-1);
+            //latestFileIndex = -1;
+            //for (int i = 0; i < lTxtArray.Length; i++)
+            //{
+            //    FileInfo fInfo = new FileInfo(lTxtArray[i]);
+            //    //MessageBox.Show(lTxtArray[i] + " " + lrefTime.ToString("yyMMdd") + " " + fInfo.CreationTime.ToString("yyMMdd"));
+            //    if (fInfo.CreationTime >= lrefTime)
+            //        latestFileIndex = i;
 
+            //}
+            //if (latestFileIndex >= 0)
+            //{
+            //    DestFile = m_RootDirectory + "\\Recipe" + lTxtArray[latestFileIndex].Substring(nameIndex);   //  32K FW
+            //    //MessageBox.Show(DestFile);
+            //    if (File.Exists(DestFile))
+            //        File.Delete(DestFile);
 
-            if (!Directory.Exists(sLotDir))
-                Directory.CreateDirectory(sLotDir);
-            if (!Directory.Exists(sLotDirFW))
-                Directory.CreateDirectory(sLotDirFW);
-            if (!Directory.Exists(sLotDirPreFW))
-                Directory.CreateDirectory(sLotDirPreFW);
+            //    File.Move(lTxtArray[latestFileIndex], DestFile);
+            //    string FilePath = m_RootDirectory + "\\DoNotTouch\\" + "PreviousRecipe.txt";
+            //    StreamWriter writer = new StreamWriter(FilePath);
+            //    writer.WriteLine(DestFile.Substring(DestFile.LastIndexOf("\\") + 1));
+            //    writer.Close();
+            //}
 
+            //lTxtArray = Directory.GetFiles(sLotDir, "*.txt");
+            //lrefTime = DateTime.Now;
+            //lrefTime = lrefTime.AddYears(-1);
+            //latestFileIndex = -1;
+            //for (int i = 0; i < lTxtArray.Length; i++)
+            //{
+            //    DestFile = m_RootDirectory + "\\DoNotTouch" + lTxtArray[i].Substring(nameIndex);   //  32K FW
+            //    if (File.Exists(DestFile))
+            //        File.Delete(DestFile);
 
-            string DestFile = m_RootDirectory + "\\DriverIC\\FW";
-
-            string[] lFWfile = new string[2] { "", "" };
-
-            int nameIndex = sLotDirFW.Length;
-            string[] lBinArray = Directory.GetFiles(sLotDirFW, "*.bin");
-            for (int i = 0; i < lBinArray.Length; i++)
-            {
-
-                FileInfo fInfo = new FileInfo(lBinArray[i]);
-                DestFile = m_RootDirectory + "\\DriverIC\\FW" + lBinArray[i].Substring(nameIndex);   //  32K FW                                                                                                     //MessageBox.Show(DestFile);
-                string FilePath = m_RootDirectory + "\\DoNotTouch\\" + "FWupdateFileName.txt";
-
-                StreamWriter sw = new StreamWriter(FilePath);
-                sw.WriteLine(DestFile);     //  32K FW File Name
-                sw.WriteLine(" "); //bu fw
-                sw.WriteLine(" "); //bu cal
-                sw.Close();
-            }
-            nameIndex = sLotDirPreFW.Length;
-            lBinArray = Directory.GetFiles(sLotDirPreFW, "*.bin");
-            for (int i = 0; i < lBinArray.Length; i++)
-            {
-
-                FileInfo fInfo = new FileInfo(lBinArray[i]);
-                DestFile = m_RootDirectory + "\\DriverIC\\FW" + lBinArray[i].Substring(nameIndex);   //  32K FW                                                                                                     //MessageBox.Show(DestFile);
-                string FilePath = m_RootDirectory + "\\DoNotTouch\\" + "Pre_FWupdateFileName.txt";
-                StreamWriter sw = new StreamWriter(FilePath);
-                sw.WriteLine(DestFile);     //  32K FW File Name               
-                sw.Close();
-            }
-            nameIndex = sLotDir.Length;
-            string[] lTxtArray = Directory.GetFiles(sLotDir, "*.spc");
-            DateTime lrefTime = DateTime.Now;
-            lrefTime = lrefTime.AddYears(-1);
-            int latestFileIndex = -1;
-            for (int i = 0; i < lTxtArray.Length; i++)
-            {
-                FileInfo fInfo = new FileInfo(lTxtArray[i]);
-                //MessageBox.Show(lTxtArray[i] + " " + lrefTime.ToString("yyMMdd") + " " + fInfo.CreationTime.ToString("yyMMdd"));
-                if (fInfo.CreationTime >= lrefTime)
-                    latestFileIndex = i;
-
-            }
-            if (latestFileIndex >= 0)
-            {
-                DestFile = m_RootDirectory + "\\Spec" + lTxtArray[latestFileIndex].Substring(nameIndex);   //  32K FW
-                //MessageBox.Show(DestFile);
-                if (File.Exists(DestFile))
-                    File.Delete(DestFile);
-
-                File.Move(lTxtArray[latestFileIndex], DestFile);
-                string FilePath = m_RootDirectory + "\\DoNotTouch\\" + "PreviousSpec.txt";
-                StreamWriter writer = new StreamWriter(FilePath);
-                writer.WriteLine(DestFile.Substring(DestFile.LastIndexOf("\\") + 1));
-                writer.Close();
-            }
-
-            lTxtArray = Directory.GetFiles(sLotDir, "*.rcp");
-            lrefTime = DateTime.Now;
-            lrefTime = lrefTime.AddYears(-1);
-            latestFileIndex = -1;
-            for (int i = 0; i < lTxtArray.Length; i++)
-            {
-                FileInfo fInfo = new FileInfo(lTxtArray[i]);
-                //MessageBox.Show(lTxtArray[i] + " " + lrefTime.ToString("yyMMdd") + " " + fInfo.CreationTime.ToString("yyMMdd"));
-                if (fInfo.CreationTime >= lrefTime)
-                    latestFileIndex = i;
-
-            }
-            if (latestFileIndex >= 0)
-            {
-                DestFile = m_RootDirectory + "\\Recipe" + lTxtArray[latestFileIndex].Substring(nameIndex);   //  32K FW
-                //MessageBox.Show(DestFile);
-                if (File.Exists(DestFile))
-                    File.Delete(DestFile);
-
-                File.Move(lTxtArray[latestFileIndex], DestFile);
-                string FilePath = m_RootDirectory + "\\DoNotTouch\\" + "PreviousRecipe.txt";
-                StreamWriter writer = new StreamWriter(FilePath);
-                writer.WriteLine(DestFile.Substring(DestFile.LastIndexOf("\\") + 1));
-                writer.Close();
-            }
-
-            lTxtArray = Directory.GetFiles(sLotDir, "*.txt");
-            lrefTime = DateTime.Now;
-            lrefTime = lrefTime.AddYears(-1);
-            latestFileIndex = -1;
-            for (int i = 0; i < lTxtArray.Length; i++)
-            {
-                DestFile = m_RootDirectory + "\\DoNotTouch" + lTxtArray[i].Substring(nameIndex);   //  32K FW
-                if (File.Exists(DestFile))
-                    File.Delete(DestFile);
-
-                File.Move(lTxtArray[i], DestFile);
-            }
+            //    File.Move(lTxtArray[i], DestFile);
+            //}
 
             ///////////////////////////////////////////////////////////////
             ///////////////////////////////////////////////////////////////

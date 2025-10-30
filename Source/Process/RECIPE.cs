@@ -469,6 +469,7 @@ namespace FZ4P
 
         [Spec("FRA AF", "PM Frequency", "Hz")] FRAAF_PMFreq,
         [Spec("FRA AF", "Phase Margin", "deg")] FRAAF_PhaseMargin,
+        [Spec("FRA AF", "-4dB Phase Margin", "deg")] FRAAF_4dB_PhaseMargin,
         [Spec("FRA AF", "Gain @ 10Hz", "db")] FRAAF_Gain10Hz,
         [Spec("FRA AF", "Gain Margin", "db")] FRAAF_GainMargin,
         //[Spec("FRA AF", "Sinewave Result", "#")] SineWaveAF_Result,

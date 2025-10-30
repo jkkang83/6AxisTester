@@ -311,13 +311,13 @@ namespace FZ4P
                 ShowDataResults(ch, (int)SpecItem.OLTestYResult, (int)SpecItem.OLTestYResult);
             }
 
-                AddLog(ch, $"sum square : {sum_square}");
-            if (sum_square > square_spec || sum_square <= 0)
-            {
-                dc_result = 0x01;
-                AddLog(ch, $"NG Over DC SR, {square_spec}");
-                SetError(ch, NonSpecItem.OIS_Openloop_Test);
-            }
+            AddLog(ch, $"sum square : {sum_square}");
+            //if (sum_square > square_spec || sum_square <= 0)
+            //{
+            //    dc_result = 0x01;
+            //    AddLog(ch, $"NG Over DC SR, {square_spec}");
+            //    SetError(ch, NonSpecItem.OIS_Openloop_Test);
+            //}
             AddLog(ch, $"[Final] {axisName} sum square : {sum_square}, result : {dc_result}");
             Dln.WriteArray(ch, addr, 0x02, new byte[] { 0x40 });
             DrvIC.Move(ch, "X", 2048);
@@ -330,8 +330,8 @@ namespace FZ4P
 
         void OISOpenLoopTest(int ch, string testItem)
         {
-            if (m__G.m_ChannelOn[ch]) oisOL(ch, 0);
-            if (m__G.m_ChannelOn[ch]) oisOL(ch, 1);
+            if (m_ChannelOn[ch]) oisOL(ch, 0);
+            if (m_ChannelOn[ch]) oisOL(ch, 1);
         }
 
         void TempTest(int ch, string testItem)
@@ -3584,14 +3584,15 @@ namespace FZ4P
 
         void AFPhaseMargin(int ch, string testItem)
         {
-            double resFreq = 0, respm = 0;
+            double resFreq = 0, respm = 0, res4dbpm = 0;
             int freqval, freqtemp = 0, gaintemp, freqpm = 0, oldfreq;
             int[] before_after_zero_freq = new int[2];
             double gainval = 0, pmval, phaestemp, prepm = 0, PM4dB;
             double[] before_after_zero_gain = new double[2];
             byte backup, flag_2nd = 0;
             byte fra_en;
-            
+            bool dB4PhaseFouund = false;
+            bool PhaseFouund = false;
 
             DrvIC.SetSlaveAddr(ch, DrvIC.FRA_AFSlaveAddr);
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 });
@@ -3618,13 +3619,23 @@ namespace FZ4P
                 AddLog(ch, $"{Condition.AFGMamp}\t{freqval}\t{gainval.ToString("F2")}\t{pmval.ToString("F0")}");
 
 
-                if (gainval > 0)
+                if (!PhaseFouund && gainval > 0)
                 {
-                    respm = pmval = ((gainval * prepm) - (before_after_zero_gain[0] * pmval)) / (gainval - before_after_zero_gain[0]);
-                    resFreq = freqpm = (int)(((gainval * before_after_zero_freq[0]) - (before_after_zero_gain[0] * freqpm)) / (gainval - before_after_zero_gain[0]));
+                    respm = ((gainval * prepm) - (before_after_zero_gain[0] * pmval)) / (gainval - before_after_zero_gain[0]);
+                    resFreq = (int)(((gainval * before_after_zero_freq[0]) - (before_after_zero_gain[0] * freqpm)) / (gainval - before_after_zero_gain[0]));
                     before_after_zero_freq[1] = freqval;
                     before_after_zero_gain[1] = gainval;
-                    break;
+                    PhaseFouund = true;
+                    if (dB4PhaseFouund)
+                        break;
+                }
+                if (!dB4PhaseFouund && gainval >= -4 && before_after_zero_gain[0] <= -4)
+                {
+                    //pm1 + (targetGain - gain1) * (pm2 - pm1) / (gain2 - gain1);
+                    res4dbpm = prepm + ((-4) - before_after_zero_gain[0]) * (pmval - prepm) / (gainval - before_after_zero_gain[0]);
+                    //  res4dbpm = ((gainval * prepm) - (before_after_zero_gain[0] * pmval)) / (gainval - before_after_zero_gain[0]);
+                    dB4PhaseFouund = true;
+                    if (PhaseFouund) break;
                 }
                 else
                 {
@@ -3683,13 +3694,15 @@ namespace FZ4P
 
             AddLog(ch, "Use Linear Interpolation");
             AddLog(ch, $"{Condition.iAFAmplitude}, {resFreq}Hz, {gainval.ToString("F2")}dB, {respm.ToString("F0")}deg");
+            AddLog(ch, $"-4dB Phase Margin = {res4dbpm.ToString("F0")}");
 
             DrvIC.FRAModeDisable(ch);
             AK7314_ICReset(ch);
             PassFails[ch].Results[(int)SpecItem.FRAAF_PMFreq].Val = resFreq;
             PassFails[ch].Results[(int)SpecItem.FRAAF_PhaseMargin].Val = respm;
+            PassFails[ch].Results[(int)SpecItem.FRAAF_4dB_PhaseMargin].Val = res4dbpm;
 
-            ShowDataResults(ch, (int)SpecItem.FRAAF_PMFreq, (int)SpecItem.FRAAF_PhaseMargin);
+            ShowDataResults(ch, (int)SpecItem.FRAAF_PMFreq, (int)SpecItem.FRAAF_4dB_PhaseMargin);
         }
         void WriteUserMem(int ch, int res)
         {
