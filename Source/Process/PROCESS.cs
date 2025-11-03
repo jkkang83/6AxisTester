@@ -1,4 +1,5 @@
-﻿using OpenCvSharp;
+﻿using FZ4P.Properties;
+using OpenCvSharp;
 using OpenCvSharp.Dnn;
 using OpenCvSharp.Flann;
 using OpenCvSharp.XImgProc;
@@ -1247,148 +1248,6 @@ namespace FZ4P
             STATIC.fVision.m__G.oCam[port].CommonToReplayBuf(name, framCnt[port]);
         }
         public double settleRigingTime = 0;
-        //private void Process_ScanTimeTest(int port, string name)
-        //{
-        //    settleRigingTime = 0;
-
-        //    int ch = port * 2;
-
-        //    MakeWaveform(name);
-        //    DrvIC.OISOn(ch, "AF", true);
-        //    //dummyCycle
-        //    for (int i = 0; i < 2; i++)
-        //    {
-        //        DrvIC.OISOn(ch, "X", false);
-        //        DrvIC.OISOn(ch, "Y", false);
-        //        Thread.Sleep(200);
-        //        DrvIC.Move(ch, "AF", Condition.iAFStandbyCode);
-        //        Wait(100);
-        //        DrvIC.Move(ch, "AF", Condition.iAFJumpStepCode);
-        //        Wait(100);
-        //        DrvIC.OISOn(ch, "X", true);
-        //        DrvIC.OISOn(ch, "Y", true);
-        //        Wait(500);
-        //    }
-
-        //    for (int j = ch; j < ch + ChannelCnt; j++)
-        //    {
-        //        DrvIC.OISOn(j, "X", false);
-        //        DrvIC.OISOn(j, "Y", false);
-             
-        //    }
-        //    Thread.Sleep(100);
-        //    Stopwatch sw = new Stopwatch();
-        //    sw.Reset(); sw.Start();
-        //    //Time Grab ===============
-        //    Task[] task = new Task[2];
-
-        //    long startTime = 0;
-        //    long endTime = 0;
-        //    long lTimerFrequency = 0;
-        //    SupremeTimer.QueryPerformanceCounter(ref startTime);
-        //    SupremeTimer.QueryPerformanceCounter(ref endTime);
-        //    SupremeTimer.QueryPerformanceFrequency(ref lTimerFrequency);
-
-        //    double Ellapsed = 1000000 * (endTime - startTime) / (double)(lTimerFrequency);
-        //    task[0] = Task.Factory.StartNew(() =>
-        //    {
-        //        IsScan[port] = true;
-        ////         SupremeTimer.QueryPerformanceCounter(ref startTime);
-        //        while (IsScan[port])
-        //        {
-        //            STATIC.fVision.m__G.oCam[port].GrabD(framCnt[port]);
-        //            for (int j = ch; j < ch + ChannelCnt; j++)
-        //            {
-        //                foreach (var Cal in CalList[j])
-        //                    if (Cal.Name == name)
-        //                    {
-        //                        SupremeTimer.QueryPerformanceCounter(ref endTime);
-        //                        SupremeTimer.QueryPerformanceFrequency(ref lTimerFrequency);
-        //                        Ellapsed = 1000 * (endTime - startTime) / (double)(lTimerFrequency); //  msec
-
-        //                        Cal.Time.Add(Ellapsed);
-        //                        Cal.StrokeX.Add(0);
-        //                        Cal.StrokeY.Add(0);
-        //                        Cal.StrokeZ.Add(0);
-        //                        Cal.StrokeY1.Add(0);
-        //                        Cal.StrokeY2.Add(0);
-        //                        Cal.TiltX.Add(0);
-        //                        Cal.TiltY.Add(0);
-        //                        Cal.TiltZ.Add(0);
-
-        //                    }
-        //            }
-        //            framCnt[port]++;
-        //        }
-
-        //    });
-
-        //    task[1] = Task.Factory.StartNew(() =>
-        //    {
-        //        foreach (var Cal in CalList[port])
-        //            if (Cal.Name == name)
-        //            {
-        //                //for (int i = 0; i < 3; i++)
-        //                //{
-        //                //    for (int j = ch; j < ch + ChannelCnt; j++)
-        //                //    {
-        //                //        if (Cal.Name == name)
-        //                //        {
-        //                //            DrvIC.Move(j, name, Cal.CodeZ[i]);
-        //                //        }
-        //                //    }
-        //                //}
-        //                for (int j = ch; j < ch + ChannelCnt; j++)
-        //                {
-        //                    if (Cal.Name == name)
-        //                    {
-        //                        DrvIC.Move(j, name, Condition.iAFStandbyCode);
-        //                    }
-        //                }
-                       
-        //                Wait(100);
-        //                //Thread.Sleep(100);
-        //                for (int j = ch; j < ch + ChannelCnt; j++)
-        //                {
-        //                    if (Cal.Name == name)
-        //                    {
-        //                        SupremeTimer.QueryPerformanceCounter(ref startTime);
-        //                        DrvIC.Move(j, name, Condition.iAFJumpStepCode/*Cal.CodeZ[3]*/);
-
-        //                    }
-        //                }
-                       
-        //                settleRigingTime = (double)sw.ElapsedMilliseconds / 1000;
-                       
-        //                Wait(100);
-        //                //Thread.Sleep(100);
-        //            }
-        //        IsScan[port] = false;
-        //    });
-
-        //    Task t = Task.WhenAll(task);
-        //    try
-        //    {
-        //        t.Wait();
-        //    }
-        //    catch { }
-        //    sw.Stop();
-
-        //    // FrmRate 표시 === 
-        //    double frameRate = framCnt[port] / (double)sw.ElapsedMilliseconds * 1000;
-        //    for (int j = ch; j < ch + ChannelCnt; j++)
-        //    {
-        //        AddLog(j, string.Format("FrmRate == {0:F2} frame/sec", frameRate));
-        //    }
-        //    STATIC.fVision.m__G.oCam[port].CommonToReplayBuf(name, framCnt[port]);
-
-        //    for (int j = ch; j < ch + ChannelCnt; j++)
-        //    {
-        //        DrvIC.OISOn(j, "AF", false);
-        //        DrvIC.OISOn(j, "X", false);
-        //        DrvIC.OISOn(j, "Y", false);
-        //    }
-        //}
         private void Process_ScanTimeTest(int port, string name)
         {
             settleRigingTime = 0;
@@ -1416,10 +1275,9 @@ namespace FZ4P
             {
                 DrvIC.OISOn(j, "X", false);
                 DrvIC.OISOn(j, "Y", false);
-                DrvIC.Move(ch, "AF", Condition.iAFStandbyCode);
-                Wait(100);
-            }
 
+            }
+            Thread.Sleep(100);
             Stopwatch sw = new Stopwatch();
             sw.Reset(); sw.Start();
             //Time Grab ===============
@@ -1436,7 +1294,7 @@ namespace FZ4P
             task[0] = Task.Factory.StartNew(() =>
             {
                 IsScan[port] = true;
-                SupremeTimer.QueryPerformanceCounter(ref startTime);
+                //         SupremeTimer.QueryPerformanceCounter(ref startTime);
                 while (IsScan[port])
                 {
                     STATIC.fVision.m__G.oCam[port].GrabD(framCnt[port]);
@@ -1471,29 +1329,40 @@ namespace FZ4P
                 foreach (var Cal in CalList[port])
                     if (Cal.Name == name)
                     {
-                        for (int i = 0; i < 3; i++)
-                        {
-                            for (int j = ch; j < ch + ChannelCnt; j++)
-                            {
-                                if (Cal.Name == name)
-                                {
-                                    DrvIC.Move(j, name, Cal.CodeZ[i]);
-                                }
-                            }
-                        }
-                        Thread.Sleep(100);
+                        //for (int i = 0; i < 3; i++)
+                        //{
+                        //    for (int j = ch; j < ch + ChannelCnt; j++)
+                        //    {
+                        //        if (Cal.Name == name)
+                        //        {
+                        //            DrvIC.Move(j, name, Cal.CodeZ[i]);
+                        //        }
+                        //    }
+                        //}
                         for (int j = ch; j < ch + ChannelCnt; j++)
                         {
                             if (Cal.Name == name)
                             {
-                              
-                                DrvIC.Move(j, name, Cal.CodeZ[3]);
+                                DrvIC.Move(j, name, Condition.iAFStandbyCode);
+                            }
+                        }
+
+                        Wait(100);
+                        //Thread.Sleep(100);
+                        for (int j = ch; j < ch + ChannelCnt; j++)
+                        {
+                            if (Cal.Name == name)
+                            {
+                                SupremeTimer.QueryPerformanceCounter(ref startTime);
+                                DrvIC.Move(j, name, Condition.iAFJumpStepCode/*Cal.CodeZ[3]*/);
 
                             }
                         }
 
                         settleRigingTime = (double)sw.ElapsedMilliseconds / 1000;
-                        Thread.Sleep(100);
+
+                        Wait(100);
+                        //Thread.Sleep(100);
                     }
                 IsScan[port] = false;
             });
@@ -1521,6 +1390,142 @@ namespace FZ4P
                 DrvIC.OISOn(j, "Y", false);
             }
         }
+        //private void Process_ScanTimeTest(int port, string name)
+        //{
+        //    settleRigingTime = 0;
+
+        //    int ch = port * 2;
+
+        //    MakeWaveform(name);
+        //    DrvIC.OISOn(ch, "AF", true);
+        //    //dummyCycle
+        //    for (int i = 0; i < 2; i++)
+        //    {
+        //        DrvIC.OISOn(ch, "X", false);
+        //        DrvIC.OISOn(ch, "Y", false);
+        //        Thread.Sleep(150);
+        //        DrvIC.Move(ch, "AF", Condition.iAFStandbyCode);
+        //        Wait(100);
+        //        DrvIC.Move(ch, "AF", Condition.iAFJumpStepCode);
+        //        Wait(100);
+        //        DrvIC.OISOn(ch, "X", true);
+        //        DrvIC.OISOn(ch, "Y", true);
+        //        Wait(500);
+        //    }
+
+        //    for (int j = ch; j < ch + ChannelCnt; j++)
+        //    {
+        //        DrvIC.OISOn(j, "X", false);
+        //        DrvIC.OISOn(j, "Y", false);
+        //        DrvIC.Move(ch, "AF", Condition.iAFStandbyCode);
+        //        Wait(150);
+        //    }
+
+        //    Stopwatch sw = new Stopwatch();
+        //    sw.Reset(); sw.Start();
+        //    //Time Grab ===============
+        //    Task[] task = new Task[2];
+
+        //    long startTime = 0;
+        //    long endTime = 0;
+        //    long lTimerFrequency = 0;
+        //    SupremeTimer.QueryPerformanceCounter(ref startTime);
+        //    SupremeTimer.QueryPerformanceCounter(ref endTime);
+        //    SupremeTimer.QueryPerformanceFrequency(ref lTimerFrequency);
+
+        //    double Ellapsed = 1000000 * (endTime - startTime) / (double)(lTimerFrequency);
+
+        //    task[0] = Task.Factory.StartNew(() =>
+        //    {
+        //        IsScan[port] = true;
+        //        SupremeTimer.QueryPerformanceCounter(ref startTime);
+        //        while (IsScan[port])
+        //        {
+        //            STATIC.fVision.m__G.oCam[port].GrabD(framCnt[port]);
+        //            for (int j = ch; j < ch + ChannelCnt; j++)
+        //            {
+        //                foreach (var Cal in CalList[j])
+        //                    if (Cal.Name == name)
+        //                    {
+        //                        SupremeTimer.QueryPerformanceCounter(ref endTime);
+        //                        SupremeTimer.QueryPerformanceFrequency(ref lTimerFrequency);
+        //                        Ellapsed = 1000 * (endTime - startTime) / (double)(lTimerFrequency); //  msec
+
+        //                        Cal.Time.Add(Ellapsed);
+        //                        Cal.StrokeX.Add(0);
+        //                        Cal.StrokeY.Add(0);
+        //                        Cal.StrokeZ.Add(0);
+        //                        Cal.StrokeY1.Add(0);
+        //                        Cal.StrokeY2.Add(0);
+        //                        Cal.TiltX.Add(0);
+        //                        Cal.TiltY.Add(0);
+        //                        Cal.TiltZ.Add(0);
+
+        //                    }
+        //            }
+        //            framCnt[port]++;
+        //        }
+
+        //    });
+
+        //    task[1] = Task.Factory.StartNew(() =>
+        //    {
+        //        foreach (var Cal in CalList[port])
+        //            if (Cal.Name == name)
+        //            {
+        //                for (int i = 0; i < 1; i++)
+        //                {
+        //                    for (int j = ch; j < ch + ChannelCnt; j++)
+        //                    {
+        //                        if (Cal.Name == name)
+        //                        {
+        //                            DrvIC.Move(j, name, Cal.CodeZ[i]);
+        //                        }
+        //                    }
+        //                }
+        //                Wait(100);
+        //                //   Thread.Sleep(100);
+        //                for (int j = ch; j < ch + ChannelCnt; j++)
+        //                {
+        //                    if (Cal.Name == name)
+        //                    {
+
+        //                        DrvIC.Move(j, name, Cal.CodeZ[3]);
+
+        //                    }
+        //                }
+
+        //                settleRigingTime = (double)sw.ElapsedMilliseconds / 1000;
+        //                Wait(100);
+        //                //Thread.Sleep(100);
+
+        //            }
+        //        IsScan[port] = false;
+        //    });
+
+        //    Task t = Task.WhenAll(task);
+        //    try
+        //    {
+        //        t.Wait();
+        //    }
+        //    catch { }
+        //    sw.Stop();
+
+        //    // FrmRate 표시 === 
+        //    double frameRate = framCnt[port] / (double)sw.ElapsedMilliseconds * 1000;
+        //    for (int j = ch; j < ch + ChannelCnt; j++)
+        //    {
+        //        AddLog(j, string.Format("FrmRate == {0:F2} frame/sec", frameRate));
+        //    }
+        //    //  STATIC.fVision.m__G.oCam[port].CommonToReplayBuf(name, framCnt[port]);
+
+        //    //for (int j = ch; j < ch + ChannelCnt; j++)
+        //    //{
+        //    //    DrvIC.OISOn(j, "AF", false);
+        //    //    DrvIC.OISOn(j, "X", false);
+        //    //    DrvIC.OISOn(j, "Y", false);
+        //    //}
+        //}
         public void Process_CalcCodeTest(int port, string name)
         {
             int ch = port * 2;
@@ -1881,187 +1886,6 @@ namespace FZ4P
             }
             framCnt[port] = 0;
         }
-        //private void Process_CalcTimeTest(int port, string name)
-        //{
-        //    int ch = port * 2;
-
-        //    for (int j = ch; j < ch + ChannelCnt; j++)
-        //    {
-        //        AddLog(j, string.Format("{0} Driving Data>>", name));
-        //    }
-        //    List<FindResult> result = new List<FindResult>();
-
-        //    for (int i = 0; i < framCnt[port]; i++)
-        //    {
-        //        result.Add(new FindResult());
-        //        result[i] = STATIC.fVision.MeasureTxTyTz(i, name, true, false);
-        //    }
-
-        //    for (int j = ch; j < ch + ChannelCnt; j++)
-        //    {
-        //        if (!m_ChannelOn[j]) continue;
-        //        foreach (var Cal in CalList[j])
-        //            if (Cal.Name == name)
-        //            {
-        //                double centerX = 0;
-        //                double centerY = 0;
-        //                double centerY1 = 0;
-        //                double centerY2 = 0;
-        //                double centerZ = 0;
-        //                double centertX = 0;
-        //                double centertY = 0;
-        //                double centertZ = 0;
-
-        //                centerX = result[2].cx[j];
-        //                centerY = result[2].cy[j];
-        //                centerZ = result[2].cz[j];
-        //                centertX = result[2].tx[j];
-        //                centertY = result[2].ty[j];
-        //                centertZ = result[2].tz[j];
-        //                centerY1 = result[2].cy1[j];
-        //                centerY2 = result[2].cy2[j];
-
-
-        //                for (int i = 0; i < framCnt[port]; i++)
-        //                {
-        //                    Cal.StrokeX[i] = result[i].cx[j] - centerX;
-        //                    Cal.StrokeX[i] = result[i].cy[j] - centerY;
-        //                    Cal.StrokeZ[i] = result[i].cz[j] - centerZ;
-        //                    Cal.StrokeY1[i] = result[i].cy1[j] - centerY1;
-        //                    Cal.StrokeY2[i] = result[i].cy2[j] - centerY2;
-        //                    Cal.TiltX[i] = result[i].tx[j] - centertX;
-        //                    Cal.TiltY[i] = result[i].ty[j] - centertY;
-        //                    Cal.TiltZ[i] = result[i].tz[j] - centertZ;
-        //                }
-        //            }
-        //    }
-        //    List<double> Time = new List<double>();
-        //    List<double> Stroke = new List<double>();
-        //    bool isStart = false;
-        //    foreach (var Cal in CalList[ch])
-        //    {
-        //        if (Cal.Name == name)
-        //        {
-        //            switch (name)
-        //            {
-        //                case "AF Settling":
-
-        //                    for (int i = 0; i < framCnt[port]; i++)
-        //                    {
-        //                        if (i > 10 && Cal.Time[i] < 1) isStart = true;
-        //                        if (isStart)
-        //                        {
-        //                            Time.Add(Cal.Time[i]);
-        //                            Stroke.Add(Cal.StrokeZ[i]);
-
-        //                        }
-
-        //                    }
-
-        //                    break;
-        //            }
-        //        }
-        //    }
-
-
-        //    if (Option.SaveRawData)
-        //    {
-        //        string str = Convert.ToString(yield.LastSampleNum + 1);
-        //        string dateDir = STATIC.CreateDateDir();
-        //        dateDir += "DrivingData\\";
-        //        if (!Directory.Exists(dateDir))
-        //            Directory.CreateDirectory(dateDir);
-
-        //        DateTime dt = DateTime.Now;
-        //        string timeDir = dt.ToString("HHmmss");
-        //        string st = timeDir;
-
-        //        string lstr = "";
-
-        //        for (int j = ch; j < ch + ChannelCnt; j++)
-        //        {
-        //            foreach (var Cal in CalList[j])
-        //                if (Cal.Name == name)
-        //                {
-        //                    List<string> arry = new List<string>();
-        //                    //   arry.Add(DateTime.Now.ToString("MM:dd:hh:mm:ss"));
-        //                    string path = "";
-        //                    switch (name)
-        //                    {
-        //                        case "AF Settling":
-        //                            path = string.Format(dateDir + "{0}_{1}_{2}_{3}.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
-        //                            arry.Add("i,AF Time,Z");
-        //                            lstr = "";
-        //                            for (int i = 0; i < framCnt[port]; i++)
-        //                            {
-        //                                string data = string.Format("{0},{1:0.000},{2:0.000}", i + 1, Cal.Time[i], Cal.StrokeZ[i]);
-        //                                arry.Add(data);
-
-        //                            }
-        //                            //AddLog(j, lstr);
-        //                            break;
-        //                    }
-        //                    if (path != "") STATIC.SetTextLine(path, arry);
-        //                }
-        //        }
-        //    }
-
-        //    //  오차 5% , 원래는 조건으로 입력받아야 함
-
-        //    for (int j = ch; j < ch + ChannelCnt; j++)
-        //    {
-        //        foreach (var Cal in CalList[j])
-        //            if (Cal.Name == name)
-        //            {
-        //                switch (name)
-        //                {
-        //                    case "AF Settling":
-        //                        double settling = 10;
-        //                        double FinalStroke = 0;
-        //                        double InitStroke = Stroke[0];
-
-        //                        double SettlingDev;
-        //                        double FinalTime1, FinalTime2;
-        //                        FinalTime1 = 100;
-        //                        FinalTime2 = 90;
-        //                        int index = 0;
-        //                        for (int i = 0; i < Time.Count; i++)
-        //                        {
-        //                            if (Time[i] < FinalTime1 && Time[i] > FinalTime2)
-        //                            {
-        //                                FinalStroke = Stroke[i];
-        //                                index++;
-        //                                break;
-        //                            }
-        //                        }
-        //                        double StepStroke = Math.Abs(FinalStroke - InitStroke);
-        //                        SettlingDev = StepStroke * Condition.iAFSettlingCriteria / 100.0;
-        //                        if (index == 0) FinalStroke = Stroke[Stroke.Count - 1];
-        //                        for (int i = Stroke.Count - 1; i > -1; i--)
-        //                        {
-        //                            if (Stroke[i] - SettlingDev > FinalStroke || Stroke[i] + SettlingDev < FinalStroke)
-        //                            {
-        //                                PassFails[j].Results[(int)SpecItem.AF_SettillingTime].Val = Time[i];
-        //                                break;
-
-        //                            }
-        //                        }
-
-
-
-        //                        //===========================================================================
-
-
-
-        //                        ShowDataResults(j, (int)SpecItem.AF_SettillingTime, (int)SpecItem.AF_SettillingTime);
-        //                        break;
-        //                }
-        //                //  AddChart(j, name);
-        //            }
-        //    }
-        //    framCnt[port] = 0;
-        //}
-
         private void Process_CalcTimeTest(int port, string name)
         {
             int ch = port * 2;
@@ -2116,6 +1940,33 @@ namespace FZ4P
                         }
                     }
             }
+            List<double> Time = new List<double>();
+            List<double> Stroke = new List<double>();
+            bool isStart = false;
+            foreach (var Cal in CalList[ch])
+            {
+                if (Cal.Name == name)
+                {
+                    switch (name)
+                    {
+                        case "AF Settling":
+
+                            for (int i = 0; i < framCnt[port]; i++)
+                            {
+                                if (i > 10 && Cal.Time[i] < 1) isStart = true;
+                                if (isStart)
+                                {
+                                    Time.Add(Cal.Time[i]);
+                                    Stroke.Add(Cal.StrokeZ[i]);
+
+                                }
+                            }
+
+                            break;
+                    }
+                }
+            }
+
 
             if (Option.SaveRawData)
             {
@@ -2128,7 +1979,9 @@ namespace FZ4P
                 DateTime dt = DateTime.Now;
                 string timeDir = dt.ToString("HHmmss");
                 string st = timeDir;
+
                 string lstr = "";
+
                 for (int j = ch; j < ch + ChannelCnt; j++)
                 {
                     foreach (var Cal in CalList[j])
@@ -2143,11 +1996,9 @@ namespace FZ4P
                                     path = string.Format(dateDir + "{0}_{1}_{2}_{3}.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
                                     arry.Add("i,AF Time,Z");
                                     lstr = "";
-                                    for (int i = 0; i < framCnt[port]; i++)
+                                    for (int i = 0; i < Time.Count; i++)
                                     {
-                              
-                                     
-                                        string data = string.Format("{0},{1:0.000},{2:0.000}", i, Cal.Time[i], Cal.StrokeZ[i]);
+                                        string data = string.Format("{0},{1:0.000},{2:0.000}", i + 1, Time[i], Stroke[i]);
                                         arry.Add(data);
 
                                     }
@@ -2170,38 +2021,40 @@ namespace FZ4P
                         {
                             case "AF Settling":
                                 double settling = 10;
-                                // 여기에 계산  ===================================================
-                                double finalZ = 0;
-                                double initialZ = 0;
-                                for (int i = 1; i < 6; i++)
+                                double FinalStroke = 0;
+                                double InitStroke = Stroke[0];
+
+                                double SettlingDev;
+                                double FinalTime1, FinalTime2;
+                                FinalTime1 = 100;
+                                FinalTime2 = 90;
+                                int index = 0;
+                                for (int i = 0; i < Time.Count; i++)
                                 {
-                                    finalZ += Cal.StrokeZ[framCnt[port] - i];
-                                    initialZ += Cal.StrokeZ[i + 100];
-                                }
-                                initialZ /= 5;
-                                finalZ /= 5;
-                                double StepStroke = Math.Abs(finalZ - initialZ);
-                                int SettlingIndex = 0;
-                                int RisingIndex = 0;
-                                for (int i = 1; i < framCnt[port]; i++)
-                                {
-                                    if (Math.Abs(finalZ - Cal.StrokeZ[framCnt[port] - i]) / StepStroke > Condition.iAFSettlingCriteria)
+                                    if (Time[i] < FinalTime1 && Time[i] > FinalTime2)
                                     {
-                                        SettlingIndex = framCnt[port] - i + 1;
+                                        FinalStroke = Stroke[i];
+                                        index++;
                                         break;
                                     }
                                 }
-                                for (int i = 6; i < framCnt[port]; i++)
+                                double StepStroke = Math.Abs(FinalStroke - InitStroke);
+                                SettlingDev = StepStroke * Condition.iAFSettlingCriteria / 100.0;
+                                if (index == 0) FinalStroke = Stroke[Stroke.Count - 1];
+                                for (int i = Stroke.Count - 1; i > -1; i--)
                                 {
-                                    if (Math.Abs(initialZ - Cal.StrokeZ[i + 100]) > StepStroke / 50)
+                                    if (Stroke[i] - SettlingDev > FinalStroke || Stroke[i] + SettlingDev < FinalStroke)
                                     {
-                                        RisingIndex = i - 1 + 100;
+                                        PassFails[j].Results[(int)SpecItem.AF_SettillingTime].Val = Time[i];
                                         break;
+
                                     }
                                 }
-                                settling = Cal.Time[SettlingIndex] - Cal.Time[RisingIndex];  //  msec
+
+
+
                                 //===========================================================================
-                                PassFails[j].Results[(int)SpecItem.AF_SettillingTime].Val = settling;
+
 
 
                                 ShowDataResults(j, (int)SpecItem.AF_SettillingTime, (int)SpecItem.AF_SettillingTime);
@@ -2212,6 +2065,157 @@ namespace FZ4P
             }
             framCnt[port] = 0;
         }
+
+        //private void Process_CalcTimeTest(int port, string name)
+        //{
+        //    int ch = port * 2;
+        //    double res = 999;
+        //    for (int j = ch; j < ch + ChannelCnt; j++)
+        //    {
+        //        AddLog(j, string.Format("{0} Driving Data>>", name));
+        //    }
+        //    List<FindResult> result = new List<FindResult>();
+
+        //    for (int i = 0; i < framCnt[port]; i++)
+        //    {
+        //        result.Add(new FindResult());
+        //        result[i] = STATIC.fVision.MeasureTxTyTz(i, name, true, false);
+        //    }
+
+        //    for (int j = ch; j < ch + ChannelCnt; j++)
+        //    {
+        //        if (!m_ChannelOn[j]) continue;
+        //        foreach (var Cal in CalList[j])
+        //            if (Cal.Name == name)
+        //            {
+        //                double centerX = 0;
+        //                double centerY = 0;
+        //                double centerY1 = 0;
+        //                double centerY2 = 0;
+        //                double centerZ = 0;
+        //                double centertX = 0;
+        //                double centertY = 0;
+        //                double centertZ = 0;
+
+        //                centerX = result[2].cx[j];
+        //                centerY = result[2].cy[j];
+        //                centerZ = result[2].cz[j];
+        //                centertX = result[2].tx[j];
+        //                centertY = result[2].ty[j];
+        //                centertZ = result[2].tz[j];
+        //                centerY1 = result[2].cy1[j];
+        //                centerY2 = result[2].cy2[j];
+
+
+        //                for (int i = 0; i < framCnt[port]; i++)
+        //                {
+        //                    Cal.StrokeX[i] = result[i].cx[j] - centerX;
+        //                    Cal.StrokeX[i] = result[i].cy[j] - centerY;
+        //                    Cal.StrokeZ[i] = result[i].cz[j] - centerZ;
+        //                    Cal.StrokeY1[i] = result[i].cy1[j] - centerY1;
+        //                    Cal.StrokeY2[i] = result[i].cy2[j] - centerY2;
+        //                    Cal.TiltX[i] = result[i].tx[j] - centertX;
+        //                    Cal.TiltY[i] = result[i].ty[j] - centertY;
+        //                    Cal.TiltZ[i] = result[i].tz[j] - centertZ;
+        //                }
+        //            }
+        //    }
+
+        //    if (Option.SaveRawData)
+        //    {
+        //        string str = Convert.ToString(yield.LastSampleNum + 1);
+        //        string dateDir = STATIC.CreateDateDir();
+        //        dateDir += "DrivingData\\";
+        //        if (!Directory.Exists(dateDir))
+        //            Directory.CreateDirectory(dateDir);
+
+        //        DateTime dt = DateTime.Now;
+        //        string timeDir = dt.ToString("HHmmss");
+        //        string st = timeDir;
+        //        string lstr = "";
+        //        for (int j = ch; j < ch + ChannelCnt; j++)
+        //        {
+        //            foreach (var Cal in CalList[j])
+        //                if (Cal.Name == name)
+        //                {
+        //                    List<string> arry = new List<string>();
+        //                    //   arry.Add(DateTime.Now.ToString("MM:dd:hh:mm:ss"));
+        //                    string path = "";
+        //                    switch (name)
+        //                    {
+        //                        case "AF Settling":
+        //                            path = string.Format(dateDir + "{0}_{1}_{2}_{3}.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
+        //                            arry.Add("i,AF Time,Z");
+        //                            lstr = "";
+        //                            for (int i = 0; i < framCnt[port]; i++)
+        //                            {
+
+
+        //                                string data = string.Format("{0},{1:0.000},{2:0.000}", i, Cal.Time[i], Cal.StrokeZ[i]);
+        //                                arry.Add(data);
+
+        //                            }
+        //                            //AddLog(j, lstr);
+        //                            break;
+        //                    }
+        //                    if (path != "") STATIC.SetTextLine(path, arry);
+        //                }
+        //        }
+        //    }
+
+        //    //  오차 5% , 원래는 조건으로 입력받아야 함
+
+        //    for (int j = ch; j < ch + ChannelCnt; j++)
+        //    {
+        //        foreach (var Cal in CalList[j])
+        //            if (Cal.Name == name)
+        //            {
+        //                switch (name)
+        //                {
+        //                    case "AF Settling":
+        //                        double settling = 10;
+        //                        // 여기에 계산  ===================================================
+        //                        double finalZ = 0;
+        //                        double initialZ = 0;
+        //                        for (int i = 1; i < 6; i++)
+        //                        {
+        //                            finalZ += Cal.StrokeZ[framCnt[port] - i];
+        //                            initialZ += Cal.StrokeZ[i + 100];
+        //                        }
+        //                        initialZ /= 5;
+        //                        finalZ /= 5;
+        //                        double StepStroke = Math.Abs(finalZ - initialZ);
+        //                        int SettlingIndex = 0;
+        //                        int RisingIndex = 0;
+        //                        for (int i = 1; i < framCnt[port]; i++)
+        //                        {
+        //                            if (Math.Abs(finalZ - Cal.StrokeZ[framCnt[port] - i]) / StepStroke > Condition.iAFSettlingCriteria / 100)
+        //                            {
+        //                                SettlingIndex = framCnt[port] - i + 1;
+        //                                break;
+        //                            }
+        //                        }
+        //                        for (int i = 6; i < framCnt[port]; i++)
+        //                        {
+        //                            if (Math.Abs(initialZ - Cal.StrokeZ[i + 100]) > StepStroke / 50)
+        //                            {
+        //                                RisingIndex = i - 1 + 100;
+        //                                break;
+        //                            }
+        //                        }
+        //                        settling = Cal.Time[SettlingIndex] - Cal.Time[RisingIndex];  //  msec
+
+        //                        //===========================================================================
+        //                        PassFails[j].Results[(int)SpecItem.AF_SettillingTime].Val = settling;
+        //                        ShowDataResults(j, (int)SpecItem.AF_SettillingTime, (int)SpecItem.AF_SettillingTime);
+        //                        break;
+        //                }
+        //                //  AddChart(j, name);
+        //            }
+        //    }
+        //    framCnt[port] = 0;
+
+        //}
 
 
         public void AddHeadResult(string sFilePath)
@@ -2391,6 +2395,7 @@ namespace FZ4P
             Process_ScanTimeTest(port, testItem);
             LEDs_All_On(port, false);
             Process_CalcTimeTest(port, testItem);
+
         }
         FindResult Measure()
         {
