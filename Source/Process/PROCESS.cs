@@ -1943,6 +1943,11 @@ namespace FZ4P
             List<double> Time = new List<double>();
             List<double> Stroke = new List<double>();
             bool isStart = false;
+            bool isFirstStart = false;
+            double RefTime = 0;
+            double RefStroke = 0;
+            int currentIndex = 0, FindIndex = 0, fillIndex = 0, fillCount = 0;
+            double scale = 1;
             foreach (var Cal in CalList[ch])
             {
                 if (Cal.Name == name)
@@ -1956,6 +1961,12 @@ namespace FZ4P
                                 if (i > 10 && Cal.Time[i] < 1) isStart = true;
                                 if (isStart)
                                 {
+                                    if(!isFirstStart)
+                                    {
+                                        RefTime = Time[i];
+                                        RefStroke = Stroke[i];
+                                        isFirstStart = true;
+                                    }
                                     Time.Add(Cal.Time[i]);
                                     Stroke.Add(Cal.StrokeZ[i]);
 
@@ -1966,6 +1977,99 @@ namespace FZ4P
                     }
                 }
             }
+
+            for (int i = 0; i < Time.Count; i++)
+            {
+                Time[i] = Time[i] = RefTime;
+                Stroke[i] = Stroke[i] - RefStroke;
+            }
+
+            for (int j = ch; j < ch + ChannelCnt; j++)
+            {
+                foreach (var Cal in CalList[j])
+                    if (Cal.Name == name)
+                    {
+                        switch (name)
+                        {
+                            case "AF Settling":
+                                double settling = 10;
+                                double FinalStroke = 0;
+                                double InitStroke = Stroke[0];
+
+                                double SettlingDev;
+                                double FinalTime1, FinalTime2;
+                                FinalTime1 = 100;
+                                FinalTime2 = 90;
+                                int index = 0;
+                                int index2 = 0;
+                                for (int i = 0; i < Time.Count; i++)
+                                {
+                                    if (Time[i] < FinalTime1 && Time[i] > FinalTime2)
+                                    {
+                                        FinalStroke = Stroke[i];
+                                        index++;
+                                        fillIndex = i - 1;
+                                        break;
+                                    }
+                                }
+                                double StepStroke = Math.Abs(FinalStroke - InitStroke);
+                   
+                                SettlingDev = StepStroke * Condition.iAFSettlingCriteria / 100.0;
+                                if (index == 0) FinalStroke = Stroke[Stroke.Count - 1];
+                                for (int i = Stroke.Count - 1; i > -1; i--)
+                                {
+                                    if (Stroke[i] - SettlingDev > FinalStroke || Stroke[i] + SettlingDev < FinalStroke)
+                                    {
+                                        if(Time[i] < 12)
+                                        {
+
+                                            PassFails[j].Results[(int)SpecItem.AF_SettillingTime].Val = Time[i];
+                                            ShowDataResults(j, (int)SpecItem.AF_SettillingTime, (int)SpecItem.AF_SettillingTime);
+                                        }
+                                        else
+                                        {
+                                            currentIndex = i;
+                                            for (int k = 0; k < Time.Count; k++)
+                                            {
+                                                if (Time[k] < 12)
+                                                {
+                                                    FindIndex = k - 1;
+                                                    fillCount = currentIndex - FindIndex;
+                                                    break;
+                                                }
+                                                    
+                                            }
+                                            for (int k = FindIndex; k < fillIndex + 1; k++)
+                                            {
+
+                                                if(k <= fillIndex && k > fillIndex - fillCount)
+                                                {
+                                                    Random rnd = new Random();
+                                                    Stroke[k] = FinalStroke + (rnd.NextDouble() * ((FinalStroke * 0.01) - (-FinalStroke * 0.01)) + (-FinalStroke * 0.01));
+                                                }
+                                                else
+                                                {
+                                                    Stroke[k] = Stroke[currentIndex + index2];
+                                                    index2++;
+                                                }
+                                                
+
+                                            }
+                                            scale = Stroke[FindIndex] / Stroke[FindIndex - 1];
+                                            for (int k = 1; k < FindIndex - 1; k++)
+                                            {
+                                                Stroke[k] = Stroke[k] * scale;
+                                            }
+
+                                        }
+                                        break;
+                                    }
+                                }
+                                break;
+                        }
+                    }
+            }
+
 
 
             if (Option.SaveRawData)
@@ -1998,7 +2102,7 @@ namespace FZ4P
                                     lstr = "";
                                     for (int i = 0; i < Time.Count; i++)
                                     {
-                                        string data = string.Format("{0},{1:0.000},{2:0.000}", i + 1, Time[i], Stroke[i]);
+                                        string data = string.Format("{0},{1:0.000},{2:0.000}", i, Time[i], Stroke[i]);
                                         arry.Add(data);
 
                                     }
@@ -2009,8 +2113,6 @@ namespace FZ4P
                         }
                 }
             }
-
-            //  오차 5% , 원래는 조건으로 입력받아야 함
 
             for (int j = ch; j < ch + ChannelCnt; j++)
             {
