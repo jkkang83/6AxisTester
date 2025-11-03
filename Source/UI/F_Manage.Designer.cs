@@ -30,10 +30,10 @@ namespace FZ4P
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(F_Manage));
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Title title1 = new System.Windows.Forms.DataVisualization.Charting.Title();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Title title3 = new System.Windows.Forms.DataVisualization.Charting.Title();
             this.lblRepeatLoadingUnloading = new System.Windows.Forms.Label();
             this.RepeatRunCnt = new System.Windows.Forms.TextBox();
             this.CurrentRunCnt = new System.Windows.Forms.TextBox();
@@ -54,9 +54,6 @@ namespace FZ4P
             this.ToAdmin = new System.Windows.Forms.Button();
             this.ToVision = new System.Windows.Forms.Button();
             this.p_Result = new System.Windows.Forms.Panel();
-            this.TestCountText = new System.Windows.Forms.TextBox();
-            this.TestStopBtn = new System.Windows.Forms.Button();
-            this.TestStartBtn = new System.Windows.Forms.Button();
             this.btnClearLogs = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.RunProgress = new System.Windows.Forms.PictureBox();
@@ -86,7 +83,6 @@ namespace FZ4P
             this.lblCheckPoint = new System.Windows.Forms.Label();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
-            this.p_Result.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.RunProgress)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.YieldChart)).BeginInit();
@@ -337,56 +333,10 @@ namespace FZ4P
             // 
             // p_Result
             // 
-            this.p_Result.Controls.Add(this.TestCountText);
-            this.p_Result.Controls.Add(this.TestStopBtn);
-            this.p_Result.Controls.Add(this.TestStartBtn);
-            this.p_Result.Location = new System.Drawing.Point(961, 1);
+            this.p_Result.Location = new System.Drawing.Point(961, 3);
             this.p_Result.Name = "p_Result";
-            this.p_Result.Size = new System.Drawing.Size(772, 831);
+            this.p_Result.Size = new System.Drawing.Size(772, 828);
             this.p_Result.TabIndex = 175;
-            // 
-            // TestCountText
-            // 
-            this.TestCountText.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            this.TestCountText.Location = new System.Drawing.Point(327, 7);
-            this.TestCountText.Name = "TestCountText";
-            this.TestCountText.Size = new System.Drawing.Size(115, 29);
-            this.TestCountText.TabIndex = 181;
-            this.TestCountText.Text = "0";
-            this.TestCountText.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.TestCountText.Visible = false;
-            // 
-            // TestStopBtn
-            // 
-            this.TestStopBtn.BackColor = System.Drawing.Color.DodgerBlue;
-            this.TestStopBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("TestStopBtn.BackgroundImage")));
-            this.TestStopBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.TestStopBtn.Font = new System.Drawing.Font("Calibri", 18F, System.Drawing.FontStyle.Bold);
-            this.TestStopBtn.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.TestStopBtn.Location = new System.Drawing.Point(189, 3);
-            this.TestStopBtn.Name = "TestStopBtn";
-            this.TestStopBtn.Size = new System.Drawing.Size(132, 45);
-            this.TestStopBtn.TabIndex = 180;
-            this.TestStopBtn.Text = "Stop";
-            this.TestStopBtn.UseVisualStyleBackColor = false;
-            this.TestStopBtn.Visible = false;
-            this.TestStopBtn.Click += new System.EventHandler(this.button3_Click);
-            // 
-            // TestStartBtn
-            // 
-            this.TestStartBtn.BackColor = System.Drawing.Color.DodgerBlue;
-            this.TestStartBtn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("TestStartBtn.BackgroundImage")));
-            this.TestStartBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.TestStartBtn.Font = new System.Drawing.Font("Calibri", 18F, System.Drawing.FontStyle.Bold);
-            this.TestStartBtn.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.TestStartBtn.Location = new System.Drawing.Point(51, 3);
-            this.TestStartBtn.Name = "TestStartBtn";
-            this.TestStartBtn.Size = new System.Drawing.Size(132, 45);
-            this.TestStartBtn.TabIndex = 179;
-            this.TestStartBtn.Text = "Test";
-            this.TestStartBtn.UseVisualStyleBackColor = false;
-            this.TestStartBtn.Visible = false;
-            this.TestStartBtn.Click += new System.EventHandler(this.button2_Click);
             // 
             // btnClearLogs
             // 
@@ -630,48 +580,48 @@ namespace FZ4P
             this.YieldChart.AllowDrop = true;
             this.YieldChart.BackImageAlignment = System.Windows.Forms.DataVisualization.Charting.ChartImageAlignmentStyle.Center;
             this.YieldChart.BorderlineColor = System.Drawing.Color.Black;
-            chartArea1.BackColor = System.Drawing.Color.Transparent;
-            chartArea1.Name = "ChartArea1";
-            chartArea1.ShadowColor = System.Drawing.Color.White;
-            this.YieldChart.ChartAreas.Add(chartArea1);
-            legend1.Alignment = System.Drawing.StringAlignment.Center;
-            legend1.BackColor = System.Drawing.Color.Transparent;
-            legend1.BackSecondaryColor = System.Drawing.Color.Transparent;
-            legend1.BorderColor = System.Drawing.Color.Transparent;
-            legend1.BorderWidth = 0;
-            legend1.DockedToChartArea = "ChartArea1";
-            legend1.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Bottom;
-            legend1.Font = new System.Drawing.Font("맑은 고딕", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            legend1.IsTextAutoFit = false;
-            legend1.Name = "Legend1";
-            legend1.Position.Auto = false;
-            legend1.Position.Height = 25F;
-            legend1.Position.Width = 98F;
-            legend1.Position.Y = 75F;
-            legend1.ShadowColor = System.Drawing.Color.White;
-            legend1.TitleBackColor = System.Drawing.Color.Transparent;
-            legend1.TitleFont = new System.Drawing.Font("Calibri", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.YieldChart.Legends.Add(legend1);
+            chartArea3.BackColor = System.Drawing.Color.Transparent;
+            chartArea3.Name = "ChartArea1";
+            chartArea3.ShadowColor = System.Drawing.Color.White;
+            this.YieldChart.ChartAreas.Add(chartArea3);
+            legend3.Alignment = System.Drawing.StringAlignment.Center;
+            legend3.BackColor = System.Drawing.Color.Transparent;
+            legend3.BackSecondaryColor = System.Drawing.Color.Transparent;
+            legend3.BorderColor = System.Drawing.Color.Transparent;
+            legend3.BorderWidth = 0;
+            legend3.DockedToChartArea = "ChartArea1";
+            legend3.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Bottom;
+            legend3.Font = new System.Drawing.Font("맑은 고딕", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            legend3.IsTextAutoFit = false;
+            legend3.Name = "Legend1";
+            legend3.Position.Auto = false;
+            legend3.Position.Height = 25F;
+            legend3.Position.Width = 98F;
+            legend3.Position.Y = 75F;
+            legend3.ShadowColor = System.Drawing.Color.White;
+            legend3.TitleBackColor = System.Drawing.Color.Transparent;
+            legend3.TitleFont = new System.Drawing.Font("Calibri", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.YieldChart.Legends.Add(legend3);
             this.YieldChart.Location = new System.Drawing.Point(480, 682);
             this.YieldChart.Name = "YieldChart";
-            series1.ChartArea = "ChartArea1";
-            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Pie;
-            series1.Legend = "Legend1";
-            series1.Name = "Series5";
-            this.YieldChart.Series.Add(series1);
+            series3.ChartArea = "ChartArea1";
+            series3.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Pie;
+            series3.Legend = "Legend1";
+            series3.Name = "Series5";
+            this.YieldChart.Series.Add(series3);
             this.YieldChart.Size = new System.Drawing.Size(436, 276);
             this.YieldChart.TabIndex = 255;
             this.YieldChart.Text = "YieldChart";
-            title1.Alignment = System.Drawing.ContentAlignment.TopLeft;
-            title1.BackColor = System.Drawing.Color.Transparent;
-            title1.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            title1.Name = "Title1";
-            title1.Position.Auto = false;
-            title1.Position.Height = 8F;
-            title1.Position.Width = 55F;
-            title1.Text = "Yield";
-            title1.TextStyle = System.Windows.Forms.DataVisualization.Charting.TextStyle.Shadow;
-            this.YieldChart.Titles.Add(title1);
+            title3.Alignment = System.Drawing.ContentAlignment.TopLeft;
+            title3.BackColor = System.Drawing.Color.Transparent;
+            title3.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            title3.Name = "Title1";
+            title3.Position.Auto = false;
+            title3.Position.Height = 8F;
+            title3.Position.Width = 55F;
+            title3.Text = "Yield";
+            title3.TextStyle = System.Windows.Forms.DataVisualization.Charting.TextStyle.Shadow;
+            this.YieldChart.Titles.Add(title3);
             this.YieldChart.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.YieldChart_MouseDoubleClick);
             // 
             // ModelGroup
@@ -815,8 +765,6 @@ namespace FZ4P
             this.groupBox2.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
-            this.p_Result.ResumeLayout(false);
-            this.p_Result.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.RunProgress)).EndInit();
             this.tableLayoutPanel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.YieldChart)).EndInit();
@@ -870,9 +818,6 @@ namespace FZ4P
         private System.Windows.Forms.TextBox textBox2;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Button TestStartBtn;
-        private System.Windows.Forms.Button TestStopBtn;
-        private System.Windows.Forms.TextBox TestCountText;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
         private System.Windows.Forms.Label lbMcConstatus;
         private System.Windows.Forms.Label lbMCtype;

@@ -199,17 +199,19 @@ namespace S2System.Vision
         public int mTrgBufLength = 10000;
         private MIL_ID[] milCommonImageGrab = new MIL_ID[MAX_TRGGRAB_COUNT];
         private MIL_ID[] milAFRelay = new MIL_ID[MAX_TRGGRAB_1000];
+        private MIL_ID[] milAFSettling = new MIL_ID[MAX_TRGGRAB_1000];
         private MIL_ID[] milXRelay = new MIL_ID[MAX_TRGGRAB_1000];
         private MIL_ID[] milYRelay = new MIL_ID[MAX_TRGGRAB_1000];
-        private MIL_ID[] milXLinRelay = new MIL_ID[MAX_TRGGRAB_1000];
-        private MIL_ID[] milYLinRelay = new MIL_ID[MAX_TRGGRAB_1000];
+        //private MIL_ID[] milXLinRelay = new MIL_ID[MAX_TRGGRAB_1000];
+        //private MIL_ID[] milYLinRelay = new MIL_ID[MAX_TRGGRAB_1000];
         private MIL_ID[] milCommonImageGrab6000 = new MIL_ID[MAX_TRGGRAB_6000];
         public int AFRelayCnt = 0;
+        public int AFSettleRelayCnt = 0;
         public int XRelayCnt = 0;
         public int YRelayCnt = 0;
         public int MRelayCnt = 0;
-        public int XLinRelayCnt = 0;
-        public int YLinRelayCnt = 0;
+        //public int XLinRelayCnt = 0;
+        //public int YLinRelayCnt = 0;
 
         static private MIL_ID[] milCommonImageResize = new MIL_ID[MAX_TRGGRAB_COUNT];
         //private MIL_ID[] milCommonImageGrab7000 = new MIL_ID[MAX_TRGGRAB_7000];
@@ -545,8 +547,9 @@ namespace S2System.Vision
                 MIL.MbufAlloc2d(milSystem, nSizeX, nSizeY, 8, MIL.M_IMAGE + MIL.M_GRAB + MIL.M_NON_PAGED + MIL.M_PROC, ref milAFRelay[n]);
                 MIL.MbufAlloc2d(milSystem, nSizeX, nSizeY, 8, MIL.M_IMAGE + MIL.M_GRAB + MIL.M_NON_PAGED + MIL.M_PROC, ref milXRelay[n]);
                 MIL.MbufAlloc2d(milSystem, nSizeX, nSizeY, 8, MIL.M_IMAGE + MIL.M_GRAB + MIL.M_NON_PAGED + MIL.M_PROC, ref milYRelay[n]);
-                MIL.MbufAlloc2d(milSystem, nSizeX, nSizeY, 8, MIL.M_IMAGE + MIL.M_GRAB + MIL.M_NON_PAGED + MIL.M_PROC, ref milXLinRelay[n]);
-                MIL.MbufAlloc2d(milSystem, nSizeX, nSizeY, 8, MIL.M_IMAGE + MIL.M_GRAB + MIL.M_NON_PAGED + MIL.M_PROC, ref milYLinRelay[n]);
+                MIL.MbufAlloc2d(milSystem, nSizeX, nSizeY, 8, MIL.M_IMAGE + MIL.M_GRAB + MIL.M_NON_PAGED + MIL.M_PROC, ref milAFSettling[n]);
+                //MIL.MbufAlloc2d(milSystem, nSizeX, nSizeY, 8, MIL.M_IMAGE + MIL.M_GRAB + MIL.M_NON_PAGED + MIL.M_PROC, ref milXLinRelay[n]);
+                //MIL.MbufAlloc2d(milSystem, nSizeX, nSizeY, 8, MIL.M_IMAGE + MIL.M_GRAB + MIL.M_NON_PAGED + MIL.M_PROC, ref milYLinRelay[n]);
             }
             for (int n = 0; n < MAX_TRGGRAB_6000; n++)
             {
@@ -724,8 +727,9 @@ namespace S2System.Vision
                 if (milAFRelay[n] != MIL.M_NULL) MIL.MbufFree(milAFRelay[n]);
                 if (milXRelay[n] != MIL.M_NULL) MIL.MbufFree(milXRelay[n]);
                 if (milYRelay[n] != MIL.M_NULL) MIL.MbufFree(milYRelay[n]);
-                if (milXLinRelay[n] != MIL.M_NULL) MIL.MbufFree(milXLinRelay[n]);
-                if (milYLinRelay[n] != MIL.M_NULL) MIL.MbufFree(milYLinRelay[n]);
+                if (milAFSettling[n] != MIL.M_NULL) MIL.MbufFree(milAFSettling[n]);
+                //if (milXLinRelay[n] != MIL.M_NULL) MIL.MbufFree(milXLinRelay[n]);
+                //if (milYLinRelay[n] != MIL.M_NULL) MIL.MbufFree(milYLinRelay[n]);
             }
             for (int n = 0; n < MAX_TRGGRAB_6000; n++)
             {
@@ -1685,7 +1689,7 @@ namespace S2System.Vision
             switch (name)
             {
                 case "AF Scan":
-                case "AF Settling":
+               
                     MIL.MdigGrab(milDigitizer, milAFRelay[i]);
                     break;
                 case "OIS X Scan":
@@ -1697,11 +1701,14 @@ namespace S2System.Vision
                 case "OIS Matrix Scan":
                     MIL.MdigGrab(milDigitizer, milCommonImageGrab6000[i]);
                     break;
-                case "OIS X Linearity Comp":
-                    MIL.MdigGrab(milDigitizer, milXLinRelay[i]);
-                    break;
-                case "OIS Y Linearity Comp":
-                    MIL.MdigGrab(milDigitizer, milYLinRelay[i]);
+                //case "OIS X Linearity Comp":
+                //    MIL.MdigGrab(milDigitizer, milXLinRelay[i]);
+                //    break;
+                //case "OIS Y Linearity Comp":
+                //    MIL.MdigGrab(milDigitizer, milYLinRelay[i]);
+                //    break;
+                case "AF Settling":
+                    MIL.MdigGrab(milDigitizer, milAFSettling[i]);
                     break;
             }
             OnGrab = false;
@@ -3433,7 +3440,7 @@ namespace S2System.Vision
             switch (name)
             {
                 case "AF Scan":
-                case "AF Settling":
+              
                     for (int i = 0; i < count; i++)
                         MIL.MbufCopy(milCommonImageGrab[i], milAFRelay[i]);
                     AFRelayCnt = count;
@@ -3453,16 +3460,21 @@ namespace S2System.Vision
                         MIL.MbufCopy(milCommonImageGrab[i], milCommonImageGrab6000[i]);
                     MRelayCnt = count;
                     break;
-                case "OIS X Linearity Comp":
+                case "AF Settling":
                     for (int i = 0; i < count; i++)
-                        MIL.MbufCopy(milCommonImageGrab[i], milXLinRelay[i]);
-                    XLinRelayCnt = count;
+                        MIL.MbufCopy(milCommonImageGrab[i], milAFSettling[i]);
+                    AFSettleRelayCnt = count;
                     break;
-                case "OIS Y Linearity Comp":
-                    for (int i = 0; i < count; i++)
-                        MIL.MbufCopy(milCommonImageGrab[i], milYLinRelay[i]);
-                    YLinRelayCnt = count;
-                    break;
+                    //case "OIS X Linearity Comp":
+                    //    for (int i = 0; i < count; i++)
+                    //        MIL.MbufCopy(milCommonImageGrab[i], milXLinRelay[i]);
+                    //    XLinRelayCnt = count;
+                    //    break;
+                    //case "OIS Y Linearity Comp":
+                    //    for (int i = 0; i < count; i++)
+                    //        MIL.MbufCopy(milCommonImageGrab[i], milYLinRelay[i]);
+                    //    YLinRelayCnt = count;
+                    //    break;
             }
         }
         public void ReplayBuftoCommon(string name, int index)
@@ -3470,7 +3482,7 @@ namespace S2System.Vision
             switch (name)
             {
                 case "AF Scan":
-                case "AF Settling":
+               
                     MIL.MbufCopy(milAFRelay[index], milCommonImageGrab[index]);
                     break;
                 case "OIS X Scan":
@@ -3482,11 +3494,14 @@ namespace S2System.Vision
                 case "OIS Matrix Scan":
                     MIL.MbufCopy(milCommonImageGrab6000[index], milCommonImageGrab[index]);
                     break;
-                case "OIS X Linearity Comp":
-                    MIL.MbufCopy(milXLinRelay[index], milCommonImageGrab[index]);
-                    break;
-                case "OIS Y Linearity Comp":
-                    MIL.MbufCopy(milYLinRelay[index], milCommonImageGrab[index]);
+                //case "OIS X Linearity Comp":
+                //    MIL.MbufCopy(milXLinRelay[index], milCommonImageGrab[index]);
+                //    break;
+                //case "OIS Y Linearity Comp":
+                //    MIL.MbufCopy(milYLinRelay[index], milCommonImageGrab[index]);
+                //    break;
+                case "AF Settling":
+                    MIL.MbufCopy(milAFSettling[index], milCommonImageGrab[index]);
                     break;
                 case "Vision":
                     if (mTrgBufLength > 2500)
@@ -3533,20 +3548,20 @@ namespace S2System.Vision
                         Thread.Sleep(delay);
                     }
                     break;
-                case "OIS X Linearity Comp":
-                    for (int i = 0; i < XLinRelayCnt; i++)
-                    {
-                        MIL.MbufCopy(milXLinRelay[i], milImageDisp);
-                        Thread.Sleep(delay);
-                    }
-                    break;
-                case "OIS Y Linearity Comp":
-                    for (int i = 0; i < YLinRelayCnt; i++)
-                    {
-                        MIL.MbufCopy(milYLinRelay[i], milImageDisp);
-                        Thread.Sleep(delay);
-                    }
-                    break;
+                //case "OIS X Linearity Comp":
+                //    for (int i = 0; i < XLinRelayCnt; i++)
+                //    {
+                //        MIL.MbufCopy(milXLinRelay[i], milImageDisp);
+                //        Thread.Sleep(delay);
+                //    }
+                //    break;
+                //case "OIS Y Linearity Comp":
+                //    for (int i = 0; i < YLinRelayCnt; i++)
+                //    {
+                //        MIL.MbufCopy(milYLinRelay[i], milImageDisp);
+                //        Thread.Sleep(delay);
+                //    }
+                //    break;
                 case "Vision":
                     if (mTrgBufLength > 6000)
                     {

@@ -52,10 +52,7 @@ namespace FZ4P
             Model.Changed += Model_Changed;
             BindingUI();
 
-            TestStartBtn.Visible = Process.IsVirtual;
-            TestStopBtn.Visible = Process.IsVirtual;
-            TestCountText.Visible = Process.IsVirtual;
-
+         
 
             if (Model.MCType == "Master") lbMCtype.Text = "PORT 1";
             else if (Model.MCType == "Slave") { lbMCtype.Text = "PORT 2"; }
