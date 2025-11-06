@@ -59,7 +59,7 @@ namespace FZ4P
                     P_Vision.Location = new Point(59, 1026);
                     P_Vision.Size = new Size(50, 31);
                     P_Vision.Hide();
-                    STATIC.fManage.BindingUIModel();
+                    STATIC.fManage.BindingUIModel(this.Text);
                     break;
                 case (int)STATIC.STATE.Main:
                     //InitCondition();
@@ -203,6 +203,7 @@ namespace FZ4P
         {
 
             DataIO.SerializeToXMLFile(STATIC.Rcp.yield, STATIC.YieldPath);
+            DataIO.SerializeToXMLFile(Spec, STATIC.SpecDir + Current.SpecName);
             if (!Process.IsVirtual)
             {
                 Process.LEDs_All_On(0, false);

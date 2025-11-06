@@ -452,11 +452,13 @@ namespace FZ4P
 
                 // string sReciveData = base.ByteToString(szData);
                 //Buffer 비우기
-                Array.Clear(szData, 0, szData.Length);
+         
 
                 base.Receive(((IPEndPoint)client.RemoteEndPoint).Address.ToString(), szData);
                 e.SetBuffer(szData, 0, 4096);
+                Array.Clear(szData, 0, szData.Length);
                 client.ReceiveAsync(e);
+
             }
             else //연결 끊어짐.
             {

@@ -18,10 +18,8 @@ using System.IO.Ports;          // using for QR_Reader
 using System.Net;
 using System.Net.Sockets;
 using System.Net.NetworkInformation;
-using MotorizedStage_SK_PI;
-//using MotorizedStage_SK_PI;
 
-// from FZ4P19110401_EPA-I_2PC_S6_AddHandler
+
 namespace FZ4P
 {
     //public class SupremeTimer
@@ -369,12 +367,7 @@ namespace FZ4P
        
         public FAutoLearn.FAutoLearn mFAL = null;
         // 모션
-        //public F_Motion mMotion = null;
-        //public F_PIMotion f_PIMotion = null;
-        public F_Motion_SK_PI fMotion = null;
-
-        //public F_SetupRegister fSetupReg = new F_SetupRegister();
-
+     
         // Objects
         public MILlib[] oCam = new MILlib[2];
 

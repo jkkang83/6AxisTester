@@ -43,6 +43,8 @@ namespace FZ4P
         public static string CurrentPath = RootDir + "CurrPath.txt";
         public static string PackageDir = BaseDir + "Package\\";
         public static DateTime LogDate = new DateTime();
+        public static string FailNumber = string.Empty;
+        
         public static string PKGRelease(string srcdir, string Ext, string destdir)
         {
 

@@ -77,7 +77,7 @@ namespace FZ4P
 
         public DataGridView ResultDataGrid = new DataGridView()
         { Size = new System.Drawing.Size(780, 828) };
-
+        public Label lblFailList = new Label();
         public List<ChartList> ChartTop = new List<ChartList>();
 
         public List<ChartList> ChartBtm = new List<ChartList>();
@@ -168,20 +168,19 @@ namespace FZ4P
                 }
             }
 
-
             if (ResultDataGrid.InvokeRequired)
             {
                 ResultDataGrid.BeginInvoke((MethodInvoker)delegate
                 {
                     for (int i = start; i <= end; i++)
-                    {
-                       
+                    {                       
                         if (PassFails[ch].Results[i].Val != 0)
                         {
-                            ResultDataGrid[ch + 4, i].Value = PassFails[ch].Results[i].Val.ToString("F3");
+                            ResultDataGrid[ch + 5, i].Value = PassFails[ch].Results[i].Val.ToString("F3");
                         }
-                        if (PassFails[ch].Results[i].bPass) ResultDataGrid[ch + 4, i].Style.BackColor = Color.White;
-                        else ResultDataGrid[ch + 4, i].Style.BackColor = Color.Orange;
+                        if (PassFails[ch].Results[i].bPass) { ResultDataGrid[ch + 5, i].Style.BackColor = Color.White; ResultDataGrid[ch + 1, i].Style.BackColor = Color.White; }
+                        else { ResultDataGrid[ch + 5, i].Style.BackColor = Color.Orange; ResultDataGrid[ch + 1, i].Style.BackColor = Color.Orange; }
+                        
 
                     }
 
@@ -190,17 +189,38 @@ namespace FZ4P
             else
             {
                 for (int i = start; i <= end; i++)
-                {
-                 
+                {           
                     if (PassFails[ch].Results[i].Val != 0)
                     {
-                        ResultDataGrid[ch + 4, i].Value = PassFails[ch].Results[i].Val.ToString("F3");
+                        ResultDataGrid[ch + 5, i].Value = PassFails[ch].Results[i].Val.ToString("F3");
                     }
-                    if (PassFails[ch].Results[i].bPass) ResultDataGrid[ch + 4, i].Style.BackColor = Color.White;
-                    else ResultDataGrid[ch + 4, i].Style.BackColor = Color.Orange;
+                    if (PassFails[ch].Results[i].bPass) { ResultDataGrid[ch + 5, i].Style.BackColor = Color.White; ResultDataGrid[ch + 1, i].Style.BackColor = Color.White; }
+                    else { ResultDataGrid[ch + 5, i].Style.BackColor = Color.Orange; ResultDataGrid[ch + 1, i].Style.BackColor = Color.Orange; }
 
                 }
             }
+
+            if (lblFailList.InvokeRequired)
+            {
+                lblFailList.BeginInvoke((MethodInvoker)delegate
+                {
+                    for (int i = start; i <= end; i++)
+                    {
+                        if (!PassFails[ch].Results[i].bPass) { STATIC.FailNumber += $"{i},"; lblFailList.Text = STATIC.FailNumber; }
+                    
+                    }
+
+                });
+            }
+            else
+            {
+                for (int i = start; i <= end; i++)
+                {
+                    if (!PassFails[ch].Results[i].bPass) { STATIC.FailNumber += $"{i},"; lblFailList.Text = STATIC.FailNumber; }
+                }
+            }
+
+
         }
         public void SetError(int ch, NonSpecItem item)
         {
@@ -220,7 +240,7 @@ namespace FZ4P
             ResultDataGrid.AllowUserToResizeRows = false;
             ResultDataGrid.Tag = "S";
             ResultDataGrid.ColumnCount = 7; //  Group, Item, min, max, r0, r1, r2, r3, unit, Fratio
-            ResultDataGrid.Font = new Font("Calibri", 14, FontStyle.Bold);
+            ResultDataGrid.Font = new Font("Calibri", 10, FontStyle.Bold);
             for (int i = 0; i < ResultDataGrid.ColumnCount; i++)
             {
                 ResultDataGrid.Columns[i].SortMode = DataGridViewColumnSortMode.NotSortable;
@@ -230,27 +250,28 @@ namespace FZ4P
 
             //// Column
             ResultDataGrid.Columns[0].Name = "Axis";
-            ResultDataGrid.Columns[1].Name = "Items";
-            ResultDataGrid.Columns[2].Name = "Min";
-            ResultDataGrid.Columns[3].Name = "Max";
-            ResultDataGrid.Columns[4].Name = "#1 Result";
-            ResultDataGrid.Columns[5].Name = "#2 Result";
+            ResultDataGrid.Columns[1].Name = "Item No.";
+            ResultDataGrid.Columns[2].Name = "Items";
+            ResultDataGrid.Columns[3].Name = "Min";
+            ResultDataGrid.Columns[4].Name = "Max";
+            ResultDataGrid.Columns[5].Name = "Result";
+          //  ResultDataGrid.Columns[5].Name = "#2 Result";
             ResultDataGrid.Columns[6].Name = "unit";
 
             ResultDataGrid.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopCenter;
-            ResultDataGrid.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopLeft;
-            ResultDataGrid.Columns[2].DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopRight;
+            ResultDataGrid.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopCenter;
+            ResultDataGrid.Columns[2].DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopLeft;
             ResultDataGrid.Columns[3].DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopRight;
             ResultDataGrid.Columns[4].DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopRight;
             ResultDataGrid.Columns[5].DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopRight;
             ResultDataGrid.Columns[6].DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopLeft;
 
-            ResultDataGrid.Columns[0].Width = 160;
-            ResultDataGrid.Columns[1].Width = 215;
-            ResultDataGrid.Columns[2].Width = 70;
+            ResultDataGrid.Columns[0].Width = 150;
+            ResultDataGrid.Columns[1].Width = 50;
+            ResultDataGrid.Columns[2].Width = 215;
             ResultDataGrid.Columns[3].Width = 70;
-            ResultDataGrid.Columns[4].Width = 90;
-            ResultDataGrid.Columns[5].Width = 90;
+            ResultDataGrid.Columns[4].Width = 70;
+            ResultDataGrid.Columns[5].Width = 100;
             ResultDataGrid.Columns[6].Width = 65;
 
             ResultDataGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
@@ -260,7 +281,7 @@ namespace FZ4P
             ResultDataGrid.Rows.Clear();
             for (int i = 0; i < Spec.specList.Count; i++)
             {
-                ResultDataGrid.Rows.Add(Spec.specList[i].Category, Spec.specList[i].DisplayName, Spec.specList[i].MinSpec, Spec.specList[i].MaxSpec, 0, 0, Spec.specList[i].Unit);
+                ResultDataGrid.Rows.Add(Spec.specList[i].Category, i, Spec.specList[i].DisplayName, Spec.specList[i].MinSpec, Spec.specList[i].MaxSpec, 0, Spec.specList[i].Unit);
                 ResultDataGrid.Rows[i].Visible = Convert.ToBoolean(Spec.specList[i].OnOff);
 
                 if (bColorChange) for (int k = 0; k < ResultDataGrid.ColumnCount; k++) ResultDataGrid[k, i].Style.BackColor = Color.Lavender;
@@ -272,7 +293,7 @@ namespace FZ4P
                 ResultDataGrid.Rows[i].Resizable = DataGridViewTriState.False;
                 ResultDataGrid.Rows[i].DefaultCellStyle.Font = new Font("Calibri", 10, FontStyle.Bold);
                 ResultDataGrid[1, i].Style.Font = new Font("Calibri", 10, FontStyle.Bold);
-                ResultDataGrid[2, i].Style.Font = new Font("Calibri", 10, FontStyle.Bold);
+                ResultDataGrid[3, i].Style.Font = new Font("Calibri", 10, FontStyle.Bold);
                 ResultDataGrid[6, i].Style.Font = new Font("Calibri", 10, FontStyle.Italic);
 
                 ResultDataGrid.ReadOnly = true;
@@ -317,8 +338,9 @@ namespace FZ4P
                     InitResult(ch);
                     for (int i = 0; i < Spec.specList.Count; i++)
                     {
-                        ResultDataGrid[ch + 4, i].Value = PassFails[ch].Results[i].Val.ToString("F0");
-                        ResultDataGrid[ch + 4, i].Style.BackColor = Color.White;
+                        ResultDataGrid[ch + 5, i].Value = PassFails[ch].Results[i].Val.ToString("F0");
+                        ResultDataGrid[ch + 5, i].Style.BackColor = Color.White;
+                        ResultDataGrid[ch + 1, i].Style.BackColor = Color.White;
                     }
                 });
             }
@@ -327,10 +349,21 @@ namespace FZ4P
                 InitResult(ch);
                 for (int i = 0; i < Spec.specList.Count; i++)
                 {
-                    ResultDataGrid[ch + 4, i].Value = PassFails[ch].Results[i].Val.ToString("F0");
-                    ResultDataGrid[ch + 4, i].Style.BackColor = Color.White;
+                    ResultDataGrid[ch + 5, i].Value = PassFails[ch].Results[i].Val.ToString("F0");
+                    ResultDataGrid[ch + 5, i].Style.BackColor = Color.White;
+                    ResultDataGrid[ch + 1, i].Style.BackColor = Color.White;
                 }
             }
+
+            if (lblFailList.InvokeRequired)
+            {
+                lblFailList.BeginInvoke((MethodInvoker)delegate
+                {
+                    lblFailList.Text = "";
+                });
+            }
+            else lblFailList.Text = "";
+            STATIC.FailNumber = "Fail No. : ";
         }
         public void AddLog(int ch, string msg)
         {
@@ -778,7 +811,7 @@ namespace FZ4P
                     if (SuddenStop)
                     {
                         loopContinue = false;
-                        errMsg[ch] = errMsg[ch + 1] = "SuddenStop !";
+                        errMsg[ch] = "User Stop !";
                         AddLog(ch, errMsg[ch]);
 
                     }

@@ -1174,6 +1174,7 @@ namespace FZ4P
                 Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x35, new byte[] { 0x00 });
                 Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x36, new byte[] { 0x00 });
                 Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x03, new byte[] { 0x08 });
+                Wait(100);
                 Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x00 });
             }
             else
@@ -1194,6 +1195,7 @@ namespace FZ4P
                 Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x35, new byte[] { 0x00 });
                 Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x36, new byte[] { 0x00 });
                 Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x03, new byte[] { 0x08 });
+                Wait(100);
                 Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xAE, new byte[] { 0x00 });
             }
 

@@ -1,4 +1,5 @@
 ﻿//using OpenCvSharp;
+using Dln;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -136,6 +137,7 @@ namespace FZ4P
                     }
                 });
             }
+          
         }
 
         private void Process_RunStart(object sender, int e)
@@ -164,6 +166,7 @@ namespace FZ4P
             SafeControlView(RunProgress, true);
             if (Model.MCType == "Slave")
                 STATIC.TcpConn.SendMessage("Clear");
+
         }
 
         private void BindingUI()
@@ -196,8 +199,17 @@ namespace FZ4P
             //    Process.InfoBtn[i].btn.BringToFront();
             //}
 
-
+            Process.ResultDataGrid.Dock = DockStyle.Fill;
             p_Result.Controls.Add(Process.ResultDataGrid);
+
+            Process.lblFailList.AutoSize = false;
+            Process.lblFailList.BackColor = Color.White;
+            Process.lblFailList.ForeColor = Color.Red;
+            Process.lblFailList.Dock = DockStyle.Fill;
+            Process.lblFailList.Font = new Font("Arial", 14, FontStyle.Bold);
+            Process.lblFailList.TextAlign = ContentAlignment.MiddleCenter;
+            pResult2.Controls.Add(Process.lblFailList);
+
             Process.InitResultData();
             //Process.ResultDataGrid.CellMouseDoubleClick += new DataGridViewCellMouseEventHandler(ResultDataGrid_CellMouseDoubleClick);
 
@@ -230,7 +242,7 @@ namespace FZ4P
             lblCspec.Text = Current.SpecName;
            
         }
-        public void BindingUIModel()
+        public void BindingUIModel(string PGVer)
         {
             ModelGroup.Controls.Clear();
             PropertyDescriptorCollection props = TypeDescriptor.GetProperties(Option);
@@ -260,28 +272,10 @@ namespace FZ4P
             }
             lblCrecipe.Text = Current.ConditionName;
             lblCspec.Text = Current.SpecName;
+            lblPGMver.Text = PGVer;
+            lblMCnum.Text = STATIC.Rcp.Model.TesterNo; 
         }
-        private void ResultDataGrid_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
-        {
-            if (e.RowIndex < 0)
-            {
-                if (Process.ResultDataGrid.Tag.ToString() == "S")
-                {
-                    p_Result.Location = new Point(479, 400);
-                    p_Result.Size = new Size(956, 614);
-                    Process.ResultDataGrid.Size = new Size(956, 614);
-                    p_Result.BringToFront();
-                    Process.ResultDataGrid.Tag = "L";
-                }
-                else
-                {
-                    p_Result.Location = new Point(479, 701);
-                    p_Result.Size = new Size(956, 312);
-                    Process.ResultDataGrid.Size = new Size(956, 330);
-                    Process.ResultDataGrid.Tag = "S";
-                }
-            }
-        }
+        
         private void Model_Changed(object sender, EventArgs e)
         {
         }
@@ -290,7 +284,7 @@ namespace FZ4P
         {
             if (Process.IsRun[0]) return;
             Process.RepeatRun = 1;
-            Process.m_StrIndex[0] = textBox1.Text;
+           // Process.m_StrIndex[0] = textBox1.Text;
          //   Process.m_StrIndex[1] = textBox2.Text;
 
             Process.ClearChart();
@@ -347,7 +341,7 @@ namespace FZ4P
             Process.RepeatRun = int.Parse(RepeatRunCnt.Text);
             Process.CurrentRun = 1;
 
-            Process.m_StrIndex[0] = textBox1.Text;
+          //  Process.m_StrIndex[0] = textBox1.Text;
             //Process.m_StrIndex[1] = textBox2.Text;
 
             Process.ClearChart();
@@ -478,10 +472,6 @@ namespace FZ4P
                 Process.InfoBtn[1].btn.Show();
             }
 
-
-           
-          
-
         }
         public void SafeControlViewOnComm()
         {
@@ -562,27 +552,24 @@ namespace FZ4P
                     Spec.specList[i].FailCnt = 0;
                 }
                 InitYield();
+                DataIO.SerializeToXMLFile(Spec, STATIC.SpecDir + Current.SpecName);
             }
         }
 
         private void btnCheckContact_Click(object sender, EventArgs e)
         {
-            //int[] centerCode = new int[6];  //  Hall 값이 (2048,2048,2048) 에 가장 가까와지는  code 값
-            //                                //  ch1_x, ch1_y1, ch1_y2, ch2_x, ch2_y1, ch2_y2
-
-            ////  centerCode 위치에서 FWD 방향 구동거리와 BWD 방향 구동거리가 같아지는 Code 값
-            //int[] epaCodeMin = new int[6];  //  ch1_x, ch1_y1, ch1_y2,     ch2_x, ch2_y1, ch2_y2
-
-            //int[] epaCodeMax = new int[6];  //  ch1_x, ch1_y1, ch1_y2,     ch2_x, ch2_y1, ch2_y2\
-
-            ////  X EPA
-            //Task taskFindEPAX = Task.Run(() => { Process.Process_FindEPA("OIS X Scan", ref centerCode, ref epaCodeMin, ref epaCodeMax); });
-            //taskFindEPAX.Wait();
-
-            ////  Y EPA
-            //Task taskFindEPAY = Task.Run(() => { Process.Process_FindEPA("OIS Y Scan", ref centerCode, ref epaCodeMin, ref epaCodeMax); });
-            //taskFindEPAY.Wait();
-            //Process.CalList[0][0].CalLinearity(0,330);
+            bool Constate = true;
+           
+            if (!Process.Dln.WriteArray(0, Process.DrvIC.AFOriginAddr, 0x02, new byte[] { 0x40 }) && !Process.Dln.WriteArray(0, Process.DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x40 })) Constate = false;
+            if (!Process.Dln.WriteArray(0, Process.DrvIC.XOriginAddr, 0x02, new byte[] { 0x40 }) && !Process.Dln.WriteArray(0, Process.DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 })) Constate = false;
+            if (!Process.Dln.WriteArray(0, Process.DrvIC.Y1OriginAddr, 0x02, new byte[] { 0x40 }) && !Process.Dln.WriteArray(0, Process.DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 })) Constate = false;
+            if (Process.DrvIC.Y2SlaveAddr != 0x00)
+            {
+                if (!Process.Dln.WriteArray(0, Process.DrvIC.Y2OriginAddr, 0x02, new byte[] { 0x40 })
+                    && !Process.Dln.WriteArray(0, Process.DrvIC.Y2SlaveAddr, 0x02, new byte[] { 0x40 })) Constate = false;
+            }
+            if (Constate) Process.AddLog(0, "Contact Pass");
+            else Process.AddLog(0, "Contact Fail");
         }
 
         private void SuddenStop_Click(object sender, EventArgs e)
@@ -641,5 +628,7 @@ namespace FZ4P
         {
             //tbUncalibratedInfo.BeginInvoke(new Action(() => { tbUncalibratedInfo.Visible = visible; }));
         }
+
+     
     }
 }

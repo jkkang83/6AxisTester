@@ -187,6 +187,7 @@ namespace FZ4P
             this.lblDefaultModel.Size = new System.Drawing.Size(126, 17);
             this.lblDefaultModel.TabIndex = 239;
             this.lblDefaultModel.Text = "Default Model File";
+            this.lblDefaultModel.Visible = false;
             // 
             // button1
             // 
@@ -572,6 +573,7 @@ namespace FZ4P
             this.SetCodeScript.TabIndex = 243;
             this.SetCodeScript.Text = "Code Script File";
             this.SetCodeScript.UseVisualStyleBackColor = false;
+            this.SetCodeScript.Visible = false;
             this.SetCodeScript.Click += new System.EventHandler(this.SetCodeScript_Click);
             // 
             // CodeScriptPath
@@ -586,6 +588,7 @@ namespace FZ4P
             this.CodeScriptPath.Size = new System.Drawing.Size(639, 36);
             this.CodeScriptPath.TabIndex = 242;
             this.CodeScriptPath.Text = "";
+            this.CodeScriptPath.Visible = false;
             // 
             // SetYPIDUpdate
             // 
@@ -601,6 +604,7 @@ namespace FZ4P
             this.SetYPIDUpdate.TabIndex = 241;
             this.SetYPIDUpdate.Text = "Set Y PID Update File";
             this.SetYPIDUpdate.UseVisualStyleBackColor = false;
+            this.SetYPIDUpdate.Visible = false;
             this.SetYPIDUpdate.Click += new System.EventHandler(this.SetYPIDUpdate_Click);
             // 
             // YPidSetPath
@@ -615,6 +619,7 @@ namespace FZ4P
             this.YPidSetPath.Size = new System.Drawing.Size(639, 36);
             this.YPidSetPath.TabIndex = 240;
             this.YPidSetPath.Text = "";
+            this.YPidSetPath.Visible = false;
             // 
             // SetXPIDUpdate
             // 
@@ -630,6 +635,7 @@ namespace FZ4P
             this.SetXPIDUpdate.TabIndex = 239;
             this.SetXPIDUpdate.Text = "Set X PID Update File";
             this.SetXPIDUpdate.UseVisualStyleBackColor = false;
+            this.SetXPIDUpdate.Visible = false;
             this.SetXPIDUpdate.Click += new System.EventHandler(this.SetXPIDUpdate_Click);
             // 
             // XPidSetPath
@@ -644,6 +650,7 @@ namespace FZ4P
             this.XPidSetPath.Size = new System.Drawing.Size(639, 36);
             this.XPidSetPath.TabIndex = 238;
             this.XPidSetPath.Text = "";
+            this.XPidSetPath.Visible = false;
             // 
             // SetAFPIDUpdate
             // 
@@ -659,6 +666,7 @@ namespace FZ4P
             this.SetAFPIDUpdate.TabIndex = 237;
             this.SetAFPIDUpdate.Text = "Set AF PID Update File";
             this.SetAFPIDUpdate.UseVisualStyleBackColor = false;
+            this.SetAFPIDUpdate.Visible = false;
             this.SetAFPIDUpdate.Click += new System.EventHandler(this.SetAFPIDUpdate_Click);
             // 
             // AFPidSetPath
@@ -673,6 +681,7 @@ namespace FZ4P
             this.AFPidSetPath.Size = new System.Drawing.Size(639, 36);
             this.AFPidSetPath.TabIndex = 191;
             this.AFPidSetPath.Text = "";
+            this.AFPidSetPath.Visible = false;
             // 
             // ConditinGrid
             // 
@@ -998,7 +1007,7 @@ namespace FZ4P
             this.Name = "F_Main";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "6AxisTester_25110601";
+            this.Text = "6AxisTester_25110602";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.F_Main_FormClosing);
             this.Load += new System.EventHandler(this.F_Main_Load);

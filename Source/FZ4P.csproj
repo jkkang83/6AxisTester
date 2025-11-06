@@ -47,6 +47,26 @@
   <PropertyGroup>
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="alglibnet2">
       <HintPath>..\lib\alglibnet2.dll</HintPath>
@@ -106,16 +126,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Motion\AxisStatus.cs" />
-    <Compile Include="Motion\F_Motion_SK_PI.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Motion\F_Motion_SK_PI.Designer.cs">
-      <DependentUpon>F_Motion_SK_PI.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Motion\PI_GCS2.cs" />
-    <Compile Include="Motion\PI_Motion.cs" />
-    <Compile Include="Motion\SK_Motion.cs" />
     <Compile Include="Process\AFLinCompCoef.cs" />
     <Compile Include="Process\OISLinCompCoef.cs" />
     <Compile Include="Process\PROCESSParam.cs" />
@@ -155,9 +165,6 @@
     <Compile Include="Vision\MyMatrox.cs" />
     <Compile Include="Vision\MyMicroLibrary.cs" />
     <Compile Include="Vision\MySingleton.cs" />
-    <EmbeddedResource Include="Motion\F_Motion_SK_PI.resx">
-      <DependentUpon>F_Motion_SK_PI.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="UI\F_Start.resx">
       <DependentUpon>F_Start.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -168,6 +175,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="UI\F_Manage.resx">
       <DependentUpon>F_Manage.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
