@@ -21,7 +21,7 @@ namespace FZ4P
         }
 
 
-        public delegate void ReceiveMessage(string IPAddress, string sMessage);
+        public delegate void ReceiveMessage(string IPAddress, byte[] sMessage);
         /// <summary>
         /// void Receive(string ip, string msg);
         /// </summary>
@@ -51,7 +51,7 @@ namespace FZ4P
         ~SocketInterface()
         {
         }
-        protected void Receive(string IPAddress, string sMessage)
+        protected void Receive(string IPAddress, byte[] sMessage)
         {
             if (ReceiveEvent != null)
             {
@@ -92,22 +92,22 @@ namespace FZ4P
             }
         }
 
-        protected string ByteToString(byte[] byteString)
-        {
-            string sString = null;
-            switch (stringType)
-            {
-                case TypeOfString.UNICODE:
-                    sString = Encoding.Unicode.GetString(byteString);
-                    break;
-                case TypeOfString.UTF8:
-                    sString = new UTF8Encoding().GetString(byteString);//Encoding.UTF8.GetString(byteString);//new UTF8Encoding().GetString(byteString);
-                    break;
-                default:
-                    break;
-            }
-            return sString;
-        }
+        //protected string ByteToString(byte[] byteString)
+        //{
+        //    string sString = null;
+        //    switch (stringType)
+        //    {
+        //        case TypeOfString.UNICODE:
+        //            sString = Encoding.Unicode.GetString(byteString);
+        //            break;
+        //        case TypeOfString.UTF8:
+        //            sString = new UTF8Encoding().GetString(byteString);//Encoding.UTF8.GetString(byteString);//new UTF8Encoding().GetString(byteString);
+        //            break;
+        //        default:
+        //            break;
+        //    }
+        //    return sString;
+        //}
     }
     class MySocketClientClass : SocketInterface
     {
@@ -301,10 +301,11 @@ namespace FZ4P
                 int nReadSize = sock.EndReceive(IAR);
                 if (nReadSize != 0)
                 {
-                    string sData = base.ByteToString(recvBuffer);
+                    //string sData = base.ByteToString(recvBuffer);
+
+                    //   Debug.Write(sData);
+                    base.Receive(((IPEndPoint)sock.RemoteEndPoint).Address.ToString(), recvBuffer);
                     Array.Clear(recvBuffer, 0, recvBuffer.Length);
-                    Debug.Write(sData);
-                    base.Receive(((IPEndPoint)sock.RemoteEndPoint).Address.ToString(), sData);
 
                 }
                 else
@@ -449,11 +450,11 @@ namespace FZ4P
 
                 byte[] szData = e.Buffer;
 
-                string sReciveData = base.ByteToString(szData);
+                // string sReciveData = base.ByteToString(szData);
                 //Buffer 비우기
                 Array.Clear(szData, 0, szData.Length);
 
-                base.Receive(((IPEndPoint)client.RemoteEndPoint).Address.ToString(), sReciveData);
+                base.Receive(((IPEndPoint)client.RemoteEndPoint).Address.ToString(), szData);
                 e.SetBuffer(szData, 0, 4096);
                 client.ReceiveAsync(e);
             }
@@ -557,7 +558,7 @@ namespace FZ4P
         public void connect(string ip, int port)
         {
             disconnect();
-            conn = MySocketClientClass.CreateClientSocket(ip ,port, SocketInterface.TypeOfString.UTF8);
+            conn = MySocketClientClass.CreateClientSocket(ip, port, SocketInterface.TypeOfString.UTF8);
             conn.StartSocket();
             conn.ConnectedEvent += Conn_ConnectedEvent;
             conn.DisconnectedEvent += Conn_DisconnectedEvent;
@@ -571,48 +572,119 @@ namespace FZ4P
             Thread.Sleep(100);
             conn = null;
         }
-        private void Conn_ReceiveEvent(string IPAddress, string sMessage)
+
+        readonly object recvLock = new object();
+        readonly List<byte> rbuffer = new List<byte>();
+        const byte STX = 0x02;
+        const byte ETX = 0x03;
+
+        static int IndexOfByte(List<byte> buffer, byte value, int startIndex)
         {
+            for (int i = startIndex; i < buffer.Count; i++)
+            {
+                if (buffer[i] == value) return i;
+            }
+            return -1;
+        }
+
+
+        private void Conn_ReceiveEvent(string IPAddress, byte[] sMessage)
+        {
+
+            string text = null;
             try
             {
-                sMessage = sMessage.TrimEnd('\0');
-                if (sMessage[0] == (char)2)
+                if (sMessage == null || sMessage.Length == 0) return;
+                List<string> Deliver = null;
+
+                lock (recvLock)
                 {
-                    sendMessage = sMessage;
-                    if (sMessage[sMessage.Length - 1] == (char)3)
+                    rbuffer.AddRange(sMessage);
+                    while (true)
                     {
-                        List<string> splitStr = sendMessage.Split((char)2).ToList();
-                        splitStr.RemoveAt(0);
-                        for (int i = 0; i < splitStr.Count; i++)
+                        int stxIndex = IndexOfByte(rbuffer, STX, 0);
+                        if (stxIndex < 0)
                         {
-                            if (splitStr[i].Contains((char)3))
+                            if (rbuffer.Count > 4096) rbuffer.Clear();
+                            break;
+                        }
+                        if (stxIndex > 0) rbuffer.RemoveRange(0, stxIndex);
+                        int etxIndex = IndexOfByte(rbuffer, ETX, 1);
+                        if (etxIndex < 0) break;
+                        int payloadLength = etxIndex - 1;
+                        if (payloadLength < 0) payloadLength = 0;
+                        byte[] payload = rbuffer.GetRange(1, payloadLength).ToArray();
+                        rbuffer.RemoveRange(0, etxIndex + 1);
+
+                        if (payload.Length > 0)
+                        {
+                            int write = 0;
+                            for (int r = 0; r < payload.Length; r++)
                             {
-                                splitStr[i] = splitStr[i].Replace(((char)3).ToString(), string.Empty);
+                                if (payload[r] != 0x00)
+                                {
+                                    payload[write++] = payload[r];
+                                }
+                            }
+                            if (write != payload.Length)
+                            {
+                                Array.Resize(ref payload, write);
                             }
                         }
-                        OnReceive?.Invoke(splitStr.ToList());
-                    }
 
-                }
-                else if (sMessage[sMessage.Length - 1] == (char)3)
-                {
-                    sendMessage += sMessage;
-                    List<string> splitStr = sendMessage.Split((char)2).ToList();
-                    splitStr.RemoveAt(0);
-                    for (int i = 0; i < splitStr.Count; i++)
-                    {
-                        if (splitStr[i].Contains((char)3))
-                        {
-                            splitStr[i] = splitStr[i].Replace(((char)3).ToString(), string.Empty);
-                        }
+
+
+                        text = Encoding.UTF8.GetString(payload);
+                        if (Deliver == null) Deliver = new List<string>();
+                        Deliver.Add(text);
+
                     }
-                    OnReceive?.Invoke(splitStr.ToList());
                 }
-                else { sendMessage += sMessage; }
+                if (Deliver != null && Deliver.Count > 0)
+                {
+                    OnReceive?.Invoke(Deliver.ToList());
+                }
+
+
+                //sMessage = sMessage.TrimEnd('\0');
+                //if (sMessage[0] == (char)2)
+                //{
+                //    sendMessage = sMessage;
+                //    if (sMessage[sMessage.Length - 1] == (char)3)
+                //    {
+                //        List<string> splitStr = sendMessage.Split((char)2).ToList();
+                //        splitStr.RemoveAt(0);
+                //        for (int i = 0; i < splitStr.Count; i++)
+                //        {
+                //            if (splitStr[i].Contains((char)3))
+                //            {
+                //                splitStr[i] = splitStr[i].Replace(((char)3).ToString(), string.Empty);
+                //            }
+                //        }
+                //        OnReceive?.Invoke(splitStr.ToList());
+                //    }
+
+                //}
+                //else if (sMessage[sMessage.Length - 1] == (char)3)
+                //{
+                //    sendMessage += sMessage;
+                //    List<string> splitStr = sendMessage.Split((char)2).ToList();
+                //    splitStr.RemoveAt(0);
+                //    for (int i = 0; i < splitStr.Count; i++)
+                //    {
+                //        if (splitStr[i].Contains((char)3))
+                //        {
+                //            splitStr[i] = splitStr[i].Replace(((char)3).ToString(), string.Empty);
+                //        }
+                //    }
+                //    OnReceive?.Invoke(splitStr.ToList());
+                //}
+                //else { sendMessage += sMessage; }
             }
             catch
             {
-                MessageBox.Show(sMessage);
+                text = null;
+
             }
 
 
