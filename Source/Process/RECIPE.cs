@@ -158,111 +158,111 @@ namespace FZ4P
     public class Condition
     {
         [Condition("ToDoList", "", "", "", "")] public List<string> ToDoList { get; set; } = new List<string>();
-        [Condition("PID", "OIS PID Ver.", "", "", "_")] public int OISPIDVer { get; set; } = 11;
-        [Condition("PID", "AF PID Ver.", "", "", "_")] public int AFPIDVer { get; set; } = 11;
-        [Condition("Common", "Drv AF Step", "", "", "code")] public int iDrvAFStep { get; set; } = 40;
-        [Condition("Common", "Drv X Step", "", "", "code")] public int iDrvXStep { get; set; } = 400;
-        [Condition("Common", "Drv Y Step", "", "", "code")] public int iDrvYStep { get; set; } = 400;
-        [Condition("Common", "Drv Step Interval AF", "", "", "msec")] public int iDrvStepIntervalZ { get; set; } = 40;
-        [Condition("Common", "Drv Step interval X", "", "", "msec")] public int iDrvStepIntervalX { get; set; } = 40;
-        [Condition("Common", "Drv step Interval Y", "", "", "msec")] public int iDrvStepIntervalY { get; set; } = 40;
+        [Condition("PID", "OIS PID Ver.", "OIS Init", "", "_")] public int OISPIDVer { get; set; } = 11;
+        [Condition("PID", "AF PID Ver.", "AF Initial", "", "_")] public int AFPIDVer { get; set; } = 11;
+        [Condition("Common", "Drv AF Step", "AF Scan", "", "code")] public int iDrvAFStep { get; set; } = 40;
+        [Condition("Common", "Drv X Step", "OIS X Scan", "", "code")] public int iDrvXStep { get; set; } = 400;
+        [Condition("Common", "Drv Y Step", "OIS Y Scan", "", "code")] public int iDrvYStep { get; set; } = 400;
+        [Condition("Common", "Drv Step Interval AF", "AF Scan", "", "msec")] public int iDrvStepIntervalZ { get; set; } = 40;
+        [Condition("Common", "Drv Step interval X", "OIS X Scan", "", "msec")] public int iDrvStepIntervalX { get; set; } = 40;
+        [Condition("Common", "Drv step Interval Y", "OIS Y Scan", "", "msec")] public int iDrvStepIntervalY { get; set; } = 40;
      
-        [Condition("AF", "Drv Code Min", "", "", "code")] public int iAFDrvCodeMin { get; set; } = 8;
-        [Condition("AF", "Drv Code Max", "", "", "code")] public int iAFDrvCodeMax { get; set; } = 4088;
-        [Condition("AF", "Cross Axis Offset X", "", "", "code")] public int iAFCrossOffsetX { get; set; } = 2048;
-        [Condition("AF", "Cross Axis Offset Y", "", "", "code")] public int iAFCrossOffsetY { get; set; } = 2048;
-        [Condition("AF", "Plot Range", "", "", "code")] public int iAFPlotRange { get; set; } = 2048;
-        [Condition("AF", "Code Range", "", "", "code")] public int iAFCodeRange { get; set; } = 2048;
-        [Condition("AF", "Stroke Range", "", "", "um")] public int iAFStrokeRange { get; set; } = 500;
-        [Condition("AF", "Standby Code", "", "", "code")] public int iAFStandbyCode { get; set; } = 8;
-        [Condition("AF", "Jump Step Code", "", "", "code")] public int iAFJumpStepCode { get; set; } = 2048;
-        [Condition("AF", "Settling Criteria", "", "", "%")] public double iAFSettlingCriteria { get; set; } = 0.05;
+        [Condition("AF", "Drv Code Min", "AF Scan", "", "code")] public int iAFDrvCodeMin { get; set; } = 8;
+        [Condition("AF", "Drv Code Max", "AF Scan", "", "code")] public int iAFDrvCodeMax { get; set; } = 4088;
+        [Condition("AF", "Cross Axis Offset X", "AF Scan", "", "code")] public int iAFCrossOffsetX { get; set; } = 2048;
+        [Condition("AF", "Cross Axis Offset Y", "AF Scan", "", "code")] public int iAFCrossOffsetY { get; set; } = 2048;
+        [Condition("AF", "Plot Range", "AF Scan", "", "code")] public int iAFPlotRange { get; set; } = 2048;
+        [Condition("AF", "Code Range", "AF Scan", "", "code")] public int iAFCodeRange { get; set; } = 2048;
+        [Condition("AF", "Stroke Range", "AF Scan", "", "um")] public int iAFStrokeRange { get; set; } = 500;
+        [Condition("AF", "Standby Code", "AF Settling", "", "code")] public int iAFStandbyCode { get; set; } = 8;
+        [Condition("AF", "Jump Step Code", "AF Settling", "", "code")] public int iAFJumpStepCode { get; set; } = 2048;
+        [Condition("AF", "Settling Criteria", "AF Settling", "", "%")] public double iAFSettlingCriteria { get; set; } = 0.05;
 
 
-        [Condition("X", "Drv Code Min", "", "", "code")] public int iXDrvCodeMin { get; set; } = 8;
-        [Condition("X", "Drv Code Max", "", "", "code")] public int iXDrvCodeMax { get; set; } = 4088;
-        [Condition("X", "Cross Axis Offset", "", "", "code")] public int iXCrossOffset { get; set; } = 2048;
-        [Condition("X", "Cross Axis Offset AF", "", "", "code")] public int iXCrossOffsetAf { get; set; } = 2048;
-        [Condition("X", "Plot Range", "", "", "code")] public int iXPlotRange { get; set; } =  2048;
-        [Condition("X", "Code Range", "", "", "code")] public int iXCodeRange { get; set; } = 2048;
-        [Condition("X", "stroke Range", "", "", "um")] public int iXStrokeRange { get; set; } = 500;
+        [Condition("X", "Drv Code Min", "OIS X Scan", "", "code")] public int iXDrvCodeMin { get; set; } = 8;
+        [Condition("X", "Drv Code Max", "OIS X Scan", "", "code")] public int iXDrvCodeMax { get; set; } = 4088;
+        [Condition("X", "Cross Axis Offset", "OIS X Scan", "", "code")] public int iXCrossOffset { get; set; } = 2048;
+        [Condition("X", "Cross Axis Offset AF", "OIS X Scan", "", "code")] public int iXCrossOffsetAf { get; set; } = 2048;
+        [Condition("X", "Plot Range", "OIS X Scan", "", "code")] public int iXPlotRange { get; set; } =  2048;
+        [Condition("X", "Code Range", "OIS X Scan", "", "code")] public int iXCodeRange { get; set; } = 2048;
+        [Condition("X", "stroke Range", "OIS X Scan", "", "um")] public int iXStrokeRange { get; set; } = 500;
 
-        [Condition("Y1", "Drv Code Min", "", "", "code")] public int iYDrvCodeMin { get; set; } = 8;
-        [Condition("Y1", "Drv Code Max", "", "", "code")] public int iYDrvCodeMax { get; set; } = 4088;
-        [Condition("Y2", "Drv Code Min", "", "", "code")] public int iY2DrvCodeMin { get; set; } = 8;
-        [Condition("Y2", "Drv Code Max", "", "", "code")] public int iY2DrvCodeMax { get; set; } = 4088;
+        [Condition("Y1", "Drv Code Min", "OIS Y Scan", "", "code")] public int iYDrvCodeMin { get; set; } = 8;
+        [Condition("Y1", "Drv Code Max", "OIS Y Scan", "", "code")] public int iYDrvCodeMax { get; set; } = 4088;
+        [Condition("Y2", "Drv Code Min", "OIS Y Scan", "", "code")] public int iY2DrvCodeMin { get; set; } = 8;
+        [Condition("Y2", "Drv Code Max", "OIS Y Scan", "", "code")] public int iY2DrvCodeMax { get; set; } = 4088;
 
-        [Condition("Y", "Cross Axis Offset", "", "", "code")] public int iYCrossOffset { get; set; } = 2048;
-        [Condition("Y", "Cross Axis Offset AF", "", "", "code")] public int iYCrossOffsetAf { get; set; } = 2048;
-        [Condition("Y", "Plot Range", "", "", "code")] public int iYPlotRange { get; set; } = 2048;
-        [Condition("Y", "Code Range", "", "", "code")] public int iYCodeRange { get; set; } = 2048;
-        [Condition("Y", "Stroke Range", "", "", "um")] public int iYStrokeRange { get; set; } = 500;
+        [Condition("Y", "Cross Axis Offset", "OIS Y Scan", "", "code")] public int iYCrossOffset { get; set; } = 2048;
+        [Condition("Y", "Cross Axis Offset AF", "OIS Y Scan", "", "code")] public int iYCrossOffsetAf { get; set; } = 2048;
+        [Condition("Y", "Plot Range", "OIS Y Scan", "", "code")] public int iYPlotRange { get; set; } = 2048;
+        [Condition("Y", "Code Range", "OIS Y Scan", "", "code")] public int iYCodeRange { get; set; } = 2048;
+        [Condition("Y", "Stroke Range", "OIS Y Scan", "", "um")] public int iYStrokeRange { get; set; } = 500;
 
-        [Condition("AF OL Aging", "Frequency", "", "", "Hz")] public int AFOpenLoopFreq { get; set; } = 10;
-        [Condition("AF OL Aging", "Count", "", "", "-")] public int AFOpenLoopCount { get; set; } = 10;
+        [Condition("AF OL Aging", "Frequency", "AF OpenLoopAging", "", "Hz")] public int AFOpenLoopFreq { get; set; } = 10;
+        [Condition("AF OL Aging", "Count", "AF OpenLoopAging", "", "-")] public int AFOpenLoopCount { get; set; } = 10;
 
-        [Condition("CL Aging", "AF Min", "", "", "-")] public int CLAgingAFMin { get; set; } = 1000;
-        [Condition("CL Aging", "AF Max", "", "", "-")] public int CLAgingAFMax { get; set; } = 3000;
-        [Condition("CL Aging", "OIS Min", "", "", "-")] public int CLAgingOISMin { get; set; } = 100;
-        [Condition("CL Aging", "OIS Max", "", "", "-")] public int CLAgingOISMax { get; set; } = 4000;
-        [Condition("CL Aging", "Frequency", "", "", "-")] public int CLAgingFreq { get; set; } = 10;
-        [Condition("CL Aging", "Count", "", "", "-")] public int CLAgingCount { get; set; } = 10;
-        [Condition("CL Aging", "Mode", "", "", "0:M-m / 1:Rand")] public int CLAgingMode { get; set; } = 0;
-
-
-        [Condition("AF Scan Aging", "AF Min", "", "", "-")] public int AFScanAgingMin { get; set; } = 0;
-        [Condition("AF Scan Aging", "AF Max", "", "", "-")] public int AFScanAgingMax { get; set; } = 4095;    
-        [Condition("AF Scan Aging", "delay", "", "", "-")] public int AFScanAgingDelay { get; set; } = 30;
-        [Condition("AF Scan Aging", "Count", "", "", "-")] public int AFSCanAgingCount { get; set; } = 3;
-        [Condition("AF Scan Aging", "Step", "", "", "-")] public int AFScanAgingStep { get; set; } = 256;
+        [Condition("CL Aging", "AF Min", "Close Loop Aging", "", "-")] public int CLAgingAFMin { get; set; } = 1000;
+        [Condition("CL Aging", "AF Max", "Close Loop Aging", "", "-")] public int CLAgingAFMax { get; set; } = 3000;
+        [Condition("CL Aging", "OIS Min", "Close Loop Aging", "", "-")] public int CLAgingOISMin { get; set; } = 100;
+        [Condition("CL Aging", "OIS Max", "Close Loop Aging", "", "-")] public int CLAgingOISMax { get; set; } = 4000;
+        [Condition("CL Aging", "Frequency", "Close Loop Aging", "", "-")] public int CLAgingFreq { get; set; } = 10;
+        [Condition("CL Aging", "Count", "Close Loop Aging", "", "-")] public int CLAgingCount { get; set; } = 10;
+        [Condition("CL Aging", "Mode", "Close Loop Aging", "", "0:M-m / 1:Rand")] public int CLAgingMode { get; set; } = 0;
 
 
-        [Condition("AF Pre Driving", "delay", "", "", "-")] public int AFPreDrvDelay { get; set; } = 30;
-        [Condition("AF Pre Driving", "Count", "", "", "-")] public int AFPReDrvCount { get; set; } = 3;
+        [Condition("AF Scan Aging", "AF Min", "AF ScanAging", "", "-")] public int AFScanAgingMin { get; set; } = 0;
+        [Condition("AF Scan Aging", "AF Max", "AF ScanAging", "", "-")] public int AFScanAgingMax { get; set; } = 4095;    
+        [Condition("AF Scan Aging", "delay", "AF ScanAging", "", "-")] public int AFScanAgingDelay { get; set; } = 30;
+        [Condition("AF Scan Aging", "Count", "AF ScanAging", "", "-")] public int AFSCanAgingCount { get; set; } = 3;
+        [Condition("AF Scan Aging", "Step", "AF ScanAging", "", "-")] public int AFScanAgingStep { get; set; } = 256;
 
 
-        [Condition("AF EPA", "Target Stroke", "", "", "code")] public int AFEPATarget { get; set; } = 700;
-        [Condition("AF EPA", "POSVT", "", "", "code")] public int AFPOSVT { get; set; } = 256;
-        [Condition("AF EPA", "NEGVT", "", "", "code")] public int AFNEGVT { get; set; } = 256;
-
-        [Condition("OIS EPA", "X POSVT", "", "", "code")] public int XPOSVT { get; set; } = 264;
-        [Condition("OIS EPA", "X NEGVT", "", "", "code")] public int XNEGVT { get; set; } = 264;
-        [Condition("OIS EPA", "Y POSVT", "", "", "code")] public int YPOSVT { get; set; } = 264;
-        [Condition("OIS EPA", "Y NEGVT", "", "", "code")] public int YNEGVT { get; set; } = 264;
-
-        [Condition("AF Linearity Comp", "Start", "", "", "code")] public int AfLinCompStart { get; set; } = 8;
-        [Condition("AF Linearity Comp", "End", "", "", "code")] public int AfLinCompEnd { get; set; } = 4088;
-        [Condition("AF Linearity Comp", "Step", "", "", "code")] public int AFLinCompStep { get; set; } = 120;
-        [Condition("AF Linearity Comp", "Move Delay", "", "", "msec")] public int AFLinCompMoveDelay { get; set; } = 50;
-
-        [Condition("X Linearity Comp", "Start", "", "", "code")] public int XLinCompStart { get; set; } = 8;
-        [Condition("X Linearity Comp", "End", "", "", "code")] public int XLinCompEnd { get; set; } = 4088;
-        [Condition("X Linearity Comp", "Step", "", "", "code")] public int XLinCompStep { get; set; } = 120;
-        [Condition("X Linearity Comp", "Move Delay", "", "", "msec")] public int XLinCompMoveDelay { get; set; } = 50;
-
-        [Condition("Y Linearity Comp", "Start", "", "", "code")] public int YLinCompStart { get; set; } = 8;
-        [Condition("Y Linearity Comp", "End", "", "", "code")] public int YLinCompEnd { get; set; } = 4088;
-        [Condition("Y Linearity Comp", "Step", "", "", "code")] public int YLinCompStep { get; set; } = 120;
-        [Condition("Y Linearity Comp", "Move Delay", "", "", "msec")] public int YLinCompMoveDelay { get; set; } = 50;
+        [Condition("AF Pre Driving", "delay", "AF PreDriving", "", "-")] public int AFPreDrvDelay { get; set; } = 30;
+        [Condition("AF Pre Driving", "Count", "AF PreDriving", "", "-")] public int AFPReDrvCount { get; set; } = 3;
 
 
-        [Condition("PM", "Loop", "", "", "#")] public int iFRAloop { get; set; } = 1;
-        [Condition("PM", "OIS Step", "", "", "%")] public int iOISFRAstep { get; set; } = 5;
-        [Condition("PM", "AF Step", "", "", "%")] public int iAFFRAstep { get; set; } = 5;
-        [Condition("PM", "AF Chirp from", "", "", "Hz")] public int iAFChirpFrom { get; set; } = 250;
-        [Condition("PM", "AF Chirp to", "", "", "Hz")] public int iAFChirpTo { get; set; } = 100;
-        [Condition("PM", "AF Drv Amp", "", "", "mV")] public double iAFAmplitude { get; set; } = 75;
-        [Condition("PM", "AF Gain Th", "", "", "_")] public int PMAFGainTH { get; set; } = 0;
-        [Condition("PM", "X Chirp from", "", "", "Hz")] public int iXChirpFrom { get; set; } = 250;
-        [Condition("PM", "X Chirp to", "", "", "Hz")] public int iXChirpTo { get; set; } = 100;
-        [Condition("PM", "X Drv Amp", "", "", "mV")] public int iXAmplitude { get; set; } = 75;
-        [Condition("PM", "X Min Phase", "", "", "_")] public int PMXMinPhase { get; set; } = 0;
-        [Condition("PM", "X Gain Th", "", "", "_")] public int PMXGainTH { get; set; } = 0;
-        [Condition("PM", "Y Chirp from", "", "", "Hz")] public int iYChirpFrom { get; set; } = 250;
-        [Condition("PM", "Y Chirp to", "", "", "Hz")] public int iYChirpTo { get; set; } = 100;
-        [Condition("PM", "Y Drv Amp", "", "", "mV")] public int iYAmplitude { get; set; } = 75;
-        [Condition("PM", "Y Min Phase", "", "", "_")] public int PMYMinPhase { get; set; } = 0;
-        [Condition("PM", "Y Gain Th", "", "", "_")] public int PMYGainTH { get; set; } = 0;
+        [Condition("AF EPA", "Target Stroke", "AF EPA", "", "code")] public int AFEPATarget { get; set; } = 700;
+        [Condition("AF EPA", "POSVT", "AF EPA", "", "code")] public int AFPOSVT { get; set; } = 256;
+        [Condition("AF EPA", "NEGVT", "AF EPA", "", "code")] public int AFNEGVT { get; set; } = 256;
+
+        [Condition("OIS EPA", "X POSVT", "OIS EPA", "", "code")] public int XPOSVT { get; set; } = 264;
+        [Condition("OIS EPA", "X NEGVT", "OIS EPA", "", "code")] public int XNEGVT { get; set; } = 264;
+        [Condition("OIS EPA", "Y POSVT", "OIS EPA", "", "code")] public int YPOSVT { get; set; } = 264;
+        [Condition("OIS EPA", "Y NEGVT", "OIS EPA", "", "code")] public int YNEGVT { get; set; } = 264;
+
+        [Condition("AF Linearity Comp", "Start", "AF Linearity Comp", "", "code")] public int AfLinCompStart { get; set; } = 8;
+        [Condition("AF Linearity Comp", "End", "AF Linearity Comp", "", "code")] public int AfLinCompEnd { get; set; } = 4088;
+        [Condition("AF Linearity Comp", "Step", "AF Linearity Comp", "", "code")] public int AFLinCompStep { get; set; } = 120;
+        [Condition("AF Linearity Comp", "Move Delay", "AF Linearity Comp", "", "msec")] public int AFLinCompMoveDelay { get; set; } = 50;
+
+        [Condition("X Linearity Comp", "Start", "OIS X LinComp", "", "code")] public int XLinCompStart { get; set; } = 8;
+        [Condition("X Linearity Comp", "End", "OIS X LinComp", "", "code")] public int XLinCompEnd { get; set; } = 4088;
+        [Condition("X Linearity Comp", "Step", "OIS X LinComp", "", "code")] public int XLinCompStep { get; set; } = 120;
+        [Condition("X Linearity Comp", "Move Delay", "OIS X LinComp", "", "msec")] public int XLinCompMoveDelay { get; set; } = 50;
+
+        [Condition("Y Linearity Comp", "Start", "OIS Y LinComp", "", "code")] public int YLinCompStart { get; set; } = 8;
+        [Condition("Y Linearity Comp", "End", "OIS Y LinComp", "", "code")] public int YLinCompEnd { get; set; } = 4088;
+        [Condition("Y Linearity Comp", "Step", "OIS Y LinComp", "", "code")] public int YLinCompStep { get; set; } = 120;
+        [Condition("Y Linearity Comp", "Move Delay", "OIS Y LinComp", "", "msec")] public int YLinCompMoveDelay { get; set; } = 50;
+
+
+        [Condition("PM", "Loop", "AF Phase Margin", "OIS Phase Margin", "#")] public int iFRAloop { get; set; } = 1;
+        [Condition("PM", "OIS Step", "OIS Phase Margin", "", "%")] public int iOISFRAstep { get; set; } = 5;
+        [Condition("PM", "AF Step", "AF Phase Margin", "", "%")] public int iAFFRAstep { get; set; } = 5;
+        [Condition("PM", "AF Chirp from", "AF Phase Margin", "", "Hz")] public int iAFChirpFrom { get; set; } = 250;
+        [Condition("PM", "AF Chirp to", "AF Phase Margin", "", "Hz")] public int iAFChirpTo { get; set; } = 100;
+        [Condition("PM", "AF Drv Amp", "AF Phase Margin", "", "mV")] public double iAFAmplitude { get; set; } = 75;
+        [Condition("PM", "AF Gain Th", "AF Phase Margin", "", "_")] public int PMAFGainTH { get; set; } = 0;
+        [Condition("PM", "X Chirp from", "OIS Phase Margin", "", "Hz")] public int iXChirpFrom { get; set; } = 250;
+        [Condition("PM", "X Chirp to", "OIS Phase Margin", "", "Hz")] public int iXChirpTo { get; set; } = 100;
+        [Condition("PM", "X Drv Amp", "OIS Phase Margin", "", "mV")] public int iXAmplitude { get; set; } = 75;
+        [Condition("PM", "X Min Phase", "OIS Phase Margin", "", "_")] public int PMXMinPhase { get; set; } = 0;
+        [Condition("PM", "X Gain Th", "", "OIS Phase Margin", "_")] public int PMXGainTH { get; set; } = 0;
+        [Condition("PM", "Y Chirp from", "OIS Phase Margin", "", "Hz")] public int iYChirpFrom { get; set; } = 250;
+        [Condition("PM", "Y Chirp to", "OIS Phase Margin", "", "Hz")] public int iYChirpTo { get; set; } = 100;
+        [Condition("PM", "Y Drv Amp", "OIS Phase Margin", "", "mV")] public int iYAmplitude { get; set; } = 75;
+        [Condition("PM", "Y Min Phase", "OIS Phase Margin", "", "_")] public int PMYMinPhase { get; set; } = 0;
+        [Condition("PM", "Y Gain Th", "OIS Phase Margin", "", "_")] public int PMYGainTH { get; set; } = 0;
 
 
 
@@ -274,10 +274,10 @@ namespace FZ4P
         [Condition("High PM", "Y Chirp to", "", "", "Hz")] public int iHighYChirpTo { get; set; } = 100;
         [Condition("High PM", "Y Drv Amp", "", "", "mV")] public int iHighYAmplitude { get; set; } = 75;
 
-        [Condition("AF GM", "Chirp From", "", "", "Hz")] public int AFGMStartFreq { get; set; } = 2000;
-        [Condition("AF GM", "Chirp To", "", "", "Hz")] public int AFGMEndFreq { get; set; } = 300;
-        [Condition("AF GM", "Step", "", "", "Hz")] public int AFGMStep { get; set; } = 300;
-        [Condition("AF GM", "Amp", "", "", "mV")] public int AFGMamp { get; set; } = 40;
+        [Condition("AF GM", "Chirp From", "AF Gain Margin", "", "Hz")] public int AFGMStartFreq { get; set; } = 2000;
+        [Condition("AF GM", "Chirp To", "AF Gain Margin", "", "Hz")] public int AFGMEndFreq { get; set; } = 300;
+        [Condition("AF GM", "Step", "AF Gain Margin", "", "Hz")] public int AFGMStep { get; set; } = 300;
+        [Condition("AF GM", "Amp", "AF Gain Margin", "", "mV")] public int AFGMamp { get; set; } = 40;
 
         //[Condition("GM", "Loop", "", "", "#")] public int iGainLoop { get; set; } = 1;
         //[Condition("GM", "Step", "", "", "Hz")] public int iGainStep { get; set; } = 5;
@@ -288,120 +288,120 @@ namespace FZ4P
         //[Condition("GM", "Y Chirp to", "", "", "Hz")] public int iYGainTo { get; set; } = 100;
         //[Condition("GM", "Y Drv Amplitude", "", "", "mV")] public double iYAmplitudeGain { get; set; } = 60;
 
-        [Condition("through Peak Hz", "Amp", "", "", "mV")] public int throughPeakAmp { get; set; } = 60;
-        [Condition("through Peak Hz", "Freq", "", "", "%")] public int throughPeakFreq { get; set; } = 5;
+        [Condition("through Peak Hz", "Amp", "through Peak 25", "", "mV")] public int throughPeakAmp { get; set; } = 60;
+        [Condition("through Peak Hz", "Freq", "through Peak 25", "", "%")] public int throughPeakFreq { get; set; } = 5;
 
 
-        [Condition("LG @ 10Hz", "X Amp", "", "", "mV")] public double iLoppgainXAmp { get; set; } = 60;
-        [Condition("LG @ 10Hz", "Y Amp", "", "", "mV")] public double iLoppgainYAmp { get; set; } = 60;
+        [Condition("LG @ 10Hz", "X Amp", "OIS Loopgain", "", "mV")] public double iLoppgainXAmp { get; set; } = 60;
+        [Condition("LG @ 10Hz", "Y Amp", "OIS Loopgain", "", "mV")] public double iLoppgainYAmp { get; set; } = 60;
 
 
-        [Condition("Sine Wave", "SIN THD", "", "", "code")] public int SIN_THD { get; set; } = 90;
-        [Condition("Sine Wave", "SIN CNT ERR", "", "", "cnt")] public int SIN_CNT_ERR { get; set; } = 0;
-        [Condition("Sine Wave", "SIN FREQ", "", "", "Hz")] public int SIN_FREQ { get; set; } = 5;
-        [Condition("Sine Wave", "SIN AMP", "", "", "mV")] public int SIN_AMP { get; set; } = 58;
-        [Condition("Sine Wave", "SIN CYCL", "", "", "#")] public int SIN_CYCL { get; set; } = 18;
-        [Condition("Sine Wave", "SIN AXIS", "", "", "0:X 1:Y 2:Both")] public int SIN_AXIS { get; set; } = 2;
-        [Condition("Sine Wave", "ErrCnt Spec", "", "", "")] public int SIN_Spec { get; set; } = 0;
+        [Condition("Sine Wave", "SIN THD", "Auto Test", "", "code")] public int SIN_THD { get; set; } = 90;
+        [Condition("Sine Wave", "SIN CNT ERR", "Auto Test", "", "cnt")] public int SIN_CNT_ERR { get; set; } = 0;
+        [Condition("Sine Wave", "SIN FREQ", "Auto Test", "", "Hz")] public int SIN_FREQ { get; set; } = 5;
+        [Condition("Sine Wave", "SIN AMP", "Auto Test", "", "mV")] public int SIN_AMP { get; set; } = 58;
+        [Condition("Sine Wave", "SIN CYCL", "Auto Test", "", "#")] public int SIN_CYCL { get; set; } = 18;
+        [Condition("Sine Wave", "SIN AXIS", "Auto Test", "", "0:X 1:Y 2:Both")] public int SIN_AXIS { get; set; } = 2;
+        [Condition("Sine Wave", "ErrCnt Spec", "Auto Test", "", "")] public int SIN_Spec { get; set; } = 0;
 
-        [Condition("Ringing", "RNG THD", "", "", "code")] public int RNG_THD { get; set; } = 20;
-        [Condition("Ringing", "RNG STVT", "", "", "%")] public int RNG_STVT { get; set; } = 90;
-        [Condition("Ringing", "RNG METM", "", "", "msec")] public int RNG_METM { get; set; } = 100;
-        [Condition("Ringing", "RNG WSEC", "", "", "msec")] public int RNG_WSEC { get; set; } = 50;
-        [Condition("Ringing", "RNG AXIS", "", "", "0:X 1:Y 2:Both")] public int RNG_AXIS { get; set; } = 2;
-        [Condition("Ringing", "RNG StabilizeTime Spec", "", "", "")] public int RNG_StabilizerSpec { get; set; } = 100;
-        [Condition("Tilt", "Ref Code", "", "", "code")] public int TiltRefCode { get; set; } = 1000;
-        [Condition("Tilt", "Min Range", "", "", "code")] public int TiltMinCode { get; set; } = 200;
-        [Condition("Tilt", "Max Range", "", "", "code")] public int TiltMaxCode { get; set; } = 3900;
+        [Condition("Ringing", "RNG THD", "Auto Test", "", "code")] public int RNG_THD { get; set; } = 20;
+        [Condition("Ringing", "RNG STVT", "Auto Test", "", "%")] public int RNG_STVT { get; set; } = 90;
+        [Condition("Ringing", "RNG METM", "Auto Test", "", "msec")] public int RNG_METM { get; set; } = 100;
+        [Condition("Ringing", "RNG WSEC", "Auto Test", "", "msec")] public int RNG_WSEC { get; set; } = 50;
+        [Condition("Ringing", "RNG AXIS", "Auto Test", "", "0:X 1:Y 2:Both")] public int RNG_AXIS { get; set; } = 2;
+        [Condition("Ringing", "RNG StabilizeTime Spec", "Auto Test", "", "")] public int RNG_StabilizerSpec { get; set; } = 100;
+        [Condition("Tilt", "Ref Code", "AF Scan", "", "code")] public int TiltRefCode { get; set; } = 1000;
+        [Condition("Tilt", "Min Range", "AF Scan", "", "code")] public int TiltMinCode { get; set; } = 200;
+        [Condition("Tilt", "Max Range", "AF Scan", "", "code")] public int TiltMaxCode { get; set; } = 3900;
 
-        [Condition("AF Linearity", "Min Range", "", "", "code")] public int AFLinMinRange { get; set; } = 200;
-        [Condition("AF Linearity", "Max Range", "", "", "code")] public int AFLinMaxRange { get; set; } = 3900;
-        [Condition("AF Linearity", "Min Step", "", "", "_")] public int AFLinMinStep { get; set; } = 0;
-        [Condition("AF Linearity", "Max Step", "", "", "_")] public int AFLinMaxStep { get; set; } = 0;
-        [Condition("AF Linearity", "Min Stroke", "", "", "um")] public double AFLinMinStroke { get; set; } = -310;
-        [Condition("AF Linearity", "Max Stroke", "", "", "um")] public double AFLinMaxStroke { get; set; } = 310;
-        [Condition("AF Linearity", "Mode", "", "", "0:CodeRange / 1:Step / 2:um")] public int AFLinMode { get; set; } = 0;
+        [Condition("AF Linearity", "Min Range", "AF Scan", "", "code")] public int AFLinMinRange { get; set; } = 200;
+        [Condition("AF Linearity", "Max Range", "AF Scan", "", "code")] public int AFLinMaxRange { get; set; } = 3900;
+        [Condition("AF Linearity", "Min Step", "AF Scan", "", "_")] public int AFLinMinStep { get; set; } = 0;
+        [Condition("AF Linearity", "Max Step", "AF Scan", "", "_")] public int AFLinMaxStep { get; set; } = 0;
+        [Condition("AF Linearity", "Min Stroke", "AF Scan", "", "um")] public double AFLinMinStroke { get; set; } = -310;
+        [Condition("AF Linearity", "Max Stroke", "AF Scan", "", "um")] public double AFLinMaxStroke { get; set; } = 310;
+        [Condition("AF Linearity", "Mode", "AF Scan", "", "0:CodeRange / 1:Step / 2:um")] public int AFLinMode { get; set; } = 0;
 
-        [Condition("AF Hysteresis", "Min Range", "", "", "code")] public int AFHysMinRange { get; set; } = 200;
-        [Condition("AF Hysteresis", "Max Range", "", "", "code")] public int AFHysMaxRange { get; set; } = 3900;
-        [Condition("AF Hysteresis", "Min Step", "", "", "_")] public int AFHysMinStep { get; set; } = 0;
-        [Condition("AF Hysteresis", "Max Step", "", "", "_")] public int AFhysMaxStep { get; set; } = 0;
-        [Condition("AF Hysteresis", "Min Stroke", "", "", "um")] public double AFHysMinStroke { get; set; } = -310;
-        [Condition("AF Hysteresis", "Max Stroke", "", "", "um")] public double AFHysMaxStroke { get; set; } = 310;
-        [Condition("AF Hysteresis", "Mode", "", "", "0:CodeRange / 1:Step / 2:um")] public int AFHysMode { get; set; } = 0;
+        [Condition("AF Hysteresis", "Min Range", "AF Scan", "", "code")] public int AFHysMinRange { get; set; } = 200;
+        [Condition("AF Hysteresis", "Max Range", "AF Scan", "", "code")] public int AFHysMaxRange { get; set; } = 3900;
+        [Condition("AF Hysteresis", "Min Step", "AF Scan", "", "_")] public int AFHysMinStep { get; set; } = 0;
+        [Condition("AF Hysteresis", "Max Step", "AF Scan", "", "_")] public int AFhysMaxStep { get; set; } = 0;
+        [Condition("AF Hysteresis", "Min Stroke", "AF Scan", "", "um")] public double AFHysMinStroke { get; set; } = -310;
+        [Condition("AF Hysteresis", "Max Stroke", "AF Scan", "", "um")] public double AFHysMaxStroke { get; set; } = 310;
+        [Condition("AF Hysteresis", "Mode", "AF Scan", "", "0:CodeRange / 1:Step / 2:um")] public int AFHysMode { get; set; } = 0;
 
-        [Condition("AF Current", "Min Range", "", "", "code")] public int AFCurrMinRange { get; set; } = 200;
-        [Condition("AF Current", "Max Range", "", "", "code")] public int AFCurrMaxRange { get; set; } = 3900;
-        [Condition("AF Current", "Min Step", "", "", "_")] public int AFCurrMinStep { get; set; } = 0;
-        [Condition("AF Current", "Max Step", "", "", "_")] public int AFCurrMaxStep { get; set; } = 0;
-        [Condition("AF Current", "Min Stroke", "", "", "um")] public double AFCurrMinStroke { get; set; } = -310;
-        [Condition("AF Current", "Max Stroke", "", "", "um")] public double AFCurrMaxStroke { get; set; } = 310;
-        [Condition("AF Current", "Mode", "", "", "0:CodeRange / 1:Step / 2:um")] public int AFCurrMode { get; set; } = 0;
+        [Condition("AF Current", "Min Range", "AF Scan", "", "code")] public int AFCurrMinRange { get; set; } = 200;
+        [Condition("AF Current", "Max Range", "AF Scan", "", "code")] public int AFCurrMaxRange { get; set; } = 3900;
+        [Condition("AF Current", "Min Step", "AF Scan", "", "_")] public int AFCurrMinStep { get; set; } = 0;
+        [Condition("AF Current", "Max Step", "AF Scan", "", "_")] public int AFCurrMaxStep { get; set; } = 0;
+        [Condition("AF Current", "Min Stroke", "AF Scan", "", "um")] public double AFCurrMinStroke { get; set; } = -310;
+        [Condition("AF Current", "Max Stroke", "AF Scan", "", "um")] public double AFCurrMaxStroke { get; set; } = 310;
+        [Condition("AF Current", "Mode", "AF Scan", "", "0:CodeRange / 1:Step / 2:um")] public int AFCurrMode { get; set; } = 0;
 
-        [Condition("X Linearity", "Min Range", "", "", "code")] public int XLinMinRange { get; set; } = 648;
-        [Condition("X Linearity", "Max Range", "", "", "code")] public int XLinMaxRange { get; set; } = 3448;
-        [Condition("X Linearity", "Min Step", "", "", "_")] public int XLinMinStep { get; set; } = 0;
-        [Condition("X Linearity", "Max Step", "", "", "_")] public int XLinMaxStep { get; set; } = 0;
-        [Condition("X Linearity", "Min Stroke", "", "", "um")] public double XLinMinStroke { get; set; } = -310;
-        [Condition("X Linearity", "Max Stroke", "", "", "um")] public double XLinMaxStroke { get; set; } = 310;
-        [Condition("X Linearity", "Mode", "", "", "0:CodeRange / 1:Step / 2:um")] public int XLinMode { get; set; } = 0;
+        [Condition("X Linearity", "Min Range", "OIS X Scan", "", "code")] public int XLinMinRange { get; set; } = 648;
+        [Condition("X Linearity", "Max Range", "OIS X Scan", "", "code")] public int XLinMaxRange { get; set; } = 3448;
+        [Condition("X Linearity", "Min Step", "OIS X Scan", "", "_")] public int XLinMinStep { get; set; } = 0;
+        [Condition("X Linearity", "Max Step", "OIS X Scan", "", "_")] public int XLinMaxStep { get; set; } = 0;
+        [Condition("X Linearity", "Min Stroke", "OIS X Scan", "", "um")] public double XLinMinStroke { get; set; } = -310;
+        [Condition("X Linearity", "Max Stroke", "OIS X Scan", "", "um")] public double XLinMaxStroke { get; set; } = 310;
+        [Condition("X Linearity", "Mode", "OIS X Scan", "", "0:CodeRange / 1:Step / 2:um")] public int XLinMode { get; set; } = 0;
 
-        [Condition("X Hysteresis", "Min Range", "", "", "code")] public int XHysMinRange { get; set; } = 648;
-        [Condition("X Hysteresis", "Max Range", "", "", "code")] public int XHysMaxRange { get; set; } = 3448;
-        [Condition("X Hysteresis", "Min Step", "", "", "_")] public int XHysMinStep { get; set; } = 0;
-        [Condition("X Hysteresis", "Max Step", "", "", "_")] public int XHysMaxStep { get; set; } = 0;
-        [Condition("X Hysteresis", "Min Stroke", "", "", "um")] public double XHysMinStroke { get; set; } = -310;
-        [Condition("X Hysteresis", "Max Stroke", "", "", "um")] public double XHysMaxStroke { get; set; } = 310;
-        [Condition("X Hysteresis", "Mode", "", "", "0:CodeRange / 1:Step / 2:um")] public int XHysMode { get; set; } = 0;
+        [Condition("X Hysteresis", "Min Range", "OIS X Scan", "", "code")] public int XHysMinRange { get; set; } = 648;
+        [Condition("X Hysteresis", "Max Range", "OIS X Scan", "", "code")] public int XHysMaxRange { get; set; } = 3448;
+        [Condition("X Hysteresis", "Min Step", "OIS X Scan", "", "_")] public int XHysMinStep { get; set; } = 0;
+        [Condition("X Hysteresis", "Max Step", "OIS X Scan", "", "_")] public int XHysMaxStep { get; set; } = 0;
+        [Condition("X Hysteresis", "Min Stroke", "OIS X Scan", "", "um")] public double XHysMinStroke { get; set; } = -310;
+        [Condition("X Hysteresis", "Max Stroke", "OIS X Scan", "", "um")] public double XHysMaxStroke { get; set; } = 310;
+        [Condition("X Hysteresis", "Mode", "OIS X Scan", "", "0:CodeRange / 1:Step / 2:um")] public int XHysMode { get; set; } = 0;
 
-        [Condition("X Current", "Min Range", "", "", "code")] public int XCurrMinRange { get; set; } = 200;
-        [Condition("X Current", "Max Range", "", "", "code")] public int XCurrMaxRange { get; set; } = 3900;
-        [Condition("X Current", "Min Step", "", "", "_")] public int XCurrMinStep { get; set; } = 0;
-        [Condition("X Current", "Max Step", "", "", "_")] public int XCurrMaxStep { get; set; } = 0;
-        [Condition("X Current", "Min Stroke", "", "", "um")] public double XCurrMinStroke { get; set; } = -310;
-        [Condition("X Current", "Max Stroke", "", "", "um")] public double XCurrMaxStroke { get; set; } = 310;
-        [Condition("X Current", "Mode", "", "", "0:CodeRange / 1:Step / 2:um")] public int XCurrMode { get; set; } = 0;
+        [Condition("X Current", "Min Range", "OIS X Scan", "", "code")] public int XCurrMinRange { get; set; } = 200;
+        [Condition("X Current", "Max Range", "OIS X Scan", "", "code")] public int XCurrMaxRange { get; set; } = 3900;
+        [Condition("X Current", "Min Step", "OIS X Scan", "", "_")] public int XCurrMinStep { get; set; } = 0;
+        [Condition("X Current", "Max Step", "OIS X Scan", "", "_")] public int XCurrMaxStep { get; set; } = 0;
+        [Condition("X Current", "Min Stroke", "OIS X Scan", "", "um")] public double XCurrMinStroke { get; set; } = -310;
+        [Condition("X Current", "Max Stroke", "OIS X Scan", "", "um")] public double XCurrMaxStroke { get; set; } = 310;
+        [Condition("X Current", "Mode", "OIS X Scan", "", "0:CodeRange / 1:Step / 2:um")] public int XCurrMode { get; set; } = 0;
 
-        [Condition("Y Linearity", "Min Range", "", "", "code")] public int YLinMinRange { get; set; } = 648;
-        [Condition("Y Linearity", "Max Range", "", "", "code")] public int YLinMaxRange { get; set; } = 3448;
-        [Condition("Y Linearity", "Min Step", "", "", "_")] public int YLinMinStep { get; set; } = 0;
-        [Condition("Y Linearity", "Max Step", "", "", "_")] public int YLinMaxStep { get; set; } = 0;
-        [Condition("Y Linearity", "Min Stroke", "", "", "um")] public double YLinMinStroke { get; set; } = -310;
-        [Condition("Y Linearity", "Max Stroke", "", "", "um")] public double YLinMaxStroke { get; set; } = 310;
-        [Condition("Y Linearity", "Mode", "", "", "0:CodeRange / 1:Step / 2:um")] public int YLinMode { get; set; } = 0;
+        [Condition("Y Linearity", "Min Range", "OIS Y Scan", "", "code")] public int YLinMinRange { get; set; } = 648;
+        [Condition("Y Linearity", "Max Range", "OIS Y Scan", "", "code")] public int YLinMaxRange { get; set; } = 3448;
+        [Condition("Y Linearity", "Min Step", "OIS Y Scan", "", "_")] public int YLinMinStep { get; set; } = 0;
+        [Condition("Y Linearity", "Max Step", "OIS Y Scan", "", "_")] public int YLinMaxStep { get; set; } = 0;
+        [Condition("Y Linearity", "Min Stroke", "OIS Y Scan", "", "um")] public double YLinMinStroke { get; set; } = -310;
+        [Condition("Y Linearity", "Max Stroke", "OIS Y Scan", "", "um")] public double YLinMaxStroke { get; set; } = 310;
+        [Condition("Y Linearity", "Mode", "OIS Y Scan", "", "0:CodeRange / 1:Step / 2:um")] public int YLinMode { get; set; } = 0;
 
-        [Condition("Y Hysteresis", "Min Range", "", "", "code")] public int YHysMinRange { get; set; } = 648;
-        [Condition("Y Hysteresis", "Max Range", "", "", "code")] public int YHysMaxRange { get; set; } = 3448;
-        [Condition("Y Hysteresis", "Min Step", "", "", "_")] public int YHysMinStep { get; set; } = 0;
-        [Condition("Y Hysteresis", "Max Step", "", "", "_")] public int YHysMaxStep { get; set; } = 0;
-        [Condition("Y Hysteresis", "Min Stroke", "", "", "_")] public double YHysMinStroke { get; set; } = -310;
-        [Condition("Y Hysteresis", "Max Stroke", "", "", "_")] public double YHysMaxStroke { get; set; } = 310;
-        [Condition("Y Hysteresis", "Mode", "", "", "0:CodeRange / 1:Step / 2:um")] public int YHysMode { get; set; } = 0;
+        [Condition("Y Hysteresis", "Min Range", "OIS Y Scan", "", "code")] public int YHysMinRange { get; set; } = 648;
+        [Condition("Y Hysteresis", "Max Range", "OIS Y Scan", "", "code")] public int YHysMaxRange { get; set; } = 3448;
+        [Condition("Y Hysteresis", "Min Step", "OIS Y Scan", "", "_")] public int YHysMinStep { get; set; } = 0;
+        [Condition("Y Hysteresis", "Max Step", "OIS Y Scan", "", "_")] public int YHysMaxStep { get; set; } = 0;
+        [Condition("Y Hysteresis", "Min Stroke", "OIS Y Scan", "", "_")] public double YHysMinStroke { get; set; } = -310;
+        [Condition("Y Hysteresis", "Max Stroke", "OIS Y Scan", "", "_")] public double YHysMaxStroke { get; set; } = 310;
+        [Condition("Y Hysteresis", "Mode", "OIS Y Scan", "", "0:CodeRange / 1:Step / 2:um")] public int YHysMode { get; set; } = 0;
 
-        [Condition("Y Current", "Min Range", "", "", "code")] public int YCurrMinRange { get; set; } = 200;
-        [Condition("Y Current", "Max Range", "", "", "code")] public int YCurrMaxRange { get; set; } = 3900;
-        [Condition("Y Current", "Min Step", "", "", "_")] public int YCurrMinStep { get; set; } = 0;
-        [Condition("Y Current", "Max Step", "", "", "_")] public int YCurrMaxStep { get; set; } = 0;
-        [Condition("Y Current", "Min Stroke", "", "", "um")] public double YCurrMinStroke { get; set; } = -310;
-        [Condition("Y Current", "Max Stroke", "", "", "um")] public double YCurrMaxStroke { get; set; } = 310;
-        [Condition("Y Current", "Mode", "", "", "0:CodeRange / 1:Step / 2:um")] public int YCurrMode { get; set; } = 0;
+        [Condition("Y Current", "Min Range", "OIS Y Scan", "", "code")] public int YCurrMinRange { get; set; } = 200;
+        [Condition("Y Current", "Max Range", "OIS Y Scan", "", "code")] public int YCurrMaxRange { get; set; } = 3900;
+        [Condition("Y Current", "Min Step", "OIS Y Scan", "", "_")] public int YCurrMinStep { get; set; } = 0;
+        [Condition("Y Current", "Max Step", "OIS Y Scan", "", "_")] public int YCurrMaxStep { get; set; } = 0;
+        [Condition("Y Current", "Min Stroke", "OIS Y Scan", "", "um")] public double YCurrMinStroke { get; set; } = -310;
+        [Condition("Y Current", "Max Stroke", "OIS Y Scan", "", "um")] public double YCurrMaxStroke { get; set; } = 310;
+        [Condition("Y Current", "Mode", "OIS Y Scan", "", "0:CodeRange / 1:Step / 2:um")] public int YCurrMode { get; set; } = 0;
 
-        [Condition("Temp. Test", "Min Spec", "", "", "_")] public double TempMinSpec { get; set; } = -20;
-        [Condition("Temp. Test", "Max Spec", "", "", "_")] public double TempMaxSpec { get; set; } = 40;
-        [Condition("Temp. Test", "Val Spec", "", "", "_")] public double TempValSpec { get; set; } = 20;
+        [Condition("Temp. Test", "Min Spec", "AF/OIS Temperature test", "", "_")] public double TempMinSpec { get; set; } = -20;
+        [Condition("Temp. Test", "Max Spec", "AF/OIS Temperature test", "", "_")] public double TempMaxSpec { get; set; } = 40;
+        [Condition("Temp. Test", "Val Spec", "AF/OIS Temperature test", "", "_")] public double TempValSpec { get; set; } = 20;
 
-        [Condition("Servo Decenter", "AF Position", "", "", "code")] public int ServoDecenterAFPos { get; set; } = 1252;
-        [Condition("IME Test", "Min Thd", "", "", "_")] public int IMEMinThd { get; set; } = -220;
-        [Condition("IME Test", "Max Thd", "", "", "_")] public int IMEMaxThd { get; set; } = 220;
-        [Condition("IME Test", "OIS Stroke", "", "", "_")] public int IMEOISStroke { get; set; } = 900;
+        [Condition("Servo Decenter", "AF Position", "Servo Decenter", "", "code")] public int ServoDecenterAFPos { get; set; } = 1252;
+        [Condition("IME Test", "Min Thd", "IME Test", "", "_")] public int IMEMinThd { get; set; } = -220;
+        [Condition("IME Test", "Max Thd", "IME Test", "", "_")] public int IMEMaxThd { get; set; } = 220;
+        [Condition("IME Test", "OIS Stroke", "IME Test", "", "_")] public int IMEOISStroke { get; set; } = 900;
 
-        [Condition("OIS Openloop Test", "Step Num", "", "", "_")] public int OISOLStepNum { get; set; } = 20;
-        [Condition("OIS Openloop Test", "Move Delay", "", "", "_")] public int OISOLMoveDelay { get; set; } = 30;
-        [Condition("OIS Openloop Test", "tp1", "", "", "_")] public int OISOLtp1 { get; set; } = 100;
-        [Condition("OIS Openloop Test", "tp2", "", "", "_")] public int OISOLtp2 { get; set; } = 400;
-        [Condition("OIS Openloop Test", "Spec", "", "", "_")] public int OISOLSpec { get; set; } = 90000;
+        [Condition("OIS Openloop Test", "Step Num", "OIS OpenLoop Test", "", "_")] public int OISOLStepNum { get; set; } = 20;
+        [Condition("OIS Openloop Test", "Move Delay", "OIS OpenLoop Test", "", "_")] public int OISOLMoveDelay { get; set; } = 30;
+        [Condition("OIS Openloop Test", "tp1", "OIS OpenLoop Test", "", "_")] public int OISOLtp1 { get; set; } = 100;
+        [Condition("OIS Openloop Test", "tp2", "OIS OpenLoop Test", "", "_")] public int OISOLtp2 { get; set; } = 400;
+        [Condition("OIS Openloop Test", "Spec", "OIS OpenLoop Test", "", "_")] public int OISOLSpec { get; set; } = 90000;
 
-        [Condition("XY Drift Test", "Spec", "", "", "code")] public int DriftTestSpec { get; set; } = 650;
+        [Condition("XY Drift Test", "Spec", "OIS Shift", "", "code")] public int DriftTestSpec { get; set; } = 650;
 
         [Condition("I2C", "I2C Clock", "", "", "KHz")] public int iI2Cclock { get; set; } = 400;
 

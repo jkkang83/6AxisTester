@@ -812,8 +812,56 @@ namespace FZ4P
 
         private void Actionbox_SelectedIndexChanged(object sender, EventArgs e)
         {
-           
+            ListBox lb = (ListBox)sender;
+            if (lb.SelectedItems == null) return;
+            Color c = Color.YellowGreen;
+            string item = lb.SelectedItem.ToString();
+
+            int effRowNum = 0;
+            bool bColorChange = true;
+            PropertyDescriptorCollection props = TypeDescriptor.GetProperties(Condition);
+            for (int i = 0; i < props.Count; i++)
+            {
+                string Category = DataIO.GetCustomAttribute<ConditionAttribute>(props[i]).Category;
+                string Name = DataIO.GetCustomAttribute<ConditionAttribute>(props[i]).DisplayName;
+                string Unit = DataIO.GetCustomAttribute<ConditionAttribute>(props[i]).Unit;
+
+                if (Category != "ToDoList")
+                {
+                    if (i != 0)
+                    {
+                        string beforeCate = DataIO.GetCustomAttribute<ConditionAttribute>(props[i - 1])?.Category;
+                        if (beforeCate != Category) bColorChange = !bColorChange;
+                        if (bColorChange)
+                            ConditinGrid[1, effRowNum].Style.BackColor = Color.Lavender;
+                        else
+                            ConditinGrid[1, effRowNum].Style.BackColor = Color.White;
+                    }
+                    effRowNum++;
+
+                }
+
+            }
+            for (int i = 0; i < effRowNum; i++)
+            {
+                var foundProperty = props.Cast<PropertyDescriptor>().FirstOrDefault(prop =>
+                ((ConditionAttribute)prop.Attributes[typeof(ConditionAttribute)])?.DisplayName == ConditinGrid[1, i].Value.ToString() &&
+                 ((ConditionAttribute)prop.Attributes[typeof(ConditionAttribute)])?.Category == ConditinGrid[0, i].Value.ToString());
+
+                var attri = DataIO.GetCustomAttribute<ConditionAttribute>(foundProperty);
+                if (attri != null)
+                {
+                    if (attri.ToDo1 == item || attri.ToDo2 == item)
+                        ConditinGrid[1, i].Style.BackColor = c;
+                }
+            }
+
         }
+
+
+
+
+
 
         private void button1_Click(object sender, EventArgs e)
         {

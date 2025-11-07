@@ -3449,11 +3449,11 @@ namespace FZ4P
             int FRAaddr = axis == 0 ? DrvIC.FRA_XSlaveAddr : DrvIC.FRA_Y1SlaveAddr;
             string axisName = axis == 0 ? "X" : "Y";
 
-            int startFreq = axis == 0 ? Condition.iXChirpFrom : Condition.iYChirpFrom;
-            int finalFreq = axis == 0 ? Condition.iYChirpTo : Condition.iYChirpTo;
-            int minphase = axis == 0 ? Condition.PMXMinPhase : Condition.PMYMinPhase;
-            int gainTH = axis == 0 ? Condition.PMXGainTH : Condition.PMYGainTH;
-            int amp = axis == 0 ? Condition.iXAmplitude : Condition.iYAmplitude;
+            //int startFreq = axis == 0 ? Condition.iXChirpFrom : Condition.iYChirpFrom;
+            //int finalFreq = axis == 0 ? Condition.iYChirpTo : Condition.iYChirpTo;
+            //int minphase = axis == 0 ? Condition.PMXMinPhase : Condition.PMYMinPhase;
+            //int gainTH = axis == 0 ? Condition.PMXGainTH : Condition.PMYGainTH;
+            int amp = axis == 0 ? (int)Condition.iLoppgainXAmp : (int)Condition.iLoppgainYAmp;
 
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
