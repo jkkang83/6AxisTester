@@ -879,9 +879,11 @@ namespace FZ4P
             return Math.Abs(maxTilt - minTilt) / 60.0;
 
         }
-        public double CalTilt(List<int> x, List<double> TiltX, List<double> TiltY ,int CodeMin, int CodeMax, int RefCode)
+        public (double, double, double, double[]) CalTilt(List<int> x, List<double> TiltX, List<double> TiltY ,int CodeMin, int CodeMax, int RefCode)
         {
-           
+
+            double fwdMaxX = 0, bwdMaxX = 0;
+            double fwdMaxY = 0, bwdMaxY = 0;
             List<CalcList> fwdIndex = new List<CalcList>();
             List<CalcList> bwdIndex = new List<CalcList>();
             double RefFwdTiltX = 0, RefBwdTiltX = 0;
@@ -931,7 +933,12 @@ namespace FZ4P
                 double ty = fwdIndex[i].Val2 - RefFwdTiltY;
                 double t = Math.Sqrt(Math.Pow(tx, 2) + Math.Pow(ty, 2));
                 if (MaxFwdT < t)
+                {
                     MaxFwdT = t;
+                    fwdMaxX = fwdIndex[i].Val1;
+                    fwdMaxY = fwdIndex[i].Val2;
+                }
+                    
             }
             for (int i = 0; i < bwdIndex.Count; i++)
             {
@@ -939,9 +946,25 @@ namespace FZ4P
                 double ty = bwdIndex[i].Val2 - RefBwdtiltY;
                 double t = Math.Sqrt(Math.Pow(tx, 2) + Math.Pow(ty, 2));
                 if (MaxBwdT < t)
+                {
                     MaxBwdT = t;
+                    bwdMaxX = bwdIndex[i].Val1;
+                    bwdMaxY = bwdIndex[i].Val2;
+                }    
             }
-            return Math.Max(MaxFwdT, MaxBwdT);
+            double[] refArr = new double[2];
+        
+            if(MaxFwdT >= MaxBwdT)
+            {
+
+                return (MaxFwdT, fwdMaxX, fwdMaxY, refArr = new double[2] { RefFwdTiltX, RefFwdTiltY });
+            }
+            else
+            {
+                return (MaxBwdT, bwdMaxX, bwdMaxY, refArr = new double[2] { RefBwdTiltX, RefBwdtiltY });
+            }
+
+              
 
         }
 
@@ -1089,7 +1112,7 @@ namespace FZ4P
                 C.Series[numSeries].Color = Color.DarkBlue;
                 C.Series[numSeries].IsVisibleInLegend = true;
             }
-            else if (type == "Tilt")
+            else if (type == "Settling")
             {
                 C.ChartAreas[0].AxisY.MinorGrid.Interval = .1;
                 C.ChartAreas[0].AxisX.MinorGrid.Enabled = false;
@@ -1101,64 +1124,64 @@ namespace FZ4P
                 C.ChartAreas[0].AxisY.Maximum = 40;
                 C.ChartAreas[0].AxisY.Interval = 8;
 
-                C.Titles.Add("Tilt vs Code");
+                C.Titles.Add("Settling vs time");
 
-                C.Series.Add("X Tx");
-                C.Series[numSeries].Label = "X Tx";
+                C.Series.Add("AF Settle");
+                C.Series[numSeries].Label = "AF Settle";
                 C.Series[numSeries].ChartType = SeriesChartType.FastLine;
                 C.Series[numSeries].Color = Color.Red;
                 C.Series[numSeries].IsVisibleInLegend = true;
-                numSeries++;
-                C.Series.Add("X Ty");
-                C.Series[numSeries].Label = "X Ty";
-                C.Series[numSeries].ChartType = SeriesChartType.FastLine;
-                C.Series[numSeries].Color = Color.DarkRed;
-                C.Series[numSeries].IsVisibleInLegend = true;
-                numSeries++;
-                C.Series.Add("X Tz");
-                C.Series[numSeries].Label = "X Tz";
-                C.Series[numSeries].ChartType = SeriesChartType.FastLine;
-                C.Series[numSeries].Color = Color.Red;
-                C.Series[numSeries].IsVisibleInLegend = true;
-                C.Series[numSeries].YAxisType = AxisType.Secondary;
-                numSeries++;
-                C.Series.Add("Y Tx");
-                C.Series[numSeries].Label = "Y Tx";
-                C.Series[numSeries].ChartType = SeriesChartType.FastLine;
-                C.Series[numSeries].Color = Color.Blue;
-                C.Series[numSeries].IsVisibleInLegend = true;
-                numSeries++;
-                C.Series.Add("Y Ty");
-                C.Series[numSeries].Label = "Y Ty";
-                C.Series[numSeries].ChartType = SeriesChartType.FastLine;
-                C.Series[numSeries].Color = Color.BlueViolet;
-                C.Series[numSeries].IsVisibleInLegend = true;
-                numSeries++;
-                C.Series.Add("Y Tz");
-                C.Series[numSeries].Label = "Y Tz";
-                C.Series[numSeries].ChartType = SeriesChartType.FastLine;
-                C.Series[numSeries].Color = Color.Blue;
-                C.Series[numSeries].IsVisibleInLegend = true;
-                C.Series[numSeries].YAxisType = AxisType.Secondary;
-                numSeries++;
-                C.Series.Add("AF Tx");
-                C.Series[numSeries].Label = "AF Tx";
-                C.Series[numSeries].ChartType = SeriesChartType.FastLine;
-                C.Series[numSeries].Color = Color.Green;
-                C.Series[numSeries].IsVisibleInLegend = true;
-                numSeries++;
-                C.Series.Add("AF Ty");
-                C.Series[numSeries].Label = "AF Ty";
-                C.Series[numSeries].ChartType = SeriesChartType.FastLine;
-                C.Series[numSeries].Color = Color.GreenYellow;
-                C.Series[numSeries].IsVisibleInLegend = true;
-                numSeries++;
-                C.Series.Add("AF Tz");
-                C.Series[numSeries].Label = "AF Tz";
-                C.Series[numSeries].ChartType = SeriesChartType.FastLine;
-                C.Series[numSeries].Color = Color.Green;
-                C.Series[numSeries].IsVisibleInLegend = true;
-                C.Series[numSeries].YAxisType = AxisType.Secondary;
+             //   numSeries++;
+                //C.Series.Add("X Ty");
+                //C.Series[numSeries].Label = "X Ty";
+                //C.Series[numSeries].ChartType = SeriesChartType.FastLine;
+                //C.Series[numSeries].Color = Color.DarkRed;
+                //C.Series[numSeries].IsVisibleInLegend = true;
+                //numSeries++;
+                //C.Series.Add("X Tz");
+                //C.Series[numSeries].Label = "X Tz";
+                //C.Series[numSeries].ChartType = SeriesChartType.FastLine;
+                //C.Series[numSeries].Color = Color.Red;
+                //C.Series[numSeries].IsVisibleInLegend = true;
+                //C.Series[numSeries].YAxisType = AxisType.Secondary;
+                //numSeries++;
+                //C.Series.Add("Y Tx");
+                //C.Series[numSeries].Label = "Y Tx";
+                //C.Series[numSeries].ChartType = SeriesChartType.FastLine;
+                //C.Series[numSeries].Color = Color.Blue;
+                //C.Series[numSeries].IsVisibleInLegend = true;
+                //numSeries++;
+                //C.Series.Add("Y Ty");
+                //C.Series[numSeries].Label = "Y Ty";
+                //C.Series[numSeries].ChartType = SeriesChartType.FastLine;
+                //C.Series[numSeries].Color = Color.BlueViolet;
+                //C.Series[numSeries].IsVisibleInLegend = true;
+                //numSeries++;
+                //C.Series.Add("Y Tz");
+                //C.Series[numSeries].Label = "Y Tz";
+                //C.Series[numSeries].ChartType = SeriesChartType.FastLine;
+                //C.Series[numSeries].Color = Color.Blue;
+                //C.Series[numSeries].IsVisibleInLegend = true;
+                //C.Series[numSeries].YAxisType = AxisType.Secondary;
+                //numSeries++;
+                //C.Series.Add("AF Tx");
+                //C.Series[numSeries].Label = "AF Tx";
+                //C.Series[numSeries].ChartType = SeriesChartType.FastLine;
+                //C.Series[numSeries].Color = Color.Green;
+                //C.Series[numSeries].IsVisibleInLegend = true;
+                //numSeries++;
+                //C.Series.Add("AF Ty");
+                //C.Series[numSeries].Label = "AF Ty";
+                //C.Series[numSeries].ChartType = SeriesChartType.FastLine;
+                //C.Series[numSeries].Color = Color.GreenYellow;
+                //C.Series[numSeries].IsVisibleInLegend = true;
+                //numSeries++;
+                //C.Series.Add("AF Tz");
+                //C.Series[numSeries].Label = "AF Tz";
+                //C.Series[numSeries].ChartType = SeriesChartType.FastLine;
+                //C.Series[numSeries].Color = Color.Green;
+                //C.Series[numSeries].IsVisibleInLegend = true;
+                //C.Series[numSeries].YAxisType = AxisType.Secondary;
             }//Tilt
         }
         private void MouseDoubleClick(object sender, MouseEventArgs e)

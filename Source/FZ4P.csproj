@@ -124,6 +124,9 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="TiltPlot">
+      <HintPath>..\lib\TiltPlot.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Process\AFLinCompCoef.cs" />

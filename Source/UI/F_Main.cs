@@ -636,6 +636,7 @@ namespace FZ4P
             DataIO.SerializeToXMLFile(Current, STATIC.CurrentPath);
             InitDataSpec();
             Process.InitResultData();
+            Process.tiltChart[0].SetRings(new double[] { Spec.specList[(int)SpecItem.AF_Tilt].MaxSpec });
         }
 
         private void SaveSpec_Click(object sender, EventArgs e)
@@ -643,6 +644,7 @@ namespace FZ4P
             UpdateUI();
             DataIO.SerializeToXMLFile(Spec, STATIC.SpecDir + Current.SpecName);
             Process.InitResultData();
+            Process.tiltChart[0].SetRings(new double[] { Spec.specList[(int)SpecItem.AF_Tilt].MaxSpec });
         }
 
         private void SaveAsSpec_Click(object sender, EventArgs e)
@@ -655,6 +657,8 @@ namespace FZ4P
             DataIO.SerializeToXMLFile(Current, STATIC.CurrentPath);
             SpecFileName.Text = Current.SpecName;
             Process.InitResultData();
+            Process.tiltChart[0].SetRings(new double[] { Spec.specList[(int)SpecItem.AF_Tilt].MaxSpec });
+
         }
 
         private void ApplyTester_Click(object sender, EventArgs e)

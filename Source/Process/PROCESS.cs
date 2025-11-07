@@ -20,7 +20,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using System.Xml.Linq;
+using TiltPlot;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
 namespace FZ4P
 {
@@ -79,8 +81,10 @@ namespace FZ4P
         { Size = new System.Drawing.Size(780, 828) };
         public Label lblFailList = new Label();
         public List<ChartList> ChartTop = new List<ChartList>();
-
         public List<ChartList> ChartBtm = new List<ChartList>();
+        public List<TiltGraph> tiltChart = new List<TiltGraph>();
+
+    //    public List<ChartList> ChartBtm = new List<ChartList>();
         public int BestAFPos = 2048;
         public int OISCenter = 2048;
         public int AFCenter = 2048;
@@ -113,7 +117,14 @@ namespace FZ4P
 
 
                 ChartTop.Add(new ChartList("Stroke", i));
-                ChartBtm.Add(new ChartList("Tilt", i));
+                ChartBtm.Add(new ChartList("Settling", i));
+                tiltChart.Add(new TiltGraph
+                {
+                    title = "AF Tilt",
+                    range = 20,
+                });
+                tiltChart[i].SetRings(new double[] { tiltChart[i].range / 2, tiltChart[i].range });
+                
 
                 InfoBtn.Add(new InfoButton()); //test
                 InfoBtn.Add(new InfoButton());
@@ -251,7 +262,7 @@ namespace FZ4P
             //// Column
             ResultDataGrid.Columns[0].Name = "Axis";
             ResultDataGrid.Columns[1].Name = "Item No.";
-            ResultDataGrid.Columns[2].Name = "Items";
+            ResultDataGrid.Columns[2].Name = "Item Name";
             ResultDataGrid.Columns[3].Name = "Min";
             ResultDataGrid.Columns[4].Name = "Max";
             ResultDataGrid.Columns[5].Name = "Result";
@@ -267,7 +278,7 @@ namespace FZ4P
             ResultDataGrid.Columns[6].DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopLeft;
 
             ResultDataGrid.Columns[0].Width = 150;
-            ResultDataGrid.Columns[1].Width = 50;
+            ResultDataGrid.Columns[1].Width = 70;
             ResultDataGrid.Columns[2].Width = 215;
             ResultDataGrid.Columns[3].Width = 70;
             ResultDataGrid.Columns[4].Width = 70;
@@ -369,7 +380,7 @@ namespace FZ4P
         {
             ViewLog[ch].Log(msg);
         }
-        public void AddChart(int ch, string name)
+        public void AddChart(int ch, string name, List<double> time = null, List<double> Stroke = null, double MaxtiltX = 0, double MaxtiltY = 0, double[] refArr = null)
         {
             while (ChartTop[ch].IsFalg)
                 Process.Wait(10);
@@ -392,7 +403,7 @@ namespace FZ4P
                                 {
                                     ChartTop[ch].C.Series[0].Points.Clear();
 
-                                    for (int i = 2; i < Cal.CodeX.Count; i++)
+                                    for (int i = 0; i < Cal.CodeX.Count; i++)
                                     {
                                         if (Cal.CodeX[i] >= OISCenter - CodeRange && Cal.CodeX[i] <= OISCenter + CodeRange)
                                         {
@@ -404,21 +415,21 @@ namespace FZ4P
                                 });
                             }
                             //Tilt
-                            if (ChartBtm[ch].C.InvokeRequired)
-                            {
-                                ChartBtm[ch].C.BeginInvoke((MethodInvoker)delegate
-                                {
-                                    for (int i = 2; i < Cal.CodeX.Count; i++)
-                                    {
-                                        if (Cal.CodeX[i] >= OISCenter - CodeRange && Cal.CodeX[i] <= OISCenter + CodeRange)
-                                        {
-                                            //ChartBtm[ch].C.Series[0].Points.AddXY(Cal.CodeX[i], Cal.TiltX[i]); //  Tilt 
-                                            //ChartBtm[ch].C.Series[1].Points.AddXY(Cal.CodeX[i], Cal.TiltY[i]); //  Tilt 
-                                            //ChartBtm[ch].C.Series[2].Points.AddXY(Cal.CodeX[i], Cal.TiltZ[i]); //  Tilt 
-                                        }
-                                    }
-                                });
-                            }
+                            //if (ChartBtm[ch].C.InvokeRequired)
+                            //{
+                            //    ChartBtm[ch].C.BeginInvoke((MethodInvoker)delegate
+                            //    {
+                            //        for (int i = 2; i < Cal.CodeX.Count; i++)
+                            //        {
+                            //            if (Cal.CodeX[i] >= OISCenter - CodeRange && Cal.CodeX[i] <= OISCenter + CodeRange)
+                            //            {
+                            //                //ChartBtm[ch].C.Series[0].Points.AddXY(Cal.CodeX[i], Cal.TiltX[i]); //  Tilt 
+                            //                //ChartBtm[ch].C.Series[1].Points.AddXY(Cal.CodeX[i], Cal.TiltY[i]); //  Tilt 
+                            //                //ChartBtm[ch].C.Series[2].Points.AddXY(Cal.CodeX[i], Cal.TiltZ[i]); //  Tilt 
+                            //            }
+                            //        }
+                            //    });
+                            //}
                             break;
                         case "OIS Y Scan":
 
@@ -428,7 +439,7 @@ namespace FZ4P
                             {
                                 ChartTop[ch].C.BeginInvoke((MethodInvoker)delegate
                                 {
-                                    for (int i = 2; i < Cal.CodeY.Count; i++)
+                                    for (int i = 0; i < Cal.CodeY.Count; i++)
                                     {
                                         if (Cal.CodeY[i] >= OISCenter - CodeRange && Cal.CodeY[i] <= OISCenter + CodeRange)
                                         {
@@ -442,21 +453,21 @@ namespace FZ4P
                                 });
                             }
                             //Tilt
-                            if (ChartBtm[ch].C.InvokeRequired)
-                            {
-                                ChartBtm[ch].C.BeginInvoke((MethodInvoker)delegate
-                                {
-                                    for (int i = 2; i < Cal.CodeY.Count; i++)
-                                    {
-                                        if (Cal.CodeY[i] >= OISCenter - CodeRange && Cal.CodeY[i] <= OISCenter + CodeRange)
-                                        {
-                                            //ChartBtm[ch].C.Series[3].Points.AddXY(Cal.CodeY1[i], Cal.TiltX[i]); //  Tilt 
-                                            //ChartBtm[ch].C.Series[4].Points.AddXY(Cal.CodeY1[i], Cal.TiltY[i]); //  Tilt 
-                                            //ChartBtm[ch].C.Series[5].Points.AddXY(Cal.CodeY1[i], Cal.TiltZ[i]); //  Tilt 
-                                        }
-                                    }
-                                });
-                            }
+                            //if (ChartBtm[ch].C.InvokeRequired)
+                            //{
+                            //    ChartBtm[ch].C.BeginInvoke((MethodInvoker)delegate
+                            //    {
+                            //        for (int i = 2; i < Cal.CodeY.Count; i++)
+                            //        {
+                            //            if (Cal.CodeY[i] >= OISCenter - CodeRange && Cal.CodeY[i] <= OISCenter + CodeRange)
+                            //            {
+                            //                //ChartBtm[ch].C.Series[3].Points.AddXY(Cal.CodeY1[i], Cal.TiltX[i]); //  Tilt 
+                            //                //ChartBtm[ch].C.Series[4].Points.AddXY(Cal.CodeY1[i], Cal.TiltY[i]); //  Tilt 
+                            //                //ChartBtm[ch].C.Series[5].Points.AddXY(Cal.CodeY1[i], Cal.TiltZ[i]); //  Tilt 
+                            //            }
+                            //        }
+                            //    });
+                            //}
                             break;
                         case "AF Scan":
 
@@ -466,7 +477,7 @@ namespace FZ4P
                             {
                                 ChartTop[ch].C.BeginInvoke((MethodInvoker)delegate
                                 {
-                                    for (int i = 2; i < Cal.CodeZ.Count; i++)
+                                    for (int i = 0; i < Cal.CodeZ.Count; i++)
                                     {
                                         if (Cal.CodeZ[i] >= AFCenter - CodeRange && Cal.CodeZ[i] <= AFCenter + CodeRange)
                                         {
@@ -478,47 +489,56 @@ namespace FZ4P
                                 });
                             }
                             //Tilt
-                            if (ChartBtm[ch].C.InvokeRequired)
+                            if (tiltChart[ch].InvokeRequired)
                             {
-                                ChartBtm[ch].C.BeginInvoke((MethodInvoker)delegate
+                                tiltChart[ch].BeginInvoke((MethodInvoker)delegate
                                 {
+                                    double[] xs = new double[Cal.CodeZ.Count];
+                                    double[] ys = new double[Cal.CodeZ.Count];
+
                                     for (int i = 2; i < Cal.CodeZ.Count; i++)
                                     {
-                                        if (Cal.CodeZ[i] >= AFCenter - CodeRange && Cal.CodeZ[i] <= AFCenter + CodeRange)
+                                        if (Cal.CodeZ[i] >= Condition.TiltMinCode && Cal.CodeZ[i] <= Condition.TiltMaxCode)
                                         {
-                                            ChartBtm[ch].C.Series[6].Points.AddXY(Cal.CodeZ[i], Cal.TiltX[i]); //  Tilt 
-                                            ChartBtm[ch].C.Series[7].Points.AddXY(Cal.CodeZ[i], Cal.TiltY[i]); //  Tilt 
-                                                                                                               //  ChartBtm[ch].C.Series[8].Points.AddXY(Cal.CodeZ[i], Cal.TiltZ[i]); //  Tilt 
+                                            xs[i] = Cal.TiltX[i];
+                                            ys[i] = Cal.TiltY[i];
+                                             
                                         }
                                     }
+                                    tiltChart[ch].SetPoints(xs, ys, Color.Lime);
+                                    tiltChart[ch].SetPoint(MaxtiltX, MaxtiltY, Color.Red);
+                                    tiltChart[ch].SetPoint(refArr[0], refArr[1], Color.Orange);
+                                  
                                 });
                             }
                             break;
                         case "AF Settling":
+                         
+
                             //Stroke
-                            if (ChartTop[ch].C.InvokeRequired)
-                            {
-                                ChartTop[ch].C.BeginInvoke((MethodInvoker)delegate
-                                {
-                                    for (int i = 2; i < Cal.Time.Count; i++)
-                                    {
-                                        ChartTop[ch].C.Series[2].Points.AddXY(Cal.Time[i] * 1000, Cal.StrokeZ[i]); //  stroke
-                                    }
-                                });
-                            }
-                            //Tilt
                             if (ChartBtm[ch].C.InvokeRequired)
                             {
                                 ChartBtm[ch].C.BeginInvoke((MethodInvoker)delegate
                                 {
-                                    for (int i = 2; i < Cal.Time.Count; i++)
+                                    for (int i = 0; i < time.Count; i++)
                                     {
-                                        ChartBtm[ch].C.Series[6].Points.AddXY(Cal.Time[i] * 1000, Cal.TiltX[i]); //  Tilt 
-                                        ChartBtm[ch].C.Series[7].Points.AddXY(Cal.Time[i] * 1000, Cal.TiltY[i]); //  Tilt 
-                                        ChartBtm[ch].C.Series[8].Points.AddXY(Cal.Time[i] * 1000, Cal.TiltZ[i]); //  Tilt 
+                                        ChartBtm[ch].C.Series[0].Points.AddXY(time[i], Stroke[i]); //  stroke
                                     }
                                 });
                             }
+                            //Tilt
+                            //if (ChartBtm[ch].C.InvokeRequired)
+                            //{
+                            //    ChartBtm[ch].C.BeginInvoke((MethodInvoker)delegate
+                            //    {
+                            //        for (int i = 2; i < Cal.Time.Count; i++)
+                            //        {
+                            //            ChartBtm[ch].C.Series[6].Points.AddXY(Cal.Time[i] * 1000, Cal.TiltX[i]); //  Tilt 
+                            //            ChartBtm[ch].C.Series[7].Points.AddXY(Cal.Time[i] * 1000, Cal.TiltY[i]); //  Tilt 
+                            //            ChartBtm[ch].C.Series[8].Points.AddXY(Cal.Time[i] * 1000, Cal.TiltZ[i]); //  Tilt 
+                            //        }
+                            //    });
+                            //}
                             break;
 
                     }
@@ -540,11 +560,11 @@ namespace FZ4P
 
                     if (name.Contains("Settling"))
                     {
-                        ChartTop[ch].C.Titles[0].Text = "Stroke vs Time";
-                        ChartTop[ch].C.ChartAreas[0].AxisX.Minimum = 0;
-                        ChartTop[ch].C.ChartAreas[0].AxisX.Maximum = 600;
-                        ChartTop[ch].C.ChartAreas[0].AxisX.Interval = 100;
-                        ChartTop[ch].C.ChartAreas[0].AxisX.MajorGrid.Interval = 100;
+                        //ChartTop[ch].C.Titles[0].Text = "Stroke vs Time";
+                        //ChartTop[ch].C.ChartAreas[0].AxisX.Minimum = 0;
+                        //ChartTop[ch].C.ChartAreas[0].AxisX.Maximum = 600;
+                        //ChartTop[ch].C.ChartAreas[0].AxisX.Interval = 100;
+                        //ChartTop[ch].C.ChartAreas[0].AxisX.MajorGrid.Interval = 100;
                     }
                     else
                     {
@@ -572,36 +592,36 @@ namespace FZ4P
                     ChartTop[ch].IsFalg = false;
                 });
             }
-            //Tilt Chart
+            //settle Chart
             if (ChartBtm[ch].C.InvokeRequired)
             {
                 ChartBtm[ch].C.BeginInvoke((MethodInvoker)delegate
                 {
                     ChartBtm[ch].C.ChartAreas[0].AxisX.MinorGrid.Enabled = false;
                     ChartBtm[ch].C.ChartAreas[0].AxisY.MinorGrid.Enabled = false;
-                    ChartBtm[ch].C.ChartAreas[0].AxisY2.MajorGrid.Enabled = false;
-                    ChartBtm[ch].C.ChartAreas[0].AxisY2.MinorGrid.Enabled = false;
+                    //ChartBtm[ch].C.ChartAreas[0].AxisY2.MajorGrid.Enabled = false;
+                    //ChartBtm[ch].C.ChartAreas[0].AxisY2.MinorGrid.Enabled = false;
 
 
                     if (name.Contains("Settling"))
                     {
-                        ChartBtm[ch].C.Titles[0].Text = "Tilt vs Time";
+                        ChartBtm[ch].C.Titles[0].Text = "Time to Settle";
                         ChartBtm[ch].C.ChartAreas[0].AxisX.Minimum = 0;
-                        ChartBtm[ch].C.ChartAreas[0].AxisX.Maximum = 600;
-                        ChartBtm[ch].C.ChartAreas[0].AxisX.Interval = 100;
-                        ChartBtm[ch].C.ChartAreas[0].AxisX.MajorGrid.Interval = 100;
+                        ChartBtm[ch].C.ChartAreas[0].AxisX.Maximum = 110;
+                        ChartBtm[ch].C.ChartAreas[0].AxisX.Interval = 10;
+                        ChartBtm[ch].C.ChartAreas[0].AxisX.MajorGrid.Interval = 10;
                     }
                     else
                     {
-                        ChartBtm[ch].C.Titles[0].Text = "Tilt vs Code";
-                        ChartBtm[ch].C.ChartAreas[0].AxisX.Minimum = 0;
-                        ChartBtm[ch].C.ChartAreas[0].AxisX.Maximum = 4100;
-                        ChartBtm[ch].C.ChartAreas[0].AxisX.Interval = 512;
-                        ChartBtm[ch].C.ChartAreas[0].AxisX.MajorGrid.Interval = 512;
+                        //ChartBtm[ch].C.Titles[0].Text = "Tilt vs Code";
+                        //ChartBtm[ch].C.ChartAreas[0].AxisX.Minimum = 0;
+                        //ChartBtm[ch].C.ChartAreas[0].AxisX.Maximum = 4100;
+                        //ChartBtm[ch].C.ChartAreas[0].AxisX.Interval = 512;
+                        //ChartBtm[ch].C.ChartAreas[0].AxisX.MajorGrid.Interval = 512;
                     }
 
-                    ChartBtm[ch].C.ChartAreas[0].AxisY.Minimum = -50;
-                    ChartBtm[ch].C.ChartAreas[0].AxisY.Maximum = 50;
+                    ChartBtm[ch].C.ChartAreas[0].AxisY.Minimum = -10;
+                    ChartBtm[ch].C.ChartAreas[0].AxisY.Maximum = 100;
                     ChartBtm[ch].C.ChartAreas[0].AxisY.Interval = 10;
                     ChartBtm[ch].C.ChartAreas[0].AxisY.MajorGrid.Interval = 10;
 
@@ -610,9 +630,9 @@ namespace FZ4P
                     //ChartBtm[ch].C.ChartAreas[0].AxisY2.Interval = 40;
                     //ChartBtm[ch].C.ChartAreas[0].AxisY2.MajorGrid.Interval = 40;
 
-                    ChartBtm[ch].C.ChartAreas[0].AxisY2.Enabled = AxisEnabled.True;
-                    ChartBtm[ch].C.ChartAreas[0].AxisY2.LabelStyle.ForeColor = Color.DarkGreen;
-                    ChartBtm[ch].C.ChartAreas[0].AxisY2.LabelStyle.Font = new Font("Calibri", 9, FontStyle.Bold);
+                    //ChartBtm[ch].C.ChartAreas[0].AxisY2.Enabled = AxisEnabled.True;
+                    //ChartBtm[ch].C.ChartAreas[0].AxisY2.LabelStyle.ForeColor = Color.DarkGreen;
+                    //ChartBtm[ch].C.ChartAreas[0].AxisY2.LabelStyle.Font = new Font("Calibri", 9, FontStyle.Bold);
 
                     ChartBtm[ch].IsFalg = false;
                 });
@@ -662,6 +682,21 @@ namespace FZ4P
                         ChartBtm[ch].C.Series[i].Points.Clear();
                     }
                     ChartBtm[ch].C.Series[0].Points.AddXY(0, 0);
+                }
+            }
+
+            for (int ch = 0; ch < tiltChart.Count; ch++)
+            {
+                if (tiltChart[ch].InvokeRequired)
+                {
+                    tiltChart[ch].BeginInvoke((MethodInvoker)delegate
+                    {
+                        tiltChart[ch].ClearPoint();
+                    });
+                }
+                else
+                {
+                    tiltChart[ch].ClearPoint();
                 }
             }
         }
@@ -1812,10 +1847,12 @@ namespace FZ4P
                         }
                 }
             }
-
+            
             for (int j = ch; j < ch + ChannelCnt; j++)
             {
                 if (!m_ChannelOn[j]) continue;
+                double maxtiltX = 0, maxtiltY = 0;
+                double[] refArray = null;
                 foreach (var Cal in CalList[j])
                     if (Cal.Name == name)
                     {
@@ -1843,7 +1880,11 @@ namespace FZ4P
                             PassFails[j].Results[(int)SpecItem.AF_CrosstalkY].Val = Cal.CalCrosstalkAF(Cal.CodeZ, Cal.StrokeZ, Cal.StrokeY, Condition.iAFCodeRange, Condition.iAFStrokeRange, AFCenter);
                             PassFails[j].Results[(int)SpecItem.AF_CrosstalkR].Val = Cal.CalCrosstalkR(Cal.CodeZ, Cal.StrokeX, Cal.StrokeY, Condition.iAFCodeRange, Condition.iAFStrokeRange, AFCenter);
                             PassFails[j].Results[(int)SpecItem.AF_Rolling].Val = Cal.CalRolling(Cal.CodeZ, Cal.StrokeZ, Condition.iAFCodeRange, Condition.iAFStrokeRange, AFCenter);
-                            PassFails[j].Results[(int)SpecItem.AF_Tilt].Val = Cal.CalTilt(Cal.CodeZ, Cal.TiltX, Cal.TiltY, Condition.TiltMinCode, Condition.TiltMaxCode, Condition.TiltRefCode);
+                            
+                            (double sqrT, double maxX, double maxY, double[] refArr) = Cal.CalTilt(Cal.CodeZ, Cal.TiltX, Cal.TiltY, Condition.TiltMinCode, Condition.TiltMaxCode, Condition.TiltRefCode);
+                            maxtiltX = maxX; maxtiltY = maxY;
+                            refArray = refArr;
+                            PassFails[j].Results[(int)SpecItem.AF_Tilt].Val = sqrT;
                          
                             ShowDataResults(j, (int)SpecItem.AF_Ratedstroke, (int)SpecItem.AF_Tilt);
                         }
@@ -1921,7 +1962,7 @@ namespace FZ4P
                             ShowDataResults(j, (int)SpecItem.y_HallDecenter, (int)SpecItem.y_HallDecenter);
 
                         }
-                        AddChart(j, name);
+                        AddChart(j, name, null, null, maxtiltX, maxtiltY, refArray);
                     }
             }
             framCnt[port] = 0;
@@ -2201,7 +2242,7 @@ namespace FZ4P
                                     ShowDataResults(j, (int)SpecItem.AF_SettillingTime, (int)SpecItem.AF_SettillingTime);
                                     break;
                             }
-                            //  AddChart(j, name);
+                            AddChart(j, name, Time.ToList(), Stroke.ToList());
                         }
                 }
                 framCnt[port] = 0;

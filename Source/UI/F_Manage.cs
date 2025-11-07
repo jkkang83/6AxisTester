@@ -181,10 +181,19 @@ namespace FZ4P
                 Process.ChartTop[i].C.Location = new Point(3 + 478 * i, 117);
                 Controls.Add(Process.ChartTop[i].C);
             }
+
             for (int i = 0; i < Process.ChartBtm.Count; i++)
             {
                 Process.ChartBtm[i].C.Location = new Point(3 + 478 * i, 400);
                 Controls.Add(Process.ChartBtm[i].C);
+            }
+
+            for (int i = 0; i < Process.tiltChart.Count; i++)
+            {
+             
+                Process.tiltChart[i].Size = new Size(475, 475);
+                Process.tiltChart[i].Location = new Point(3 + 478 * (i + 1), 117);
+                Controls.Add(Process.tiltChart[i]);
             }
             for (int i = 0; i < 2; i++)
             {
