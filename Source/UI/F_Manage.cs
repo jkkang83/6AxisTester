@@ -291,7 +291,7 @@ namespace FZ4P
 
         private void DriverIC_SwitchOn(object sender, EventArgs e)
         {
-            if (Process.IsRun[0]) return;
+            if (STATIC.Dln.IsRun) return;
             Process.RepeatRun = 1;
            // Process.m_StrIndex[0] = textBox1.Text;
          //   Process.m_StrIndex[1] = textBox2.Text;
@@ -346,13 +346,11 @@ namespace FZ4P
         }
         private async void RepeatStartTest_Click(object sender, EventArgs e)
         {
-            if (Process.IsRun[0]) return;
+            if (STATIC.Dln.IsRun) return;
             Process.RepeatRun = int.Parse(RepeatRunCnt.Text);
             Process.CurrentRun = 1;
 
-          //  Process.m_StrIndex[0] = textBox1.Text;
-            //Process.m_StrIndex[1] = textBox2.Text;
-
+     
             Process.ClearChart();
             foreach (var l in Process.ViewLog) l.Clear();
 
@@ -637,7 +635,7 @@ namespace FZ4P
         {
             //tbUncalibratedInfo.BeginInvoke(new Action(() => { tbUncalibratedInfo.Visible = visible; }));
         }
-
+       
      
     }
 }

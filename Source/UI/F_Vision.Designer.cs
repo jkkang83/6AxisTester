@@ -125,10 +125,22 @@
             this.AFRadio = new System.Windows.Forms.RadioButton();
             this.OISYRadio = new System.Windows.Forms.RadioButton();
             this.OISXRadio = new System.Windows.Forms.RadioButton();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.lbSocketState = new System.Windows.Forms.Label();
+            this.lbConState = new System.Windows.Forms.Label();
+            this.btnSPLUD = new System.Windows.Forms.Button();
+            this.btnSocketUd = new System.Windows.Forms.Button();
+            this.btnCoverUp = new System.Windows.Forms.Button();
+            this.btnSPLLD = new System.Windows.Forms.Button();
+            this.btnSocketLd = new System.Windows.Forms.Button();
+            this.btnCoverDn = new System.Windows.Forms.Button();
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.groupBox2.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnLEDUP
@@ -1504,12 +1516,174 @@
             this.OISXRadio.UseVisualStyleBackColor = true;
             this.OISXRadio.CheckedChanged += new System.EventHandler(this.Radio_CheckedChanged);
             // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.label2);
+            this.groupBox1.Controls.Add(this.label1);
+            this.groupBox1.Controls.Add(this.lbSocketState);
+            this.groupBox1.Controls.Add(this.lbConState);
+            this.groupBox1.Controls.Add(this.btnSPLUD);
+            this.groupBox1.Controls.Add(this.btnSocketUd);
+            this.groupBox1.Controls.Add(this.btnCoverUp);
+            this.groupBox1.Controls.Add(this.btnSPLLD);
+            this.groupBox1.Controls.Add(this.btnSocketLd);
+            this.groupBox1.Controls.Add(this.btnCoverDn);
+            this.groupBox1.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
+            this.groupBox1.Location = new System.Drawing.Point(316, 523);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(392, 371);
+            this.groupBox1.TabIndex = 510;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Socket / Cover";
+            // 
+            // label2
+            // 
+            this.label2.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
+            this.label2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.label2.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.ForeColor = System.Drawing.Color.Yellow;
+            this.label2.Location = new System.Drawing.Point(192, 259);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(142, 23);
+            this.label2.TabIndex = 448;
+            this.label2.Text = "Contact";
+            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label1
+            // 
+            this.label1.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
+            this.label1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.label1.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.ForeColor = System.Drawing.Color.Yellow;
+            this.label1.Location = new System.Drawing.Point(44, 259);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(142, 23);
+            this.label1.TabIndex = 448;
+            this.label1.Text = "Socet Sensor";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lbSocketState
+            // 
+            this.lbSocketState.BackColor = System.Drawing.Color.White;
+            this.lbSocketState.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.lbSocketState.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbSocketState.Location = new System.Drawing.Point(44, 284);
+            this.lbSocketState.Name = "lbSocketState";
+            this.lbSocketState.Size = new System.Drawing.Size(142, 63);
+            this.lbSocketState.TabIndex = 447;
+            this.lbSocketState.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lbConState
+            // 
+            this.lbConState.BackColor = System.Drawing.Color.White;
+            this.lbConState.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.lbConState.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbConState.Location = new System.Drawing.Point(192, 284);
+            this.lbConState.Name = "lbConState";
+            this.lbConState.Size = new System.Drawing.Size(142, 63);
+            this.lbConState.TabIndex = 446;
+            this.lbConState.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // btnSPLUD
+            // 
+            this.btnSPLUD.BackColor = System.Drawing.Color.PaleGreen;
+            this.btnSPLUD.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnSPLUD.BackgroundImage")));
+            this.btnSPLUD.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnSPLUD.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSPLUD.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSPLUD.ForeColor = System.Drawing.Color.White;
+            this.btnSPLUD.Location = new System.Drawing.Point(192, 186);
+            this.btnSPLUD.Name = "btnSPLUD";
+            this.btnSPLUD.Size = new System.Drawing.Size(142, 63);
+            this.btnSPLUD.TabIndex = 443;
+            this.btnSPLUD.Text = "SPL Unload";
+            this.btnSPLUD.UseVisualStyleBackColor = false;
+            this.btnSPLUD.Click += new System.EventHandler(this.btnSPLUD_Click);
+            // 
+            // btnSocketUd
+            // 
+            this.btnSocketUd.BackColor = System.Drawing.Color.PaleGreen;
+            this.btnSocketUd.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnSocketUd.BackgroundImage")));
+            this.btnSocketUd.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnSocketUd.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSocketUd.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSocketUd.ForeColor = System.Drawing.Color.White;
+            this.btnSocketUd.Location = new System.Drawing.Point(192, 108);
+            this.btnSocketUd.Name = "btnSocketUd";
+            this.btnSocketUd.Size = new System.Drawing.Size(142, 63);
+            this.btnSocketUd.TabIndex = 444;
+            this.btnSocketUd.Text = "Socket Unload";
+            this.btnSocketUd.UseVisualStyleBackColor = false;
+            this.btnSocketUd.Click += new System.EventHandler(this.btnSocketUd_Click);
+            // 
+            // btnCoverUp
+            // 
+            this.btnCoverUp.BackColor = System.Drawing.Color.PaleGreen;
+            this.btnCoverUp.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnCoverUp.BackgroundImage")));
+            this.btnCoverUp.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnCoverUp.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnCoverUp.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnCoverUp.ForeColor = System.Drawing.Color.White;
+            this.btnCoverUp.Location = new System.Drawing.Point(192, 29);
+            this.btnCoverUp.Name = "btnCoverUp";
+            this.btnCoverUp.Size = new System.Drawing.Size(142, 63);
+            this.btnCoverUp.TabIndex = 445;
+            this.btnCoverUp.Text = "Cover Up";
+            this.btnCoverUp.UseVisualStyleBackColor = false;
+            this.btnCoverUp.Click += new System.EventHandler(this.btnCoverUp_Click);
+            // 
+            // btnSPLLD
+            // 
+            this.btnSPLLD.BackColor = System.Drawing.Color.MediumBlue;
+            this.btnSPLLD.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnSPLLD.BackgroundImage")));
+            this.btnSPLLD.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnSPLLD.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSPLLD.ForeColor = System.Drawing.Color.White;
+            this.btnSPLLD.Location = new System.Drawing.Point(44, 186);
+            this.btnSPLLD.Name = "btnSPLLD";
+            this.btnSPLLD.Size = new System.Drawing.Size(142, 66);
+            this.btnSPLLD.TabIndex = 440;
+            this.btnSPLLD.Text = "SPL Load";
+            this.btnSPLLD.UseVisualStyleBackColor = false;
+            this.btnSPLLD.Click += new System.EventHandler(this.btnSPLLD_Click);
+            // 
+            // btnSocketLd
+            // 
+            this.btnSocketLd.BackColor = System.Drawing.Color.MediumBlue;
+            this.btnSocketLd.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnSocketLd.BackgroundImage")));
+            this.btnSocketLd.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnSocketLd.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSocketLd.ForeColor = System.Drawing.Color.White;
+            this.btnSocketLd.Location = new System.Drawing.Point(44, 107);
+            this.btnSocketLd.Name = "btnSocketLd";
+            this.btnSocketLd.Size = new System.Drawing.Size(142, 66);
+            this.btnSocketLd.TabIndex = 441;
+            this.btnSocketLd.Text = "Socket Load";
+            this.btnSocketLd.UseVisualStyleBackColor = false;
+            this.btnSocketLd.Click += new System.EventHandler(this.btnSocketLd_Click);
+            // 
+            // btnCoverDn
+            // 
+            this.btnCoverDn.BackColor = System.Drawing.Color.MediumBlue;
+            this.btnCoverDn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnCoverDn.BackgroundImage")));
+            this.btnCoverDn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnCoverDn.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnCoverDn.ForeColor = System.Drawing.Color.White;
+            this.btnCoverDn.Location = new System.Drawing.Point(44, 29);
+            this.btnCoverDn.Name = "btnCoverDn";
+            this.btnCoverDn.Size = new System.Drawing.Size(142, 66);
+            this.btnCoverDn.TabIndex = 442;
+            this.btnCoverDn.Text = "Cover Down";
+            this.btnCoverDn.UseVisualStyleBackColor = false;
+            this.btnCoverDn.Click += new System.EventHandler(this.btnCoverDn_Click);
+            // 
             // FVision
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(96)))), ((int)(((byte)(96)))), ((int)(((byte)(100)))));
             this.ClientSize = new System.Drawing.Size(1920, 1018);
             this.ControlBox = false;
+            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.tbUncalibratedInfo);
             this.Controls.Add(this.button3);
@@ -1600,6 +1774,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1704,5 +1879,16 @@
         private System.Windows.Forms.RadioButton AFRadio;
         private System.Windows.Forms.RadioButton OISYRadio;
         private System.Windows.Forms.RadioButton OISXRadio;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Button btnSPLUD;
+        private System.Windows.Forms.Button btnSocketUd;
+        private System.Windows.Forms.Button btnCoverUp;
+        private System.Windows.Forms.Button btnSPLLD;
+        private System.Windows.Forms.Button btnSocketLd;
+        private System.Windows.Forms.Button btnCoverDn;
+        private System.Windows.Forms.Label lbSocketState;
+        private System.Windows.Forms.Label lbConState;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label1;
     }
 }

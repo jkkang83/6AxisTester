@@ -57,7 +57,7 @@ namespace FZ4P
         public int PortCnt { get; set; }
         public int ChannelCnt { get; set; }
 
-        public List<bool> IsRun = new List<bool>();
+     
         public List<string> errMsg = new List<string>();
         public List<bool> m_ChannelOn = new List<bool>();
         public List<string> m_StrIndex = new List<string>();
@@ -97,7 +97,7 @@ namespace FZ4P
 
             for (int i = 0; i < PortCnt; i++)
             {
-                IsRun.Add(false);
+              
                 IsScan.Add(false);
                 framCnt.Add(0);
             }
@@ -706,19 +706,19 @@ namespace FZ4P
             if (RepeatRun == 1)
             {
                 CurrentRun = 1;
-                if (IsRun[0]) return;
+                if (Dln.IsRun) return;
 
-                if (!IsRun[0])
+                if (Dln.IsRun)
                 {
-                    IsRun[0] = true;
+                    Dln.IsRun = true;
                     Task.Factory.StartNew(() => LoadTestUnload(0));
                 }
             }
             else
             {
                 CurrentRun = 1;
-                if (IsRun[0]) return;
-                IsRun[0] = true;
+                if (Dln.IsRun) return;
+                Dln.IsRun = true;
                 while (true)
                 {
                  //   ClearChart();
@@ -745,7 +745,7 @@ namespace FZ4P
                 if (Dln.IsSafeOn & Option.SafeSensor)
                 {
                     AddLog(ch, "Safe Sensor Detected. Push Start Button Again..");
-                    IsRun[port] = false;
+                    Dln.IsRun = false;
                     return;
                 }
 
@@ -755,12 +755,12 @@ namespace FZ4P
 
                 RunEnd?.Invoke(null, port);
 
-                IsRun[port] = false;
+                Dln.IsRun = false;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString());
-                IsRun[port] = false;
+                Dln.IsRun = false;
             }
         }
         public void Process_Start(int port)

@@ -152,8 +152,7 @@ namespace FZ4P
         [Option("X Dir Reverse")] public bool XDirReverse { get; set; }
         [Option("Y Dir Reverse")] public bool YDirReverse { get; set; }
         [Option("XY Pos Reverse")] public bool XYPosReverse { get; set; }
-
-
+        [Option("Socket Sensor Use")] public bool SocketSensorUse { get; set; }
     }
     public class Condition
     {

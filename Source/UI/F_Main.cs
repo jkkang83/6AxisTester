@@ -684,6 +684,7 @@ namespace FZ4P
             Model.Save();
 
             InitModel();
+            STATIC.Dln.SetSocketSensor(Option.SocketSensorUse);
         }
 
         private void RemoveItem_Click(object sender, EventArgs e)
