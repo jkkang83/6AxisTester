@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -171,6 +172,13 @@ namespace FZ4P
 
         private void BindingUI()
         {
+
+            int infoCnt = 1;
+            if(STATIC.Rcp.Model.MCType == "Master")
+            {
+                infoCnt = 2;
+            }
+
             for (int i = 0; i < Process.ViewLog.Count; i++)
             {
                 Process.ViewLog[i].box.Location = new Point(3 + 478 * i, 44);
@@ -195,7 +203,7 @@ namespace FZ4P
                 Process.tiltChart[i].Location = new Point(3 + 478 * (i + 1), 117);
                 Controls.Add(Process.tiltChart[i]);
             }
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < infoCnt; i++)
             {
                 Process.InfoBtn[i].btn.Location = new Point(3 + 478 * i, 291);
                 Controls.Add(Process.InfoBtn[i].btn);

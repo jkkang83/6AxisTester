@@ -1,4 +1,5 @@
-﻿using FZ4P.Properties;
+﻿using Basler.Pylon;
+using FZ4P.Properties;
 using OpenCvSharp;
 using OpenCvSharp.Dnn;
 using OpenCvSharp.Flann;
@@ -23,6 +24,7 @@ using System.Xml.Linq;
 using TiltPlot;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace FZ4P
 {
@@ -703,12 +705,14 @@ namespace FZ4P
         }
         public void RunTest()
         {
+
+
             if (RepeatRun == 1)
             {
                 CurrentRun = 1;
                 if (Dln.IsRun) return;
 
-                if (Dln.IsRun)
+                if (!Dln.IsRun)
                 {
                     Dln.IsRun = true;
                     Task.Factory.StartNew(() => LoadTestUnload(0));
@@ -735,11 +739,67 @@ namespace FZ4P
                 }
             }
         }
+
+
+        void LoadSeq()
+        {
+            try
+            {
+                Stopwatch st = new Stopwatch();
+               
+                Dln.CoverUp();
+                Thread.Sleep(500);
+                Dln.LoadSocket();
+                if (Option.SocketSensorUse)
+                {
+                    st.Start();
+                    while (!Dln.GetGpioStatus(12) || Dln.GetGpioStatus(13))
+                    {
+                        if (st.ElapsedMilliseconds > 3000) { MessageBox.Show("Check Socket Sensor Status"); return; }
+                        Thread.Sleep(10);
+                    }
+                    st.Stop();
+                    Thread.Sleep(300);
+                }
+                else Thread.Sleep(2000);
+                Dln.CoverDn();
+
+                Thread.Sleep(500);
+            }
+            catch
+            { }
+        }
+        void UnloadSeq()
+        {
+            try
+            {
+                Stopwatch st = new Stopwatch();             
+                Dln.CoverUp();
+                Thread.Sleep(500);
+                Dln.UnloadSocket();
+                if (Option.SocketSensorUse)
+                {
+                    st.Start();
+                    while (Dln.GetGpioStatus(12) || !Dln.GetGpioStatus(13))
+                    {
+                        if (st.ElapsedMilliseconds > 3000) { MessageBox.Show("Check Socket Sensor Status"); return; }
+                        Thread.Sleep(10);
+                    }
+                    st.Stop();
+                }
+                else Thread.Sleep(500);
+            }
+            catch
+            { }
+        }
+
+
         public void LoadTestUnload(int port)
         {
             try
             {
                 int ch = port * 2;
+                LoadSeq();
                 Process.Wait(100);
 
                 if (Dln.IsSafeOn & Option.SafeSensor)
@@ -755,6 +815,7 @@ namespace FZ4P
 
                 RunEnd?.Invoke(null, port);
 
+                UnloadSeq();
                 Dln.IsRun = false;
             }
             catch (Exception ex)
