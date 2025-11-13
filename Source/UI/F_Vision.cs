@@ -11427,5 +11427,16 @@ namespace FZ4P
             else lbConState.BackColor = Color.White;
 
         }
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+            Process.Dln.WriteArray(0, Process.DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 });
+            Process.Dln.WriteArray(0, Process.DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
+            Process.Dln.WriteArray(0, Process.DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
+
+            STATIC.DrvIC.Move(0, "AF", 2048);
+            STATIC.DrvIC.Move(0, "X", 2048);
+            STATIC.DrvIC.Move(0, "Y", 2048);
+        }
     }
 }

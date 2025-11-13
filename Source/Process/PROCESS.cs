@@ -799,7 +799,7 @@ namespace FZ4P
             try
             {
                 int ch = port * 2;
-                LoadSeq();
+            //    LoadSeq();
                 Process.Wait(100);
 
                 if (Dln.IsSafeOn & Option.SafeSensor)
@@ -815,7 +815,7 @@ namespace FZ4P
 
                 RunEnd?.Invoke(null, port);
 
-                UnloadSeq();
+//                UnloadSeq();
                 Dln.IsRun = false;
             }
             catch (Exception ex)

@@ -136,11 +136,14 @@
             this.btnSPLLD = new System.Windows.Forms.Button();
             this.btnSocketLd = new System.Windows.Forms.Button();
             this.btnCoverDn = new System.Windows.Forms.Button();
+            this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.button2 = new System.Windows.Forms.Button();
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
+            this.groupBox5.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnLEDUP
@@ -1529,7 +1532,7 @@
             this.groupBox1.Controls.Add(this.btnSocketLd);
             this.groupBox1.Controls.Add(this.btnCoverDn);
             this.groupBox1.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
-            this.groupBox1.Location = new System.Drawing.Point(316, 523);
+            this.groupBox1.Location = new System.Drawing.Point(316, 514);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(392, 371);
             this.groupBox1.TabIndex = 510;
@@ -1559,7 +1562,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(142, 23);
             this.label1.TabIndex = 448;
-            this.label1.Text = "Socet Sensor";
+            this.label1.Text = "Socket Sensor";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lbSocketState
@@ -1677,12 +1680,34 @@
             this.btnCoverDn.UseVisualStyleBackColor = false;
             this.btnCoverDn.Click += new System.EventHandler(this.btnCoverDn_Click);
             // 
+            // groupBox5
+            // 
+            this.groupBox5.Controls.Add(this.button2);
+            this.groupBox5.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
+            this.groupBox5.Location = new System.Drawing.Point(316, 891);
+            this.groupBox5.Name = "groupBox5";
+            this.groupBox5.Size = new System.Drawing.Size(392, 100);
+            this.groupBox5.TabIndex = 511;
+            this.groupBox5.TabStop = false;
+            this.groupBox5.Text = "Socket / Cover";
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(120, 24);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(108, 59);
+            this.button2.TabIndex = 0;
+            this.button2.Text = "button2";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click_1);
+            // 
             // FVision
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(96)))), ((int)(((byte)(96)))), ((int)(((byte)(100)))));
             this.ClientSize = new System.Drawing.Size(1920, 1018);
             this.ControlBox = false;
+            this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.tbUncalibratedInfo);
@@ -1775,6 +1800,7 @@
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox1.ResumeLayout(false);
+            this.groupBox5.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1890,5 +1916,7 @@
         private System.Windows.Forms.Label lbConState;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.GroupBox groupBox5;
+        private System.Windows.Forms.Button button2;
     }
 }
