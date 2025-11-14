@@ -163,21 +163,21 @@ namespace FZ4P
             DLNgpio[1].Pins[8].ConditionMetThreadSafe += SWEventHandler;
             DLNgpio[1].Pins[8].SetEventConfiguration(Dln.Gpio.EventType.LevelHigh, 50);
 
-            DLNgpio[1].Pins[20].Enabled = true;
-            DLNgpio[1].Pins[20].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
-
-            DLNgpio[1].Pins[21].Enabled = true;
-            DLNgpio[1].Pins[21].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out
-                                                        //  
-       
-
             DLNgpio[1].Pins[10].Enabled = true;
             DLNgpio[1].Pins[10].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
 
-
+            DLNgpio[1].Pins[20].Enabled = true;
+            DLNgpio[1].Pins[20].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out
+                                                        //  
+       
 
             DLNgpio[1].Pins[11].Enabled = true;
             DLNgpio[1].Pins[11].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+
+
+
+            DLNgpio[1].Pins[21].Enabled = true;
+            DLNgpio[1].Pins[21].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
 
 
             SetSocketSensor(STATIC.Rcp.Option.SocketSensorUse);
@@ -258,8 +258,8 @@ namespace FZ4P
            
             lock(I2cLock)
             {
-                DLNgpio[1].Pins[20].OutputValue = 1;
-                DLNgpio[1].Pins[21].OutputValue = 0;
+                DLNgpio[1].Pins[10].OutputValue = 1;
+                DLNgpio[1].Pins[20].OutputValue = 0;
             }
 
         }
@@ -269,8 +269,8 @@ namespace FZ4P
           
             lock(I2cLock)
             {
-                DLNgpio[1].Pins[20].OutputValue = 0;
-                DLNgpio[1].Pins[21].OutputValue = 1;
+                DLNgpio[1].Pins[10].OutputValue = 0;
+                DLNgpio[1].Pins[20].OutputValue = 1;
             }
 
         }
@@ -280,8 +280,8 @@ namespace FZ4P
             if (DLNgpio == null) return;
             lock(I2cLock)
             {
-                DLNgpio[1].Pins[10].OutputValue = 1;
-                DLNgpio[1].Pins[11].OutputValue = 0;
+                DLNgpio[1].Pins[11].OutputValue = 1;
+                DLNgpio[1].Pins[21].OutputValue = 0;
 
             }
 
@@ -291,8 +291,8 @@ namespace FZ4P
             if (DLNgpio == null) return;
             lock(I2cLock)
             {
-                DLNgpio[1].Pins[10].OutputValue = 0;
-                DLNgpio[1].Pins[11].OutputValue = 1;
+                DLNgpio[1].Pins[11].OutputValue = 0;
+                DLNgpio[1].Pins[21].OutputValue = 1;
             }
 
         }

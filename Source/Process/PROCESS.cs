@@ -799,6 +799,7 @@ namespace FZ4P
             try
             {
                 int ch = port * 2;
+                Dln.PowerOnOff(port, false);
             //    LoadSeq();
                 Process.Wait(100);
 
