@@ -142,10 +142,10 @@ namespace FZ4P
             {
                 STATIC.TcpConn.OnReceive += TcpConn_OnReceive;
                 STATIC.TcpConn.OnStatus += TcpConn_OnStatus;
-                if (Model.MCType == "Master")
-                    STATIC.TcpConn.connect(5000);
-                else
-                    STATIC.TcpConn.connect("192.168.100.2", 5000);
+                if (Model.MCType == "Master") STATIC.TcpConn.connect(5000);
+                else if (Model.MCType == "Handler") STATIC.TcpConn.connect("192.168.1.100", 5000);
+                else if(Model.MCType == "Slave") STATIC.TcpConn.connect("192.168.100.2", 5000);
+
             }
         }
 

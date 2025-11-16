@@ -53,10 +53,11 @@ namespace FZ4P
             Model.Changed += Model_Changed;
             BindingUI();
 
-         
+
 
             if (Model.MCType == "Master") lbMCtype.Text = "PORT 1";
             else if (Model.MCType == "Slave") { lbMCtype.Text = "PORT 2"; }
+            else if (Model.MCType == "Handler") { lbMCtype.Text = "Handler"; }
             else lbMCtype.Text = "Normal";
 
         }
@@ -96,6 +97,11 @@ namespace FZ4P
                 string s = Process.errMsg[0] == "" ? "PASS" : Process.errMsg[0];
                 STATIC.TcpConn.SendMessage($"Res.{s}");
 
+            }
+            if(Model.MCType == "Handler")
+            {
+                string s = Process.errMsg[0] == "" ? "OK" : "NG";
+                STATIC.TcpConn.SendMessage(s);
             }
 
             if (InvokeRequired)

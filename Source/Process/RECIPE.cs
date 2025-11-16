@@ -897,6 +897,7 @@ namespace FZ4P
             MCTypeList.Add("Normal");
             MCTypeList.Add("Master");
             MCTypeList.Add("Slave");
+            MCTypeList.Add("Handler");
 
             Read();
         }
