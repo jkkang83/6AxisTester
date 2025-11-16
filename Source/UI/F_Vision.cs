@@ -19,6 +19,7 @@ using System.Drawing.Drawing2D;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
+using System.Net.Sockets;
 using System.Reflection.Emit;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Threading;
@@ -49,7 +50,7 @@ namespace FZ4P
         public Global m__G;
         private Camera[] BaslerCam = new Camera[2];
         public F_Main MyOwner = null;
-
+       
         public int mTmpCount = 0;
 
         //public int m_TiltLUTcount = 100; //  Default Value
@@ -318,6 +319,7 @@ namespace FZ4P
 
           
             ScanName = "AF Scan";
+          
         }
         public void BufferInit()
         {
@@ -3883,45 +3885,8 @@ namespace FZ4P
             mb_FinishCalcVision[iBuf] = true;
         }
 
-
-        private void ScanFOV()
-        {
-            int Cam = m_FocusedLED;
-            int l_OrgROIV_min = v_OrgROIV_min[Cam];
-
-            //label6.Text = "Live On";
-            m__G.oCam[0].LiveA();
-
-            if (m__G.mCamCount > 1)
-                m__G.oCam[1].LiveA();
-
-            int i = 1;
-            for (; i < 1069 - v_OrgROIV_height[Cam]; i += 10)
-            {
-                v_OrgROIV_min[Cam] = i;
-                tbVsnLog.Text = "X " + v_OrgROIH_min[Cam] + "-" + (v_OrgROIH_min[Cam] + v_OrgROIH_width[Cam]) + ": Y " + v_OrgROIV_min[Cam] + "-" + (v_OrgROIV_min[Cam] + v_OrgROIV_height[Cam]) + "\r\n";
-                SetNewROIXY(Cam, v_OrgROIH_min[Cam], (v_OrgROIH_min[Cam] + v_OrgROIH_width[Cam]), v_OrgROIV_min[Cam], (v_OrgROIV_min[Cam] + v_OrgROIV_height[Cam]));
-                Thread.Sleep(30);
-            }
-            for (; i > 10; i -= 10)
-            {
-                v_OrgROIV_min[Cam] = i;
-                tbVsnLog.Text = "X " + v_OrgROIH_min[Cam] + "-" + (v_OrgROIH_min[Cam] + v_OrgROIH_width[Cam]) + ": Y " + v_OrgROIV_min[Cam] + "-" + (v_OrgROIV_min[Cam] + v_OrgROIV_height[Cam]) + "\r\n";
-                SetNewROIXY(Cam, v_OrgROIH_min[Cam], (v_OrgROIH_min[Cam] + v_OrgROIH_width[Cam]), v_OrgROIV_min[Cam], (v_OrgROIV_min[Cam] + v_OrgROIV_height[Cam]));
-                Thread.Sleep(30);
-            }
-            v_OrgROIV_min[Cam] = l_OrgROIV_min;
-            tbVsnLog.Text = "X " + v_OrgROIH_min[Cam] + "-" + (v_OrgROIH_min[Cam] + v_OrgROIH_width[Cam]) + ": Y " + v_OrgROIV_min[Cam] + "-" + (v_OrgROIV_min[Cam] + v_OrgROIV_height[Cam]) + "\r\n";
-            SetNewROIXY(Cam, v_OrgROIH_min[Cam], (v_OrgROIH_min[Cam] + v_OrgROIH_width[Cam]), v_OrgROIV_min[Cam], (v_OrgROIV_min[Cam] + v_OrgROIV_height[Cam]));
-        }
-
-        private void btnLEDDOWN_R_Click(object sender, EventArgs e)
-        {
-        }
-
-        private void btnLEDUP_R_Click(object sender, EventArgs e)
-        {
-        }
+      
+     
 
         private void btnBack_Click(object sender, EventArgs e)
         {
@@ -3964,49 +3929,6 @@ namespace FZ4P
             }
 
         }
-
-        private void rbLED3_CheckedChanged(object sender, EventArgs e)
-        {
-        }
-
-        private void rbLED4_CheckedChanged(object sender, EventArgs e)
-        {
-        }
-
-        private void btnLoadUnloadAll_Click(object sender, EventArgs e)
-        {
-            if (!mSocketLoaded[0])
-            {
-                //if (F_Main.MachineType == (int)MachineType.Master)
-                //{
-                //    string tmpstr = "01LD";
-                //    m__G.fManage.PC2SendData("VBC", tmpstr, tmpstr.Length, 2);
-                //}
-                //m__G.fGraph.socket_IN(0);
-                mSocketLoaded[0] = true;
-                if (m__G.mCamCount > 1)
-                {
-                    //m__G.fGraph.socket_IN(1);
-                    mSocketLoaded[1] = true;
-                }
-            }
-            else
-            {
-                //if (F_Main.MachineType == (int)MachineType.Master)
-                //{
-                //    string tmpstr = "01UD";
-                //    m__G.fManage.PC2SendData("VBC", tmpstr, tmpstr.Length, 2);
-                //}
-                //m__G.fGraph.socket_OUT(0);
-                mSocketLoaded[0] = false;
-                if (m__G.mCamCount > 1)
-                {
-                    //m__G.fGraph.socket_OUT(1);
-                    mSocketLoaded[1] = false;
-                }
-            }
-        }
-
         public int saveCount = 0;
         private void btnAllLEDOn_Click(object sender, EventArgs e)
         {
@@ -4030,67 +3952,7 @@ namespace FZ4P
                 m__G.mIDLEcount = 0;
             }
         }
-        public int MeasureTXTY(ref double[] l_StrokeL, ref double[] l_StrokeR, ref double[] l_YawL, ref double[] l_YawR, ref double[] l_PitchL, ref double[] l_PitchR)
-        {
-            double[] sYaw = new double[4];
-            double[] sPitch = new double[4];
-            double[] cx = new double[8];
-            double[] cy = new double[8];
-            double[] sYaw2 = new double[4];
-            double[] sPitch2 = new double[4];
-            double[] cx2 = new double[8];
-            double[] cy2 = new double[8];
-            int res0 = 0;
-
-            m__G.oCam[0].Grab();
-
-            m__G.oCam[0].FineCOG(true, 0, 0);
-
-            return res0;
-        }
-
-        public void ToViet(bool IsToViet = true)
-        {
-            if (IsToViet)
-            {
-                btnBack.Text = "lùi lại sau";
-                btnLive2.Text = "Video trực tiếp";
-                btnHalt2.Text = "tạm dừng lại";
-                btnClear1.Text = "khởi tạo";
-                btnOISXReplay.Text = "phát lại X";
-                btnOISXStepReplay.Text = "phát lại Step X";
-                btnAllLEDOn.Text = "All LED OnOff";
-                btnFOVUp.Text = "lên FOV";
-                btnFOVLeft.Text = "Bên trái FOV";
-                btnFOVRight.Text = "bên phải FOV";
-                btnFOVDown.Text = "phía dưới FOV";
-                btnFindMarks.Text = "tìm kiếm Marks";
-                //btnSetAbsZero.Text = "đặt số không with Master Spl";
-
-                rbLED1.Text = "Bên trái LED";
-                rbLED2.Text = "bên phải LED";
-            }
-            else
-            {
-                btnBack.Text = "Back";
-                btnLive2.Text = "Live";
-                btnHalt2.Text = "Halt";
-                btnClear1.Text = "Clear";
-                btnOISXReplay.Text = "X Replay";
-                btnOISXStepReplay.Text = "AF Step Replay	";
-                btnAllLEDOn.Text = "All LED OnOff";
-                btnFOVUp.Text = "FOV Up";
-                btnFOVLeft.Text = "FOV Right";
-                btnFOVRight.Text = "FOV Left";
-                btnFOVDown.Text = "FOV Down";
-                btnFindMarks.Text = "Find Marks";
-                //btnSetAbsZero.Text = "Set Zero with Master Spl";
-
-                rbLED1.Text = "LED Left";
-                rbLED2.Text = "LED Right";
-            }
-        }
-
+        
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -11273,6 +11135,8 @@ namespace FZ4P
             if (Visible)
             {
                 InitMasterZeroList();
+                UpdateSensorState();
+                InitConstatus();
                 //MasterList.SelectedIndex = GetMasterZeroIndex();
             }
         }
@@ -11321,5 +11185,259 @@ namespace FZ4P
                     break;
             }
         }
+
+        private void btnCoverDn_Click(object sender, EventArgs e)
+        {
+            if (Dln.isMoving || Dln.IsRun) return;
+            Dln.isMoving = true;
+            Dln.CoverDn();
+            Dln.isMoving = false;
+        }
+
+        private void btnCoverUp_Click(object sender, EventArgs e)
+        {
+            if (Dln.isMoving || Dln.IsRun) return;
+            Dln.isMoving = true;
+            Dln.CoverUp();
+            Dln.isMoving = false;
+        }
+
+        private void btnSocketLd_Click(object sender, EventArgs e)
+        {
+            Stopwatch st = new Stopwatch();
+            if (Dln.isMoving || Dln.IsRun) return;
+            Dln.isMoving = true;
+            Dln.CoverUp();
+            Thread.Sleep(500);
+            Dln.LoadSocket();
+            if (Option.SocketSensorUse)
+            {
+                st.Start();
+                while (!Dln.GetGpioStatus(12) || Dln.GetGpioStatus(13))
+                {
+                    if (st.ElapsedMilliseconds > 3000) { MessageBox.Show("Check Socket Sensor Status"); Dln.isMoving = false; return; }
+                    Thread.Sleep(10);
+                }
+                st.Stop();
+            }
+            else Thread.Sleep(2000);
+            UpdateSensorState();
+            Dln.isMoving = false;
+
+        }
+        private void btnSocketUd_Click(object sender, EventArgs e)
+        {
+            Stopwatch st = new Stopwatch();
+            if (Dln.isMoving || Dln.IsRun) return;
+            Dln.isMoving = true;
+            Dln.CoverUp();
+            Thread.Sleep(500);
+            Dln.UnloadSocket();
+            if (Option.SocketSensorUse)
+            {
+                st.Start();
+                while (Dln.GetGpioStatus(12) || !Dln.GetGpioStatus(13))
+                {
+                    if (st.ElapsedMilliseconds > 3000) { MessageBox.Show("Check Socket Sensor Status"); Dln.isMoving = false; return; }
+                    Thread.Sleep(10);
+                }
+                st.Stop();
+            }
+            else Thread.Sleep(500);
+            UpdateSensorState();
+            Dln.isMoving = false;
+        }
+     
+
+        void LoadSample()
+        {
+            try
+            {
+                Stopwatch st = new Stopwatch();
+
+                
+                Dln.CoverUp();
+                Thread.Sleep(500);
+                Dln.LoadSocket();
+                if (Option.SocketSensorUse)
+                {
+                    st.Start();
+                    while (!Dln.GetGpioStatus(12) || Dln.GetGpioStatus(13))
+                    {
+                        if (st.ElapsedMilliseconds > 3000) { MessageBox.Show("Check Socket Sensor Status"); Dln.isMoving = false; return; }
+                        Thread.Sleep(10);
+                    }
+                    st.Stop();
+                    Thread.Sleep(300);
+                }
+                else Thread.Sleep(2000);
+                UpdateSensorState();
+                Dln.CoverDn();
+                Thread.Sleep(500);
+                UpdateConState();
+
+                Dln.isMoving = false;
+            }
+            catch { Dln.isMoving = false; }
+        }
+        void UnloadSample()
+        {
+            try
+            {
+                Stopwatch st = new Stopwatch();
+                Dln.CoverUp();
+                Thread.Sleep(500);
+                Dln.UnloadSocket();
+                if (Option.SocketSensorUse)
+                {
+                    st.Start();
+                    while (Dln.GetGpioStatus(12) || !Dln.GetGpioStatus(13))
+                    {
+                        if (st.ElapsedMilliseconds > 3000) { MessageBox.Show("Check Socket Sensor Status"); Dln.isMoving = false; return; }
+                        Thread.Sleep(10);
+                    }
+                    st.Stop();
+                }
+                else Thread.Sleep(500);
+                UpdateSensorState();
+                InitConstatus();
+               
+                Dln.isMoving = false;
+            }
+            catch { Dln.isMoving = false; }
+        }
+
+        private void btnSPLLD_Click(object sender, EventArgs e)
+        {
+            if (Dln.isMoving || Dln.IsRun) return;
+            Dln.isMoving = true;
+            Task.Run(() => LoadSample());
+        }
+
+        private void btnSPLUD_Click(object sender, EventArgs e)
+        {
+            if (Dln.isMoving || Dln.IsRun) return;
+            Dln.isMoving = true;
+            Task.Run(() => UnloadSample());
+        }
+
+        void UpdateSensorState()
+        {
+            if (Option.SocketSensorUse)
+            {
+                if (Dln.GetGpioStatus(12) && !Dln.GetGpioStatus(13))
+                {
+                    if (lbSocketState.InvokeRequired)
+                    {
+                        lbSocketState.BeginInvoke((MethodInvoker)delegate
+                        {
+                            lbSocketState.BackColor = Color.Lime;
+                        });
+                    }
+                    else
+                        lbSocketState.BackColor = Color.Lime;
+                }
+                else if (!Dln.GetGpioStatus(12) && Dln.GetGpioStatus(13))
+                {
+                    if (lbSocketState.InvokeRequired)
+                    {
+                        lbSocketState.BeginInvoke((MethodInvoker)delegate
+                        {
+                            lbSocketState.BackColor = Color.White;
+                        });
+                    }
+                    else
+                        lbSocketState.BackColor = Color.White;
+                }
+                else
+                {
+                    if (lbSocketState.InvokeRequired)
+                    {
+                        lbSocketState.BeginInvoke((MethodInvoker)delegate
+                        {
+                            lbSocketState.BackColor = Color.DarkGray;
+                        });
+                    }
+                    else
+                        lbSocketState.BackColor = Color.DarkGray;
+                }
+            }
+            else
+            {
+                if (lbSocketState.InvokeRequired)
+                {
+                    lbSocketState.BeginInvoke((MethodInvoker)delegate
+                    {
+                        lbSocketState.BackColor = Color.White;
+                    });
+                }
+                else
+                    lbSocketState.BackColor = Color.White;
+            }
+        }
+        void UpdateConState()
+        {
+
+            bool Constate = true;
+
+            if (!Process.Dln.WriteArray(0, Process.DrvIC.AFOriginAddr, 0x02, new byte[] { 0x40 }) && !Process.Dln.WriteArray(0, Process.DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x40 })) Constate = false;
+            if (!Process.Dln.WriteArray(0, Process.DrvIC.XOriginAddr, 0x02, new byte[] { 0x40 }) && !Process.Dln.WriteArray(0, Process.DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 })) Constate = false;
+            if (!Process.Dln.WriteArray(0, Process.DrvIC.Y1OriginAddr, 0x02, new byte[] { 0x40 }) && !Process.Dln.WriteArray(0, Process.DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 })) Constate = false;
+            if (Process.DrvIC.Y2SlaveAddr != 0x00)
+            {
+                if (!Process.Dln.WriteArray(0, Process.DrvIC.Y2OriginAddr, 0x02, new byte[] { 0x40 })
+                    && !Process.Dln.WriteArray(0, Process.DrvIC.Y2SlaveAddr, 0x02, new byte[] { 0x40 })) Constate = false;
+            }
+
+            if (Constate)
+            {
+                if (lbConState.InvokeRequired)
+                {
+                    lbConState.BeginInvoke((MethodInvoker)delegate
+                    {
+                        lbConState.BackColor = Color.Lime;
+                    });
+                }
+                else lbConState.BackColor = Color.Lime;
+
+            }
+            else
+            {
+                if (lbConState.InvokeRequired)
+                {
+                    lbConState.BeginInvoke((MethodInvoker)delegate
+                    {
+                        lbConState.BackColor = Color.White;
+                    });
+                }
+                else lbConState.BackColor = Color.White;
+
+            }
+
+        }
+        void InitConstatus()
+        {
+            if (lbConState.InvokeRequired)
+            {
+                lbConState.BeginInvoke((MethodInvoker)delegate
+                {
+                    lbConState.BackColor = Color.White;
+                });
+            }
+            else lbConState.BackColor = Color.White;
+
+        }
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+            Process.Dln.WriteArray(0, Process.DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x00 });
+            Process.Dln.WriteArray(0, Process.DrvIC.XSlaveAddr, 0x02, new byte[] { 0x00 });
+            Process.Dln.WriteArray(0, Process.DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x00 });
+
+            STATIC.DrvIC.Move(0, "AF", 2048);
+            STATIC.DrvIC.Move(0, "X", 2048);
+            STATIC.DrvIC.Move(0, "Y", 2048);
+        }
+
     }
 }

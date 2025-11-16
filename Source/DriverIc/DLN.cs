@@ -20,6 +20,8 @@ namespace FZ4P
         public event EventHandler SwitchOn = null;
         public event EventHandler SafetyOn = null;
         private bool isSafeOn = false;
+        public bool IsRun = false;
+        public bool isMoving = false;
         public bool IsSafeOn
         {
             get { return isSafeOn; }
@@ -102,33 +104,33 @@ namespace FZ4P
                 DLNdevice[i].Gpio.Pins[7].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
                 DLNdevice[i].Gpio.Pins[7].PulldownEnabled = true;
 
-                // 스위치
-                DLNdevice[i].Gpio.Pins[8].Enabled = true;
-                DLNdevice[i].Gpio.Pins[8].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
-                DLNdevice[i].Gpio.Pins[8].PulldownEnabled = true;
+                //// 스위치
+                //DLNdevice[i].Gpio.Pins[8].Enabled = true;
+                //DLNdevice[i].Gpio.Pins[8].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+                //DLNdevice[i].Gpio.Pins[8].PulldownEnabled = true;
 
                 //I2C 0x24관련    OIS_RESET
-                DLNdevice[i].Gpio.Pins[14].Enabled = true;
-                DLNdevice[i].Gpio.Pins[14].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
-                DLNdevice[i].Gpio.Pins[14].PulldownEnabled = true;
+                //DLNdevice[i].Gpio.Pins[14].Enabled = true;
+                //DLNdevice[i].Gpio.Pins[14].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+                //DLNdevice[i].Gpio.Pins[14].PulldownEnabled = true;
 
-                DLNdevice[i].Gpio.Pins[15].Enabled = true;
-                DLNdevice[i].Gpio.Pins[15].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
-                DLNdevice[i].Gpio.Pins[15].PulldownEnabled = true;
+                //DLNdevice[i].Gpio.Pins[15].Enabled = true;
+                //DLNdevice[i].Gpio.Pins[15].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+                //DLNdevice[i].Gpio.Pins[15].PulldownEnabled = true;
 
                 // 실린더
-                DLNdevice[i].Gpio.Pins[24].Enabled = true;
-                DLNdevice[i].Gpio.Pins[24].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+                //DLNdevice[i].Gpio.Pins[24].Enabled = true;
+                //DLNdevice[i].Gpio.Pins[24].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
 
-                DLNdevice[i].Gpio.Pins[25].Enabled = true;
-                DLNdevice[i].Gpio.Pins[25].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+                //DLNdevice[i].Gpio.Pins[25].Enabled = true;
+                //DLNdevice[i].Gpio.Pins[25].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
 
-                // FailLED
-                DLNdevice[i].Gpio.Pins[26].Enabled = true;
-                DLNdevice[i].Gpio.Pins[26].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
-                                                            // FailLED
-                DLNdevice[i].Gpio.Pins[27].Enabled = true;
-                DLNdevice[i].Gpio.Pins[27].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+                //// FailLED
+                //DLNdevice[i].Gpio.Pins[26].Enabled = true;
+                //DLNdevice[i].Gpio.Pins[26].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+                //                                            // FailLED
+                //DLNdevice[i].Gpio.Pins[27].Enabled = true;
+                //DLNdevice[i].Gpio.Pins[27].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
 
                 Thread.Sleep(100);
 
@@ -142,21 +144,7 @@ namespace FZ4P
                 if (res[1] == 1)
                     portID += 2;
 
-                if (portID == 0 || portID == 2) //안전센서는 0만 연결
-                {
-                    DLNdevice[i].Gpio.Pins[9].Enabled = true;
-                    DLNdevice[i].Gpio.Pins[9].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
-                    DLNdevice[i].Gpio.Pins[9].PulldownEnabled = true;
-                }
-                else
-                {
-                    DLNdevice[i].Gpio.Pins[9].Enabled = true;
-                    DLNdevice[i].Gpio.Pins[9].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
-                    DLNdevice[i].Gpio.Pins[9].OutputValue = 1;
-                    DLNdevice[i].Gpio.Pins[9].PulldownEnabled = true;
-                    //  Driver IC Power On
-                }
-
+           
                 int portCount = DLNdevice[i].I2cMaster.Ports.Count;
                 if (portCount == 0)
                 {
@@ -167,16 +155,43 @@ namespace FZ4P
                 DLNgpio[portID] = DLNdevice[i].Gpio;
             }
 
-            DLNgpio[2].Pins[9].Enabled = true;
-            DLNgpio[2].Pins[9].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
-            DLNgpio[2].Pins[9].OutputValue = 1;
-            DLNgpio[2].Pins[9].PulldownEnabled = true;
+            DLNgpio[1].Pins[9].Enabled = true;
+            DLNgpio[1].Pins[9].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+            DLNgpio[1].Pins[9].OutputValue = 1;
+            DLNgpio[1].Pins[9].PulldownEnabled = true;
 
             DLNgpio[1].Pins[8].ConditionMetThreadSafe += SWEventHandler;
             DLNgpio[1].Pins[8].SetEventConfiguration(Dln.Gpio.EventType.LevelHigh, 50);
 
+            DLNgpio[1].Pins[10].Enabled = true;
+            DLNgpio[1].Pins[10].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+
+            DLNgpio[1].Pins[20].Enabled = true;
+            DLNgpio[1].Pins[20].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out
+                                                        //  
+       
+
+            DLNgpio[1].Pins[11].Enabled = true;
+            DLNgpio[1].Pins[11].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+
+
+
+            DLNgpio[1].Pins[21].Enabled = true;
+            DLNgpio[1].Pins[21].Direction = 1;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+
+
+            SetSocketSensor(STATIC.Rcp.Option.SocketSensorUse);
+
+
+            //DLNgpio[1].Pins[12].ConditionMetThreadSafe += DLN_ConditionMetThreadSafe;
+            //DLNgpio[1].Pins[12].SetEventConfiguration(Dln.Gpio.EventType.Change, 50);
+            //DLNgpio[1].Pins[13].ConditionMetThreadSafe += DLN_ConditionMetThreadSafe;
+            //DLNgpio[1].Pins[13].SetEventConfiguration(Dln.Gpio.EventType.Change, 50);
+
             //DLNgpio[0].Pins[9].ConditionMetThreadSafe += SafeEventHandler;
             //DLNgpio[0].Pins[9].SetEventConfiguration(Dln.Gpio.EventType.LevelLow, 50);
+
+
 
             //if (DLNgpio.Length <= 2)
             //{
@@ -190,6 +205,25 @@ namespace FZ4P
             //}
             return true;
         }
+        public static bool SocIn = false;
+        public static bool SocOut = false;
+        private void DLN_ConditionMetThreadSafe(object sender, Dln.Gpio.ConditionMetEventArgs e)
+        {
+            switch(e.Pin)
+            {
+                case 12:
+                    if (e.Value == 1)
+                        SocIn = true;
+                    else SocIn = false;
+                        break;
+                case 13:
+                    if (e.Value == 1)
+                        SocOut = true;
+                    else SocOut = false;
+                    break;
+            }
+        }
+
         private void SWEventHandler(object sender, Dln.Gpio.ConditionMetEventArgs e)
         {
             if (e.Value == 1 && !IsSwitch)
@@ -204,6 +238,7 @@ namespace FZ4P
                 IsSwitch = false;
             }
         }
+        
         private void SafeEventHandler(object sender, Dln.Gpio.ConditionMetEventArgs e)
         {
             if (e.Value == 1)
@@ -217,21 +252,49 @@ namespace FZ4P
                 IsSafeOn = true;
             }
         }
-        public void UnloadSocket(int port)
+        public void LoadSocket()
         {
             if (DLNgpio == null) return;
-            int ch = port * 2;
-            DLNgpio[ch].Pins[24].OutputValue = 1;
-            DLNgpio[ch].Pins[25].OutputValue = 0;
-            IsLoad[ch] = false;
+           
+            lock(I2cLock)
+            {
+                DLNgpio[1].Pins[10].OutputValue = 1;
+                DLNgpio[1].Pins[20].OutputValue = 0;
+            }
+
         }
-        public void LoadSocket(int port)
+        public void UnloadSocket()
         {
             if (DLNgpio == null) return;
-            int ch = port * 2;
-            DLNgpio[ch].Pins[24].OutputValue = 0;
-            DLNgpio[ch].Pins[25].OutputValue = 1;
-            IsLoad[ch] = true;
+          
+            lock(I2cLock)
+            {
+                DLNgpio[1].Pins[10].OutputValue = 0;
+                DLNgpio[1].Pins[20].OutputValue = 1;
+            }
+
+        }
+
+        public void CoverDn()
+        {
+            if (DLNgpio == null) return;
+            lock(I2cLock)
+            {
+                DLNgpio[1].Pins[11].OutputValue = 1;
+                DLNgpio[1].Pins[21].OutputValue = 0;
+
+            }
+
+        }
+        public void CoverUp()
+        {
+            if (DLNgpio == null) return;
+            lock(I2cLock)
+            {
+                DLNgpio[1].Pins[11].OutputValue = 0;
+                DLNgpio[1].Pins[21].OutputValue = 1;
+            }
+
         }
         public void SetLEDpower(int id, int value)
         {
@@ -332,13 +395,13 @@ namespace FZ4P
 
                 STATIC.Process.AddLog(0, $"Power On");
 
-                lock (I2cLock) DLNgpio[2].Pins[9].Direction = 1;
+                lock (I2cLock) DLNgpio[1].Pins[9].Direction = 1;
               
             }
             else
             {
                 STATIC.Process.AddLog(0, $"Power Off");
-                lock (I2cLock) DLNgpio[2].Pins[9].Direction = 0;
+                lock (I2cLock) DLNgpio[1].Pins[9].Direction = 0;
               
             }
         }
@@ -410,5 +473,32 @@ namespace FZ4P
                 return false;
             }
         }
+        public void SetSocketSensor(bool isOn)
+        {
+            if(isOn)
+            {
+                DLNgpio[1].Pins[12].Enabled = true;
+                DLNgpio[1].Pins[12].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+                DLNgpio[1].Pins[12].PulldownEnabled = true;
+                DLNgpio[1].Pins[13].Enabled = true;
+                DLNgpio[1].Pins[13].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+                DLNgpio[1].Pins[13].PulldownEnabled = true;
+
+            }
+        }
+        public bool GetGpioStatus(int input)
+        {
+            try
+            {              
+                lock (I2cLock)
+                {
+                    if (DLNgpio[1].Pins[input].Value == 1) return true;
+                    else return false;
+                }
+            }
+            catch { return false; }
+
+        }
+
     }
 }

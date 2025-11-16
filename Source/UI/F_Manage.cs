@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -177,6 +178,13 @@ namespace FZ4P
 
         private void BindingUI()
         {
+
+            int infoCnt = 1;
+            if(STATIC.Rcp.Model.MCType == "Master")
+            {
+                infoCnt = 2;
+            }
+
             for (int i = 0; i < Process.ViewLog.Count; i++)
             {
                 Process.ViewLog[i].box.Location = new Point(3 + 478 * i, 44);
@@ -201,7 +209,7 @@ namespace FZ4P
                 Process.tiltChart[i].Location = new Point(3 + 478 * (i + 1), 117);
                 Controls.Add(Process.tiltChart[i]);
             }
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < infoCnt; i++)
             {
                 Process.InfoBtn[i].btn.Location = new Point(3 + 478 * i, 291);
                 Controls.Add(Process.InfoBtn[i].btn);
@@ -297,7 +305,7 @@ namespace FZ4P
 
         private void DriverIC_SwitchOn(object sender, EventArgs e)
         {
-            if (Process.IsRun[0]) return;
+            if (STATIC.Dln.IsRun) return;
             Process.RepeatRun = 1;
            // Process.m_StrIndex[0] = textBox1.Text;
          //   Process.m_StrIndex[1] = textBox2.Text;
@@ -352,13 +360,11 @@ namespace FZ4P
         }
         private async void RepeatStartTest_Click(object sender, EventArgs e)
         {
-            if (Process.IsRun[0]) return;
+            if (STATIC.Dln.IsRun) return;
             Process.RepeatRun = int.Parse(RepeatRunCnt.Text);
             Process.CurrentRun = 1;
 
-          //  Process.m_StrIndex[0] = textBox1.Text;
-            //Process.m_StrIndex[1] = textBox2.Text;
-
+     
             Process.ClearChart();
             foreach (var l in Process.ViewLog) l.Clear();
 
@@ -643,7 +649,7 @@ namespace FZ4P
         {
             //tbUncalibratedInfo.BeginInvoke(new Action(() => { tbUncalibratedInfo.Visible = visible; }));
         }
-
+       
      
     }
 }

@@ -1,4 +1,5 @@
-﻿using FZ4P.Properties;
+﻿using Basler.Pylon;
+using FZ4P.Properties;
 using OpenCvSharp;
 using OpenCvSharp.Dnn;
 using OpenCvSharp.Flann;
@@ -23,6 +24,7 @@ using System.Xml.Linq;
 using TiltPlot;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace FZ4P
 {
@@ -57,7 +59,7 @@ namespace FZ4P
         public int PortCnt { get; set; }
         public int ChannelCnt { get; set; }
 
-        public List<bool> IsRun = new List<bool>();
+     
         public List<string> errMsg = new List<string>();
         public List<bool> m_ChannelOn = new List<bool>();
         public List<string> m_StrIndex = new List<string>();
@@ -97,7 +99,7 @@ namespace FZ4P
 
             for (int i = 0; i < PortCnt; i++)
             {
-                IsRun.Add(false);
+              
                 IsScan.Add(false);
                 framCnt.Add(0);
             }
@@ -703,22 +705,24 @@ namespace FZ4P
         }
         public void RunTest()
         {
+
+
             if (RepeatRun == 1)
             {
                 CurrentRun = 1;
-                if (IsRun[0]) return;
+                if (Dln.IsRun) return;
 
-                if (!IsRun[0])
+                if (!Dln.IsRun)
                 {
-                    IsRun[0] = true;
+                    Dln.IsRun = true;
                     Task.Factory.StartNew(() => LoadTestUnload(0));
                 }
             }
             else
             {
                 CurrentRun = 1;
-                if (IsRun[0]) return;
-                IsRun[0] = true;
+                if (Dln.IsRun) return;
+                Dln.IsRun = true;
                 while (true)
                 {
                  //   ClearChart();
@@ -735,17 +739,74 @@ namespace FZ4P
                 }
             }
         }
+
+
+        void LoadSeq()
+        {
+            try
+            {
+                Stopwatch st = new Stopwatch();
+               
+                Dln.CoverUp();
+                Thread.Sleep(500);
+                Dln.LoadSocket();
+                if (Option.SocketSensorUse)
+                {
+                    st.Start();
+                    while (!Dln.GetGpioStatus(12) || Dln.GetGpioStatus(13))
+                    {
+                        if (st.ElapsedMilliseconds > 3000) { MessageBox.Show("Check Socket Sensor Status"); return; }
+                        Thread.Sleep(10);
+                    }
+                    st.Stop();
+                    Thread.Sleep(300);
+                }
+                else Thread.Sleep(2000);
+                Dln.CoverDn();
+
+                Thread.Sleep(500);
+            }
+            catch
+            { }
+        }
+        void UnloadSeq()
+        {
+            try
+            {
+                Stopwatch st = new Stopwatch();             
+                Dln.CoverUp();
+                Thread.Sleep(500);
+                Dln.UnloadSocket();
+                if (Option.SocketSensorUse)
+                {
+                    st.Start();
+                    while (Dln.GetGpioStatus(12) || !Dln.GetGpioStatus(13))
+                    {
+                        if (st.ElapsedMilliseconds > 3000) { MessageBox.Show("Check Socket Sensor Status"); return; }
+                        Thread.Sleep(10);
+                    }
+                    st.Stop();
+                }
+                else Thread.Sleep(500);
+            }
+            catch
+            { }
+        }
+
+
         public void LoadTestUnload(int port)
         {
             try
             {
                 int ch = port * 2;
+                Dln.PowerOnOff(port, false);
+            //    LoadSeq();
                 Process.Wait(100);
 
                 if (Dln.IsSafeOn & Option.SafeSensor)
                 {
                     AddLog(ch, "Safe Sensor Detected. Push Start Button Again..");
-                    IsRun[port] = false;
+                    Dln.IsRun = false;
                     return;
                 }
 
@@ -755,12 +816,13 @@ namespace FZ4P
 
                 RunEnd?.Invoke(null, port);
 
-                IsRun[port] = false;
+//                UnloadSeq();
+                Dln.IsRun = false;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString());
-                IsRun[port] = false;
+                Dln.IsRun = false;
             }
         }
         public void Process_Start(int port)
