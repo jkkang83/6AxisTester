@@ -842,6 +842,8 @@ namespace FZ4P
                 try
                 {
                     STATIC.LogDate = DateTime.Now;
+                    ShowDataResultsInit(0);
+                  
                     Dln.PowerOnOff(port, true);
                     m__G.oCam[port].ResetmCpXY();
                     int ch = port * 2;
@@ -947,7 +949,7 @@ namespace FZ4P
 
                     if (!SuddenStop)
                     {
-                        if(LoopCnt > 2)
+                        if(LoopCnt > 1)
                         {
                             if (errMsg[0] == "" && PassFails[0].FirstFailIndex == 0)
                             {
@@ -2617,7 +2619,7 @@ namespace FZ4P
                 AddLog(j, string.Format("ch : {0}, msg : {1}, PassFail : {2}", j, errMsg[j], PassFails[j].FirstFailIndex));
              
                 //"Time,Index,PlateBCode,LotID,ACTID,Channel,PM Index,PassFail,"
-                log += string.Format("'{0},{1},{2},{3},{4},{5},{6},{7},",
+                log += string.Format("{0},{1},{2},{3},{4},{5},{6},{7},",
                     STATIC.LogDate.ToString("yyyy-MM-dd"), $"{STATIC.LogDate.Hour}h{STATIC.LogDate.Minute}m{STATIC.LogDate.Second}s", m_StrIndex[j], "", Model.LotID, "", j, PassFails[j].FirstFailIndex);
 
                 yield.TotlaTested++;

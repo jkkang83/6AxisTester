@@ -170,8 +170,7 @@ namespace FZ4P
 
             SafeControlView(Process.InfoBtn[0].btn, false);
             if (Process.ChannelCnt > 1) SafeControlView(Process.InfoBtn[1].btn, false);
-            Process.ShowDataResultsInit(0);
-            if (Process.ChannelCnt > 1) Process.ShowDataResultsInit(1);
+           
 
             SafeControlView(RunProgress, true);
             if (Model.MCType == "Slave")

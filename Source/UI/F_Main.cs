@@ -830,7 +830,7 @@ namespace FZ4P
         private void Actionbox_SelectedIndexChanged(object sender, EventArgs e)
         {
             ListBox lb = (ListBox)sender;
-            if (lb.SelectedItems == null) return;
+            if (lb.SelectedItems == null || lb.SelectedItems.Count == 0) return;
             Color c = Color.YellowGreen;
             string item = lb.SelectedItem.ToString();
 

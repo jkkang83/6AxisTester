@@ -1707,7 +1707,7 @@
             // 
             this.btnPowerOn.BackColor = System.Drawing.Color.Lime;
             this.btnPowerOn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.btnPowerOn.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.btnPowerOn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnPowerOn.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.btnPowerOn.ForeColor = System.Drawing.Color.Black;
             this.btnPowerOn.Location = new System.Drawing.Point(334, 6);
@@ -1726,7 +1726,7 @@
             // 
             this.btnPowerOff.BackColor = System.Drawing.Color.Red;
             this.btnPowerOff.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.btnPowerOff.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.btnPowerOff.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnPowerOff.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.btnPowerOff.ForeColor = System.Drawing.Color.Black;
             this.btnPowerOff.Location = new System.Drawing.Point(334, 75);

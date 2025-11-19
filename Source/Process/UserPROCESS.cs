@@ -510,12 +510,15 @@ namespace FZ4P
                 string dateDir = STATIC.CreateDateDir();
                 if(!Directory.Exists(dateDir)) Directory.CreateDirectory(dateDir);
                 string path = dateDir + $"Act_Temperature.csv";
-                sw = File.AppendText(path);
+              
                 if (!File.Exists(path))
-                {                 
+                {
+                    sw = File.AppendText(path);
                     string s = $"SPL No, Date, Time, AF Deg Min, AF Deg Max, AF Variation, X Deg Min, X Deg Max, X Variation, Y Deg Min, Y Deg Max, Y Variation,";
                     sw.WriteLine(s);
+                    sw.Close();
                 }
+                sw = File.AppendText(path);
                 string data = $"{m_StrIndex[ch]},{STATIC.LogDate.ToString("yyyy-MM-dd")},{STATIC.LogDate.Hour}h{STATIC.LogDate.Minute}m{STATIC.LogDate.Second}s," +
                     $"{AFMinVal},{AFMaxVal},{AFVariation},{xMinVal},{xMaxVal},{xVariation},{yMinVal},{yMaxVal},{yVariation}";
                 sw.WriteLine(data);
@@ -1053,12 +1056,15 @@ namespace FZ4P
                 string dateDir = STATIC.CreateDateDir();
                 if (!Directory.Exists(dateDir)) Directory.CreateDirectory(dateDir);
                 string path = dateDir + $"AF_EPA_CODE.csv";
-                sw = File.AppendText(path);
+              
                 if (!File.Exists(path))
                 {
+                    sw = File.AppendText(path);
                     string s = $"SPL No, Date, Time, INF Code, MAC Code";
                     sw.WriteLine(s);
+                    sw.Close();
                 }
+                sw = File.AppendText(path);
                 string data = $"{m_StrIndex[ch]},{STATIC.LogDate.ToString("yyyy-MM-dd")},{STATIC.LogDate.Hour}h{STATIC.LogDate.Minute}m{STATIC.LogDate.Second}s," +
                     $"{InfPos},{macPos}";
                 sw.WriteLine(data);
@@ -2912,12 +2918,15 @@ namespace FZ4P
                     string dateDir = STATIC.CreateDateDir();
                     if (!Directory.Exists(dateDir)) Directory.CreateDirectory(dateDir);
                     string path = dateDir + $"OIS_AutoTest.csv";
-                    sw = File.AppendText(path);
+                    
                     if (!File.Exists(path))
                     {
+                        sw = File.AppendText(path);
                         string s = $"SPL No, Date, Time, SINE_NG_cnt_X, SINE_NG_cnt_Y, SINE_Diff_Max_X, SINE_Diff_Max_Y, RNG_NG_cnt_X, RNG_NG_cnt_Y,";
                         sw.WriteLine(s);
+                        sw.Close();
                     }
+                    sw = File.AppendText(path);
                     string dt = $"{m_StrIndex[ch]},{STATIC.LogDate.ToString("yyyy-MM-dd")},{STATIC.LogDate.Hour}h{STATIC.LogDate.Minute}m{STATIC.LogDate.Second}s," +
                         $"{SinXNGCnt},{SinYNGCnt},{SinewaveXMaxDiff},{SinewaveYMaxDiff},{RNGTimeX},{RNGTimeY}";
                     sw.WriteLine(data);
@@ -2983,13 +2992,16 @@ namespace FZ4P
                 string dateDir = STATIC.CreateDateDir();
                 if (!Directory.Exists(dateDir)) Directory.CreateDirectory(dateDir);
                 string path = dateDir + $"OIS_SENS_MODE_CHECK.csv";
-                sw = File.AppendText(path);
+                
                 if (!File.Exists(path))
                 {
+                    sw = File.AppendText(path);
                     string s = $"SPL No, Date, Time, 1_X_MID, 1_Y_MID, 1_XH_MID, 1_YH_MID, 2_X_MIN, 2_Y_MIN, 2_XH_MIN, 2_YH_MIN, " +
                         $"3_X_MAX, 3_Y_MIN, 3_XH_MAX, 3_YH_MIN, 4_X_MIN, 4_Y_MAX, 4_XH_MIN, 4_YH_MAX, 5_X_MAX, 5_Y_MAX, 5_XH_MAX, 5_YH_MAX,";
                     sw.WriteLine(s);
+                    sw.Close();
                 }
+                sw = File.AppendText(path);
                 string dt = $"{m_StrIndex[ch]},{STATIC.LogDate.ToString("yyyy-MM-dd")},{STATIC.LogDate.Hour}h{STATIC.LogDate.Minute}m{STATIC.LogDate.Second}s," +
                     $"{checkRegX[0]}, {checkRegY[0]}, {xHall[0]}, {yHall[0]}, {checkRegX[1]}, {checkRegY[1]}, {xHall[1]}, {yHall[1]}, {checkRegX[2]}, {checkRegY[2]}, {xHall[2]}, {yHall[2]}," +
                     $"{checkRegX[3]}, {checkRegY[3]}, {xHall[3]}, {yHall[3]}, {checkRegX[4]}, {checkRegY[4]}, {xHall[4]}, {yHall[4]}";
@@ -3092,12 +3104,15 @@ namespace FZ4P
                 string dateDir = STATIC.CreateDateDir();
                 if (!Directory.Exists(dateDir)) Directory.CreateDirectory(dateDir);
                 string path = dateDir + $"OIS_Shift.csv";
-                sw = File.AppendText(path);
+               
                 if (!File.Exists(path))
                 {
+                    sw = File.AppendText(path);
                     string s = $"SPL No, Date, Time, X_STD, Y_STD, X Max Diff, Y Max Diff, X Max, Y Max, X Min Y Min,"; 
                     sw.WriteLine(s);
+                    sw.Close();
                 }
+                sw = File.AppendText(path);
                 string dt = $"{m_StrIndex[ch]},{STATIC.LogDate.ToString("yyyy-MM-dd")},{STATIC.LogDate.Hour}h{STATIC.LogDate.Minute}m{STATIC.LogDate.Second}s," +
                     $"{RefX}, {RefY}, {xDiffMax}, {yDiffMax}, {XDiff.Max()}, {YDiff.Max()}, {XDiff.Min()}, {YDiff.Min()}";
                             
@@ -3277,12 +3292,15 @@ namespace FZ4P
                 string dateDir = STATIC.CreateDateDir();
                 if (!Directory.Exists(dateDir)) Directory.CreateDirectory(dateDir);
                 string path = dateDir + $"OIS_IC_Mount_Error.csv";
-                sw = File.AppendText(path);
+                
                 if (!File.Exists(path))
                 {
+                    sw = File.AppendText(path);
                     string s = $"SPL No, Date, Time, OIS Stroke, X P Reg, X N Reg, Y P Reg, Y N Reg, X PCAL, X NCAL, Y PCAL, Y NCAL, X IME, Y IME";
                     sw.WriteLine(s);
+                    sw.Close();
                 }
+                sw = File.AppendText(path);
                 string dt = $"{m_StrIndex[ch]},{STATIC.LogDate.ToString("yyyy-MM-dd")},{STATIC.LogDate.Hour}h{STATIC.LogDate.Minute}m{STATIC.LogDate.Second}s," +
                     $"{OISStroke},{X_PNCAL[0]},{X_PNCAL[1]},{Y_PNCAL[0]},{Y_PNCAL[1]},{XPCAL},{XNCAL},{YPCAL},{YNCAL},{XIME},{YIME}";
                 sw.WriteLine(dt);
