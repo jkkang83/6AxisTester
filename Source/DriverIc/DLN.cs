@@ -155,10 +155,10 @@ namespace FZ4P
                 DLNgpio[portID] = DLNdevice[i].Gpio;
             }
 
-            DLNgpio[2].Pins[9].Enabled = true;
-            DLNgpio[2].Pins[9].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
-            DLNgpio[2].Pins[9].OutputValue = 1;
-            DLNgpio[2].Pins[9].PulldownEnabled = true;
+            DLNgpio[1].Pins[9].Enabled = true;
+            DLNgpio[1].Pins[9].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+            DLNgpio[1].Pins[9].OutputValue = 1;
+            DLNgpio[1].Pins[9].PulldownEnabled = true;
 
             DLNgpio[1].Pins[8].ConditionMetThreadSafe += SWEventHandler;
             DLNgpio[1].Pins[8].SetEventConfiguration(Dln.Gpio.EventType.LevelHigh, 50);
@@ -395,13 +395,13 @@ namespace FZ4P
 
                 STATIC.Process.AddLog(0, $"Power On");
 
-                lock (I2cLock) DLNgpio[2].Pins[9].Direction = 1;
+                lock (I2cLock) DLNgpio[1].Pins[9].Direction = 1;
               
             }
             else
             {
                 STATIC.Process.AddLog(0, $"Power Off");
-                lock (I2cLock) DLNgpio[2].Pins[9].Direction = 0;
+                lock (I2cLock) DLNgpio[1].Pins[9].Direction = 0;
               
             }
         }
