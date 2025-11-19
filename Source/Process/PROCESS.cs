@@ -233,7 +233,15 @@ namespace FZ4P
                     if (!PassFails[ch].Results[i].bPass) { STATIC.FailNumber += $"{i},"; lblFailList.Text = STATIC.FailNumber; }
                 }
             }
+            for (int i = start; i <= end; i++)
+            {
+                if (!PassFails[ch].Results[i].bPass)
+                {
+                    if (!Option.ContinueTestingOnFail) m_ChannelOn[ch] = false;
+                }
 
+
+            }
 
         }
         public void SetError(int ch, NonSpecItem item)
@@ -703,11 +711,10 @@ namespace FZ4P
                 }
             }
         }
-        public void RunTest()
+        public void RunTest(int InspType) // 0:btn 1:switch 2:handler
         {
 
-
-            if (RepeatRun == 1)
+            if (RepeatRun == 1 || InspType != 0)
             {
                 CurrentRun = 1;
                 if (Dln.IsRun) return;
@@ -715,7 +722,7 @@ namespace FZ4P
                 if (!Dln.IsRun)
                 {
                     Dln.IsRun = true;
-                    Task.Factory.StartNew(() => LoadTestUnload(0));
+                    Task.Factory.StartNew(() => LoadTestUnload(0, InspType));
                 }
             }
             else
@@ -730,7 +737,7 @@ namespace FZ4P
                     foreach (var l in ViewLog) l.Clear();
 
                     Task tasks = null;
-                    tasks = Task.Factory.StartNew(() => LoadTestUnload(0));
+                    tasks = Task.Factory.StartNew(() => LoadTestUnload(0, InspType));
                     Task.WaitAll(tasks);
 
                     if (CurrentRun >= RepeatRun || SuddenStop) break;
@@ -741,7 +748,7 @@ namespace FZ4P
         }
 
 
-        void LoadSeq()
+        public void LoadSeq()
         {
             try
             {
@@ -769,7 +776,7 @@ namespace FZ4P
             catch
             { }
         }
-        void UnloadSeq()
+        public void UnloadSeq()
         {
             try
             {
@@ -794,15 +801,15 @@ namespace FZ4P
         }
 
 
-        public void LoadTestUnload(int port)
+        public void LoadTestUnload(int port, int InspType) //inspType 0:btn 1:switch 2:handler
         {
             try
             {
                 int ch = port * 2;
-                Dln.PowerOnOff(port, false);
-            //    LoadSeq();
+               
+                LoadSeq();
                 Process.Wait(100);
-
+                
                 if (Dln.IsSafeOn & Option.SafeSensor)
                 {
                     AddLog(ch, "Safe Sensor Detected. Push Start Button Again..");
@@ -811,12 +818,12 @@ namespace FZ4P
                 }
 
                 RunStart?.Invoke(null, port);
-
+               
                 Process_Start(port);
 
-                RunEnd?.Invoke(null, port);
+                RunEnd?.Invoke(null, InspType);
 
-//                UnloadSeq();
+                if (InspType != 2) UnloadSeq();
                 Dln.IsRun = false;
             }
             catch (Exception ex)
@@ -827,127 +834,172 @@ namespace FZ4P
         }
         public void Process_Start(int port)
         {
-            try
+            int LoopCnt = 1;
+            if (Option.FailRetry) LoopCnt = 2;
+
+            for (int Loop = 0; Loop < LoopCnt; Loop++)
             {
-                m__G.oCam[port].ResetmCpXY();
-                int ch = port * 2;
-                DrvIC.FRAModeDisable(ch);
-                SinewaveXMaxDiff = 0;
-                SinewaveYMaxDiff = 0;
-                RingingXStabilizer = 0;
-                RingingYStabilizer = 0;
-                byte[] b = new byte[1];
+                try
+                {
+                    STATIC.LogDate = DateTime.Now;
+                    Dln.PowerOnOff(port, true);
+                    m__G.oCam[port].ResetmCpXY();
+                    int ch = port * 2;
+                    DrvIC.FRAModeDisable(ch);
+                    SinewaveXMaxDiff = 0;
+                    SinewaveYMaxDiff = 0;
+                    RingingXStabilizer = 0;
+                    RingingYStabilizer = 0;
+                    byte[] b = new byte[1];
 
-                BestAFPos = 2048;
-          //      Dln.ReadArray(0, DrvIC.XSlaveAddr, 0xE5, b);
-                AddLog(ch, $"AF Best Pos = {BestAFPos}");
-              //  BestAFPos = b[0] << 4;
-              //  if (BestAFPos == 0) BestAFPos = 2048;
-                int count = Condition.ToDoList.Count;
-                if (count == 0)
-                {
-                    for (int i = ch; i < ch + ChannelCnt; i++)
-                        errMsg[i] = "Test Item is Empty";
-                    return;
-                }
-                for (int k = ch; k < ch + ChannelCnt; k++)
-                {
-                    m_ChannelOn[k] = true;
-                    errMsg[k] = "";
-                    PassFails[k].FirstFailIndex = 0;
-                }
-                Dln.PowerSequence(port);
-
-                if (!Dln.WriteArray(ch, DrvIC.AFOriginAddr, 0x02, new byte[] { 0x40 }) && !Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x40 })) m_ChannelOn[ch] = false;
-                if (!Dln.WriteArray(ch, DrvIC.XOriginAddr, 0x02, new byte[] { 0x40 }) && !Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 })) m_ChannelOn[ch] = false;
-                if (!Dln.WriteArray(ch, DrvIC.Y1OriginAddr, 0x02, new byte[] { 0x40 }) && !Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 })) m_ChannelOn[ch] = false;
-                if (DrvIC.Y2SlaveAddr != 0x00)
-                {
-                    if (!Dln.WriteArray(ch, DrvIC.Y2OriginAddr, 0x02, new byte[] { 0x40 })
-                        && !Dln.WriteArray(ch, DrvIC.Y2SlaveAddr, 0x02, new byte[] { 0x40 })) m_ChannelOn[ch] = false;
-                }
-
-                for (int k = ch; k < ch + ChannelCnt; k++)
-                {
-                    if (!m_ChannelOn[k])
+                    BestAFPos = 2048;
+                    //      Dln.ReadArray(0, DrvIC.XSlaveAddr, 0xE5, b);
+                    AddLog(ch, $"AF Best Pos = {BestAFPos}");
+                    //  BestAFPos = b[0] << 4;
+                    //  if (BestAFPos == 0) BestAFPos = 2048;
+                    int count = Condition.ToDoList.Count;
+                    if (count == 0)
                     {
-                        errMsg[k] = "Socket Empty";
-                        AddLog(k, "Socket Empty");
+                        for (int i = ch; i < ch + ChannelCnt; i++)
+                            errMsg[i] = "Test Item is Empty";
+                        return;
                     }
-                }
-                if (errMsg[ch] != "" /*&& errMsg[ch + 1] != ""*/)
-                {
-                    return;
-                }
-
-                Stopwatch sw = new Stopwatch();
-                sw.Start();
-
-                bool loopContinue = true;
-
-                int todoCnt = 0;
-                SuddenStop = false;
-
-                for (int i = 0; i < Condition.ToDoList.Count; i++)
-                {
-                    MakeWaveform(Condition.ToDoList[i]);
-                }
-
-
-                while (todoCnt < count)
-                {
-                    string testItem = Condition.ToDoList[todoCnt];
-
-                    Process_Function(port, testItem);
-
-                    if (errMsg[ch] != "")
+                    for (int k = ch; k < ch + ChannelCnt; k++)
                     {
-                        loopContinue = false;
-                        AddLog(ch, errMsg[ch]);
-
-                    }
-                    if (SuddenStop)
-                    {
-                        loopContinue = false;
-                        errMsg[ch] = "User Stop !";
-                        AddLog(ch, errMsg[ch]);
-
+                        m_ChannelOn[k] = true;
+                        errMsg[k] = "";
+                        PassFails[k].FirstFailIndex = 0;
                     }
 
-                    if (!loopContinue) break;
-                    else todoCnt++;
-                    Process.Wait(100);
-                }
-                LEDs_All_On(port, false);
 
-                double ellipse = (double)sw.ElapsedMilliseconds / 1000;
-                sw.Stop();
-
-                yield.LastSampleNum++;
-
-                for (int k = ch; k < ch + ChannelCnt; k++)
-                {
-                    AddLog(k, string.Format("Total Test Time\t{0:0.000} sec", ellipse));
-                    PassFails[k].TotalTime = ellipse.ToString("F3");
-                }
-
-                if (!SuddenStop)
-                {
-                    WriteResult(port);
-                    if(Option.WriteResultToDriverIC)
+                    if (!Dln.WriteArray(ch, DrvIC.AFOriginAddr, 0x02, new byte[] { 0x40 }) && !Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x02, new byte[] { 0x40 })) m_ChannelOn[ch] = false;
+                    if (!Dln.WriteArray(ch, DrvIC.XOriginAddr, 0x02, new byte[] { 0x40 }) && !Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 })) m_ChannelOn[ch] = false;
+                    if (!Dln.WriteArray(ch, DrvIC.Y1OriginAddr, 0x02, new byte[] { 0x40 }) && !Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 })) m_ChannelOn[ch] = false;
+                    if (DrvIC.Y2SlaveAddr != 0x00)
                     {
-                        if (errMsg[0] == "" && PassFails[0].FirstFailIndex == 0)
-                            WriteUserMem(ch, 0x02);
-                        else WriteUserMem(ch, 0x09);
+                        if (!Dln.WriteArray(ch, DrvIC.Y2OriginAddr, 0x02, new byte[] { 0x40 })
+                            && !Dln.WriteArray(ch, DrvIC.Y2SlaveAddr, 0x02, new byte[] { 0x40 })) m_ChannelOn[ch] = false;
                     }
-                    
+
+                    for (int k = ch; k < ch + ChannelCnt; k++)
+                    {
+                        if (!m_ChannelOn[k])
+                        {
+                            errMsg[k] = "I2C Fail";
+                            AddLog(k, "I2C Fail");
+                        }
+                    }
+                    if (errMsg[ch] != "" /*&& errMsg[ch + 1] != ""*/)
+                    {
+                        return;
+                    }
+
+                    Stopwatch sw = new Stopwatch();
+                    sw.Start();
+
+                    bool loopContinue = true;
+
+                    int todoCnt = 0;
+                    SuddenStop = false;
+
+                    for (int i = 0; i < Condition.ToDoList.Count; i++)
+                    {
+                        MakeWaveform(Condition.ToDoList[i]);
+                    }
+
+
+                    while (todoCnt < count)
+                    {
+                        string testItem = Condition.ToDoList[todoCnt];
+
+                        Process_Function(port, testItem);
+
+                        if (errMsg[ch] != "")
+                        {
+                            loopContinue = false;
+                            AddLog(ch, errMsg[ch]);
+
+                        }
+                        if (SuddenStop)
+                        {
+                            loopContinue = false;
+                            errMsg[ch] = "User Stop !";
+                            AddLog(ch, errMsg[ch]);
+
+                        }
+
+                        if (!loopContinue) break;
+                        else todoCnt++;
+                        Process.Wait(100);
+                    }
+                    LEDs_All_On(port, false);
+
+                    double ellipse = (double)sw.ElapsedMilliseconds / 1000;
+                    sw.Stop();
+
+                    yield.LastSampleNum++;
+
+                    for (int k = ch; k < ch + ChannelCnt; k++)
+                    {
+                        AddLog(k, string.Format("Total Test Time\t{0:0.000} sec", ellipse));
+                        PassFails[k].TotalTime = ellipse.ToString("F3");
+                    }
+
+                    if (!SuddenStop)
+                    {
+                        if(LoopCnt > 2)
+                        {
+                            if (errMsg[0] == "" && PassFails[0].FirstFailIndex == 0)
+                            {
+                                WriteResult(port);
+                                if (Option.WriteResultToDriverIC)
+                                {
+                                    if (errMsg[0] == "" && PassFails[0].FirstFailIndex == 0)
+                                        WriteUserMem(ch, 0x02);
+                                    else WriteUserMem(ch, 0x09);
+                                }
+                            }
+                            else
+                            {
+                                if(Loop == LoopCnt - 1)
+                                {
+                                    WriteResult(port);
+                                    if (Option.WriteResultToDriverIC)
+                                    {
+                                        if (errMsg[0] == "" && PassFails[0].FirstFailIndex == 0)
+                                            WriteUserMem(ch, 0x02);
+                                        else WriteUserMem(ch, 0x09);
+                                    }
+                                }
+                                else
+                                {
+                                    AddLog(ch, $"Fail Retry =  {errMsg[0]}");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            WriteResult(port);
+                            if (Option.WriteResultToDriverIC)
+                            {
+                                if (errMsg[0] == "" && PassFails[0].FirstFailIndex == 0)
+                                    WriteUserMem(ch, 0x02);
+                                else WriteUserMem(ch, 0x09);
+                            }
+
+                        }
+                    }
+                    else { Dln.PowerOnOff(port, false); return; }
+                    Dln.PowerOnOff(port, false);
                 }
-                return;
+                catch
+                {
+                    Dln.PowerOnOff(port, false);
+                }
+                if (errMsg[0] == "" && PassFails[0].FirstFailIndex == 0) return;
             }
-            catch
-            {
+            return;
 
-            }
         }
         public void Process_Function(int port, string testItem)
         {
@@ -1820,10 +1872,10 @@ namespace FZ4P
                 if (!Directory.Exists(dateDir))
                     Directory.CreateDirectory(dateDir);
 
-                DateTime dt = DateTime.Now;
+
                 //string timeDir = string.Format("{0}{1}{2}", dt.Hour, dt.Minute, dt.Second);
-                string timeDir = dt.ToString("HHmmss");
-                string st = timeDir;
+                string timeDir = $"{STATIC.LogDate.Hour}h{STATIC.LogDate.Minute}m{STATIC.LogDate.Second}s";
+          
 
                 for (int j = ch; j < ch + ChannelCnt; j++)
                 {
@@ -1832,7 +1884,7 @@ namespace FZ4P
                         if (Cal.Name == name)
                         {
                             List<string> arry = new List<string>();
-                            arry.Add(dt.ToString("MM:dd:hh:mm:ss"));
+                            
                             string path = "";
                             switch (name)
                             {
@@ -1841,7 +1893,7 @@ namespace FZ4P
                                     arry.Add("i,AF Code,X Code,Y1 Code,Y2 Code,X,Y,Z,TX,TY,TZ,Y1,Y2,Hall X,Hall Y1,Hall Y2,Hall AF,Current");
                                     for (int i = 0; i < fCount; i++)
                                     {
-                                        path = string.Format(dateDir + "{0}_{1}_{2}_{3}.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
+                                        path = string.Format(dateDir + "{0}_{1}_{2}.csv", name, m_StrIndex[j], timeDir);
                                         string data = string.Format("{0},{1},{2},{3},{4},{5:0.000},{6:0.000},{7:0.000},{8:0.000},{9:0.000},{10:0.000},{11:0.000},{12:0.000},{13},{14},{15},{16},{17:0.000}", i, Cal.CodeZ[i], Condition.iAFCrossOffsetX, Condition.iAFCrossOffsetY, Condition.iAFCrossOffsetY,
                                             Cal.StrokeX[i], Cal.StrokeY[i], Cal.StrokeZ[i], Cal.TiltX[i], Cal.TiltY[i], Cal.TiltZ[i], Cal.StrokeY1[i], Cal.StrokeY2[i],
                                             Cal.HallX[i], Cal.HallY1[i], Cal.HallY2[i], Cal.HallZ[i], Cal.Current[i]);
@@ -1856,9 +1908,7 @@ namespace FZ4P
                                     arry.Add("i,AF Code,X Code,Y1 Code,Y2 Code,X,Y,Z,TX,TY,TZ,Y1,Y2,Hall X,Hall Y1,Hall Y2,Hall AF,Current");
                                     for (int i = 0; i < fCount; i++)
                                     {
-                                        if (name.Contains("Linearity"))
-                                            path = string.Format(dateDir + "{0}_{1}_{2}_{3}_Lin.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
-                                        else path = string.Format(dateDir + "{0}_{1}_{2}_{3}.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
+                                        path = string.Format(dateDir + "{0}_{1}_{2}.csv", name, m_StrIndex[j], timeDir);
                                         string data = string.Format("{0},{1},{2},{3},{4},{5:0.000},{6:0.000},{7:0.000},{8:0.000},{9:0.000},{10:0.000},{11:0.000},{12:0.000},{13},{14},{15},{16},{17:0.000}", i, BestAFPos, Cal.CodeX[i], Condition.iXCrossOffset, Condition.iXCrossOffset,
                                             Cal.StrokeX[i], Cal.StrokeY[i], Cal.StrokeZ[i], Cal.TiltX[i], Cal.TiltY[i], Cal.TiltZ[i], Cal.StrokeY1[i], Cal.StrokeY2[i],
                                             Cal.HallX[i], Cal.HallY1[i], Cal.HallY2[i], Cal.HallZ[i], Cal.Current[i]);
@@ -1883,9 +1933,7 @@ namespace FZ4P
                                     arry.Add("i,AF Code,X Code,Y1 Code,Y2 Code,X,Y,Z,TX,TY,TZ,Y1,Y2,Hall X,Hall Y1,Hall Y2,Hall AF,Current");
                                     for (int i = 0; i < fCount; i++)
                                     {
-                                        if (name.Contains("Linearity"))
-                                            path = string.Format(dateDir + "{0}_{1}_{2}_{3}_Lin.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
-                                        else path = string.Format(dateDir + "{0}_{1}_{2}_{3}.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
+                                        path = string.Format(dateDir + "{0}_{1}_{2}.csv", name, m_StrIndex[j], timeDir);
                                         string data = string.Format("{0},{1},{2},{3},{4},{5:0.000},{6:0.000},{7:0.000},{8:0.000},{9:0.000},{10:0.000},{11:0.000},{12:0.000},{13},{14},{15},{16},{17:0.000}", i, BestAFPos, Condition.iYCrossOffset, Cal.CodeY[i], Cal.CodeY[i],
                                                Cal.StrokeX[i], Cal.StrokeY[i], Cal.StrokeZ[i], Cal.TiltX[i], Cal.TiltY[i], Cal.TiltZ[i], Cal.StrokeY1[i], Cal.StrokeY2[i],
                                              Cal.HallX[i], Cal.HallY1[i], Cal.HallY2[i], Cal.HallZ[i], Cal.Current[i]);
@@ -2230,10 +2278,7 @@ namespace FZ4P
                         Directory.CreateDirectory(dateDir);
 
                     DateTime dt = DateTime.Now;
-                    string timeDir = dt.ToString("HHmmss");
-                    string st = timeDir;
-
-                    string lstr = "";
+                    string timeDir = $"{STATIC.LogDate.Hour}h{STATIC.LogDate.Minute}m{STATIC.LogDate.Second}s";
 
                     for (int j = ch; j < ch + ChannelCnt; j++)
                     {
@@ -2241,14 +2286,14 @@ namespace FZ4P
                             if (Cal.Name == name)
                             {
                                 List<string> arry = new List<string>();
-                                //   arry.Add(DateTime.Now.ToString("MM:dd:hh:mm:ss"));
+ 
                                 string path = "";
                                 switch (name)
                                 {
                                     case "AF Settling":
-                                        path = string.Format(dateDir + "{0}_{1}_{2}_{3}.csv", name, m_StrIndex[j], yield.LastSampleNum + 1, st);
+                                        path = string.Format(dateDir + "{0}_{1}_{2}.csv", name, m_StrIndex[j], timeDir);
                                         arry.Add("i,AF Time,Z");
-                                        lstr = "";
+                                    
                                         for (int i = 0; i < Time.Count; i++)
                                         {
                                             string data = string.Format("{0},{1:0.000},{2:0.000}", i, Time[i], Stroke[i]);
@@ -2305,7 +2350,7 @@ namespace FZ4P
                                     ShowDataResults(j, (int)SpecItem.AF_SettillingTime, (int)SpecItem.AF_SettillingTime);
                                     break;
                             }
-                            AddChart(j, name, Time.ToList(), Stroke.ToList());
+                            if (Option.settlingGraphVisible) AddChart(j, name, Time.ToList(), Stroke.ToList());
                         }
                 }
                 framCnt[port] = 0;
@@ -2478,10 +2523,11 @@ namespace FZ4P
             writer = File.AppendText(sFilePath);
 
             string sHeader;
-            sHeader = "Time,Index,PlateBCode,LotID,ACTID,Channel,PM Index,PassFail,1st Fail Item,";
+            //"Time,Index,PlateBCode,LotID,ACTID,Channel,PM Index,PassFail,"
+            sHeader = "Date,Time,Index,PlateBCode,LotID,ACTID,Channel,PassFail,1st Fail Item,";
 
             string sParam = "";
-            for (int i = (int)SpecItem.OISX_Ratedstroke; i < (int)SpecItem.Length; i++)
+            for (int i = 0; i < (int)SpecItem.Length; i++)
             {
                 sParam += string.Format("{0} {1},", Spec.specList[i].Category, Spec.specList[i].DisplayName);
             }
@@ -2505,7 +2551,7 @@ namespace FZ4P
             sHeader = "uint,,,,,,,,,";
 
             sParam = "";
-            for (int i = (int)SpecItem.OISX_Ratedstroke; i < (int)SpecItem.Length; i++)
+            for (int i = 0; i < (int)SpecItem.Length; i++)
             {
                 sParam += string.Format("({0}),", Spec.specList[i].Unit);
             }
@@ -2515,7 +2561,7 @@ namespace FZ4P
 
             sHeader = "Spec Min,,,,,,,,,";
             sParam = "";
-            for (int i = (int)SpecItem.OISX_Ratedstroke; i < (int)SpecItem.Length; i++)
+            for (int i = 0; i < (int)SpecItem.Length; i++)
             {
                 sParam += string.Format("{0},", Spec.specList[i].MinSpec);
             }
@@ -2525,7 +2571,7 @@ namespace FZ4P
 
             sHeader = "Spec Max,,,,,,,,,";
             sParam = "";
-            for (int i = (int)SpecItem.OISX_Ratedstroke; i < (int)SpecItem.Length; i++)
+            for (int i = 0; i < (int)SpecItem.Length; i++)
             {
                 sParam += string.Format("{0},", Spec.specList[i].MaxSpec);
             }
@@ -2555,7 +2601,7 @@ namespace FZ4P
             for (int j = ch; j < ch + ChannelCnt; j++)
             {
                 string log = "";
-                if (errMsg[j] == "Socket Empty") { yield.TotlaTested--; continue; }
+                if (errMsg[j] == "I2C Fail") { yield.TotlaTested--; continue; }
 
                 if (PassFails[j].FirstFailIndex > 0)
                 {
@@ -2569,10 +2615,10 @@ namespace FZ4P
                 }
 
                 AddLog(j, string.Format("ch : {0}, msg : {1}, PassFail : {2}", j, errMsg[j], PassFails[j].FirstFailIndex));
-                STATIC.LogDate = DateTime.Now;
+             
                 //"Time,Index,PlateBCode,LotID,ACTID,Channel,PM Index,PassFail,"
                 log += string.Format("'{0},{1},{2},{3},{4},{5},{6},{7},",
-                    STATIC.LogDate.ToString("yyyy-MM-dd HH:mm:ss.fff"), m_StrIndex[j], "", Model.LotID, "", j, "", PassFails[j].FirstFailIndex);
+                    STATIC.LogDate.ToString("yyyy-MM-dd"), $"{STATIC.LogDate.Hour}h{STATIC.LogDate.Minute}m{STATIC.LogDate.Second}s", m_StrIndex[j], "", Model.LotID, "", j, PassFails[j].FirstFailIndex);
 
                 yield.TotlaTested++;
                 //1st Fail Item
@@ -2659,6 +2705,8 @@ namespace FZ4P
             res = STATIC.fVision.MeasureTxTyTz(0);
             return res; 
         }
+
+ 
 
         #endregion
 

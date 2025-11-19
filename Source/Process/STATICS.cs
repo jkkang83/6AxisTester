@@ -125,7 +125,7 @@ namespace FZ4P
         }
         public static string CreateDateDir()
         {
-            DateTime dt = DateTime.Now;
+            DateTime dt = STATIC.LogDate;
             string dir = string.Format("{0}\\{1}\\{2}\\{3}\\", DataDir, dt.Year, dt.Month, dt.Day);
             if (!Directory.Exists(dir))
                 Directory.CreateDirectory(dir);

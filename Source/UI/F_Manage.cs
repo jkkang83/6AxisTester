@@ -89,7 +89,7 @@ namespace FZ4P
                     lbMcConstatus.BackColor = Color.Red;
             }
         }
-        private void Process_RunEnd(object sender, int e)
+        private void Process_RunEnd(object sender, int inspType)
         {
 
             SafeControlView(RunProgress, false);
@@ -99,10 +99,13 @@ namespace FZ4P
                 STATIC.TcpConn.SendMessage($"Res.{s}");
 
             }
-            if(Model.MCType == "Handler")
+            if (inspType == 2)
             {
-                string s = Process.errMsg[0] == "" ? "OK" : "NG";
-                STATIC.TcpConn.SendMessage(s);
+                if (Model.MCType == "Handler")
+                {
+                    string s = Process.errMsg[0] == "" ? "OK" : "NG";
+                    STATIC.TcpConn.SendMessage(s);
+                }
             }
 
             if (InvokeRequired)
@@ -138,7 +141,7 @@ namespace FZ4P
                         List<string> arry = new List<string>();
                         arry.Add(Process.ViewLog[j].box.Text);
 
-                        string path = string.Format("{0}{1}_Ch{2}.txt", dateDir, STATIC.LogDate.ToString("yyMMddhhmmss"), j);
+                        string path = string.Format("{0}{1}_{2}.txt", dateDir, Process.m_StrIndex[0], $"{STATIC.LogDate.Hour}h{STATIC.LogDate.Minute}m{STATIC.LogDate.Second}s" );
 
                         if (path != "") STATIC.SetTextLine(path, arry);
                     }
@@ -312,7 +315,7 @@ namespace FZ4P
 
             Process.ClearChart();
             foreach (var l in Process.ViewLog) l.Clear();
-            Process.RunTest();
+            Process.RunTest(1);
         }
 
 
@@ -368,7 +371,7 @@ namespace FZ4P
             Process.ClearChart();
             foreach (var l in Process.ViewLog) l.Clear();
 
-            await Task.Factory.StartNew(() => Process.RunTest());
+            await Task.Factory.StartNew(() => Process.RunTest(0));
         }
 
         private void SaveScreenAction()

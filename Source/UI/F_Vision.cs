@@ -11439,5 +11439,14 @@ namespace FZ4P
             STATIC.DrvIC.Move(0, "Y", 2048);
         }
 
+        private void btnPowerOn_Click(object sender, EventArgs e)
+        {
+            STATIC.Dln.PowerOnOff(0, true);
+        }
+
+        private void btnPowerOff_Click(object sender, EventArgs e)
+        {
+            STATIC.Dln.PowerOnOff(0, false);
+        }
     }
 }

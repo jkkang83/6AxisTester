@@ -171,6 +171,22 @@ namespace FZ4P
                     {
                         STATIC.fManage.SafeControlViewOnComm();
                     }
+                    else if (data[j].Contains("Home"))
+                    {
+                        Process.UnloadSeq();
+                    }
+                    else if (data[j].Contains("Start"))
+                    {
+                        if (STATIC.Dln.IsRun) return;
+                        Process.RepeatRun = 1;
+                        Process.ClearChart();
+                        foreach (var l in Process.ViewLog) l.Clear();
+                        Process.RunTest(2);
+                    }
+                    else if (data[j].Contains("Open"))
+                    {
+                        Process.UnloadSeq();
+                    }
                 }
             }
         }

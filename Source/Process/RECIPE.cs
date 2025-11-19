@@ -153,6 +153,10 @@ namespace FZ4P
         [Option("Y Dir Reverse")] public bool YDirReverse { get; set; }
         [Option("XY Pos Reverse")] public bool XYPosReverse { get; set; }
         [Option("Socket Sensor Use")] public bool SocketSensorUse { get; set; }
+        [Option("Settling Graph Visible")] public bool settlingGraphVisible { get; set; }
+        [Option("Continue testing On Fail")] public bool ContinueTestingOnFail { get; set; }
+        [Option("Fail Retry")] public bool FailRetry { get; set; }
+
     }
     public class Condition
     {
@@ -414,10 +418,13 @@ namespace FZ4P
     }
     public enum SpecItem
     {
+      //  [Spec("AF", "Hall Calibration Stroke", "um")] OISX_Ratedstroke,
 
-        [Spec("X", "Rated Stroke", "um")] OISX_Ratedstroke,
-        [Spec("X", "Forward Stroke", "um")] OISX_Forwardstroke,
-        [Spec("X", "Backward Stroke", "um")] OISX_Backwardstroke,
+
+
+        [Spec("X", "Displacement Range", "um")] OISX_Ratedstroke,
+        [Spec("X", "Displacement Max", "um")] OISX_Forwardstroke,
+        [Spec("X", "Displacement Min", "um")] OISX_Backwardstroke,
         [Spec("X", "Sensitivity", "um / code")] OISX_Sensitivity,
         [Spec("X", "Linearity", "um")] OISX_Linearity,
         [Spec("X", "Hysteresis", "um")] OISX_Hysteresis,
@@ -432,9 +439,9 @@ namespace FZ4P
         //[Spec("X", "Crosstalk R", "um")] OISX_CrosstalkR,
         [Spec("X", "Rolling", "deg")] OISX_Rolling,
 
-        [Spec("Y", "Rated Stroke", "um")] OISY_Ratedstroke,
-        [Spec("Y", "Forward Stroke", "um")] OISY_Forwardstroke,
-        [Spec("Y", "Backward Stroke", "um")] OISY_Backwardstroke,
+        [Spec("Y", "Displacement Range", "um")] OISY_Ratedstroke,
+        [Spec("Y", "Displacement Max", "um")] OISY_Forwardstroke,
+        [Spec("Y", "Displacement Min", "um")] OISY_Backwardstroke,
         [Spec("Y", "Sensitivity", "um / code")] OISY_Sensitivity,
         [Spec("Y", "Linearity", "um")] OISY_Linearity,
         [Spec("Y", "Hysteresis", "um")] OISY_Hysteresis,
@@ -449,9 +456,9 @@ namespace FZ4P
         //[Spec("Y", "Crosstalk R", "um")] OISY_CrosstalkR,
         [Spec("Y", "Rolling", "deg")] OISY_Rolling,
 
-        [Spec("AF", "Rated Stroke", "um")] AF_Ratedstroke,
-        [Spec("AF", "Forward Stroke", "um")] AF_Forwardstroke,
-        [Spec("AF", "Backward Stroke", "um")] AF_Backwardstroke,
+        [Spec("AF", "Displacement Range", "um")] AF_Ratedstroke,
+        [Spec("AF", "Displacement Max", "um")] AF_Forwardstroke,
+        [Spec("AF", "Displacement Min", "um")] AF_Backwardstroke,
         [Spec("AF", "Sensitivity", "um / code")] AF_Sensitivity,
         [Spec("AF", "Linearity", "um")] AF_Linearity,
         [Spec("AF", "Hysteresis", "um")] AF_Hysteresis,
@@ -463,7 +470,7 @@ namespace FZ4P
         [Spec("AF", "Crosstalk R", "um")] AF_CrosstalkR,
         [Spec("AF", "Rolling", "deg")] AF_Rolling,
         [Spec("AF", "Tilt", "min")] AF_Tilt,
-        [Spec("AF", "Settling Time", "ms")] AF_SettillingTime,
+        [Spec("AF", "Stabilize Time", "ms")] AF_SettillingTime,
        
 
         [Spec("FRA AF", "PM Frequency", "Hz")] FRAAF_PMFreq,
@@ -480,7 +487,7 @@ namespace FZ4P
         [Spec("FRA X", "Phase Margin", "deg")] FRAX_PhaseMargin,
         [Spec("FRA X", "PM Frequency High", "Hz")] FRAX_PMFreq_High,
         [Spec("FRA X", "Phase Margin High", "deg")] FRAX_PhaseMargin_High,
-        [Spec("FRA X", "Gain @ 10Hz", "db")] FRAX_Gain10Hz,
+        [Spec("FRA X", "Loop Gain", "db")] FRAX_Gain10Hz,
         [Spec("FRA X", "Gain Margin", "db")] FRAX_GainMargin,
         //[Spec("FRA X", "Sinewave Result", "#")] SineWaveX_Result,
         //[Spec("FRA X", "Sinewave Count", "#")] SineWaveX_Count,
@@ -491,7 +498,7 @@ namespace FZ4P
         [Spec("FRA Y1", "Phase Margin", "deg")] FRAY1_PhaseMargin,
         [Spec("FRA Y1", "PM Frequency High", "Hz")] FRAY1_PMFreq_High,
         [Spec("FRA Y1", "Phase Margin High", "deg")] FRAY1_PhaseMargin_High,
-        [Spec("FRA Y1", "Gain @ 10Hz", "db")] FRAY1_Gain10Hz,
+        [Spec("FRA Y1", "Loop Gain", "db")] FRAY1_Gain10Hz,
         [Spec("FRA Y1", "Gain Margin", "db")] FRAY1_GainMargin,
 
         //[Spec("FRA Y1", "Sinewave Result", "#")] SineWaveY1_Result,
@@ -499,8 +506,8 @@ namespace FZ4P
         //[Spec("FRA Y1", "Ringing Result", "#")] RingingY1_Result,
         //[Spec("FRA Y1", "Ringing Time", "#")] RingingY1_Time,
 
-        [Spec("Throgh Peak", "X Gain", "db")] ThroughPeak_X_Gain,
-        [Spec("Throgh Peak", "Y Gain", "db")] ThroughPeak_Y_Gain,
+        [Spec("Throgh Peak 25", "X Gain", "db")] ThroughPeak_X_Gain,
+        [Spec("Throgh Peak 25", "Y Gain", "db")] ThroughPeak_Y_Gain,
 
         [Spec("FRA Y2", "PM Frequency", "Hz")] FRAY2_PMFreq,
         [Spec("FRA Y2", "Phase Margin", "deg")] FRAY2_PhaseMargin,
@@ -513,8 +520,8 @@ namespace FZ4P
         //[Spec("FRA Y2", "Ringing Result", "#")] RingingY2_Result,
         //[Spec("FRA Y2", "Ringing Time", "#")] RingingY2_Time,
 
-        [Spec("Hall Decenter", "X Decenter", "um")] x_HallDecenter,
-        [Spec("Hall Decenter", "Y Decenter", "um")] y_HallDecenter,
+        [Spec("Centering Error", "X Decenter", "um")] x_HallDecenter,
+        [Spec("Centering Error", "Y Decenter", "um")] y_HallDecenter,
 
         [Spec("Servo Decenter", "X Decenter", "um")] x_ServoDecenter,
         [Spec("Servo Decenter", "Y Decenter", "um")] y_ServoDecenter,
