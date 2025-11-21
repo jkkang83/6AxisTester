@@ -653,6 +653,7 @@ namespace FZ4P
         {
             for (int ch = 0; ch < ChartTop.Count; ch++)
             {
+                if (ch > 0) continue;
                 if (ChartTop[ch].C.InvokeRequired)
                 {
                     ChartTop[ch].C.BeginInvoke((MethodInvoker)delegate
