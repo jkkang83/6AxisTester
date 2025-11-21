@@ -649,67 +649,58 @@ namespace FZ4P
                 });
             }
         }
+      
         public void ClearChart()
         {
-            for (int ch = 0; ch < ChartTop.Count; ch++)
+            if (ChartTop[0].C.InvokeRequired)
             {
-                if (ch > 0) continue;
-                if (ChartTop[ch].C.InvokeRequired)
+                ChartTop[0].C.BeginInvoke((MethodInvoker)delegate
                 {
-                    ChartTop[ch].C.BeginInvoke((MethodInvoker)delegate
+                    for (int i = 0; i < ChartTop[0].C.Series.Count; i++)
                     {
-                        for (int i = 0; i < ChartTop[ch].C.Series.Count; i++)
-                        {
-                            ChartTop[ch].C.Series[i].Points.Clear();
-                        }
-                        ChartTop[ch].C.Series[0].Points.AddXY(0, 0);
-                    });
-                }
-                else
-                {
-                    for (int i = 0; i < ChartTop[ch].C.Series.Count; i++)
-                    {
-                        ChartTop[ch].C.Series[i].Points.Clear();
+                        ChartTop[0].C.Series[i].Points.Clear();
                     }
-                    ChartTop[ch].C.Series[0].Points.AddXY(0, 0);
-                }
+                    ChartTop[0].C.Series[0].Points.AddXY(0, 0);
+                });
             }
-            for (int ch = 0; ch < ChartBtm.Count; ch++)
+            else
             {
-                if (ChartBtm[ch].C.InvokeRequired)
+                for (int i = 0; i < ChartTop[0].C.Series.Count; i++)
                 {
-                    ChartBtm[ch].C.BeginInvoke((MethodInvoker)delegate
-                    {
-                        for (int i = 0; i < ChartBtm[ch].C.Series.Count; i++)
-                        {
-                            ChartBtm[ch].C.Series[i].Points.Clear();
-                        }
-                        ChartBtm[ch].C.Series[0].Points.AddXY(0, 0);
-                    });
+                    ChartTop[0].C.Series[i].Points.Clear();
                 }
-                else
+                ChartTop[0].C.Series[0].Points.AddXY(0, 0);
+            }
+            if (ChartBtm[0].C.InvokeRequired)
+            {
+                ChartBtm[0].C.BeginInvoke((MethodInvoker)delegate
                 {
-                    for (int i = 0; i < ChartBtm[ch].C.Series.Count; i++)
+                    for (int i = 0; i < ChartBtm[0].C.Series.Count; i++)
                     {
-                        ChartBtm[ch].C.Series[i].Points.Clear();
+                        ChartBtm[0].C.Series[i].Points.Clear();
                     }
-                    ChartBtm[ch].C.Series[0].Points.AddXY(0, 0);
+                    ChartBtm[0].C.Series[0].Points.AddXY(0, 0);
+                });
+            }
+            else
+            {
+                for (int i = 0; i < ChartBtm[0].C.Series.Count; i++)
+                {
+                    ChartBtm[0].C.Series[i].Points.Clear();
                 }
+                ChartBtm[0].C.Series[0].Points.AddXY(0, 0);
             }
 
-            for (int ch = 0; ch < tiltChart.Count; ch++)
+            if (tiltChart[0].InvokeRequired)
             {
-                if (tiltChart[ch].InvokeRequired)
+                tiltChart[0].BeginInvoke((MethodInvoker)delegate
                 {
-                    tiltChart[ch].BeginInvoke((MethodInvoker)delegate
-                    {
-                        tiltChart[ch].ClearPoint();
-                    });
-                }
-                else
-                {
-                    tiltChart[ch].ClearPoint();
-                }
+                    tiltChart[0].ClearPoint();
+                });
+            }
+            else
+            {
+                tiltChart[0].ClearPoint();
             }
         }
         public void RunTest(int InspType) // 0:btn 1:switch 2:handler

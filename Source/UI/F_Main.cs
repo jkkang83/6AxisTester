@@ -154,6 +154,7 @@ namespace FZ4P
             STATIC.fManage.SetConStatus(isCon);
         }
         object ReceiveLock = new object();
+        object resetlock = new object();
         private void TcpConn_OnReceive(List<string> data)
         {
             lock (ReceiveLock)
@@ -178,9 +179,16 @@ namespace FZ4P
                     else if (data[j].Contains("Start"))
                     {
                         if (STATIC.Dln.IsRun) return;
+
+
                         Process.RepeatRun = 1;
-                        Process.ClearChart();
-                        foreach (var l in Process.ViewLog) l.Clear();
+                        lock(resetlock)
+                        {
+                            Process.ClearChart();
+                            
+                            foreach (var l in Process.ViewLog) l.Clear();
+                        }
+             
                         Process.RunTest(2);
                     }
                     else if (data[j].Contains("Open"))
