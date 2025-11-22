@@ -254,46 +254,69 @@ namespace FZ4P
         }
         public void LoadSocket()
         {
-            if (DLNgpio == null) return;
-           
-            lock(I2cLock)
+            try
             {
-                DLNgpio[1].Pins[10].OutputValue = 1;
-                DLNgpio[1].Pins[20].OutputValue = 0;
+                if (DLNgpio == null) return;
+
+                lock (I2cLock)
+                {
+                    DLNgpio[1].Pins[10].OutputValue = 1;
+                    DLNgpio[1].Pins[20].OutputValue = 0;
+                }
+
+            }
+            catch
+            {
+                Init();
             }
 
         }
         public void UnloadSocket()
         {
-            if (DLNgpio == null) return;
-          
-            lock(I2cLock)
+            try
             {
-                DLNgpio[1].Pins[10].OutputValue = 0;
-                DLNgpio[1].Pins[20].OutputValue = 1;
+                if (DLNgpio == null) return;
+
+                lock (I2cLock)
+                {
+                    DLNgpio[1].Pins[10].OutputValue = 0;
+                    DLNgpio[1].Pins[20].OutputValue = 1;
+                }
             }
+            catch { Init(); }
+           
 
         }
 
         public void CoverDn()
         {
-            if (DLNgpio == null) return;
-            lock(I2cLock)
+            try
             {
-                DLNgpio[1].Pins[11].OutputValue = 1;
-                DLNgpio[1].Pins[21].OutputValue = 0;
+                if (DLNgpio == null) return;
+                lock (I2cLock)
+                {
+                    DLNgpio[1].Pins[11].OutputValue = 1;
+                    DLNgpio[1].Pins[21].OutputValue = 0;
 
+                }
             }
+            catch { Init(); }
+           
 
         }
         public void CoverUp()
         {
-            if (DLNgpio == null) return;
-            lock(I2cLock)
+            try
             {
-                DLNgpio[1].Pins[11].OutputValue = 0;
-                DLNgpio[1].Pins[21].OutputValue = 1;
+                if (DLNgpio == null) return;
+                lock (I2cLock)
+                {
+                    DLNgpio[1].Pins[11].OutputValue = 0;
+                    DLNgpio[1].Pins[21].OutputValue = 1;
+                }
             }
+            catch { Init(); }
+          
 
         }
         public void SetLEDpower(int id, int value)
@@ -390,20 +413,25 @@ namespace FZ4P
         }
         public void PowerOnOff(int port, bool IsOn = true)
         {
-            if (IsOn)
+            try
             {
+                if (IsOn)
+                {
 
-                STATIC.Process.AddLog(0, $"Power On");
+                    STATIC.Process.AddLog(0, $"Power On");
 
-                lock (I2cLock) DLNgpio[1].Pins[9].Direction = 1;
-              
+                    lock (I2cLock) DLNgpio[1].Pins[9].Direction = 1;
+
+                }
+                else
+                {
+                    STATIC.Process.AddLog(0, $"Power Off");
+                    lock (I2cLock) DLNgpio[1].Pins[9].Direction = 0;
+
+                }
             }
-            else
-            {
-                STATIC.Process.AddLog(0, $"Power Off");
-                lock (I2cLock) DLNgpio[1].Pins[9].Direction = 0;
-              
-            }
+            catch { Init(); }
+            
         }
 
         public void PowerSequence(int port)
@@ -475,19 +503,25 @@ namespace FZ4P
         }
         public void SetSocketSensor(bool isOn)
         {
-            if(isOn)
+            try
             {
-                DLNgpio[1].Pins[12].Enabled = true;
-                DLNgpio[1].Pins[12].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
-                DLNgpio[1].Pins[12].PulldownEnabled = true;
-                DLNgpio[1].Pins[13].Enabled = true;
-                DLNgpio[1].Pins[13].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
-                DLNgpio[1].Pins[13].PulldownEnabled = true;
+                if (isOn)
+                {
+                    DLNgpio[1].Pins[12].Enabled = true;
+                    DLNgpio[1].Pins[12].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+                    DLNgpio[1].Pins[12].PulldownEnabled = true;
+                    DLNgpio[1].Pins[13].Enabled = true;
+                    DLNgpio[1].Pins[13].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+                    DLNgpio[1].Pins[13].PulldownEnabled = true;
+
+                }
 
             }
+            catch { Init(); }
         }
         public bool GetGpioStatus(int input)
         {
+          
             try
             {              
                 lock (I2cLock)
@@ -496,7 +530,7 @@ namespace FZ4P
                     else return false;
                 }
             }
-            catch { return false; }
+            catch { Init(); return false; }
 
         }
 
