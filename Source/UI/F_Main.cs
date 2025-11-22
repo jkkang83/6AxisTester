@@ -194,6 +194,9 @@ namespace FZ4P
                     else if (data[j].Contains("Open"))
                     {
                         Process.UnloadSeq();
+                        if (!Option.SocketSensorUse) Thread.Sleep(2000);
+                        STATIC.TcpConn.SendMessage("Open");
+                        
                     }
                 }
             }
