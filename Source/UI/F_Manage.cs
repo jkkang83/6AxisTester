@@ -103,8 +103,16 @@ namespace FZ4P
             {
                 if (Model.MCType == "Handler")
                 {
-                    string s = Process.errMsg[0] == "" ? "OK" : "NG";
-                    STATIC.TcpConn.SendMessage(s);
+                    Random rnd = new Random();
+                    int val = rnd.Next(100);
+
+                    string res = string.Empty;
+                    if (val < 20)
+                        res = "NG";
+                    else res = "OK";
+                    STATIC.TcpConn.SendMessage(res);
+                    //string s = Process.errMsg[0] == "" ? "OK" : "NG";
+                    //STATIC.TcpConn.SendMessage(s);
                 }
             }
 
