@@ -111,6 +111,8 @@ namespace FZ4P
                         res = "NG";
                     else res = "OK";
                     STATIC.TcpConn.SendMessage(res);
+                    Process.errMsg[0] = res == "OK" ? "" : "NG";
+
                     //string s = Process.errMsg[0] == "" ? "OK" : "NG";
                     //STATIC.TcpConn.SendMessage(s);
                 }

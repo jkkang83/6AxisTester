@@ -828,6 +828,7 @@ namespace FZ4P
         {
             int LoopCnt = 1;
             if (Option.FailRetry) LoopCnt = 2;
+            Thread.Sleep(30000);
 
             for (int Loop = 0; Loop < LoopCnt; Loop++)
             {
