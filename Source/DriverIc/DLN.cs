@@ -267,8 +267,8 @@ namespace FZ4P
             }
             catch
             {
-                STATIC.Process.AddLog(0, $"I2C Disconnected");
-                Init();
+                MessageBox.Show("Load Socket I2C NG");//STATIC.Process.AddLog(0, $"I2C Disconnected");
+                //Init();
             }
 
         }
@@ -284,7 +284,7 @@ namespace FZ4P
                     DLNgpio[1].Pins[20].OutputValue = 1;
                 }
             }
-            catch { STATIC.Process.AddLog(0, $"I2C Disconnected"); Init(); }
+            catch { MessageBox.Show("Unload Socket I2C NG");/*STATIC.Process.AddLog(0, $"I2C Disconnected"); Init();*/ }
            
 
         }
@@ -301,7 +301,7 @@ namespace FZ4P
 
                 }
             }
-            catch { STATIC.Process.AddLog(0, $"I2C Disconnected"); Init(); }
+            catch { MessageBox.Show("Cover Dn I2C NG"); }
            
 
         }
@@ -316,7 +316,7 @@ namespace FZ4P
                     DLNgpio[1].Pins[21].OutputValue = 1;
                 }
             }
-            catch { STATIC.Process.AddLog(0, $"I2C Disconnected"); Init(); }
+            catch { MessageBox.Show("Cover Up NG"); /*STATIC.Process.AddLog(0, $"I2C Disconnected"); Init();*/ }
           
 
         }
@@ -431,7 +431,7 @@ namespace FZ4P
 
                 }
             }
-            catch { STATIC.Process.AddLog(0, $"I2C Disconnected"); Init(); }
+            catch { MessageBox.Show("Power On Off I2C NG");/*STATIC.Process.AddLog(0, $"I2C Disconnected"); Init();*/ }
             
         }
 
@@ -518,7 +518,7 @@ namespace FZ4P
                 }
 
             }
-            catch { STATIC.Process.AddLog(0, $"I2C Disconnected"); Init(); }
+            catch { MessageBox.Show("Socket Sensor I2C NG");/*STATIC.Process.AddLog(0, $"I2C Disconnected"); Init();*/ }
         }
         public bool GetGpioStatus(int input)
         {
@@ -531,7 +531,7 @@ namespace FZ4P
                     else return false;
                 }
             }
-            catch { STATIC.Process.AddLog(0, $"I2C Disconnected"); Init(); return false; }
+            catch { MessageBox.Show("Socket Sensor I2C NG");/*STATIC.Process.AddLog(0, $"I2C Disconnected"); Init();*/ return false; }
 
         }
 
