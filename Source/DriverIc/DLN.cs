@@ -267,6 +267,7 @@ namespace FZ4P
             }
             catch
             {
+                STATIC.Process.AddLog(0, $"I2C Disconnected");
                 Init();
             }
 
@@ -283,7 +284,7 @@ namespace FZ4P
                     DLNgpio[1].Pins[20].OutputValue = 1;
                 }
             }
-            catch { Init(); }
+            catch { STATIC.Process.AddLog(0, $"I2C Disconnected"); Init(); }
            
 
         }
@@ -300,7 +301,7 @@ namespace FZ4P
 
                 }
             }
-            catch { Init(); }
+            catch { STATIC.Process.AddLog(0, $"I2C Disconnected"); Init(); }
            
 
         }
@@ -315,7 +316,7 @@ namespace FZ4P
                     DLNgpio[1].Pins[21].OutputValue = 1;
                 }
             }
-            catch { Init(); }
+            catch { STATIC.Process.AddLog(0, $"I2C Disconnected"); Init(); }
           
 
         }
@@ -430,7 +431,7 @@ namespace FZ4P
 
                 }
             }
-            catch { Init(); }
+            catch { STATIC.Process.AddLog(0, $"I2C Disconnected"); Init(); }
             
         }
 
@@ -517,7 +518,7 @@ namespace FZ4P
                 }
 
             }
-            catch { Init(); }
+            catch { STATIC.Process.AddLog(0, $"I2C Disconnected"); Init(); }
         }
         public bool GetGpioStatus(int input)
         {
@@ -530,7 +531,7 @@ namespace FZ4P
                     else return false;
                 }
             }
-            catch { Init(); return false; }
+            catch { STATIC.Process.AddLog(0, $"I2C Disconnected"); Init(); return false; }
 
         }
 
