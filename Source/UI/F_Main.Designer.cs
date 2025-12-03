@@ -29,9 +29,9 @@ namespace FZ4P
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(F_Main));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.SpecGrid = new System.Windows.Forms.DataGridView();
             this.btnApplyTesterNo2 = new System.Windows.Forms.Button();
             this.ModelGroup = new System.Windows.Forms.GroupBox();
@@ -39,21 +39,9 @@ namespace FZ4P
             this.button1 = new System.Windows.Forms.Button();
             this.lbxModelFiles = new System.Windows.Forms.ListBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.lblStartModel = new System.Windows.Forms.Label();
             this.MCtypeList = new System.Windows.Forms.ListBox();
-            this.ModelList = new System.Windows.Forms.ListBox();
-            this.MCNumber = new System.Windows.Forms.TextBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.SupplierList = new System.Windows.Forms.ListBox();
-            this.label17 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.ProductLine = new System.Windows.Forms.TextBox();
             this.label15 = new System.Windows.Forms.Label();
-            this.lblRevisionNumber = new System.Windows.Forms.Label();
             this.TesterNo = new System.Windows.Forms.TextBox();
-            this.lblMaker = new System.Windows.Forms.Label();
-            this.LotMaker = new System.Windows.Forms.ListBox();
-            this.RevisionNo = new System.Windows.Forms.TextBox();
             this.ApplyTester = new System.Windows.Forms.Button();
             this.panel4 = new System.Windows.Forms.Panel();
             this.textBox4 = new System.Windows.Forms.TextBox();
@@ -115,14 +103,14 @@ namespace FZ4P
             this.SpecGrid.AllowUserToResizeRows = false;
             this.SpecGrid.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.SpecGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("굴림", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.SpecGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("굴림", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.SpecGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.SpecGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.SpecGrid.Location = new System.Drawing.Point(769, 152);
             this.SpecGrid.Name = "SpecGrid";
@@ -156,21 +144,9 @@ namespace FZ4P
             this.ModelGroup.Controls.Add(this.button1);
             this.ModelGroup.Controls.Add(this.lbxModelFiles);
             this.ModelGroup.Controls.Add(this.label2);
-            this.ModelGroup.Controls.Add(this.lblStartModel);
             this.ModelGroup.Controls.Add(this.MCtypeList);
-            this.ModelGroup.Controls.Add(this.ModelList);
-            this.ModelGroup.Controls.Add(this.MCNumber);
-            this.ModelGroup.Controls.Add(this.label4);
-            this.ModelGroup.Controls.Add(this.SupplierList);
-            this.ModelGroup.Controls.Add(this.label17);
-            this.ModelGroup.Controls.Add(this.label1);
-            this.ModelGroup.Controls.Add(this.ProductLine);
             this.ModelGroup.Controls.Add(this.label15);
-            this.ModelGroup.Controls.Add(this.lblRevisionNumber);
             this.ModelGroup.Controls.Add(this.TesterNo);
-            this.ModelGroup.Controls.Add(this.lblMaker);
-            this.ModelGroup.Controls.Add(this.LotMaker);
-            this.ModelGroup.Controls.Add(this.RevisionNo);
             this.ModelGroup.Controls.Add(this.ApplyTester);
             this.ModelGroup.Location = new System.Drawing.Point(1248, 48);
             this.ModelGroup.Name = "ModelGroup";
@@ -221,22 +197,11 @@ namespace FZ4P
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.ForeColor = System.Drawing.Color.MediumBlue;
-            this.label2.Location = new System.Drawing.Point(50, 321);
+            this.label2.Location = new System.Drawing.Point(49, 104);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(78, 23);
             this.label2.TabIndex = 236;
             this.label2.Text = "MC Type";
-            // 
-            // lblStartModel
-            // 
-            this.lblStartModel.AutoSize = true;
-            this.lblStartModel.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblStartModel.ForeColor = System.Drawing.Color.MediumBlue;
-            this.lblStartModel.Location = new System.Drawing.Point(59, 275);
-            this.lblStartModel.Name = "lblStartModel";
-            this.lblStartModel.Size = new System.Drawing.Size(62, 23);
-            this.lblStartModel.TabIndex = 236;
-            this.lblStartModel.Text = "Model";
             // 
             // MCtypeList
             // 
@@ -244,143 +209,30 @@ namespace FZ4P
             this.MCtypeList.ForeColor = System.Drawing.Color.MediumBlue;
             this.MCtypeList.FormattingEnabled = true;
             this.MCtypeList.ItemHeight = 19;
-            this.MCtypeList.Location = new System.Drawing.Point(139, 321);
+            this.MCtypeList.Location = new System.Drawing.Point(138, 104);
             this.MCtypeList.Name = "MCtypeList";
-            this.MCtypeList.Size = new System.Drawing.Size(130, 61);
+            this.MCtypeList.Size = new System.Drawing.Size(130, 80);
             this.MCtypeList.TabIndex = 235;
-            // 
-            // ModelList
-            // 
-            this.ModelList.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ModelList.ForeColor = System.Drawing.Color.MediumBlue;
-            this.ModelList.FormattingEnabled = true;
-            this.ModelList.ItemHeight = 19;
-            this.ModelList.Location = new System.Drawing.Point(139, 275);
-            this.ModelList.Name = "ModelList";
-            this.ModelList.Size = new System.Drawing.Size(130, 42);
-            this.ModelList.TabIndex = 235;
-            // 
-            // MCNumber
-            // 
-            this.MCNumber.BackColor = System.Drawing.Color.White;
-            this.MCNumber.Font = new System.Drawing.Font("Calibri", 14F, System.Drawing.FontStyle.Bold);
-            this.MCNumber.Location = new System.Drawing.Point(139, 241);
-            this.MCNumber.Name = "MCNumber";
-            this.MCNumber.Size = new System.Drawing.Size(130, 30);
-            this.MCNumber.TabIndex = 234;
-            this.MCNumber.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(52, 244);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(69, 23);
-            this.label4.TabIndex = 233;
-            this.label4.Text = "MC No.";
-            // 
-            // SupplierList
-            // 
-            this.SupplierList.BackColor = System.Drawing.Color.LightCyan;
-            this.SupplierList.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.SupplierList.FormattingEnabled = true;
-            this.SupplierList.ItemHeight = 19;
-            this.SupplierList.Location = new System.Drawing.Point(139, 193);
-            this.SupplierList.Name = "SupplierList";
-            this.SupplierList.Size = new System.Drawing.Size(130, 42);
-            this.SupplierList.TabIndex = 230;
-            // 
-            // label17
-            // 
-            this.label17.AutoSize = true;
-            this.label17.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label17.Location = new System.Drawing.Point(-4, 198);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(125, 23);
-            this.label17.TabIndex = 229;
-            this.label17.Text = "Prism Supplier";
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(11, 167);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(109, 23);
-            this.label1.TabIndex = 228;
-            this.label1.Text = "Product Line";
-            // 
-            // ProductLine
-            // 
-            this.ProductLine.BackColor = System.Drawing.Color.White;
-            this.ProductLine.Font = new System.Drawing.Font("Calibri", 14F, System.Drawing.FontStyle.Bold);
-            this.ProductLine.Location = new System.Drawing.Point(139, 160);
-            this.ProductLine.Name = "ProductLine";
-            this.ProductLine.Size = new System.Drawing.Size(130, 30);
-            this.ProductLine.TabIndex = 227;
-            this.ProductLine.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
             // label15
             // 
             this.label15.AutoSize = true;
             this.label15.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label15.Location = new System.Drawing.Point(29, 131);
+            this.label15.Location = new System.Drawing.Point(29, 72);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(91, 23);
             this.label15.TabIndex = 226;
             this.label15.Text = "Tester No.";
             // 
-            // lblRevisionNumber
-            // 
-            this.lblRevisionNumber.AutoSize = true;
-            this.lblRevisionNumber.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblRevisionNumber.Location = new System.Drawing.Point(11, 97);
-            this.lblRevisionNumber.Name = "lblRevisionNumber";
-            this.lblRevisionNumber.Size = new System.Drawing.Size(110, 23);
-            this.lblRevisionNumber.TabIndex = 222;
-            this.lblRevisionNumber.Text = "Revision No.";
-            // 
             // TesterNo
             // 
             this.TesterNo.BackColor = System.Drawing.Color.White;
             this.TesterNo.Font = new System.Drawing.Font("Calibri", 14F, System.Drawing.FontStyle.Bold);
-            this.TesterNo.Location = new System.Drawing.Point(139, 124);
+            this.TesterNo.Location = new System.Drawing.Point(139, 65);
             this.TesterNo.Name = "TesterNo";
             this.TesterNo.Size = new System.Drawing.Size(130, 30);
             this.TesterNo.TabIndex = 225;
             this.TesterNo.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
-            // lblMaker
-            // 
-            this.lblMaker.AutoSize = true;
-            this.lblMaker.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblMaker.Location = new System.Drawing.Point(60, 53);
-            this.lblMaker.Name = "lblMaker";
-            this.lblMaker.Size = new System.Drawing.Size(61, 23);
-            this.lblMaker.TabIndex = 221;
-            this.lblMaker.Text = "Maker";
-            // 
-            // LotMaker
-            // 
-            this.LotMaker.BackColor = System.Drawing.Color.LightCyan;
-            this.LotMaker.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LotMaker.FormattingEnabled = true;
-            this.LotMaker.ItemHeight = 19;
-            this.LotMaker.Location = new System.Drawing.Point(139, 49);
-            this.LotMaker.Name = "LotMaker";
-            this.LotMaker.Size = new System.Drawing.Size(130, 42);
-            this.LotMaker.TabIndex = 224;
-            // 
-            // RevisionNo
-            // 
-            this.RevisionNo.BackColor = System.Drawing.Color.LightCyan;
-            this.RevisionNo.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold);
-            this.RevisionNo.Location = new System.Drawing.Point(139, 93);
-            this.RevisionNo.Name = "RevisionNo";
-            this.RevisionNo.Size = new System.Drawing.Size(130, 27);
-            this.RevisionNo.TabIndex = 223;
-            this.RevisionNo.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
             // ApplyTester
             // 
@@ -691,14 +543,14 @@ namespace FZ4P
             this.ConditinGrid.AllowUserToResizeRows = false;
             this.ConditinGrid.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.ConditinGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle4.Font = new System.Drawing.Font("굴림", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.ConditinGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("굴림", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.ConditinGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             this.ConditinGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.ConditinGrid.Location = new System.Drawing.Point(364, 43);
             this.ConditinGrid.Name = "ConditinGrid";
@@ -1007,7 +859,7 @@ namespace FZ4P
             this.Name = "F_Main";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "6AxisTester_25112202";
+            this.Text = "6AxisTester_25120202";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.F_Main_FormClosing);
             this.Load += new System.EventHandler(this.F_Main_Load);
@@ -1067,20 +919,8 @@ namespace FZ4P
         private System.Windows.Forms.Button SaveCondition;
         private System.Windows.Forms.Button OpenCondition;
         private System.Windows.Forms.TextBox RecipeFileName;
-        private System.Windows.Forms.Label lblStartModel;
-        private System.Windows.Forms.ListBox ModelList;
-        private System.Windows.Forms.TextBox MCNumber;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.ListBox SupplierList;
-        private System.Windows.Forms.Label label17;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox ProductLine;
         private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.Label lblRevisionNumber;
         private System.Windows.Forms.TextBox TesterNo;
-        private System.Windows.Forms.Label lblMaker;
-        private System.Windows.Forms.ListBox LotMaker;
-        private System.Windows.Forms.TextBox RevisionNo;
         private System.Windows.Forms.Button SetAFPIDUpdate;
         private System.Windows.Forms.RichTextBox AFPidSetPath;
         private System.Windows.Forms.Button SetYPIDUpdate;

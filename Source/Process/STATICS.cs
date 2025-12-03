@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
@@ -44,6 +46,7 @@ namespace FZ4P
         public static string PackageDir = BaseDir + "Package\\";
         public static DateTime LogDate = new DateTime();
         public static string FailNumber = string.Empty;
+        public static string ActID = string.Empty;
         
         public static string PKGRelease(string srcdir, string Ext, string destdir)
         {
@@ -131,7 +134,34 @@ namespace FZ4P
                 Directory.CreateDirectory(dir);
             return dir;
         }
-      
+        public static char GetEthernetIPv4()
+        {
+            foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                // Wi-Fi 제외 조건
+                if (ni.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
+                    continue;
+
+                // 비활성화된 NIC 제외
+                if (ni.OperationalStatus != OperationalStatus.Up)
+                    continue;
+
+                // IPv4 검색
+                foreach (UnicastIPAddressInformation ip in ni.GetIPProperties().UnicastAddresses)
+                {
+                    if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
+                    {
+
+                        string s = ip.Address.ToString();
+
+                        return s[s.Length - 1];
+                    }
+                }
+            }
+            return '0';
+        }
+
+
 
         public static Recipe Rcp = new Recipe();
         public static Process Process = new Process();

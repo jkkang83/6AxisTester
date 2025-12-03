@@ -274,9 +274,9 @@ namespace FZ4P
             ConditinGrid.Columns[2].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             ConditinGrid.Columns[3].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
 
-            ConditinGrid.Columns[0].Width = 70;
+            ConditinGrid.Columns[0].Width = 110;
             ConditinGrid.Columns[1].Width = 140;
-            ConditinGrid.Columns[2].Width = 120;
+            ConditinGrid.Columns[2].Width = 80;
             ConditinGrid.Columns[3].Width = 55;
 
             ConditinGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
@@ -559,24 +559,9 @@ namespace FZ4P
         }
         private void InitModel()
         {
-            LotMaker.Items.Clear();
-            for (int i = 0; i < Model.MakerList.Count; i++)
-                LotMaker.Items.Add(Model.MakerList[i]);
-            LotMaker.SelectedItem = Model.Maker;
-
-            RevisionNo.Text = Model.RevisionNo;
+           
+         
             TesterNo.Text = Model.TesterNo;
-            ProductLine.Text = Model.ProductLine;
-
-            SupplierList.Items.Clear();
-            for (int i = 0; i < Model.SupplierList.Count; i++)
-                SupplierList.Items.Add(Model.SupplierList[i]);
-            SupplierList.SelectedItem = Model.Supplier;
-
-            ModelList.Items.Clear();
-            for (int i = 0; i < Model.ModelList.Count; i++)
-                ModelList.Items.Add(Model.ModelList[i]);
-            ModelList.SelectedItem = Model.ModelName;
 
             MCtypeList.Items.Clear();
             for (int i = 0; i < Model.MCTypeList.Count; i++)
@@ -699,14 +684,10 @@ namespace FZ4P
             }
             DataIO.SerializeToXMLFile(Option, STATIC.OptionPath);
             //Model ==
-            if (LotMaker.SelectedItem != null) Model.Maker = LotMaker.SelectedItem.ToString();
-            Model.RevisionNo = RevisionNo.Text;
+          
             Model.TesterNo = TesterNo.Text;
-            Model.ProductLine = ProductLine.Text;
-            if (SupplierList.SelectedItem != null) Model.Supplier = SupplierList.SelectedItem.ToString();
-            Model.MCNumber = MCNumber.Text;
-            
-            if (ModelList.SelectedItem != null) Model.ModelName = ModelList.SelectedItem.ToString();
+           
+          
             if (MCtypeList.SelectedItem != null) Model.MCType = MCtypeList.SelectedItem.ToString();
             Model.Save();
 

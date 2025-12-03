@@ -244,6 +244,7 @@
             this.groupBox3.Controls.Add(this.btnFOVLeft);
             this.groupBox3.Controls.Add(this.btnFOVDown);
             this.groupBox3.Controls.Add(this.btnFitFOV);
+            this.groupBox3.Enabled = false;
             this.groupBox3.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.groupBox3.Location = new System.Drawing.Point(316, 280);
             this.groupBox3.Name = "groupBox3";
@@ -673,6 +674,7 @@
             this.groupBox4.Controls.Add(this.btnRightPos);
             this.groupBox4.Controls.Add(this.btnDownPos);
             this.groupBox4.Controls.Add(this.btnUpPos);
+            this.groupBox4.Enabled = false;
             this.groupBox4.Font = new System.Drawing.Font("맑은 고딕", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.groupBox4.Location = new System.Drawing.Point(724, 280);
             this.groupBox4.Name = "groupBox4";
@@ -983,6 +985,7 @@
             this.btnAutoLearn.BackColor = System.Drawing.Color.Green;
             this.btnAutoLearn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnAutoLearn.BackgroundImage")));
             this.btnAutoLearn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnAutoLearn.Enabled = false;
             this.btnAutoLearn.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnAutoLearn.Font = new System.Drawing.Font("Calibri", 14F, System.Drawing.FontStyle.Bold);
             this.btnAutoLearn.ForeColor = System.Drawing.Color.Chartreuse;

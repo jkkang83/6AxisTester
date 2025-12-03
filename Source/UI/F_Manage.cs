@@ -58,7 +58,7 @@ namespace FZ4P
 
             if (Model.MCType == "Master") lbMCtype.Text = "PORT 1";
             else if (Model.MCType == "Slave") { lbMCtype.Text = "PORT 2"; }
-            else if (Model.MCType == "Handler") { lbMCtype.Text = "Handler"; }
+            else if (Model.MCType == "Handler") { lbMCtype.Text = $"Port {STATIC.GetEthernetIPv4()} (Handler)"; }
             else lbMCtype.Text = "Normal";
 
         }
@@ -103,18 +103,27 @@ namespace FZ4P
             {
                 if (Model.MCType == "Handler")
                 {
-                    Random rnd = new Random();
-                    int val = rnd.Next(100);
+                    if(Option.DryRunMode)
+                    {
+                        Random rnd = new Random();
+                        int val = rnd.Next(100);
 
-                    string res = string.Empty;
-                    if (val < 20)
-                        res = "NG";
-                    else res = "OK";
-                    STATIC.TcpConn.SendMessage(res);
-                    Process.errMsg[0] = res == "OK" ? "" : "NG";
+                        string res = string.Empty;
+                        if (val < 20)
+                            res = "NG";
+                        else res = "OK";
+                        STATIC.TcpConn.SendMessage(res);
+                        Process.errMsg[0] = res == "OK" ? "" : "NG";
+                    }
+                    else
+                    {
+                        string s = Process.errMsg[0] == "" ? "OK" : "NG";
+                        STATIC.TcpConn.SendMessage(s);
+                    }
 
-                    //string s = Process.errMsg[0] == "" ? "OK" : "NG";
-                    //STATIC.TcpConn.SendMessage(s);
+
+
+                 
                 }
             }
 

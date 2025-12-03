@@ -267,7 +267,10 @@ namespace FZ4P
             }
             catch
             {
+
+                STATIC.TcpConn.disconnect();
                 MessageBox.Show("Load Socket I2C NG");//STATIC.Process.AddLog(0, $"I2C Disconnected");
+                System.Diagnostics.Process.GetCurrentProcess().Kill();
                 //Init();
             }
 
@@ -284,7 +287,7 @@ namespace FZ4P
                     DLNgpio[1].Pins[20].OutputValue = 1;
                 }
             }
-            catch { MessageBox.Show("Unload Socket I2C NG");/*STATIC.Process.AddLog(0, $"I2C Disconnected"); Init();*/ }
+            catch { STATIC.TcpConn.disconnect(); MessageBox.Show("Unload Socket I2C NG"); System.Diagnostics.Process.GetCurrentProcess().Kill(); }
            
 
         }
@@ -301,7 +304,7 @@ namespace FZ4P
 
                 }
             }
-            catch { MessageBox.Show("Cover Dn I2C NG"); }
+            catch { STATIC.TcpConn.disconnect(); MessageBox.Show("Cover Dn I2C NG"); System.Diagnostics.Process.GetCurrentProcess().Kill(); }
            
 
         }
@@ -316,7 +319,7 @@ namespace FZ4P
                     DLNgpio[1].Pins[21].OutputValue = 1;
                 }
             }
-            catch { MessageBox.Show("Cover Up NG"); /*STATIC.Process.AddLog(0, $"I2C Disconnected"); Init();*/ }
+            catch { STATIC.TcpConn.disconnect(); MessageBox.Show("Cover Up NG"); System.Diagnostics.Process.GetCurrentProcess().Kill(); }
           
 
         }
@@ -406,7 +409,9 @@ namespace FZ4P
                 }
                 catch
                 {
+                    STATIC.TcpConn.disconnect();
                     MessageBox.Show("Fail to LED Power :: Please Check USB Cable");
+                    System.Diagnostics.Process.GetCurrentProcess().Kill();
                     m_bOccupied = false;
                 }
                 m_bOccupied = false;
@@ -431,7 +436,7 @@ namespace FZ4P
 
                 }
             }
-            catch { MessageBox.Show("Power On Off I2C NG");/*STATIC.Process.AddLog(0, $"I2C Disconnected"); Init();*/ }
+            catch { STATIC.TcpConn.disconnect();MessageBox.Show("Power On Off I2C NG"); System.Diagnostics.Process.GetCurrentProcess().Kill(); }
             
         }
 
@@ -518,7 +523,7 @@ namespace FZ4P
                 }
 
             }
-            catch { MessageBox.Show("Socket Sensor I2C NG");/*STATIC.Process.AddLog(0, $"I2C Disconnected"); Init();*/ }
+            catch { STATIC.TcpConn.disconnect(); MessageBox.Show("Socket Sensor I2C NG"); System.Diagnostics.Process.GetCurrentProcess().Kill(); }
         }
         public bool GetGpioStatus(int input)
         {
@@ -531,7 +536,7 @@ namespace FZ4P
                     else return false;
                 }
             }
-            catch { MessageBox.Show("Socket Sensor I2C NG");/*STATIC.Process.AddLog(0, $"I2C Disconnected"); Init();*/ return false; }
+            catch { STATIC.TcpConn.disconnect(); MessageBox.Show("Socket Sensor I2C NG"); System.Diagnostics.Process.GetCurrentProcess().Kill(); return false; }
 
         }
 

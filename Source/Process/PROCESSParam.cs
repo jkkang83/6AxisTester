@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -11,12 +12,15 @@ using System.Xml.Linq;
 
 namespace FZ4P
 {
-    public delegate void FunctionPointer(int ch, string testItem);
+    public delegate void FunctionPointer(int ch, string testItem, int InspCnt, bool isTwiceInsp);
     public class ActItems
     {
         public string Name { get; set; }
         public FunctionPointer Func { get; set; }
         public bool IsMulti { get; set; }
+
+        public bool IsRetry { get; set; }
+        public bool IsTwiceInsp { get; set; } = false;  
         public string Time { get; set; }
     }
     public class FindResult

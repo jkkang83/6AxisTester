@@ -189,7 +189,11 @@ namespace FZ4P
             // Output error if target is not rising to the right
             for (int i = lineData.startIndex; i <= lineData.endIndex - 1; i++)
             {
-                if (lineData.dataX[i] >= lineData.dataX[i + 1]) { return 1; }
+              
+                if (lineData.dataX[i] >= lineData.dataX[i + 1]) 
+                { 
+                    return 1; 
+                }
             }
 
             //--------------------------------------------------

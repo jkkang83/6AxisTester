@@ -11208,7 +11208,7 @@ namespace FZ4P
             if (Dln.isMoving || Dln.IsRun) return;
             Dln.isMoving = true;
             Dln.CoverUp();
-            Thread.Sleep(500);
+            Thread.Sleep(700);
             Dln.LoadSocket();
             if (Option.SocketSensorUse)
             {
@@ -11231,7 +11231,7 @@ namespace FZ4P
             if (Dln.isMoving || Dln.IsRun) return;
             Dln.isMoving = true;
             Dln.CoverUp();
-            Thread.Sleep(500);
+            Thread.Sleep(700);
             Dln.UnloadSocket();
             if (Option.SocketSensorUse)
             {
@@ -11257,7 +11257,7 @@ namespace FZ4P
 
                 
                 Dln.CoverUp();
-                Thread.Sleep(500);
+                Thread.Sleep(700);
                 Dln.LoadSocket();
                 if (Option.SocketSensorUse)
                 {
@@ -11286,7 +11286,7 @@ namespace FZ4P
             {
                 Stopwatch st = new Stopwatch();
                 Dln.CoverUp();
-                Thread.Sleep(500);
+                Thread.Sleep(700);
                 Dln.UnloadSocket();
                 if (Option.SocketSensorUse)
                 {
