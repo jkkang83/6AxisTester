@@ -40,7 +40,9 @@ namespace FZ4P
             this.lbxModelFiles = new System.Windows.Forms.ListBox();
             this.label2 = new System.Windows.Forms.Label();
             this.MCtypeList = new System.Windows.Forms.ListBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
+            this.tbMcNum = new System.Windows.Forms.TextBox();
             this.TesterNo = new System.Windows.Forms.TextBox();
             this.ApplyTester = new System.Windows.Forms.Button();
             this.panel4 = new System.Windows.Forms.Panel();
@@ -145,7 +147,9 @@ namespace FZ4P
             this.ModelGroup.Controls.Add(this.lbxModelFiles);
             this.ModelGroup.Controls.Add(this.label2);
             this.ModelGroup.Controls.Add(this.MCtypeList);
+            this.ModelGroup.Controls.Add(this.label1);
             this.ModelGroup.Controls.Add(this.label15);
+            this.ModelGroup.Controls.Add(this.tbMcNum);
             this.ModelGroup.Controls.Add(this.TesterNo);
             this.ModelGroup.Controls.Add(this.ApplyTester);
             this.ModelGroup.Location = new System.Drawing.Point(1248, 48);
@@ -197,7 +201,7 @@ namespace FZ4P
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.ForeColor = System.Drawing.Color.MediumBlue;
-            this.label2.Location = new System.Drawing.Point(49, 104);
+            this.label2.Location = new System.Drawing.Point(54, 128);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(78, 23);
             this.label2.TabIndex = 236;
@@ -209,26 +213,46 @@ namespace FZ4P
             this.MCtypeList.ForeColor = System.Drawing.Color.MediumBlue;
             this.MCtypeList.FormattingEnabled = true;
             this.MCtypeList.ItemHeight = 19;
-            this.MCtypeList.Location = new System.Drawing.Point(138, 104);
+            this.MCtypeList.Location = new System.Drawing.Point(138, 128);
             this.MCtypeList.Name = "MCtypeList";
             this.MCtypeList.Size = new System.Drawing.Size(130, 80);
             this.MCtypeList.TabIndex = 235;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Location = new System.Drawing.Point(29, 56);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(111, 23);
+            this.label1.TabIndex = 226;
+            this.label1.Text = "Machine No.";
             // 
             // label15
             // 
             this.label15.AutoSize = true;
             this.label15.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label15.Location = new System.Drawing.Point(29, 72);
+            this.label15.Location = new System.Drawing.Point(46, 94);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(91, 23);
             this.label15.TabIndex = 226;
             this.label15.Text = "Tester No.";
             // 
+            // tbMcNum
+            // 
+            this.tbMcNum.BackColor = System.Drawing.Color.White;
+            this.tbMcNum.Font = new System.Drawing.Font("Calibri", 14F, System.Drawing.FontStyle.Bold);
+            this.tbMcNum.Location = new System.Drawing.Point(139, 51);
+            this.tbMcNum.Name = "tbMcNum";
+            this.tbMcNum.Size = new System.Drawing.Size(130, 30);
+            this.tbMcNum.TabIndex = 225;
+            this.tbMcNum.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
             // TesterNo
             // 
             this.TesterNo.BackColor = System.Drawing.Color.White;
             this.TesterNo.Font = new System.Drawing.Font("Calibri", 14F, System.Drawing.FontStyle.Bold);
-            this.TesterNo.Location = new System.Drawing.Point(139, 65);
+            this.TesterNo.Location = new System.Drawing.Point(139, 91);
             this.TesterNo.Name = "TesterNo";
             this.TesterNo.Size = new System.Drawing.Size(130, 30);
             this.TesterNo.TabIndex = 225;
@@ -859,7 +883,7 @@ namespace FZ4P
             this.Name = "F_Main";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "6AxisTester_25120202";
+            this.Text = "6AxisTester_25121201_V27";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.F_Main_FormClosing);
             this.Load += new System.EventHandler(this.F_Main_Load);
@@ -934,6 +958,8 @@ namespace FZ4P
         private System.Windows.Forms.Label lblDefaultModel;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ListBox MCtypeList;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox tbMcNum;
     }
 }
 

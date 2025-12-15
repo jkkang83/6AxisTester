@@ -231,11 +231,13 @@ namespace FZ4P
 
             DataIO.SerializeToXMLFile(STATIC.Rcp.yield, STATIC.YieldPath);
             DataIO.SerializeToXMLFile(Spec, STATIC.SpecDir + Current.SpecName);
+            DataIO.SerializeToXMLFile(STATIC.Rcp.tt, STATIC.TestTimeDir);
             if (!Process.IsVirtual)
             {
                 Process.LEDs_All_On(0, false);
             }
-            if (Model.MCType != "Normal") STATIC.TcpConn.disconnect();
+            if (Model.MCType != "Normal") { STATIC.TcpConn.SendMessage("Disconnected"); STATIC.TcpConn.disconnect(); }
+
         }
         private void InitCondition()
         {
@@ -363,7 +365,7 @@ namespace FZ4P
                 ConditinGrid.ReadOnly = true;
                 for (int row = 0; row < ConditinGrid.Rows.Count; row++)
                 {
-                    ConditinGrid[2, row].Style.BackColor = Color.LightGray;
+                    ConditinGrid[1, row].Style.BackColor = Color.LightGray;
                 }
             }
             if (EditSpec.Checked == true)
@@ -371,13 +373,29 @@ namespace FZ4P
                 SpecGrid.ReadOnly = false;
                 for (int row = 0; row < SpecGrid.Rows.Count; row++)
                 {
+                    switch(Rcp.Spec.specList[row].InspectionType)
                     {
-                        SpecGrid[2, row].Style.BackColor = Color.White;
-                        SpecGrid[3, row].Style.BackColor = Color.White;
-                        SpecGrid[0, row].ReadOnly = true;
-                        SpecGrid[1, row].ReadOnly = true;
+                        case InspType.Normal:
+                        case InspType.MintoMax:
+                            SpecGrid[1, row].Style.BackColor = Color.White;
+                            SpecGrid[2, row].Style.BackColor = Color.White;
+                            break;
+                        case InspType.OKNG:
+                            SpecGrid[1, row].ReadOnly = true;
+                            SpecGrid[2, row].ReadOnly = true;
+                            break;
+                        case InspType.OnlyMin:
+                            SpecGrid[1, row].Style.BackColor = Color.White;
+                            SpecGrid[2, row].ReadOnly = true;
+                            break;
+                        case InspType.OnlyMax:
+                            SpecGrid[2, row].Style.BackColor = Color.White;
+                            SpecGrid[1, row].ReadOnly = true;
+                            break;
+                        
                        
                     }
+                    SpecGrid[0, row].ReadOnly = true;
                 }
             }
             else
@@ -385,8 +403,8 @@ namespace FZ4P
                 SpecGrid.ReadOnly = true;
                 for (int row = 0; row < SpecGrid.Rows.Count; row++)
                 {
+                    SpecGrid[1, row].Style.BackColor = Color.LightGray;
                     SpecGrid[2, row].Style.BackColor = Color.LightGray;
-                    SpecGrid[3, row].Style.BackColor = Color.LightGray;
                 }
             }
         }
@@ -396,7 +414,7 @@ namespace FZ4P
             PropertyInfo pi = dgvType.GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic);
             pi.SetValue(SpecGrid, true, null);
 
-            SpecGrid.ColumnCount = 4;
+            SpecGrid.ColumnCount = 3;
             SpecGrid.Font = new Font("Calibri", 10, FontStyle.Bold);
             for (int i = 0; i < SpecGrid.ColumnCount; i++)
             {
@@ -407,55 +425,39 @@ namespace FZ4P
 
             SpecFileName.Text = Current.SpecName;
             // Column
-            SpecGrid.Columns[0].Name = "Axis";
-            SpecGrid.Columns[1].Name = "Test Item";
-            SpecGrid.Columns[2].Name = "Min";
-            SpecGrid.Columns[3].Name = "Max";
+       //     SpecGrid.Columns[0].Name = "Axis";
+            SpecGrid.Columns[0].Name = "Test Item";
+            SpecGrid.Columns[1].Name = "Min";
+            SpecGrid.Columns[2].Name = "Max";
 
             DataGridViewCheckBoxColumn chkCol = new DataGridViewCheckBoxColumn();
             chkCol.ValueType = typeof(bool);
             chkCol.HeaderText = "On/Off";
             SpecGrid.Columns.Add(chkCol);
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 4; i++)
                 SpecGrid.Columns[i].DefaultCellStyle.Font = new Font("Calibri", 10, FontStyle.Bold);
 
-            SpecGrid.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            SpecGrid.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+          //  SpecGrid.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            SpecGrid.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            SpecGrid.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             SpecGrid.Columns[2].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            SpecGrid.Columns[3].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            SpecGrid.Columns[4].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            SpecGrid.Columns[3].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
-            SpecGrid.Columns[0].Width = 80;
-            SpecGrid.Columns[1].Width = 165;
-            SpecGrid.Columns[2].Width = 80;
-            SpecGrid.Columns[3].Width = 80;
-            SpecGrid.Columns[4].Width = 50;
+         //   SpecGrid.Columns[0].Width = 80;
+            SpecGrid.Columns[0].Width = 200;
+            SpecGrid.Columns[1].Width = 100;
+            SpecGrid.Columns[2].Width = 100;
+            SpecGrid.Columns[3].Width = 50;
 
             // Row 
-            bool bColorChange = false;
+        
             SpecGrid.Rows.Clear();
 
             for (int i = 0; i < Spec.specList.Count; i++)
             {
-                SpecGrid.Rows.Add(Spec.specList[i].Category, Spec.specList[i].DisplayName, Spec.specList[i].MinSpec, Spec.specList[i].MaxSpec, Spec.specList[i].OnOff);
-                if (i > 0)
-                {
-                    if (Spec.specList[i - 1].Category != Spec.specList[i].Category) bColorChange = !bColorChange;
-                    if (bColorChange)
-                    {
-                        SpecGrid[0, i].Style.BackColor = Color.Lavender;
-                        SpecGrid[1, i].Style.BackColor = Color.Lavender;
-
-                    }
-                    else
-                    {
-                        SpecGrid[0, i].Style.BackColor = Color.White;
-                        SpecGrid[1, i].Style.BackColor = Color.White;
-
-                    }
-                    if (Spec.specList[i - 1].Category == Spec.specList[i].Category)
-                        SpecGrid.Rows[i].Cells[0].Style.ForeColor = SpecGrid.Rows[i].Cells[0].Style.BackColor;
-                }
+                SpecGrid.Rows.Add(Spec.specList[i].DisplayName, Spec.specList[i].MinSpec, Spec.specList[i].MaxSpec, Spec.specList[i].OnOff);
+                //SpecGrid[0, i].Style.BackColor = Color.White;
+                SpecGrid[0, i].Style.BackColor = Color.White;
 
             }
 
@@ -468,19 +470,19 @@ namespace FZ4P
                 SpecGrid.Rows[i].Height = 18;     // spec 높이조절A
                 SpecGrid.Rows[i].Resizable = DataGridViewTriState.False;
                 SpecGrid.Rows[i].DefaultCellStyle.Font = new Font("Calibri", 9, FontStyle.Bold);
+                SpecGrid[0, i].Style.Font = new Font("Calibri", 9, FontStyle.Bold);
                 SpecGrid[1, i].Style.Font = new Font("Calibri", 9, FontStyle.Bold);
-                SpecGrid[2, i].Style.Font = new Font("Calibri", 9, FontStyle.Bold);
-                SpecGrid[4, i].Style.Font = new Font("Calibri", 9, FontStyle.Italic);
+                SpecGrid[3, i].Style.Font = new Font("Calibri", 9, FontStyle.Italic);
             }
 
-            for (int colum = 2; colum < 4; colum++)
+            for (int colum = 1; colum < 3; colum++)
             {
                 for (int row = 0; row < SpecGrid.Rows.Count; row++)
                 {
                     SpecGrid[colum, row].Style.BackColor = Color.LightGray;
-                    if (Convert.ToBoolean(SpecGrid[4, row].Value))
-                        SpecGrid[1, row].Style.BackColor = Color.White;
-                    else SpecGrid[1, row].Style.BackColor = Color.OrangeRed;
+                    if (Convert.ToBoolean(SpecGrid[3, row].Value))
+                        SpecGrid[0, row].Style.BackColor = Color.White;
+                    else SpecGrid[0, row].Style.BackColor = Color.OrangeRed;
 
                 }
             }
@@ -508,21 +510,19 @@ namespace FZ4P
             }
             for (int i = 0; i < SpecGrid.RowCount; i++)
             {
-                int index = Spec.specList.FindIndex(x => x.DisplayName == SpecGrid[1, i].Value.ToString() && x.Category == SpecGrid[0, i].Value.ToString());
+                int index = Spec.specList.FindIndex(x => x.DisplayName == SpecGrid[0, i].Value.ToString());
 
                 if (index != -1)
                 {
-                    Spec.specList[index].MinSpec = Convert.ToDouble(SpecGrid[2, i].Value);
-                    Spec.specList[index].MaxSpec = Convert.ToDouble(SpecGrid[3, i].Value);
-                    Spec.specList[index].OnOff = Convert.ToBoolean(SpecGrid[4, i].Value);
+                    Spec.specList[index].MinSpec = Convert.ToDouble(SpecGrid[1, i].Value);
+                    Spec.specList[index].MaxSpec = Convert.ToDouble(SpecGrid[2, i].Value);
+                    Spec.specList[index].OnOff = Convert.ToBoolean(SpecGrid[3, i].Value);
 
                 }
             }
 
-            //  sRecipe 변수가 동작하지 않고 있음.
             STATIC.fVision.SetExposure(0, Condition.iExposure);
             STATIC.fVision.SetRawGainNGamma(Condition.iRawGain, Condition.iGamma);
-
             STATIC.fVision.SetExposure(0, Condition.iExposure);
             STATIC.fVision.SetRawGainNGamma(Condition.iRawGain, Condition.iGamma);
 
@@ -559,8 +559,8 @@ namespace FZ4P
         }
         private void InitModel()
         {
-           
-         
+
+            tbMcNum.Text = Model.MCNum;
             TesterNo.Text = Model.TesterNo;
 
             MCtypeList.Items.Clear();
@@ -641,6 +641,7 @@ namespace FZ4P
                         Spec.specList[index].MaxSpec = compare.specList[i].MaxSpec;
                         Spec.specList[index].OnOff = compare.specList[i].OnOff;
                         Spec.specList[index].FailCnt = compare.specList[i].FailCnt;
+                        Spec.specList[index].InspectionType = compare.specList[i].InspectionType;
                     }
                 }
             }
@@ -684,7 +685,7 @@ namespace FZ4P
             }
             DataIO.SerializeToXMLFile(Option, STATIC.OptionPath);
             //Model ==
-          
+            Model.MCNum = tbMcNum.Text;
             Model.TesterNo = TesterNo.Text;
            
           
@@ -1555,12 +1556,12 @@ namespace FZ4P
 
         private void SpecGrid_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex >= 0 && e.ColumnIndex == 4)
+            if (e.RowIndex >= 0 && e.ColumnIndex == 3)
             {
                 DataGridViewCell cell = SpecGrid.Rows[e.RowIndex].Cells[e.ColumnIndex];
                 if (Convert.ToBoolean(cell.Value))
-                    SpecGrid[1, e.RowIndex].Style.BackColor = Color.White;
-                else SpecGrid[1, e.RowIndex].Style.BackColor = Color.OrangeRed;
+                    SpecGrid[0, e.RowIndex].Style.BackColor = Color.White;
+                else SpecGrid[0, e.RowIndex].Style.BackColor = Color.OrangeRed;
             }
         }
 

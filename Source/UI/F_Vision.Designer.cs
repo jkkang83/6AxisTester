@@ -138,8 +138,6 @@
             this.btnCoverDn = new System.Windows.Forms.Button();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.button2 = new System.Windows.Forms.Button();
-            this.btnPowerOn = new System.Windows.Forms.Button();
-            this.btnPowerOff = new System.Windows.Forms.Button();
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
@@ -1706,44 +1704,6 @@
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click_1);
             // 
-            // btnPowerOn
-            // 
-            this.btnPowerOn.BackColor = System.Drawing.Color.Lime;
-            this.btnPowerOn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.btnPowerOn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPowerOn.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            this.btnPowerOn.ForeColor = System.Drawing.Color.Black;
-            this.btnPowerOn.Location = new System.Drawing.Point(334, 6);
-            this.btnPowerOn.Name = "btnPowerOn";
-            this.btnPowerOn.Size = new System.Drawing.Size(143, 60);
-            this.btnPowerOn.TabIndex = 123;
-            this.btnPowerOn.Text = "Power On";
-            this.btnPowerOn.UseVisualStyleBackColor = false;
-            this.btnPowerOn.Click += new System.EventHandler(this.btnPowerOn_Click);
-            this.btnPowerOn.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btnMouseHover);
-            this.btnPowerOn.MouseEnter += new System.EventHandler(this.btnMouseEnter);
-            this.btnPowerOn.MouseLeave += new System.EventHandler(this.btnMouseHover);
-            this.btnPowerOn.MouseUp += new System.Windows.Forms.MouseEventHandler(this.btnMouseEnter);
-            // 
-            // btnPowerOff
-            // 
-            this.btnPowerOff.BackColor = System.Drawing.Color.Red;
-            this.btnPowerOff.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.btnPowerOff.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPowerOff.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            this.btnPowerOff.ForeColor = System.Drawing.Color.Black;
-            this.btnPowerOff.Location = new System.Drawing.Point(334, 75);
-            this.btnPowerOff.Name = "btnPowerOff";
-            this.btnPowerOff.Size = new System.Drawing.Size(143, 60);
-            this.btnPowerOff.TabIndex = 123;
-            this.btnPowerOff.Text = "Power Off";
-            this.btnPowerOff.UseVisualStyleBackColor = false;
-            this.btnPowerOff.Click += new System.EventHandler(this.btnPowerOff_Click);
-            this.btnPowerOff.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btnMouseHover);
-            this.btnPowerOff.MouseEnter += new System.EventHandler(this.btnMouseEnter);
-            this.btnPowerOff.MouseLeave += new System.EventHandler(this.btnMouseHover);
-            this.btnPowerOff.MouseUp += new System.Windows.Forms.MouseEventHandler(this.btnMouseEnter);
-            // 
             // FVision
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -1813,8 +1773,6 @@
             this.Controls.Add(this.cbSaveNthImg);
             this.Controls.Add(this.btnHalt2);
             this.Controls.Add(this.label7);
-            this.Controls.Add(this.btnPowerOff);
-            this.Controls.Add(this.btnPowerOn);
             this.Controls.Add(this.btnClear1);
             this.Controls.Add(this.tbImgNumber);
             this.Controls.Add(this.button1);
@@ -1963,7 +1921,5 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.GroupBox groupBox5;
         private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button btnPowerOn;
-        private System.Windows.Forms.Button btnPowerOff;
     }
 }

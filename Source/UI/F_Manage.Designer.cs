@@ -68,6 +68,10 @@ namespace FZ4P
             this.lbMCtype = new System.Windows.Forms.Label();
             this.lblCheckPoint = new System.Windows.Forms.Label();
             this.pResult2 = new System.Windows.Forms.Panel();
+            this.lbST = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.lbCurrentST = new System.Windows.Forms.Label();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.RunProgress)).BeginInit();
@@ -487,7 +491,7 @@ namespace FZ4P
             this.ModelGroup.Location = new System.Drawing.Point(1739, 43);
             this.ModelGroup.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.ModelGroup.Name = "ModelGroup";
-            this.ModelGroup.Size = new System.Drawing.Size(178, 734);
+            this.ModelGroup.Size = new System.Drawing.Size(178, 530);
             this.ModelGroup.TabIndex = 256;
             // 
             // tableLayoutPanel2
@@ -549,11 +553,67 @@ namespace FZ4P
             this.pResult2.Size = new System.Drawing.Size(772, 34);
             this.pResult2.TabIndex = 259;
             // 
+            // lbST
+            // 
+            this.lbST.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
+            this.lbST.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lbST.Font = new System.Drawing.Font("Arial", 20.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbST.ForeColor = System.Drawing.Color.Yellow;
+            this.lbST.Location = new System.Drawing.Point(1739, 716);
+            this.lbST.Name = "lbST";
+            this.lbST.Size = new System.Drawing.Size(178, 61);
+            this.lbST.TabIndex = 260;
+            this.lbST.Text = "0.0";
+            this.lbST.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label1
+            // 
+            this.label1.BackColor = System.Drawing.Color.White;
+            this.label1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.label1.Font = new System.Drawing.Font("Arial", 20.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.ForeColor = System.Drawing.Color.Black;
+            this.label1.Location = new System.Drawing.Point(1739, 682);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(178, 34);
+            this.label1.TabIndex = 261;
+            this.label1.Text = "AVG T/T";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label5
+            // 
+            this.label5.BackColor = System.Drawing.Color.White;
+            this.label5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.label5.Font = new System.Drawing.Font("Arial", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label5.ForeColor = System.Drawing.Color.Black;
+            this.label5.Location = new System.Drawing.Point(1739, 582);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(178, 34);
+            this.label5.TabIndex = 263;
+            this.label5.Text = "Last SPL T/T";
+            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lbCurrentST
+            // 
+            this.lbCurrentST.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
+            this.lbCurrentST.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lbCurrentST.Font = new System.Drawing.Font("Arial", 20.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbCurrentST.ForeColor = System.Drawing.Color.Yellow;
+            this.lbCurrentST.Location = new System.Drawing.Point(1739, 616);
+            this.lbCurrentST.Name = "lbCurrentST";
+            this.lbCurrentST.Size = new System.Drawing.Size(178, 61);
+            this.lbCurrentST.TabIndex = 262;
+            this.lbCurrentST.Text = "0.0";
+            this.lbCurrentST.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // F_Manage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1920, 1080);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.lbCurrentST);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.lbST);
             this.Controls.Add(this.pResult2);
             this.Controls.Add(this.btnCheckContact);
             this.Controls.Add(this.lblCheckPoint);
@@ -621,5 +681,9 @@ namespace FZ4P
         private System.Windows.Forms.Label lblCheckPoint;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Panel pResult2;
+        private System.Windows.Forms.Label lbST;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label lbCurrentST;
     }
 }

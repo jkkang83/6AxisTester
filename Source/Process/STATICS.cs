@@ -18,6 +18,9 @@ namespace FZ4P
         public static F_Manage fManage = new F_Manage();
         public static F_Start fStart = new F_Start();
         public static HandlerConnection TcpConn = new HandlerConnection();
+        public static int I2CFailcnt = 0;
+        public static string SaveLogData = string.Empty;
+       
 
         public enum STATE
         {
@@ -44,6 +47,7 @@ namespace FZ4P
         public static string YieldPath = RootDir + "Yield.txt";
         public static string CurrentPath = RootDir + "CurrPath.txt";
         public static string PackageDir = BaseDir + "Package\\";
+        public static string TestTimeDir = RootDir + "TestTime.txt";
         public static DateTime LogDate = new DateTime();
         public static string FailNumber = string.Empty;
         public static string ActID = string.Empty;

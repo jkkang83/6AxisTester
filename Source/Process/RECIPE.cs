@@ -22,6 +22,7 @@ namespace FZ4P
         public Option Option { get; set; }
         public List<PassFail> PassFails { get; set; }
         public TotalYield yield { get; set; }
+        public TestTime tt { get; set; }
         public Recipe()
         {
             Current = new CurrentPath();
@@ -61,6 +62,7 @@ namespace FZ4P
                         Spec.specList[index].MaxSpec = compare.specList[i].MaxSpec;
                         Spec.specList[index].OnOff = compare.specList[i].OnOff;
                         Spec.specList[index].FailCnt = compare.specList[i].FailCnt;
+                        Spec.specList[index].InspectionType = compare.specList[i].InspectionType;
                     }
                 }
             }
@@ -91,6 +93,8 @@ namespace FZ4P
                 PassFails.Add(new PassFail());
                 for (int j = 0; j < (int)SpecItem.Length; j++) PassFails[i].Results.Add(new ResultItems());
             }
+            tt = new TestTime();
+            if (File.Exists(STATIC.TestTimeDir)) tt = DataIO.DeserializeXMLFileToObject<TestTime>(STATIC.TestTimeDir);
         }
     }
     public class BaseRecipe
@@ -139,6 +143,14 @@ namespace FZ4P
                 }
             }
         }
+    }
+
+    public class TestTime
+    {
+        public double CurrentST { get; set; } = 0;
+
+        public double St { get; set; } = 0;
+        public int Count { get; set; } = 0;
     }
     public class Option
     {
@@ -425,157 +437,82 @@ namespace FZ4P
         [Condition("Others", "LED Current R", "", "", "V")] public double LedCurrentR { get; set; } = 2.7;
 
     }
+
+    public enum InspType
+    {
+        Normal, 
+        OKNG,
+        OnlyMin,
+        OnlyMax,
+        MintoMax,
+    }
+
+  
     public enum SpecItem
     {
-        //  [Spec("AF", "Hall Calibration Stroke", "um")] OISX_Ratedstroke,
 
+        [Spec("AF> HallCalibration", "um", InspType.Normal)] AF_NonEPAStroke,
+        [Spec("XY> HallCalibration", "", InspType.OKNG)] XYHallCalibration,
+        [Spec("XY> OIS IC Mount Error", "any", InspType.Normal)] OISIMERes,
+        [Spec("XY> OIS XYZ Temperature", "any", InspType.Normal)] TempRes,
+        [Spec("XY> OIS XYZ aging", "OK/NG", InspType.Normal)] XYZAging,
+        [Spec("XY> LinearCompensation", "any", InspType.Normal)] XYLinearComp,
+        [Spec("XY> X Decenter", "um", InspType.Normal)] x_ServoDecenter,
+        [Spec("XY> Y Decenter", "um", InspType.Normal)] y_ServoDecenter,
+        [Spec("XY> OIS X OpenLoop", "any", InspType.Normal)] OLTestXResult,
+        [Spec("XY> OIS Y OpenLoop", "any", InspType.Normal)] OLTestYResult,
+        [Spec("XY> OIS AutoTest", "any", InspType.Normal)] AutoTestRes,
 
-        [Spec("AF HallCalibration", "Stroke", "um")] AF_NonEPAStroke,
-        [Spec("XY HallCalibration", "Result", "um")] XYHallCalibration,
+        [Spec("USER> OIS Sensitivity test", "No.", InspType.Normal)] OISSensitivityTestRes,
+        [Spec("USER> AF Aging", "any", InspType.OnlyMax)] AFScanAging,
 
-        [Spec("X", "Displacement Range", "um")] OISX_Ratedstroke,
-        [Spec("X", "Displacement Max", "um")] OISX_Forwardstroke,
-        [Spec("X", "Displacement Min", "um")] OISX_Backwardstroke,
-        [Spec("X", "Sensitivity", "um / code")] OISX_Sensitivity,
-        [Spec("X", "Linearity", "um")] OISX_Linearity,
-        [Spec("X", "Hysteresis", "um")] OISX_Hysteresis,
-        [Spec("X", "Centering Current", "mA")] OISX_CenteringCurrent,
-        [Spec("X", "Max Current", "mA")] OISX_MaxCurrent,
-        [Spec("X", "Min Current", "mA")] OISX_MinCurrent,
-        [Spec("X", "Crosstalk Y", "um")] OISX_CrosstalkY,
-        [Spec("X", "Crosstalk Y dB", "dB")] OISX_CrosstalkY_dB,
-        [Spec("X", "Crosstalk Y P2P", "um")] OISX_CrosstalkY_P2P,
-        [Spec("X", "Crosstalk Y P2P dB", "dB")] OISX_CrosstalkYP2P_dB,
-        //[Spec("X", "Crosstalk Z", "um")] OISX_CrosstalkZ,
-        //[Spec("X", "Crosstalk R", "um")] OISX_CrosstalkR,
-        [Spec("X", "Rolling", "deg")] OISX_Rolling,
+        [Spec("AF> Displacement Range", "um", InspType.Normal)] AF_Ratedstroke,
+        [Spec("AF> Displacement Min", "um", InspType.OnlyMax)] AF_Backwardstroke,
+        [Spec("AF> Displacement Max", "um", InspType.OnlyMin)] AF_Forwardstroke,
+        [Spec("AF> Hysteresis", "um", InspType.OnlyMax)] AF_Hysteresis,
+        [Spec("AF> Linearity(R)", "um", InspType.OnlyMax)] AF_Linearity,
+        [Spec("AF> Current", "mA", InspType.MintoMax)] AF_Current,
+        [Spec("AF> Tilt", "min", InspType.Normal)] AF_Tilt,
+        [Spec("AF> Hall Shift Verify", "OK/NG", InspType.OKNG)] HallShiftVerify,
+        [Spec("AF> Stabilize Time", "ms", InspType.OnlyMax)] AF_SettillingTime,
+        
 
-        [Spec("Y", "Displacement Range", "um")] OISY_Ratedstroke,
-        [Spec("Y", "Displacement Max", "um")] OISY_Forwardstroke,
-        [Spec("Y", "Displacement Min", "um")] OISY_Backwardstroke,
-        [Spec("Y", "Sensitivity", "um / code")] OISY_Sensitivity,
-        [Spec("Y", "Linearity", "um")] OISY_Linearity,
-        [Spec("Y", "Hysteresis", "um")] OISY_Hysteresis,
-        [Spec("Y", "Centering Current", "mA")] OISY_CenteringCurrent,
-        [Spec("Y", "Max Current", "mA")] OISY_MaxCurrent,
-        [Spec("Y", "Min Current", "mA")] OISY_MinCurrent,
-        [Spec("Y", "Crosstalk X", "um")] OISY_CrosstalkX,
-        [Spec("Y", "Crosstalk X dB", "dB")] OISY_CrosstalkX_dB,
-        [Spec("Y", "Crosstalk X P2P", "um")] OISY_CrosstalkX_P2P,
-        [Spec("Y", "Crosstalk X P2P dB", "dB")] OISY_CrosstalkXP2P_dB,
-        //[Spec("Y", "Crosstalk Z", "um")] OISY_CrosstalkZ,
-        //[Spec("Y", "Crosstalk R", "um")] OISY_CrosstalkR,
-        [Spec("Y", "Rolling", "deg")] OISY_Rolling,
+        [Spec("X> Displacement Range", "um", InspType.Normal)] OISX_Ratedstroke,
+        [Spec("X> Displacement Min", "um", InspType.OnlyMax)] OISX_Backwardstroke,
+        [Spec("X> Displacement Max", "um", InspType.OnlyMin)] OISX_Forwardstroke,
+        [Spec("X> Hysteresis", "um", InspType.OnlyMax)] OISX_Hysteresis,      
+        [Spec("X> Linearity(R)", "um", InspType.OnlyMax)] OISX_Linearity,
+        [Spec("X> Current", "mA", InspType.MintoMax)] OISX_Current,
+        [Spec("X> Hall Decenter(Centering Error)", "um", InspType.Normal)] x_HallDecenter,
 
-        [Spec("AF", "Displacement Range", "um")] AF_Ratedstroke,
-        [Spec("AF", "Displacement Max", "um")] AF_Forwardstroke,
-        [Spec("AF", "Displacement Min", "um")] AF_Backwardstroke,
-        [Spec("AF", "Sensitivity", "um / code")] AF_Sensitivity,
-        [Spec("AF", "Linearity", "um")] AF_Linearity,
-        [Spec("AF", "Hysteresis", "um")] AF_Hysteresis,
-        [Spec("AF", "Holding Currnet", "mA")] AF_HoldingCurrent,
-        [Spec("AF", "Max Current", "mA")] AF_MaxCurrent,
-        [Spec("AF", "Min Current", "mA")] AF_MinCurrent,
-        [Spec("AF", "Crosstalk X", "um")] AF_CrosstalkX,
-        [Spec("AF", "Crosstalk Y", "um")] AF_CrosstalkY,
-        [Spec("AF", "Crosstalk R", "um")] AF_CrosstalkR,
-        [Spec("AF", "Rolling", "deg")] AF_Rolling,
-        [Spec("AF", "Tilt", "min")] AF_Tilt,
-        [Spec("AF", "Stabilize Time", "ms")] AF_SettillingTime,
-       
+        [Spec("Y> Displacement Range", "um", InspType.Normal)] OISY_Ratedstroke,
+        [Spec("Y> Displacement Min", "um", InspType.OnlyMax)] OISY_Backwardstroke,
+        [Spec("Y> Displacement Max", "um", InspType.OnlyMin)] OISY_Forwardstroke,
+        [Spec("Y> Hysteresis", "um", InspType.OnlyMax)] OISY_Hysteresis,
+        [Spec("Y> Linearity(R)", "um", InspType.OnlyMax)] OISY_Linearity,
+        [Spec("Y> Current", "mA", InspType.MintoMax)] OISY_Current,
+        [Spec("Y> Hall Decenter(Centering Error)", "um", InspType.Normal)] y_HallDecenter,
 
-        [Spec("FRA AF", "PM Frequency", "Hz")] FRAAF_PMFreq,
-        [Spec("FRA AF", "Phase Margin", "deg")] FRAAF_PhaseMargin,
-        [Spec("FRA AF", "-4dB Phase Margin", "deg")] FRAAF_4dB_PhaseMargin,
-        [Spec("FRA AF", "Gain @ 10Hz", "db")] FRAAF_Gain10Hz,
-        [Spec("FRA AF", "Gain Margin", "db")] FRAAF_GainMargin,
-        //[Spec("FRA AF", "Sinewave Result", "#")] SineWaveAF_Result,
-        //[Spec("FRA AF", "Sinewave Count", "#")] SineWaveAF_Count,
-        //[Spec("FRA AF", "Ringing Result", "#")] RingingAF_Result,
-        //[Spec("FRA AF", "Ringing Time", "#")] RingingAF_Time,
+        [Spec("USER> X Through Peak 25", "dB", InspType.OnlyMax)] ThroughPeak_X_Gain,
+        [Spec("USER> Y Through Peak 25", "dB", InspType.OnlyMax)] ThroughPeak_Y_Gain,
 
-        [Spec("FRA X", "PM Frequency", "Hz")] FRAX_PMFreq,
-        [Spec("FRA X", "Phase Margin", "deg")] FRAX_PhaseMargin,
-        [Spec("FRA X", "PM Frequency High", "Hz")] FRAX_PMFreq_High,
-        [Spec("FRA X", "Phase Margin High", "deg")] FRAX_PhaseMargin_High,
-        [Spec("FRA X", "Loop Gain", "db")] FRAX_Gain10Hz,
-        [Spec("FRA X", "Gain Margin", "db")] FRAX_GainMargin,
-        //[Spec("FRA X", "Sinewave Result", "#")] SineWaveX_Result,
-        //[Spec("FRA X", "Sinewave Count", "#")] SineWaveX_Count,
-        //[Spec("FRA X", "Ringing Result", "#")] RingingX_Result,
-        //[Spec("FRA X", "Ringing Time", "#")] RingingX_Time,
+        [Spec("USER> OIS X Phase Margin", "deg", InspType.Normal)] FRAX_PhaseMargin,
+        [Spec("USER> OIS Y Phase Margin", "deg", InspType.Normal)] FRAY1_PhaseMargin,
 
-        [Spec("FRA Y1", "PM Frequency", "Hz")] FRAY1_PMFreq,
-        [Spec("FRA Y1", "Phase Margin", "deg")] FRAY1_PhaseMargin,
-        [Spec("FRA Y1", "PM Frequency High", "Hz")] FRAY1_PMFreq_High,
-        [Spec("FRA Y1", "Phase Margin High", "deg")] FRAY1_PhaseMargin_High,
-        [Spec("FRA Y1", "Loop Gain", "db")] FRAY1_Gain10Hz,
-        [Spec("FRA Y1", "Gain Margin", "db")] FRAY1_GainMargin,
+        [Spec("USER> OIS X Loop Gain", "dB", InspType.Normal)] FRAX_Gain10Hz,
+        [Spec("USER> OIS Y Loop Gain", "dB", InspType.Normal)] FRAY1_Gain10Hz,
 
-        //[Spec("FRA Y1", "Sinewave Result", "#")] SineWaveY1_Result,
-        //[Spec("FRA Y1", "Sinewave Count", "#")] SineWaveY1_Count,
-        //[Spec("FRA Y1", "Ringing Result", "#")] RingingY1_Result,
-        //[Spec("FRA Y1", "Ringing Time", "#")] RingingY1_Time,
+        [Spec("USER> AF Gain Margin", "dB", InspType.Normal)] FRAAF_GainMargin,
+        [Spec("USER> AF Phase Margin", "deg", InspType.Normal)] FRAAF_PhaseMargin,
+        [Spec("USER> AF -4dB Phase Margin", "deg", InspType.Normal)] FRAAF_4dB_PhaseMargin,
 
-        [Spec("Throgh Peak 25", "X Gain", "db")] ThroughPeak_X_Gain,
-        [Spec("Throgh Peak 25", "Y Gain", "db")] ThroughPeak_Y_Gain,
-
-        //[Spec("FRA Y2", "PM Frequency", "Hz")] FRAY2_PMFreq,
-        //[Spec("FRA Y2", "Phase Margin", "deg")] FRAY2_PhaseMargin,
-        //[Spec("FRA Y2", "PM Frequency High", "Hz")] FRAY2_PMFreq_High,
-        //[Spec("FRA Y2", "Phase Margin High", "deg")] FRAY2_PhaseMargin_High,
-        //[Spec("FRA Y2", "Gain @ 10Hz", "db")] FRAY2_Gain10Hz,
-        //[Spec("FRA Y2", "Gain Margin", "db")] FRAY2_GainMargin,
-        //[Spec("FRA Y2", "Sinewave Result", "#")] SineWaveY2_Result,
-        //[Spec("FRA Y2", "Sinewave Count", "#")] SineWaveY2_Count,
-        //[Spec("FRA Y2", "Ringing Result", "#")] RingingY2_Result,
-        //[Spec("FRA Y2", "Ringing Time", "#")] RingingY2_Time,
-
-        [Spec("Centering Error", "X Decenter", "um")] x_HallDecenter,
-        [Spec("Centering Error", "Y Decenter", "um")] y_HallDecenter,
-
-        [Spec("Servo Decenter", "X Decenter", "um")] x_ServoDecenter,
-        [Spec("Servo Decenter", "Y Decenter", "um")] y_ServoDecenter,
-
-        //[Spec("OIS Shift", "X Shift", "um")] x_Shift,
-        //[Spec("OIS Shift", "Y Shift", "um")] y_Shift,
-        //[Spec("OIS Shift", "X Limit", "code")] x_Limit,
-        //[Spec("OIS Shift", "Y Limit", "code")] y_Limit,
-
-     
-        [Spec("OIS Open Loop", "X Result", "_")] OLTestXResult,
-        [Spec("OIS Open Loop", "Y Result", "_")] OLTestYResult,
-
-        //PassFailItemAdd
-        [Spec("OIS Sensitivity Test", "Result", "bool")] OISSensitivityTestRes,
-        [Spec("AF PID Verify", "Result", "bool")] AFPIDVerifyRes,
-        [Spec("OIS PID Verify", "Result", "bool")] OISPIDVerifyRes,
-        [Spec("IME Test", "Result", "bool")] OISIMERes,
-       // [Spec("IME Test", "Y Result", "bool")] OISYIMERes,
-        [Spec("Temperature Test", "Result", "bool")] TempRes,
-      
-        [Spec("AutoTest", "Result", "bool")] AutoTestRes,
+        [Spec("USER> AF PID Verify", "any", InspType.Normal)] AFPIDVerifyRes,
+        [Spec("USER> OIS PID Verify", "any", InspType.Normal)] OISPIDVerifyRes,
 
         Length,
 
     };
-    public enum NonSpecItem
-    {
-        Store_Fail = -999,
-        AF_HallCalibration,
-        OIS_HallCalibration,
-        AF_EPA,
-        AF_LinearityComp,
-        X_LinearityComp,
-        Y_LinearityComp,
-     //   Temperature_Test,
-    //    AutoTest,
-        NVM_Verify_NG,
-       // PID_Verify_NG,
-       // IME_Test_NG,
-        OIS_Openloop_Test,
-        DriftTestNG,
-    }
+   
     public class Spec
     {
         public List<SpecArray> specList { get; set; } = new List<SpecArray>();
@@ -589,6 +526,7 @@ namespace FZ4P
                 specList[i].Category = DataIO.GetEnumArttribute<SpecAttribute>(s)?.Category;
                 specList[i].Unit = DataIO.GetEnumArttribute<SpecAttribute>(s)?.Unit;
                 specList[i].DisplayName = DataIO.GetEnumArttribute<SpecAttribute>(s)?.DisplayName;
+                specList[i].InspectionType = (InspType)DataIO.GetEnumArttribute<SpecAttribute>(s)?.InspType;
             }
         }
 
@@ -596,13 +534,15 @@ namespace FZ4P
 
     public class SpecArray
     {
-        public double MinSpec { get; set; } = -1;
-        public double MaxSpec { get; set; } = 1;
+        public double MinSpec { get; set; } = 0;
+        public double MaxSpec { get; set; } = 0;
         public bool OnOff { get; set; } = true;
         public string Category { get; set; }
         public string DisplayName { get; set; }
         public string Unit { get; set; }
         public int FailCnt { get; set; }
+
+        public InspType InspectionType { get; set; }
     }
 
     public class TotalYield
@@ -615,7 +555,7 @@ namespace FZ4P
     }
     public class ResultItems
     {
-        public double Val = 0;
+        public double Val = double.MaxValue;
         public bool bPass = true;
         public string msg = "";
     }
@@ -865,7 +805,7 @@ namespace FZ4P
     }
     public class Model : BaseRecipe
     {
-      
+        public string MCNum;
         public string TesterNo;
         
         public string MCType;
@@ -910,7 +850,7 @@ namespace FZ4P
             base.Read();
             if (!File.Exists(FilePath))
             {
-
+                List.Add("0");
                 List.Add("0");
                 List.Add("Normal");
                
@@ -926,7 +866,7 @@ namespace FZ4P
         public override void Save(string filePath = "")
         {
             List.Clear();
-
+            List.Add(MCNum);
             List.Add(TesterNo);
             List.Add(MCType);
 
@@ -938,7 +878,7 @@ namespace FZ4P
         {
             base.SetParam();
             int index = 0;
-       
+            MCNum = List[index++];
             TesterNo = List[index++];
             MCType = List[index++];
 
@@ -985,11 +925,13 @@ namespace FZ4P
         public string Category { get; set; }
         public string DisplayName { get; set; }
         public string Unit { get; set; }
-        public SpecAttribute(string des, string des2, string des3)
+        public InspType InspType { get; set; }
+        public SpecAttribute(string des, string des2, InspType type)
         {
-            Category = des;
-            DisplayName = des2;
-            Unit = des3;
+           
+            DisplayName = des;
+            Unit = des2;
+            InspType = type;
         }
     }
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = false, AllowMultiple = false)]

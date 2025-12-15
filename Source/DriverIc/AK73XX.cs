@@ -115,11 +115,11 @@ namespace FZ4P
             switch (mode)
             {
                 case 0: value = 0x00; time = 0; break;      // null, AK7314
-                case 1: value = 0x01; time = 100; break;        // 1:  90 ms (PIDK,PIDU,PCAL,NCAL,SETTING1~2)
-                case 2: value = 0x02; time = 250; break;        // 2:  234 ms (PIDA~PIDX			)
-                case 3: value = 0x04; time = 150; break;        // 3:  108 ms (PIDAA~PIAJ			)
-                case 4: value = 0x08; time = 90; break;     // 4:  AK7314C
-                case 5: value = 0x10; time = 20; break;     // 5:  Mload
+                case 1: value = 0x01; time = 120; break;        // 1:  90 ms (PIDK,PIDU,PCAL,NCAL,SETTING1~2)
+                case 2: value = 0x02; time = 270; break;        // 2:  234 ms (PIDA~PIDX			)
+                case 3: value = 0x04; time = 170; break;        // 3:  108 ms (PIDAA~PIAJ			)
+                case 4: value = 0x08; time = 110; break;     // 4:  AK7314C
+                case 5: value = 0x10; time = 40; break;     // 5:  Mload
                 default: break;
             }
 
@@ -280,7 +280,7 @@ namespace FZ4P
         {
             int index = 0;
             byte[] MemoryUpdataeAddr = new byte[] { 0x00, 0x01, 0x02, 0x04, 0x08, 0x10 };
-            int[] MemoryUpdataeTime = new int[] { 0, 140, 250, 140, 80, 40 };
+            int[] MemoryUpdataeTime = new int[] { 0, 160, 270, 160, 100, 60 };
             int slaveaddr = dir == 0 ? XSlaveAddr : Y1SlaveAddr;
             bool res = false;
             byte val = 0;
@@ -290,7 +290,7 @@ namespace FZ4P
                 case 0:
                     for (index = 0; index < 5; index++)
                     {
-                        Dln.WriteArray(ch, slaveaddr, 0x03, new byte[] { MemoryUpdataeAddr[index] });
+                        Dln.WriteArray(ch, slaveaddr, 0x03, new byte[] { MemoryUpdataeAddr[index + 1] });
                         Process.Wait(MemoryUpdataeTime[index]);
                     }
                     for (index = 0; index < 5; index++)

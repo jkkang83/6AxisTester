@@ -11274,6 +11274,8 @@ namespace FZ4P
                 UpdateSensorState();
                 Dln.CoverDn();
                 Thread.Sleep(500);
+                Dln.PowerOnOff(0, true);
+                Thread.Sleep(200);
                 UpdateConState();
 
                 Dln.isMoving = false;
@@ -11285,6 +11287,8 @@ namespace FZ4P
             try
             {
                 Stopwatch st = new Stopwatch();
+                Dln.PowerOnOff(0, false);
+                Thread.Sleep(200);
                 Dln.CoverUp();
                 Thread.Sleep(700);
                 Dln.UnloadSocket();
@@ -11413,7 +11417,7 @@ namespace FZ4P
                 else lbConState.BackColor = Color.White;
 
             }
-
+            STATIC.I2CFailcnt = 0;
         }
         void InitConstatus()
         {

@@ -61,6 +61,10 @@ namespace FZ4P
             else if (Model.MCType == "Handler") { lbMCtype.Text = $"Port {STATIC.GetEthernetIPv4()} (Handler)"; }
             else lbMCtype.Text = "Normal";
 
+            if (STATIC.Rcp.tt.Count == 0) lbST.Text = $"0.0 sec";
+            else lbST.Text = $"{(STATIC.Rcp.tt.St / STATIC.Rcp.tt.Count).ToString("F1")} sec";
+            lbCurrentST.Text = $"{(STATIC.Rcp.tt.CurrentST).ToString("F1")} sec";
+
         }
         public void SetConStatus(bool isCon)
         {
@@ -93,7 +97,20 @@ namespace FZ4P
         {
 
             SafeControlView(RunProgress, false);
-            if(Model.MCType == "Slave")
+            if (InvokeRequired)
+            {
+                BeginInvoke((MethodInvoker)delegate
+                {
+                    //CurrentRunCnt.Text = Process.CurrentRun.ToString();
+                    LastSampleNum.Text = STATIC.Rcp.yield.LastSampleNum.ToString();
+                    NewSampleNumber.Text = (STATIC.Rcp.yield.LastSampleNum + 1).ToString();
+
+                    SafeInitYield();
+
+                
+                });
+            }
+            if (Model.MCType == "Slave")
             {
                 string s = Process.errMsg[0] == "" ? "PASS" : Process.errMsg[0];
                 STATIC.TcpConn.SendMessage($"Res.{s}");
@@ -113,11 +130,11 @@ namespace FZ4P
                             res = "NG";
                         else res = "OK";
                         STATIC.TcpConn.SendMessage(res);
-                        Process.errMsg[0] = res == "OK" ? "" : "NG";
+                        Process.errMsg[0] = res == "OK" ? "" : $"NG,{1.ToString("D3")},";
                     }
                     else
                     {
-                        string s = Process.errMsg[0] == "" ? "OK" : "NG";
+                        string s = Process.errMsg[0] == "" ? "OK" : $"NG,{Process.PassFails[0].FirstFailIndex.ToString("D3")}";
                         STATIC.TcpConn.SendMessage(s);
                     }
 
@@ -141,36 +158,33 @@ namespace FZ4P
             SafeControlView(Process.InfoBtn[0].btn, true);
             if (Process.ChannelCnt > 1) SafeControlView(Process.InfoBtn[1].btn, true);
 
+            
             if (InvokeRequired)
             {
                 BeginInvoke((MethodInvoker)delegate
                 {
-                    //CurrentRunCnt.Text = Process.CurrentRun.ToString();
-                    LastSampleNum.Text = STATIC.Rcp.yield.LastSampleNum.ToString();
-                    NewSampleNumber.Text = (STATIC.Rcp.yield.LastSampleNum + 1).ToString();
-
-                    SafeInitYield();
-
-                    string dateDir = STATIC.CreateDateDir();
-                    dateDir += "LogData\\";
-                    if (!Directory.Exists(dateDir))
-                        Directory.CreateDirectory(dateDir);
-                    for (int j = 0; j < Process.ChannelCnt; j++)
-                    {
-                        List<string> arry = new List<string>();
-                        arry.Add(Process.ViewLog[j].box.Text);
-
-                        string path = string.Format("{0}{1}_{2}.txt", dateDir, Process.m_StrIndex[0], $"{STATIC.LogDate.Hour}h{STATIC.LogDate.Minute}m{STATIC.LogDate.Second}s" );
-
-                        if (path != "") STATIC.SetTextLine(path, arry);
-                    }
+                    lbCurrentST.Text = $"{(STATIC.Rcp.tt.CurrentST).ToString("F1")} sec";
+                    if (STATIC.Rcp.tt.Count == 0) lbST.Text = $"0.0 sec";
+                    else lbST.Text = $"{(STATIC.Rcp.tt.St / STATIC.Rcp.tt.Count).ToString("F1")} sec";
                 });
             }
-          
+            else
+            {
+                lbCurrentST.Text = $"{(STATIC.Rcp.tt.CurrentST).ToString("F1")} sec";
+                if (STATIC.Rcp.tt.Count == 0) lbST.Text = $"0.0 sec";
+                else lbST.Text = $"{(STATIC.Rcp.tt.St / STATIC.Rcp.tt.Count).ToString("F1")} sec";
+            }
+            DataIO.SerializeToXMLFile(STATIC.Rcp.tt, STATIC.TestTimeDir);
+
         }
 
         private void Process_RunStart(object sender, int e)
         {
+
+            for (int i = 0; i < Process.ItemList.Count; i++)
+            {
+                Process.ItemList[i].Time = "";
+            }
             if (InvokeRequired)
             {
                 BeginInvoke((MethodInvoker)delegate
@@ -539,6 +553,12 @@ namespace FZ4P
                 LastSampleNum.Text = STATIC.Rcp.yield.LastSampleNum.ToString();
             }
             else NewSampleNumber.Text = "1";
+            STATIC.Rcp.tt.St = 0;
+            STATIC.Rcp.tt.Count = 0;
+            STATIC.Rcp.tt.CurrentST = 0;
+            DataIO.SerializeToXMLFile(STATIC.Rcp.tt, STATIC.TestTimeDir);
+            lbST.Text = "0.0 sec";
+            lbCurrentST.Text = "0.0 sec";
         }
 
         private void ToAdmin_Click(object sender, EventArgs e)
