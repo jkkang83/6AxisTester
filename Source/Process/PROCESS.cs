@@ -6,8 +6,10 @@ using OpenCvSharp.Flann;
 using OpenCvSharp.XImgProc;
 using S2System.Vision;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -133,16 +135,33 @@ namespace FZ4P
                 InfoBtn.Add(new InfoButton());
                 ViewLog.Add(new LogText());
             }
-            ItemList.Add(new ActItems() { Name = "AF Scan", Func = Act_ScanCode, IsTwiceInsp = false });
-            ItemList.Add(new ActItems() { Name = "OIS X Scan", Func = Act_ScanCode, IsTwiceInsp = false });
+            ItemList.Add(new ActItems() { Name = "AF Scan", Func = Act_ScanCode });
+            ItemList.Add(new ActItems() { Name = "OIS X Scan", Func = Act_ScanCode });
             ItemList.Add(new ActItems() { Name = "OIS Y Scan", Func = Act_ScanCode });
             ItemList.Add(new ActItems() { Name = "AF Settling", Func = Act_ScanTimeCode });
-
-
+           
             AddSequence();
+
+            Rcp.RetryCnt = new RetryCount();
+            Rcp.RetryCnt.RetryOption.Add(new Retry { InspName = "All", Count = 0 });
+          
+            for (int i = 0; i < ItemList.Count; i++)
+                Rcp.RetryCnt.RetryOption.Add(new Retry { InspName = ItemList[i].Name, Count = 0 });
+            if (File.Exists(STATIC.RetryCountDir))
+            {
+                RetryCount compare = new RetryCount();
+                compare = DataIO.DeserializeXMLFileToObject<RetryCount>(STATIC.RetryCountDir);
+                for (int i = 0; i < compare.RetryOption.Count; i++)
+                {
+                    int index = Rcp.RetryCnt.RetryOption.FindIndex(x => x.InspName == compare.RetryOption[i].InspName);
+                    if(index != -1) Rcp.RetryCnt.RetryOption[index].Count = compare.RetryOption[i].Count;
+                }
+            }
 
             m__G = Global.GetInstance();
         }
+
+        
 
         #region Default
         public void ShowDataResults(int ch, int start, int end, InspType type, double[] MtoMRes )
@@ -937,10 +956,9 @@ namespace FZ4P
             STATIC.I2CFailcnt = 0;
             STATIC.SaveLogData = string.Empty;
             if (Option.DryRunMode) { Thread.Sleep(40000); return; }
-
-            int LoopCnt = 1;
-            if (Option.FailRetry) LoopCnt = 2;
-        
+            int index = Rcp.RetryCnt.RetryOption.FindIndex(x => x.InspName == "All");
+            int LoopCnt = 1 + Rcp.RetryCnt.RetryOption[index].Count;
+           
 
             for (int Loop = 0; Loop < LoopCnt; Loop++)
             {
@@ -1152,81 +1170,40 @@ namespace FZ4P
             {
                 Task Func1 = null, Func2 = null;
 
-                if (ItemList[index].IsTwiceInsp)
+                if (!ItemList[index].IsMulti)
                 {
-                    for (int i = 0; i < 2; i++)
-                    {
-                        if (!ItemList[index].IsMulti)
-                        {
-                            Func1 = new Task(() => ItemList[index].Func(port, testItem, i, true));
-                            Func1.Start();
+                    Func1 = new Task(() => ItemList[index].Func(port, testItem, 0));
+                    Func1.Start();
 
-                            if (Func1 != null) Task.WaitAll(Func1);
-                        }
-                        else
-                        {
-                            if (m_ChannelOn[ch])
-                            {
-                                Func1 = new Task(() => ItemList[index].Func(ch, testItem, i, true));
-                                Func1.Start();
-                                AddLog(ch, testItem + " Start");
-                            }
-                            if (ChannelCnt > 1)
-                            {
-                                if (m_ChannelOn[ch + 1])
-                                {
-                                    Func2 = new Task(() => ItemList[index].Func(ch + 1, testItem, i, true));
-                                    Func2.Start();
-                                    AddLog(ch + 1, testItem + " Start");
-                                }
-                            }
-
-                            if (Func1 != null && Func2 != null) Task.WaitAll(Func1, Func2);
-                            else
-                            {
-                                if (Func1 != null) Task.WaitAll(Func1);
-                                if (Func2 != null) Task.WaitAll(Func2);
-                            }
-                        }
-                    }
+                    if (Func1 != null) Task.WaitAll(Func1);
                 }
                 else
                 {
-                    if (!ItemList[index].IsMulti)
+                    if (m_ChannelOn[ch])
                     {
-                        Func1 = new Task(() => ItemList[index].Func(port, testItem, 0, false));
+                        Func1 = new Task(() => ItemList[index].Func(ch, testItem, 0));
                         Func1.Start();
-
-                        if (Func1 != null) Task.WaitAll(Func1);
+                        AddLog(ch, testItem + " Start");
                     }
+                    if (ChannelCnt > 1)
+                    {
+                        if (m_ChannelOn[ch + 1])
+                        {
+                            Func2 = new Task(() => ItemList[index].Func(ch + 1, testItem, 0));
+                            Func2.Start();
+                            AddLog(ch + 1, testItem + " Start");
+                        }
+                    }
+
+                    if (Func1 != null && Func2 != null) Task.WaitAll(Func1, Func2);
                     else
                     {
-                        if (m_ChannelOn[ch])
-                        {
-                            Func1 = new Task(() => ItemList[index].Func(ch, testItem, 0, false));
-                            Func1.Start();
-                            AddLog(ch, testItem + " Start");
-                        }
-                        if (ChannelCnt > 1)
-                        {
-                            if (m_ChannelOn[ch + 1])
-                            {
-                                Func2 = new Task(() => ItemList[index].Func(ch + 1, testItem, 0, false));
-                                Func2.Start();
-                                AddLog(ch + 1, testItem + " Start");
-                            }
-                        }
-
-                        if (Func1 != null && Func2 != null) Task.WaitAll(Func1, Func2);
-                        else
-                        {
-                            if (Func1 != null) Task.WaitAll(Func1);
-                            if (Func2 != null) Task.WaitAll(Func2);
-                        }
+                        if (Func1 != null) Task.WaitAll(Func1);
+                        if (Func2 != null) Task.WaitAll(Func2);
                     }
                 }
 
-               
+
             }
             catch (Exception e)
             {
@@ -1254,16 +1231,16 @@ namespace FZ4P
             {
                 volt = new List<double>
                 {
-                    Condition.LedCurrentL,
-                    Condition.LedCurrentR
+                    STATIC.Rcp.vsFile.LEDCurrentL,
+                    STATIC.Rcp.vsFile.LEDCurrentR
                 };
             }
 
             if (m_bAllLEDOn = isOn)
             {
                 //  CSH035 적용 시 
-                Dln.SetLEDpower(1, (int)(Condition.LedCurrentL * 500));
-                Dln.SetLEDpower(2, (int)(Condition.LedCurrentR * 500));
+                Dln.SetLEDpower(1, (int)(STATIC.Rcp.vsFile.LEDCurrentL * 500));
+                Dln.SetLEDpower(2, (int)(STATIC.Rcp.vsFile.LEDCurrentR * 500));
             }
             else
                 for (int k = ch; k < ch + ChannelCnt; k++)
@@ -1435,7 +1412,7 @@ namespace FZ4P
                 }
             }
         }
-        private void Process_ScanCodeTest(int port, string name, int InspCnt, bool isTwice)
+        private void Process_ScanCodeTest(int port, string name, int InspCnt)
         {
             int ch = port * 2;
 
@@ -1879,12 +1856,10 @@ namespace FZ4P
         //    //}
         //}
 
-        public List<double> DrvInspList = new List<double>();
-        public double[] BeforeMtoM = new double[2];
-        public void Process_CalcCodeTest(int port, string name, int InspCnt, bool IsTwice)
+       
+        public void Process_CalcCodeTest(int port, string name, int InspCnt)
         {
-            if (InspCnt == 0 && IsTwice) DrvInspList.Clear();
-
+          
             int ch = port * 2;
 
             for (int j = ch; j < ch + ChannelCnt; j++)
@@ -2164,80 +2139,17 @@ namespace FZ4P
                             refArray = refArr;
                             PassFails[j].Results[(int)SpecItem.AF_Tilt].Val = sqrT;
 
-                            if(IsTwice)
-                            {
-                                if(InspCnt == 0)
-                                {
-                                    DrvInspList.Add(PassFails[j].Results[(int)SpecItem.AF_Forwardstroke].Val);
-                                    DrvInspList.Add(PassFails[j].Results[(int)SpecItem.AF_Backwardstroke].Val);
-                                    DrvInspList.Add(PassFails[j].Results[(int)SpecItem.AF_Ratedstroke].Val);
-                                //    DrvInspList.Add(PassFails[j].Results[(int)SpecItem.AF_Sensitivity].Val);
-                                    DrvInspList.Add(PassFails[j].Results[(int)SpecItem.AF_Linearity].Val);
-                                    DrvInspList.Add(PassFails[j].Results[(int)SpecItem.AF_Hysteresis].Val);
-                                 //   DrvInspList.Add(PassFails[j].Results[(int)SpecItem.AF_MaxCurrent].Val);
-                                  //  DrvInspList.Add(PassFails[j].Results[(int)SpecItem.AF_MinCurrent].Val);
-                                  //  DrvInspList.Add(PassFails[j].Results[(int)SpecItem.AF_CrosstalkX].Val);
-                                  //  DrvInspList.Add(PassFails[j].Results[(int)SpecItem.AF_CrosstalkY].Val);
-                                //    DrvInspList.Add(PassFails[j].Results[(int)SpecItem.AF_CrosstalkR].Val);
-                                //    DrvInspList.Add(PassFails[j].Results[(int)SpecItem.AF_Rolling].Val);
-                                    DrvInspList.Add(PassFails[j].Results[(int)SpecItem.AF_Tilt].Val);
-                                    BeforeMtoM = MtoM.ToArray();
-
-                                }
-                                else
-                                {
-                                    if (DrvInspList[3] >= PassFails[j].Results[(int)SpecItem.AF_Linearity].Val)
-                                    {
-                                        ShowDataResults(j, (int)SpecItem.AF_Ratedstroke, (int)SpecItem.AF_Ratedstroke, InspType.Normal, new double[] { });
-                                        ShowDataResults(j, (int)SpecItem.AF_Backwardstroke, (int)SpecItem.AF_Backwardstroke,InspType.OnlyMax, new double[] { });
-                                        ShowDataResults(j, (int)SpecItem.AF_Forwardstroke, (int)SpecItem.AF_Forwardstroke, InspType.OnlyMin, new double[] { });
-                                        ShowDataResults(j, (int)SpecItem.AF_Hysteresis, (int)SpecItem.AF_Hysteresis, InspType.OnlyMax, new double[] { });
-                                        ShowDataResults(j, (int)SpecItem.AF_Linearity, (int)SpecItem.AF_Linearity, InspType.OnlyMax, new double[] { });
-                                        ShowDataResults(j, (int)SpecItem.AF_Current, (int)SpecItem.AF_Current, InspType.MintoMax, MtoM);
-                                        ShowDataResults(j, (int)SpecItem.AF_Tilt, (int)SpecItem.AF_Tilt, InspType.Normal, new double[] { });
-                                        AFCurrentMinMax = MtoM.ToArray();
-                                    }
-                                       
-                                    else
-                                    {
-                                        PassFails[j].Results[(int)SpecItem.AF_Forwardstroke].Val = DrvInspList[0];
-                                        PassFails[j].Results[(int)SpecItem.AF_Backwardstroke].Val = DrvInspList[1];
-                                        PassFails[j].Results[(int)SpecItem.AF_Ratedstroke].Val = DrvInspList[2];
-                                      //  PassFails[j].Results[(int)SpecItem.AF_Sensitivity].Val = DrvInspList[3];
-                                        PassFails[j].Results[(int)SpecItem.AF_Linearity].Val = DrvInspList[3];
-                                        PassFails[j].Results[(int)SpecItem.AF_Hysteresis].Val = DrvInspList[4];
-                                       // PassFails[j].Results[(int)SpecItem.AF_MaxCurrent].Val = DrvInspList[6];
-                                     //   PassFails[j].Results[(int)SpecItem.AF_MinCurrent].Val = DrvInspList[7];
-                                       // PassFails[j].Results[(int)SpecItem.AF_CrosstalkX].Val = DrvInspList[8];
-                                       // PassFails[j].Results[(int)SpecItem.AF_CrosstalkY].Val = DrvInspList[9];
-                                   //     PassFails[j].Results[(int)SpecItem.AF_CrosstalkR].Val = DrvInspList[10];
-                                    //    PassFails[j].Results[(int)SpecItem.AF_Rolling].Val = DrvInspList[11];
-                                        PassFails[j].Results[(int)SpecItem.AF_Tilt].Val = DrvInspList[5];
-                                        ShowDataResults(j, (int)SpecItem.AF_Ratedstroke, (int)SpecItem.AF_Ratedstroke, InspType.Normal, new double[] { });
-                                        ShowDataResults(j, (int)SpecItem.AF_Backwardstroke, (int)SpecItem.AF_Backwardstroke, InspType.OnlyMax, new double[] { });
-                                        ShowDataResults(j, (int)SpecItem.AF_Forwardstroke, (int)SpecItem.AF_Forwardstroke, InspType.OnlyMin, new double[] { });
-                                        ShowDataResults(j, (int)SpecItem.AF_Hysteresis, (int)SpecItem.AF_Hysteresis, InspType.OnlyMax, new double[] { });
-                                        ShowDataResults(j, (int)SpecItem.AF_Linearity, (int)SpecItem.AF_Linearity, InspType.OnlyMax, new double[] { });
-                                        ShowDataResults(j, (int)SpecItem.AF_Current, (int)SpecItem.AF_Current, InspType.MintoMax, BeforeMtoM);
-                                        ShowDataResults(j, (int)SpecItem.AF_Tilt, (int)SpecItem.AF_Tilt, InspType.Normal, new double[] { });
-                                        AFCurrentMinMax = BeforeMtoM.ToArray();
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                ShowDataResults(j, (int)SpecItem.AF_Ratedstroke, (int)SpecItem.AF_Ratedstroke, InspType.Normal, new double[] { });
-                                ShowDataResults(j, (int)SpecItem.AF_Backwardstroke, (int)SpecItem.AF_Backwardstroke, InspType.OnlyMax, new double[] { });
-                                ShowDataResults(j, (int)SpecItem.AF_Forwardstroke, (int)SpecItem.AF_Forwardstroke, InspType.OnlyMin, new double[] { });
-                                ShowDataResults(j, (int)SpecItem.AF_Hysteresis, (int)SpecItem.AF_Hysteresis, InspType.OnlyMax, new double[] { });
-                                ShowDataResults(j, (int)SpecItem.AF_Linearity, (int)SpecItem.AF_Linearity, InspType.OnlyMax, new double[] { });
-                                ShowDataResults(j, (int)SpecItem.AF_Current, (int)SpecItem.AF_Current, InspType.MintoMax, MtoM);
-                                ShowDataResults(j, (int)SpecItem.AF_Tilt, (int)SpecItem.AF_Tilt, InspType.Normal, new double[] { });
-                                AFCurrentMinMax = MtoM.ToArray();
-                            }
+                            ShowDataResults(j, (int)SpecItem.AF_Ratedstroke, (int)SpecItem.AF_Ratedstroke, InspType.Normal, new double[] { });
+                            ShowDataResults(j, (int)SpecItem.AF_Backwardstroke, (int)SpecItem.AF_Backwardstroke, InspType.OnlyMax, new double[] { });
+                            ShowDataResults(j, (int)SpecItem.AF_Forwardstroke, (int)SpecItem.AF_Forwardstroke, InspType.OnlyMin, new double[] { });
+                            ShowDataResults(j, (int)SpecItem.AF_Hysteresis, (int)SpecItem.AF_Hysteresis, InspType.OnlyMax, new double[] { });
+                            ShowDataResults(j, (int)SpecItem.AF_Linearity, (int)SpecItem.AF_Linearity, InspType.OnlyMax, new double[] { });
+                            ShowDataResults(j, (int)SpecItem.AF_Current, (int)SpecItem.AF_Current, InspType.MintoMax, MtoM);
+                            ShowDataResults(j, (int)SpecItem.AF_Tilt, (int)SpecItem.AF_Tilt, InspType.Normal, new double[] { });
+                            AFCurrentMinMax = MtoM.ToArray();
 
 
-                           
+
 
 
                         }
@@ -2272,86 +2184,15 @@ namespace FZ4P
                             SlopeX = Cal.CalSlopeForOISShift(Cal.CodeX, Cal.StrokeX);
 
                             PassFails[j].Results[(int)SpecItem.x_HallDecenter].Val = (Math.Abs(forword) - Math.Abs(backword)) / 2.0;
-                          
-                          
 
-                            if (IsTwice)
-                            {
-                                if (InspCnt == 0)
-                                {
-                                    DrvInspList.Add(PassFails[j].Results[(int)SpecItem.OISX_Forwardstroke].Val);
-                                    DrvInspList.Add(PassFails[j].Results[(int)SpecItem.OISX_Backwardstroke].Val);
-                                    DrvInspList.Add(PassFails[j].Results[(int)SpecItem.OISX_Ratedstroke].Val);
-                                //    DrvInspList.Add(PassFails[j].Results[(int)SpecItem.OISX_Sensitivity].Val);
-                                    DrvInspList.Add(PassFails[j].Results[(int)SpecItem.OISX_Linearity].Val);
-                                    DrvInspList.Add(PassFails[j].Results[(int)SpecItem.OISX_Hysteresis].Val);
-                              //      DrvInspList.Add(PassFails[j].Results[(int)SpecItem.OISX_MaxCurrent].Val);
-                                //    DrvInspList.Add(PassFails[j].Results[(int)SpecItem.OISX_MinCurrent].Val);
-                                //    DrvInspList.Add(PassFails[j].Results[(int)SpecItem.OISX_CrosstalkY].Val);
-                                 //   DrvInspList.Add(PassFails[j].Results[(int)SpecItem.OISX_CrosstalkY_dB].Val);
-                                //   DrvInspList.Add(PassFails[j].Results[(int)SpecItem.OISX_CrosstalkY_P2P].Val);
-                                 //   DrvInspList.Add(PassFails[j].Results[(int)SpecItem.OISX_CrosstalkYP2P_dB].Val);
-                                //    DrvInspList.Add(PassFails[j].Results[(int)SpecItem.OISX_Rolling].Val);
-                                    DrvInspList.Add(PassFails[j].Results[(int)SpecItem.x_HallDecenter].Val);
-                                    BeforeMtoM = MtoM.ToArray();
-
-                                }
-                                else
-                                {
-                                    if (DrvInspList[4] >= PassFails[j].Results[(int)SpecItem.OISX_Hysteresis].Val)
-                                    {
-                                        ShowDataResults(j, (int)SpecItem.OISX_Ratedstroke, (int)SpecItem.OISX_Ratedstroke, InspType.Normal, new double[] { });
-                                        ShowDataResults(j, (int)SpecItem.OISX_Backwardstroke, (int)SpecItem.OISX_Backwardstroke, InspType.OnlyMax, new double[] { });
-                                        ShowDataResults(j, (int)SpecItem.OISX_Forwardstroke, (int)SpecItem.OISX_Forwardstroke, InspType.OnlyMin, new double[] { });
-                                        ShowDataResults(j, (int)SpecItem.OISX_Hysteresis, (int)SpecItem.OISX_Hysteresis, InspType.OnlyMax, new double[] { });
-                                        ShowDataResults(j, (int)SpecItem.OISX_Linearity, (int)SpecItem.OISX_Linearity, InspType.OnlyMax, new double[] { });
-                                        ShowDataResults(j, (int)SpecItem.OISX_Current, (int)SpecItem.OISX_Current, InspType.MintoMax, MtoM);
-                                        ShowDataResults(j, (int)SpecItem.x_HallDecenter, (int)SpecItem.x_HallDecenter, InspType.Normal, new double[] { });
-                                        OISXCurrentMinMax = MtoM.ToArray();
-                                    }
-                                      
-                                    else
-                                    {
-                                        PassFails[j].Results[(int)SpecItem.OISX_Forwardstroke].Val = DrvInspList[0];
-                                        PassFails[j].Results[(int)SpecItem.OISX_Backwardstroke].Val = DrvInspList[1];
-                                        PassFails[j].Results[(int)SpecItem.OISX_Ratedstroke].Val = DrvInspList[2];
-                                  //      PassFails[j].Results[(int)SpecItem.OISX_Sensitivity].Val = DrvInspList[3];
-                                        PassFails[j].Results[(int)SpecItem.OISX_Linearity].Val = DrvInspList[3];
-                                       PassFails[j].Results[(int)SpecItem.OISX_Hysteresis].Val = DrvInspList[4];
-                                        //   PassFails[j].Results[(int)SpecItem.OISX_MaxCurrent].Val = DrvInspList[6];
-                                        //     PassFails[j].Results[(int)SpecItem.OISX_MinCurrent].Val = DrvInspList[7];
-                                        //    PassFails[j].Results[(int)SpecItem.OISX_CrosstalkY].Val = DrvInspList[8];
-                                        //   PassFails[j].Results[(int)SpecItem.OISX_CrosstalkY_dB].Val = DrvInspList[9];
-                                        //  PassFails[j].Results[(int)SpecItem.OISX_CrosstalkY_P2P].Val = DrvInspList[10];
-                                        //    PassFails[j].Results[(int)SpecItem.OISX_CrosstalkYP2P_dB].Val = DrvInspList[11];
-                                        //    PassFails[j].Results[(int)SpecItem.OISX_Rolling].Val = DrvInspList[12];
-                                        PassFails[j].Results[(int)SpecItem.x_HallDecenter].Val = DrvInspList[5];
-                                        ShowDataResults(j, (int)SpecItem.OISX_Ratedstroke, (int)SpecItem.OISX_Ratedstroke, InspType.Normal, new double[] { });
-                                        ShowDataResults(j, (int)SpecItem.OISX_Backwardstroke, (int)SpecItem.OISX_Backwardstroke, InspType.OnlyMax, new double[] { });
-                                        ShowDataResults(j, (int)SpecItem.OISX_Forwardstroke, (int)SpecItem.OISX_Forwardstroke, InspType.OnlyMin, new double[] { });
-                                        ShowDataResults(j, (int)SpecItem.OISX_Hysteresis, (int)SpecItem.OISX_Hysteresis, InspType.OnlyMax, new double[] { });
-                                        ShowDataResults(j, (int)SpecItem.OISX_Linearity, (int)SpecItem.OISX_Linearity, InspType.OnlyMax, new double[] { });
-                                        ShowDataResults(j, (int)SpecItem.OISX_Current, (int)SpecItem.OISX_Current, InspType.MintoMax, BeforeMtoM);
-                                        ShowDataResults(j, (int)SpecItem.x_HallDecenter, (int)SpecItem.x_HallDecenter, InspType.Normal, new double[] { });
-                                        OISXCurrentMinMax = BeforeMtoM.ToArray();
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                ShowDataResults(j, (int)SpecItem.OISX_Ratedstroke, (int)SpecItem.OISX_Ratedstroke, InspType.Normal, new double[] { });
-                                ShowDataResults(j, (int)SpecItem.OISX_Backwardstroke, (int)SpecItem.OISX_Backwardstroke, InspType.OnlyMax, new double[] { });
-                                ShowDataResults(j, (int)SpecItem.OISX_Forwardstroke, (int)SpecItem.OISX_Forwardstroke, InspType.OnlyMin, new double[] { });
-                                ShowDataResults(j, (int)SpecItem.OISX_Hysteresis, (int)SpecItem.OISX_Hysteresis, InspType.OnlyMax, new double[] { });
-                                ShowDataResults(j, (int)SpecItem.OISX_Linearity, (int)SpecItem.OISX_Linearity, InspType.OnlyMax, new double[] { });
-                                ShowDataResults(j, (int)SpecItem.OISX_Current, (int)SpecItem.OISX_Current, InspType.MintoMax, MtoM);
-                                ShowDataResults(j, (int)SpecItem.x_HallDecenter, (int)SpecItem.x_HallDecenter, InspType.Normal, new double[] { });
-                                OISXCurrentMinMax = MtoM.ToArray();
-                            }
-
-
-
-
+                            ShowDataResults(j, (int)SpecItem.OISX_Ratedstroke, (int)SpecItem.OISX_Ratedstroke, InspType.Normal, new double[] { });
+                            ShowDataResults(j, (int)SpecItem.OISX_Backwardstroke, (int)SpecItem.OISX_Backwardstroke, InspType.OnlyMax, new double[] { });
+                            ShowDataResults(j, (int)SpecItem.OISX_Forwardstroke, (int)SpecItem.OISX_Forwardstroke, InspType.OnlyMin, new double[] { });
+                            ShowDataResults(j, (int)SpecItem.OISX_Hysteresis, (int)SpecItem.OISX_Hysteresis, InspType.OnlyMax, new double[] { });
+                            ShowDataResults(j, (int)SpecItem.OISX_Linearity, (int)SpecItem.OISX_Linearity, InspType.OnlyMax, new double[] { });
+                            ShowDataResults(j, (int)SpecItem.OISX_Current, (int)SpecItem.OISX_Current, InspType.MintoMax, MtoM);
+                            ShowDataResults(j, (int)SpecItem.x_HallDecenter, (int)SpecItem.x_HallDecenter, InspType.Normal, new double[] { });
+                            OISXCurrentMinMax = MtoM.ToArray();
 
                         }
                         else if (name.Contains("OIS Y"))
@@ -2396,11 +2237,7 @@ namespace FZ4P
                             OISYCurrentMinMax = MtoM.ToArray();
 
                         }
-                        if (IsTwice)
-                        {
-                           if(InspCnt ==1) AddChart(j, name, null, null, maxtiltX, maxtiltY, refArray);
-                        }
-                        else AddChart(j, name, null, null, maxtiltX, maxtiltY, refArray);
+                        AddChart(j, name, null, null, maxtiltX, maxtiltY, refArray);
                     }
             }
             framCnt[port] = 0;
@@ -2856,7 +2693,17 @@ namespace FZ4P
             string sParam = "";
             for (int i = 0; i < (int)SpecItem.Length; i++)
             {
-                sParam += string.Format("{0} {1},", Spec.specList[i].Category, Spec.specList[i].DisplayName);
+                if (Spec.specList[i].InspectionType == InspType.MintoMax)
+                {
+                    sParam += string.Format("{0},", $"{Spec.specList[i].DisplayName} Min");
+                    sParam += string.Format("{0},", $"{Spec.specList[i].DisplayName} Max");
+                }
+                else
+                {
+                    sParam += string.Format("{0},", Spec.specList[i].DisplayName);
+                }
+
+                    
             }
             sHeader += sParam;
 
@@ -2880,7 +2727,18 @@ namespace FZ4P
             sParam = "";
             for (int i = 0; i < (int)SpecItem.Length; i++)
             {
-                sParam += string.Format("({0}),", Spec.specList[i].Unit);
+                if (Spec.specList[i].InspectionType == InspType.MintoMax)
+                {
+                    sParam += string.Format("({0}),", Spec.specList[i].Unit);
+                    sParam += string.Format("({0}),", Spec.specList[i].Unit);
+                }
+                else
+                {
+                    sParam += string.Format("({0}),", Spec.specList[i].Unit);
+                }
+
+
+                   
             }
             sHeader += sParam;
 
@@ -2890,7 +2748,16 @@ namespace FZ4P
             sParam = "";
             for (int i = 0; i < (int)SpecItem.Length; i++)
             {
-                sParam += string.Format("{0},", Spec.specList[i].MinSpec);
+                if (Spec.specList[i].InspectionType == InspType.MintoMax)
+                {
+                    sParam += string.Format("{0},", Spec.specList[i].MinSpec);
+                    sParam += string.Format("{0},", "");
+                }
+                else
+                {
+                    sParam += string.Format("{0},", Spec.specList[i].MinSpec);
+                }
+                   
             }
             sHeader += sParam;
 
@@ -2900,7 +2767,16 @@ namespace FZ4P
             sParam = "";
             for (int i = 0; i < (int)SpecItem.Length; i++)
             {
-                sParam += string.Format("{0},", Spec.specList[i].MaxSpec);
+                if (Spec.specList[i].InspectionType == InspType.MintoMax)
+                {
+                    sParam += string.Format("{0},", "");
+                    sParam += string.Format("{0},", Spec.specList[i].MaxSpec);
+                }
+                else
+                {
+                    sParam += string.Format("{0},", Spec.specList[i].MaxSpec);
+                }
+                
             }
             sHeader += sParam;
 
@@ -3002,11 +2878,22 @@ namespace FZ4P
 
                             case InspType.MintoMax:
                                 if (i == (int)SpecItem.AF_Current)
-                                { log += $"{AFCurrentMinMax[1].ToString("F3")} ~ {AFCurrentMinMax[0].ToString("F3")},"; }
+                                { 
+                                    log += $"{AFCurrentMinMax[1].ToString("F3")},";
+                                    log += $"{AFCurrentMinMax[0].ToString("F3")},";
+                                }
                                 else if (i == (int)SpecItem.OISX_Current)
-                                { log += $"{OISXCurrentMinMax[1].ToString("F3")} ~ {OISXCurrentMinMax[0].ToString("F3")},"; }
+                                {
+                                    log += $"{OISXCurrentMinMax[1].ToString("F3")},";
+                                    log += $"{OISXCurrentMinMax[0].ToString("F3")},";
+                                }
+                               
                                 else if (i == (int)SpecItem.OISY_Current)
-                                { log += $"{OISYCurrentMinMax[1].ToString("F3")} ~ {OISYCurrentMinMax[0].ToString("F3")},"; }
+                                {
+                                    log += $"{OISYCurrentMinMax[1].ToString("F3")},";
+                                    log += $"{OISYCurrentMinMax[0].ToString("F3")},";
+
+                                }
                                 break;
                         }
 
@@ -3031,16 +2918,16 @@ namespace FZ4P
             }
             catch (Exception ex) {  MessageBox.Show(ex.ToString()); }
         }
-        private void Act_ScanCode(int port, string testItem, int InspCnt, bool IsTwice)
+        private void Act_ScanCode(int port, string testItem, int InspCnt)
         {
             MakeWaveform(testItem);
             LEDs_All_On(port, true);
-            Process_ScanCodeTest(port, testItem, InspCnt, IsTwice);
+            Process_ScanCodeTest(port, testItem, InspCnt);
             LEDs_All_On(port, false);
-            Process_CalcCodeTest(port, testItem, InspCnt, IsTwice);
+            Process_CalcCodeTest(port, testItem, InspCnt);
 
         }
-        private void Act_ScanTimeCode(int port, string testItem, int InspCnt, bool IsTwice)
+        private void Act_ScanTimeCode(int port, string testItem, int InspCnt)
         {
             LEDs_All_On(port, true);
             Process_ScanTimeTest(port, testItem);

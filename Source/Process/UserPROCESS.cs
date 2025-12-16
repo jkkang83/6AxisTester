@@ -28,6 +28,8 @@ namespace FZ4P
     {
         byte[] AF_IC_Setting = new byte[5] { 0x73, 0xE2, 0x62, 0x85, 0x8C };
 
+        byte OISPIDVer = 11;
+        byte AFPIDVer = 11;
 
         List<byte[]> AFPID = new List<byte[]>
         {    
@@ -207,32 +209,6 @@ namespace FZ4P
             ItemList.Add(new ActItems() { Name = "AF Phase Margin", Func = AFPhaseMargin, IsMulti = true });
             ItemList.Add(new ActItems() { Name = "AF PID Verify", Func = AFPID_Verify, IsMulti = true });
             ItemList.Add(new ActItems() { Name = "OIS PID Verify", Func = OIS_PIDVerify, IsMulti = true });
-            //       ItemList.Add(new ActItems() { Name = "AF OpenLoopAging", Func = Act_AFOpenLoopAging, IsMulti = true });
-            //ItemList.Add(new ActItems() { Name = "AF Hall ADJ", Func = Act_AFInit, IsMulti = true });
-            //ItemList.Add(new ActItems() { Name = "AF EPA", Func = Act_AFEPA, IsMulti = true });
-            // ItemList.Add(new ActItems() { Name = "AF Linearity Comp", Func = Act_AFLinComp, IsMulti = true });
-
-            //    ItemList.Add(new ActItems() { Name = "Find AF Best Position", Func = Act_FindBestAFPosition });
-            //  ItemList.Add(new ActItems() { Name = "OIS Hall ADJ", Func = Act_OISInit });
-            // ItemList.Add(new ActItems() { Name = "OIS EPA", Func = Act_OISEPA, IsMulti = true });
-
-
-
-
-
-            //  ItemList.Add(new ActItems() { Name = "Gain@10Hz", Func = Act_GaindB10Hz, IsMulti = true });
-            //  ItemList.Add(new ActItems() { Name = "Gain@10Hz", Func = Act_GaindB10Hz, IsMulti = true });
-            //ItemList.Add(new ActItems() { Name = "Phase Margin", Func = Act_Phase_Margin, IsMulti = true });
-            //ItemList.Add(new ActItems() { Name = "Phase Margin High", Func = Act_Phase_Margin_High, IsMulti = true });
-
-
-
-            // ItemList.Add(new ActItems() { Name = "Restore Slave Addr", Func = RestoreSlaveAddr, IsMulti = true });
-            // ItemList.Add(new ActItems() { Name = "Change Slave Addr", Func = ChangeSlaveAddr, IsMulti = true });
-
-
-            //ItemList.Add(new ActItems() { Name = "PID Verify", Func = PID_Verify, IsMulti = true });
-
 
         }
 
@@ -367,7 +343,7 @@ namespace FZ4P
          
         }
 
-        void OISOpenLoopTest(int ch, string testItem, int InspCnt, bool IsTwice)
+        void OISOpenLoopTest(int ch, string testItem, int InspCnt)
         {
             AddLog(ch, $"<<<  X Open loop test Start  >>>");
             if (m_ChannelOn[ch]) oisOL(ch, 0);
@@ -378,7 +354,7 @@ namespace FZ4P
             AddLog(ch, $"<<<  Y Open loop test End  >>>");
         }
 
-        void TempTest(int ch, string testItem, int InspCnt, bool IsTwice)
+        void TempTest(int ch, string testItem, int InspCnt)
         {
             AddLog(ch, $"<<<  AF/OIS Temp. Start  >>>");
             AddLog(ch, $"AF/OIS temperature test (open-loop)");
@@ -630,7 +606,7 @@ namespace FZ4P
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0x0B, new byte[] { DataBackup });
             Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xAE, new byte[] { 0x00 });
         }
-        void Act_AFScanAging(int ch, string testItem, int InspCnt, bool IsTwice)
+        void Act_AFScanAging(int ch, string testItem, int InspCnt)
         {
             AddLog(ch, "<<<  AF Scan aging Start  >>>");
             int target = 0, readhall = 0;
@@ -668,7 +644,7 @@ namespace FZ4P
             PassFails[0].Results[(int)SpecItem.AFScanAging].Val = 1;
             ShowDataResults(ch, (int)SpecItem.AFScanAging, (int)SpecItem.AFScanAging, InspType.Normal, new double[] { });
         }
-        void Act_PreAFDriving(int ch, string testItem, int InspCnt, bool IsTwice)
+        void Act_PreAFDriving(int ch, string testItem, int InspCnt)
         {
             LEDs_All_On(0, true);
             AddLog(ch, "AF Pre Driving");
@@ -704,7 +680,7 @@ namespace FZ4P
 
         byte AFPOSVT = 0, AFNEGVT = 0;
 
-        void Act_AFHallCalibration(int ch, string testItem, int InspCnt, bool IsTwice)
+        void Act_AFHallCalibration(int ch, string testItem, int InspCnt)
         {
             bool xChanged = true;
             bool Y1Changed = true;
@@ -1174,7 +1150,7 @@ namespace FZ4P
         //    CheckData(ch, 0);
         //}
 
-        void Act_CloseLoopAging(int ch, string testitem, int InspCnt, bool IsTwice)
+        void Act_CloseLoopAging(int ch, string testitem, int InspCnt)
         {
             CloseLoopAging(ch);
         }
@@ -1646,7 +1622,7 @@ namespace FZ4P
             AddLog(ch, $"PVT : {PVT}, NVT : {NVT}");
 
         }
-        void Act_OISLinComp(int ch, string testItem, int InspCnt, bool IsTwice)
+        void Act_OISLinComp(int ch, string testItem, int InspCnt)
         {
             bool resX = false;
             bool resY = false;
@@ -2082,7 +2058,7 @@ namespace FZ4P
             AddLog(ch, $"Chosen Best AF : {BestAFPos}");
         }
 
-        void Act_OISHallCalubration(int ch, string testItem, int InspCnt, bool IsTwice)
+        void Act_OISHallCalubration(int ch, string testItem, int InspCnt)
         {
             byte[] rbuf = new byte[1];
             AddLog(ch, "");
@@ -2311,7 +2287,7 @@ namespace FZ4P
         //    //}
         //}
 
-        public void ServoDecenter(int ch, string name, int InspCnt,  bool IsTwice)
+        public void ServoDecenter(int ch, string name, int InspCnt)
         {
             AddLog(ch, "<<<  OIS X Servo Decenter Start  >>>");
 
@@ -2518,7 +2494,7 @@ namespace FZ4P
 
             LEDs_All_On(port, false);
         }
-        void AutoTest(int ch, string testItem, int InspCnt, bool IsTwice)
+        void AutoTest(int ch, string testItem, int InspCnt)
         {
 
             try
@@ -2670,7 +2646,7 @@ namespace FZ4P
 
             }
         }
-        void OISSensitivityTest(int ch, string testItem, int InspCnt, bool IsTwice)
+        void OISSensitivityTest(int ch, string testItem, int InspCnt)
         {
 
             int[] xCode = new int[] { 2048, 0, 4095, 0, 4095 };
@@ -2737,7 +2713,7 @@ namespace FZ4P
                 sw.Close();
             }
         }
-        private void Act_OISShift2(int port, string testItem, int InspCnt, bool IsTwice)
+        private void Act_OISShift2(int port, string testItem, int InspCnt)
         {
 
             int ch = port * 2;
@@ -2926,7 +2902,7 @@ namespace FZ4P
 
 
         //}
-        void AFPID_Verify(int ch, string testItem, int InspCnt, bool IsTwice)
+        void AFPID_Verify(int ch, string testItem, int InspCnt)
         {
             byte index, wdata, rdata;
             byte akm_ID;
@@ -2980,7 +2956,7 @@ namespace FZ4P
             PassFails[ch].Results[(int)SpecItem.AFPIDVerifyRes].Val = 0;
             ShowDataResults(ch, (int)SpecItem.AFPIDVerifyRes, (int)SpecItem.AFPIDVerifyRes, InspType.Normal, new double[] { });
         }
-        void OIS_PIDVerify(int ch, string testItem, int InspCnt, bool IsTwice)
+        void OIS_PIDVerify(int ch, string testItem, int InspCnt)
         {
             bool res = true;
             byte[] rbuf = new byte[1];
@@ -3065,7 +3041,7 @@ namespace FZ4P
             ShowDataResults(ch, (int)SpecItem.OISPIDVerifyRes, (int)SpecItem.OISPIDVerifyRes, InspType.Normal, new double[] { });
         }
       
-        void IME_Test(int ch, string testItem, int InspCnt, bool IsTwice)
+        void IME_Test(int ch, string testItem, int InspCnt)
         {
             try
             {
@@ -3331,7 +3307,7 @@ namespace FZ4P
             return gain;
         }
 
-        void throughFRA(int ch, string testItem, int InspCnt, bool IsTwice)
+        void throughFRA(int ch, string testItem, int InspCnt)
         {
             double gain = 0;
             gain = throughFRA_gain(ch, 0);
@@ -3342,7 +3318,7 @@ namespace FZ4P
             ShowDataResults(ch, (int)SpecItem.ThroughPeak_Y_Gain, (int)SpecItem.ThroughPeak_Y_Gain, InspType.OnlyMax, new double[] { });
         }
 
-        void OISPhasemargin(int ch, string testItem, int InspCnt, bool IsTwice)
+        void OISPhasemargin(int ch, string testItem, int InspCnt)
         {
             double freq = 0, pm = 0;
             (freq, pm) = OISPM(ch, 0);
@@ -3352,7 +3328,7 @@ namespace FZ4P
             /*PassFails[ch].Results[(int)SpecItem.FRAY1_PMFreq].Val = freq;*/ PassFails[ch].Results[(int)SpecItem.FRAY1_PhaseMargin].Val = pm;
             ShowDataResults(ch, (int)SpecItem.FRAY1_PhaseMargin, (int)SpecItem.FRAY1_PhaseMargin, InspType.Normal, new double[] { });
         }
-        void OISLoopGain(int ch, string testItem, int InspCnt, bool IsTwice)
+        void OISLoopGain(int ch, string testItem, int InspCnt)
         {
             double gain = 0;
             gain = LoopGain(ch, 0);
@@ -3540,7 +3516,7 @@ namespace FZ4P
 
         }
 
-        void AFGainMargin(int ch, string testItem, int InspCnt, bool IsTwice)
+        void AFGainMargin(int ch, string testItem, int InspCnt)
         {
             double res = 0;
             byte scancnt = 0;
@@ -3629,7 +3605,7 @@ namespace FZ4P
             ShowDataResults(ch, (int)SpecItem.FRAAF_GainMargin, (int)SpecItem.FRAAF_GainMargin, InspType.Normal, new double[] { });
         }
 
-        void AFPhaseMargin(int ch, string testItem, int InspCnt, bool IsTwice)
+        void AFPhaseMargin(int ch, string testItem, int InspCnt)
         {
             double resFreq = 0, respm = 0, res4dbpm = 0;
             int freqval, freqtemp = 0, gaintemp, freqpm = 0, oldfreq;
@@ -3792,7 +3768,7 @@ namespace FZ4P
             xWriteData[27] = (byte)RingingXStabilizer;
             xWriteData[28] = (byte)SinewaveXMaxDiff;
             xWriteData[29] = (byte)((byte)(PassFails[ch].Results[(int)SpecItem.AF_Tilt].Val * 10) ^ 0x54 ^ 0xFD);
-            xWriteData[30] = (byte)Condition.OISPIDVer;
+            xWriteData[30] = (byte)OISPIDVer;
             xWriteData[31] = 0x33;
 
             for (int i = 0; i < xWriteData.Length; i++)
@@ -3834,7 +3810,7 @@ namespace FZ4P
             yWriteData[27] = (byte)RingingYStabilizer;
             yWriteData[28] = (byte)SinewaveYMaxDiff;
             yWriteData[29] = (byte)((byte)(PassFails[ch].Results[(int)SpecItem.FRAAF_PhaseMargin].Val) ^ 0x54 ^ 0xFD);
-            yWriteData[30] = (byte)Condition.OISPIDVer;
+            yWriteData[30] = (byte)OISPIDVer;
 
 
             for (int i = 0; i < yWriteData.Length; i++)
@@ -3912,7 +3888,7 @@ namespace FZ4P
             AFWriteData[8] = (byte)(((hour & 0x0F) << 4) | ((minute >> 2) & 0x0F));
             // 0xFA: 분(하위2bit) | 초(6bit)
             AFWriteData[9] = (byte)(((minute & 0x03) << 6) | (second & 0x3F));
-            AFWriteData[10] = (byte)Condition.AFPIDVer;
+            AFWriteData[10] = (byte)AFPIDVer;
 
             for (int i = 0; i < AFWriteAddr.Length; i++)
             {

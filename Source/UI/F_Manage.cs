@@ -375,7 +375,7 @@ namespace FZ4P
                 int Failed = Convert.ToInt32(Spec.specList[i].FailCnt);
                 if (Failed > 0)
                 {
-                    litem.Add(string.Format("{0} {1}", Spec.specList[i].Category, Spec.specList[i].DisplayName));
+                    litem.Add(string.Format("{0}", Spec.specList[i].DisplayName));
                     lratio.Add(Failed / (double)STATIC.Rcp.yield.TotlaTested);
                 }
             }
@@ -568,8 +568,8 @@ namespace FZ4P
 
         private void ToVision_Click(object sender, EventArgs e)
         {
-            STATIC.fVision.mLEDcurrent[0] = Condition.LedCurrentL;
-            STATIC.fVision.mLEDcurrent[1] = Condition.LedCurrentR;
+            STATIC.fVision.mLEDcurrent[0] = STATIC.Rcp.vsFile.LEDCurrentL;
+            STATIC.fVision.mLEDcurrent[1] = STATIC.Rcp.vsFile.LEDCurrentR;
             //STATIC.fVision.m_ChannelOn[0] = Process.m_ChannelOn[0];
             //STATIC.fVision.m_ChannelOn[1] = Process.m_ChannelOn[1];
             STATIC.State = (int)STATIC.STATE.Vision;

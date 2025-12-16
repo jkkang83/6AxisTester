@@ -284,7 +284,7 @@ namespace FZ4P
             this.BackColor = Color.FromArgb(96, 96, 100);
             //MessageBox.Show("aaa");
             //if (m__G!=null)
-            SetEdgeBand(Condition.iEdgeBand);
+            SetEdgeBand(STATIC.Rcp.vsFile.EdgeBand);
 
             //else
             //    SetEdgeBand();
@@ -510,8 +510,8 @@ namespace FZ4P
                     });
             }
             TransferModelFileList();
-            SetRawGainNGamma(Condition.iRawGain, Condition.iGamma);
-            SetExposure(0, Condition.iExposure);
+            SetRawGainNGamma(STATIC.Rcp.vsFile.RawGain, STATIC.Rcp.vsFile.Gamma);
+            SetExposure(0, STATIC.Rcp.vsFile.Exposure);
             LoadBackbroundNoise();
             LoadScaleNTheta();
             //LoadTXTYZeroOffset();
@@ -7162,72 +7162,7 @@ namespace FZ4P
             //FindCarrierToDummyShift();
         }
 
-        private void button9_Click_1(object sender, EventArgs e)
-        {
-            int camCount = 2;
-
-
-            if (!File.Exists(m__G.m_RootDirectory + "\\DoNotTouch\\CameraID.txt"))
-            {
-                MessageBox.Show("Camera ID not exists.");
-                return;
-            }
-            try
-            {
-                BaslerCam[0].Close();
-                Thread.Sleep(100);
-                BaslerCam[0].Open();
-            }
-            catch
-            {
-                ;
-            }
-            ReadOrgROI(camCount);
-
-            BaslerCam[0].Parameters[PLCamera.TriggerMode].SetValue("On");
-
-            m__G.mCamCount = 1;
-
-            m_FocusedLED = 0;
-
-
-            for (int i = 0; i < m__G.mCamCount; i++)
-                SetNewROIXY(i, v_OrgROIH_min[i], v_OrgROIH_min[i] + v_OrgROIH_width[i], v_OrgROIV_min[i], v_OrgROIV_min[i] + v_OrgROIV_height[i]);
-
-            //ReadZeroGap(m__G.mCamCount);
-            //ReadCalibrationTiltData();
-
-            if (InvokeRequired)
-                BeginInvoke((MethodInvoker)delegate
-                {
-                    m__G.oCam[0].SelectWindow(panelCam0.Handle);
-                });
-            else
-                m__G.oCam[0].SelectWindow(panelCam0.Handle);
-
-            m__G.oCam[0].DisplayZoom(ZoomFactor, ZoomFactor);
-
-            BaslerCam[0].Parameters[PLCamera.ClTapGeometry].SetValue("Geometry1X10_1Y");
-            BaslerCam[0].Parameters[PLCamera.ReverseX].SetValue(true);
-            //BaslerCam[0].Parameters[PLCamera.ReverseY].SetValue(false);
-            BaslerCam[0].Parameters[PLCamera.GainRaw].SetValue(v_OrgGain[0]);
-            BaslerCam[0].Parameters[PLCamera.GammaEnable].SetValue(true);
-
-            m__G.oCam[0].SetBlobAreaMinMax(m_BlobAreaMin, m_BlobAreaMax);
-            string strScaleRotation = m__G.m_RootDirectory + "\\DoNotTouch\\ScaleNOpticalR.txt";
-            double stop = 0;
-            double sside = 0;
-            double rtop = 0;
-            double rside = 0;
-
-            m__G.oCam[0].LoadScaleNOpticalRotation(strScaleRotation, ref stop, ref sside, ref rtop, ref rside);
-            SetExposure(0, Condition.iExposure);
-            SetRawGainNGamma(Condition.iRawGain, Condition.iGamma);
-            SetEdgeBand(Condition.iEdgeBand);
-
-            cbContinuosMode.Enabled = true;
-
-        }
+     
         public void ReadSerialPort()
         {
             //BinaryReader br = new BinaryReader(fs);

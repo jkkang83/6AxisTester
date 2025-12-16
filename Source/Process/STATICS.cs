@@ -48,6 +48,8 @@ namespace FZ4P
         public static string CurrentPath = RootDir + "CurrPath.txt";
         public static string PackageDir = BaseDir + "Package\\";
         public static string TestTimeDir = RootDir + "TestTime.txt";
+        public static string VisionFileDir = RootDir + "VisionFile.txt";
+        public static string RetryCountDir = RootDir + "RetryCount.txt";
         public static DateTime LogDate = new DateTime();
         public static string FailNumber = string.Empty;
         public static string ActID = string.Empty;

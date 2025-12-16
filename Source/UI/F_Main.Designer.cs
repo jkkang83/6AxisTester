@@ -32,6 +32,7 @@ namespace FZ4P
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(F_Main));
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this.SpecGrid = new System.Windows.Forms.DataGridView();
             this.btnApplyTesterNo2 = new System.Windows.Forms.Button();
             this.ModelGroup = new System.Windows.Forms.GroupBox();
@@ -57,6 +58,7 @@ namespace FZ4P
             this.P_Manager = new System.Windows.Forms.Panel();
             this.LotID = new System.Windows.Forms.TextBox();
             this.P_Main = new System.Windows.Forms.Panel();
+            this.RetryGrid = new System.Windows.Forms.DataGridView();
             this.SetCodeScript = new System.Windows.Forms.Button();
             this.CodeScriptPath = new System.Windows.Forms.RichTextBox();
             this.SetYPIDUpdate = new System.Windows.Forms.Button();
@@ -66,6 +68,7 @@ namespace FZ4P
             this.SetAFPIDUpdate = new System.Windows.Forms.Button();
             this.AFPidSetPath = new System.Windows.Forms.RichTextBox();
             this.ConditinGrid = new System.Windows.Forms.DataGridView();
+            this.textBox2 = new System.Windows.Forms.TextBox();
             this.panel2 = new System.Windows.Forms.Panel();
             this.ToVision = new System.Windows.Forms.Button();
             this.ToOperator = new System.Windows.Forms.Button();
@@ -88,10 +91,12 @@ namespace FZ4P
             this.SaveCondition = new System.Windows.Forms.Button();
             this.OpenCondition = new System.Windows.Forms.Button();
             this.RecipeFileName = new System.Windows.Forms.TextBox();
+            this.button2 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.SpecGrid)).BeginInit();
             this.ModelGroup.SuspendLayout();
             this.panel4.SuspendLayout();
             this.P_Main.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.RetryGrid)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ConditinGrid)).BeginInit();
             this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
@@ -411,6 +416,8 @@ namespace FZ4P
             // 
             // P_Main
             // 
+            this.P_Main.Controls.Add(this.button2);
+            this.P_Main.Controls.Add(this.RetryGrid);
             this.P_Main.Controls.Add(this.SetCodeScript);
             this.P_Main.Controls.Add(this.CodeScriptPath);
             this.P_Main.Controls.Add(this.SetYPIDUpdate);
@@ -420,6 +427,7 @@ namespace FZ4P
             this.P_Main.Controls.Add(this.SetAFPIDUpdate);
             this.P_Main.Controls.Add(this.AFPidSetPath);
             this.P_Main.Controls.Add(this.ConditinGrid);
+            this.P_Main.Controls.Add(this.textBox2);
             this.P_Main.Controls.Add(this.SpecGrid);
             this.P_Main.Controls.Add(this.btnApplyTesterNo2);
             this.P_Main.Controls.Add(this.ModelGroup);
@@ -435,6 +443,31 @@ namespace FZ4P
             this.P_Main.Size = new System.Drawing.Size(1898, 998);
             this.P_Main.TabIndex = 197;
             // 
+            // RetryGrid
+            // 
+            this.RetryGrid.AllowUserToAddRows = false;
+            this.RetryGrid.AllowUserToDeleteRows = false;
+            this.RetryGrid.AllowUserToResizeColumns = false;
+            this.RetryGrid.AllowUserToResizeRows = false;
+            this.RetryGrid.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.RetryGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("굴림", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.RetryGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            this.RetryGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.RetryGrid.Location = new System.Drawing.Point(1246, 610);
+            this.RetryGrid.Name = "RetryGrid";
+            this.RetryGrid.RowHeadersWidth = 72;
+            this.RetryGrid.RowTemplate.Height = 23;
+            this.RetryGrid.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.RetryGrid.Size = new System.Drawing.Size(299, 385);
+            this.RetryGrid.TabIndex = 244;
+            // 
             // SetCodeScript
             // 
             this.SetCodeScript.BackColor = System.Drawing.Color.MediumBlue;
@@ -443,9 +476,9 @@ namespace FZ4P
             this.SetCodeScript.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SetCodeScript.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Bold);
             this.SetCodeScript.ForeColor = System.Drawing.Color.White;
-            this.SetCodeScript.Location = new System.Drawing.Point(1247, 907);
+            this.SetCodeScript.Location = new System.Drawing.Point(1557, 907);
             this.SetCodeScript.Name = "SetCodeScript";
-            this.SetCodeScript.Size = new System.Drawing.Size(642, 43);
+            this.SetCodeScript.Size = new System.Drawing.Size(337, 43);
             this.SetCodeScript.TabIndex = 243;
             this.SetCodeScript.Text = "Code Script File";
             this.SetCodeScript.UseVisualStyleBackColor = false;
@@ -458,10 +491,10 @@ namespace FZ4P
             this.CodeScriptPath.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.CodeScriptPath.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.CodeScriptPath.ForeColor = System.Drawing.SystemColors.InactiveCaptionText;
-            this.CodeScriptPath.Location = new System.Drawing.Point(1247, 956);
+            this.CodeScriptPath.Location = new System.Drawing.Point(1557, 956);
             this.CodeScriptPath.Name = "CodeScriptPath";
             this.CodeScriptPath.ReadOnly = true;
-            this.CodeScriptPath.Size = new System.Drawing.Size(639, 36);
+            this.CodeScriptPath.Size = new System.Drawing.Size(334, 36);
             this.CodeScriptPath.TabIndex = 242;
             this.CodeScriptPath.Text = "";
             this.CodeScriptPath.Visible = false;
@@ -474,9 +507,9 @@ namespace FZ4P
             this.SetYPIDUpdate.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SetYPIDUpdate.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Bold);
             this.SetYPIDUpdate.ForeColor = System.Drawing.Color.White;
-            this.SetYPIDUpdate.Location = new System.Drawing.Point(1247, 814);
+            this.SetYPIDUpdate.Location = new System.Drawing.Point(1557, 814);
             this.SetYPIDUpdate.Name = "SetYPIDUpdate";
-            this.SetYPIDUpdate.Size = new System.Drawing.Size(642, 43);
+            this.SetYPIDUpdate.Size = new System.Drawing.Size(337, 43);
             this.SetYPIDUpdate.TabIndex = 241;
             this.SetYPIDUpdate.Text = "Set Y PID Update File";
             this.SetYPIDUpdate.UseVisualStyleBackColor = false;
@@ -489,10 +522,10 @@ namespace FZ4P
             this.YPidSetPath.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.YPidSetPath.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.YPidSetPath.ForeColor = System.Drawing.SystemColors.InactiveCaptionText;
-            this.YPidSetPath.Location = new System.Drawing.Point(1247, 863);
+            this.YPidSetPath.Location = new System.Drawing.Point(1557, 863);
             this.YPidSetPath.Name = "YPidSetPath";
             this.YPidSetPath.ReadOnly = true;
-            this.YPidSetPath.Size = new System.Drawing.Size(639, 36);
+            this.YPidSetPath.Size = new System.Drawing.Size(334, 36);
             this.YPidSetPath.TabIndex = 240;
             this.YPidSetPath.Text = "";
             this.YPidSetPath.Visible = false;
@@ -505,9 +538,9 @@ namespace FZ4P
             this.SetXPIDUpdate.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SetXPIDUpdate.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Bold);
             this.SetXPIDUpdate.ForeColor = System.Drawing.Color.White;
-            this.SetXPIDUpdate.Location = new System.Drawing.Point(1247, 723);
+            this.SetXPIDUpdate.Location = new System.Drawing.Point(1557, 723);
             this.SetXPIDUpdate.Name = "SetXPIDUpdate";
-            this.SetXPIDUpdate.Size = new System.Drawing.Size(642, 43);
+            this.SetXPIDUpdate.Size = new System.Drawing.Size(337, 43);
             this.SetXPIDUpdate.TabIndex = 239;
             this.SetXPIDUpdate.Text = "Set X PID Update File";
             this.SetXPIDUpdate.UseVisualStyleBackColor = false;
@@ -520,10 +553,10 @@ namespace FZ4P
             this.XPidSetPath.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.XPidSetPath.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.XPidSetPath.ForeColor = System.Drawing.SystemColors.InactiveCaptionText;
-            this.XPidSetPath.Location = new System.Drawing.Point(1247, 772);
+            this.XPidSetPath.Location = new System.Drawing.Point(1557, 772);
             this.XPidSetPath.Name = "XPidSetPath";
             this.XPidSetPath.ReadOnly = true;
-            this.XPidSetPath.Size = new System.Drawing.Size(639, 36);
+            this.XPidSetPath.Size = new System.Drawing.Size(334, 36);
             this.XPidSetPath.TabIndex = 238;
             this.XPidSetPath.Text = "";
             this.XPidSetPath.Visible = false;
@@ -536,9 +569,9 @@ namespace FZ4P
             this.SetAFPIDUpdate.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SetAFPIDUpdate.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Bold);
             this.SetAFPIDUpdate.ForeColor = System.Drawing.Color.White;
-            this.SetAFPIDUpdate.Location = new System.Drawing.Point(1248, 632);
+            this.SetAFPIDUpdate.Location = new System.Drawing.Point(1558, 632);
             this.SetAFPIDUpdate.Name = "SetAFPIDUpdate";
-            this.SetAFPIDUpdate.Size = new System.Drawing.Size(642, 43);
+            this.SetAFPIDUpdate.Size = new System.Drawing.Size(337, 43);
             this.SetAFPIDUpdate.TabIndex = 237;
             this.SetAFPIDUpdate.Text = "Set AF PID Update File";
             this.SetAFPIDUpdate.UseVisualStyleBackColor = false;
@@ -551,10 +584,10 @@ namespace FZ4P
             this.AFPidSetPath.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.AFPidSetPath.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.AFPidSetPath.ForeColor = System.Drawing.SystemColors.InactiveCaptionText;
-            this.AFPidSetPath.Location = new System.Drawing.Point(1248, 681);
+            this.AFPidSetPath.Location = new System.Drawing.Point(1558, 681);
             this.AFPidSetPath.Name = "AFPidSetPath";
             this.AFPidSetPath.ReadOnly = true;
-            this.AFPidSetPath.Size = new System.Drawing.Size(639, 36);
+            this.AFPidSetPath.Size = new System.Drawing.Size(334, 36);
             this.AFPidSetPath.TabIndex = 191;
             this.AFPidSetPath.Text = "";
             this.AFPidSetPath.Visible = false;
@@ -567,14 +600,14 @@ namespace FZ4P
             this.ConditinGrid.AllowUserToResizeRows = false;
             this.ConditinGrid.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.ConditinGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("굴림", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.ConditinGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("굴림", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.ConditinGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
             this.ConditinGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.ConditinGrid.Location = new System.Drawing.Point(364, 43);
             this.ConditinGrid.Name = "ConditinGrid";
@@ -583,6 +616,21 @@ namespace FZ4P
             this.ConditinGrid.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.ConditinGrid.Size = new System.Drawing.Size(399, 951);
             this.ConditinGrid.TabIndex = 87;
+            // 
+            // textBox2
+            // 
+            this.textBox2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBox2.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.textBox2.Font = new System.Drawing.Font("Calibri", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBox2.ForeColor = System.Drawing.Color.LightGray;
+            this.textBox2.Location = new System.Drawing.Point(1246, 578);
+            this.textBox2.Name = "textBox2";
+            this.textBox2.ReadOnly = true;
+            this.textBox2.Size = new System.Drawing.Size(162, 26);
+            this.textBox2.TabIndex = 89;
+            this.textBox2.TabStop = false;
+            this.textBox2.Text = "Retry Count";
+            this.textBox2.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // panel2
             // 
@@ -860,6 +908,21 @@ namespace FZ4P
             this.RecipeFileName.Text = "Recipe File Name";
             this.RecipeFileName.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
+            // button2
+            // 
+            this.button2.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("button2.BackgroundImage")));
+            this.button2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button2.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold);
+            this.button2.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.button2.Location = new System.Drawing.Point(1414, 577);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(131, 28);
+            this.button2.TabIndex = 245;
+            this.button2.Text = "Save";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
             // F_Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
@@ -883,7 +946,7 @@ namespace FZ4P
             this.Name = "F_Main";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "6AxisTester_25121201_V27";
+            this.Text = "6AxisTester_25121601_V27";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.F_Main_FormClosing);
             this.Load += new System.EventHandler(this.F_Main_Load);
@@ -894,6 +957,7 @@ namespace FZ4P
             this.panel4.PerformLayout();
             this.P_Main.ResumeLayout(false);
             this.P_Main.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.RetryGrid)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ConditinGrid)).EndInit();
             this.panel2.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
@@ -960,6 +1024,9 @@ namespace FZ4P
         private System.Windows.Forms.ListBox MCtypeList;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox tbMcNum;
+        private System.Windows.Forms.DataGridView RetryGrid;
+        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.Button button2;
     }
 }
 

@@ -104,7 +104,7 @@ namespace FZ4P
             InitCondition();
 
             InitDataSpec();
-
+            InitRetryGrid();
             InitOption();
 
             InitTodoList();
@@ -133,8 +133,15 @@ namespace FZ4P
 
             STATIC.State = (int)STATIC.STATE.Manage;
 
-            if (!Process.IsVirtual) STATIC.fVision.SetExposure(0, Condition.iExposure);
+            if (!Process.IsVirtual)
+            {
+                STATIC.fVision.SetExposure(0, STATIC.Rcp.vsFile.Exposure);
+                //STATIC.fVision.SetRawGainNGamma(STATIC.Rcp.vsFile.RawGain, STATIC.Rcp.vsFile.Gamma);
+                //STATIC.fVision.SetExposure(0, STATIC.Rcp.vsFile.Exposure);
+                //STATIC.fVision.SetRawGainNGamma(STATIC.Rcp.vsFile.RawGain, STATIC.Rcp.vsFile.Gamma);
 
+
+            }
             STATIC.fStart.Invoke(new MethodInvoker(STATIC.fStart.Close));
 
 
@@ -489,6 +496,50 @@ namespace FZ4P
             SpecGrid.ReadOnly = true;
             IsEdit();
         }
+        private void InitRetryGrid()
+        {
+            Type dgvType = RetryGrid.GetType();
+            PropertyInfo pi = dgvType.GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic);
+            pi.SetValue(RetryGrid, true, null);
+
+            RetryGrid.ColumnCount = 2;
+            RetryGrid.Font = new Font("Calibri", 9, FontStyle.Bold);
+            for (int i = 0; i < RetryGrid.ColumnCount; i++)
+            {
+                RetryGrid.Columns[i].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+            RetryGrid.RowHeadersVisible = false;
+            RetryGrid.BackgroundColor = Color.LightGray;
+
+            RetryGrid.Columns[0].Name = "Test Item";
+            RetryGrid.Columns[1].Name = "Count";
+
+
+
+            RetryGrid.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            RetryGrid.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+
+            RetryGrid.Columns[0].Width = 150;
+            RetryGrid.Columns[1].Width = 50;
+
+
+            // Row 
+
+            RetryGrid.Rows.Clear();
+
+            for (int i = 0; i < Rcp.RetryCnt.RetryOption.Count; i++)
+            {
+                RetryGrid.Rows.Add(Rcp.RetryCnt.RetryOption[i].InspName, Rcp.RetryCnt.RetryOption[i].Count);
+                RetryGrid[0, i].Style.BackColor = Color.White;
+
+            }
+
+
+            RetryGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            RetryGrid.ColumnHeadersHeight = 22;
+
+        
+        }
         public void UpdateUI()
         {
             Condition.ToDoList.Clear();
@@ -521,10 +572,10 @@ namespace FZ4P
                 }
             }
 
-            STATIC.fVision.SetExposure(0, Condition.iExposure);
-            STATIC.fVision.SetRawGainNGamma(Condition.iRawGain, Condition.iGamma);
-            STATIC.fVision.SetExposure(0, Condition.iExposure);
-            STATIC.fVision.SetRawGainNGamma(Condition.iRawGain, Condition.iGamma);
+            STATIC.fVision.SetExposure(0, STATIC.Rcp.vsFile.Exposure);
+            STATIC.fVision.SetRawGainNGamma(STATIC.Rcp.vsFile.RawGain, STATIC.Rcp.vsFile.Gamma);
+            STATIC.fVision.SetExposure(0, STATIC.Rcp.vsFile.Exposure);
+            STATIC.fVision.SetRawGainNGamma(STATIC.Rcp.vsFile.RawGain, STATIC.Rcp.vsFile.Gamma);
 
         }
         public List<CheckBox> ListChk = new List<CheckBox>();
@@ -634,7 +685,7 @@ namespace FZ4P
                 compare = DataIO.DeserializeXMLFileToObject<Spec>(STATIC.SpecDir + Current.SpecName);
                 for (int i = 0; i < compare.specList.Count; i++)
                 {
-                    int index = Spec.specList.FindIndex(x => x.DisplayName == compare.specList[i].DisplayName && x.Category == compare.specList[i].Category);
+                    int index = Spec.specList.FindIndex(x => x.DisplayName == compare.specList[i].DisplayName);
                     if (index != -1)
                     {
                         Spec.specList[index].MinSpec = compare.specList[i].MinSpec;
@@ -1569,6 +1620,17 @@ namespace FZ4P
         {
             if (SpecGrid.IsCurrentCellDirty)
                 SpecGrid.CommitEdit(DataGridViewDataErrorContexts.Commit);
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < RetryGrid.RowCount; i++)
+            {
+                int index = Rcp.RetryCnt.RetryOption.FindIndex(x => x.InspName == RetryGrid[0, i].Value.ToString());
+                if(index != -1)
+                    Rcp.RetryCnt.RetryOption[index].Count = Convert.ToInt32(RetryGrid[1, i].Value);
+            }
+            DataIO.SerializeToXMLFile(Rcp.RetryCnt, STATIC.RetryCountDir);
         }
     }
 }

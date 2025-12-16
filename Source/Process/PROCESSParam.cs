@@ -12,7 +12,7 @@ using System.Xml.Linq;
 
 namespace FZ4P
 {
-    public delegate void FunctionPointer(int ch, string testItem, int InspCnt, bool isTwiceInsp);
+    public delegate void FunctionPointer(int ch, string testItem, int InspCnt);
     public class ActItems
     {
         public string Name { get; set; }
@@ -20,7 +20,6 @@ namespace FZ4P
         public bool IsMulti { get; set; }
 
         public bool IsRetry { get; set; }
-        public bool IsTwiceInsp { get; set; } = false;  
         public string Time { get; set; }
     }
     public class FindResult
