@@ -164,6 +164,39 @@ namespace FZ4P
         
 
         #region Default
+        public bool CheckFail(int ch, string Item)
+        {
+            for (int i = 0; i < Spec.specList.Count; i++)
+            {
+                if (Spec.specList[i].Category == Item)
+                {
+                    if (!PassFails[ch].Results[i].bPass) return false;
+                }
+            }
+            return true;
+        }
+        public void SetFailList(int ch)
+        {
+            if (lblFailList.InvokeRequired)
+            {
+                lblFailList.BeginInvoke((MethodInvoker)delegate
+                {
+                    for (int i = 0; i < Spec.specList.Count; i++)
+                    {
+                        if (!PassFails[ch].Results[i].bPass) { STATIC.FailNumber += $"{i + 1},"; lblFailList.Text = STATIC.FailNumber; }
+
+                    }
+
+                });
+            }
+            else
+            {
+                for (int i = 0; i < Spec.specList.Count; i++)
+                {
+                    if (!PassFails[ch].Results[i].bPass) { STATIC.FailNumber += $"{i + 1},"; lblFailList.Text = STATIC.FailNumber; }
+                }
+            }
+        }
         public void ShowDataResults(int ch, int start, int end, InspType type, double[] MtoMRes )
         {
             for (int i = start; i < end + 1; i++)
@@ -181,7 +214,7 @@ namespace FZ4P
                         {
                             PassFails[ch].Results[i].msg = Spec.specList[i].DisplayName;
                             PassFails[ch].Results[i].bPass = false;
-                            PassFails[ch].TotalFail += string.Format("{0}'", i + 1);
+                          
                         }
                         else
                         {
@@ -195,7 +228,7 @@ namespace FZ4P
                         {
                             PassFails[ch].Results[i].msg = Spec.specList[i].DisplayName;
                             PassFails[ch].Results[i].bPass = false;
-                            PassFails[ch].TotalFail += string.Format("{0}'", i + 1);
+                          
                         }
                         else
                         {
@@ -209,7 +242,7 @@ namespace FZ4P
                         {
                             PassFails[ch].Results[i].msg = Spec.specList[i].DisplayName;
                             PassFails[ch].Results[i].bPass = false;
-                            PassFails[ch].TotalFail += string.Format("{0}'", i + 1);
+                           
                         }
                         else
                         {
@@ -223,7 +256,7 @@ namespace FZ4P
                         {
                             PassFails[ch].Results[i].msg = Spec.specList[i].DisplayName;
                             PassFails[ch].Results[i].bPass = false;
-                            PassFails[ch].TotalFail += string.Format("{0}'", i + 1);
+                            
                         }
                         else
                         {
@@ -238,7 +271,7 @@ namespace FZ4P
                         {
                             PassFails[ch].Results[i].msg = Spec.specList[i].DisplayName;
                             PassFails[ch].Results[i].bPass = false;
-                            PassFails[ch].TotalFail += string.Format("{0}'", i + 1);
+                          
                         }
                         else
                         {
@@ -315,25 +348,7 @@ namespace FZ4P
                 }
             }
 
-            if (lblFailList.InvokeRequired)
-            {
-                lblFailList.BeginInvoke((MethodInvoker)delegate
-                {
-                    for (int i = start; i <= end; i++)
-                    {
-                        if (!PassFails[ch].Results[i].bPass) { STATIC.FailNumber += $"{i + 1},"; lblFailList.Text = STATIC.FailNumber; }
-                    
-                    }
-
-                });
-            }
-            else
-            {
-                for (int i = start; i <= end; i++)
-                {
-                    if (!PassFails[ch].Results[i].bPass) { STATIC.FailNumber += $"{i + 1},"; lblFailList.Text = STATIC.FailNumber; }
-                }
-            }
+          
             for (int i = start; i <= end; i++)
             {
                 if (!PassFails[ch].Results[i].bPass)
@@ -344,8 +359,7 @@ namespace FZ4P
 
             }
 
-        }
-       
+        }     
         public void InitResultData()
         {
             Type dgvType = ResultDataGrid.GetType();
@@ -449,19 +463,71 @@ namespace FZ4P
             //    }
             //}
         }
+        public void InitResult(int ch, string Item)
+        {
+            if (ResultDataGrid.InvokeRequired)
+            {
+                ResultDataGrid.BeginInvoke((MethodInvoker)delegate
+                {
+                    for (int i = 0; i < Spec.specList.Count; i++)
+                    {
+                        if (Spec.specList[i].Category == Item)
+                        {
+                            if (PassFails[ch].FirstFailIndex == i + 1)
+                            {
+                                PassFails[ch].FirstFail = "";
+                                PassFails[ch].FirstFailIndex = 0;
+                            }
+                            PassFails[ch].Results[i].Val = double.MaxValue;
+                            PassFails[ch].Results[i].msg = ""; PassFails[ch].Results[i].bPass = true;
+
+                            ResultDataGrid[ch + 4, i].Value = "";
+                            ResultDataGrid[ch + 4, i].Style.BackColor = Color.White;
+                            ResultDataGrid[ch, i].Style.BackColor = Color.White;
+
+                        }
+                     
+                    }
+                  
+                });
+            }
+            else
+            {
+
+                for (int i = 0; i < Spec.specList.Count; i++)
+                {
+                    if (Spec.specList[i].Category == Item)
+                    {
+                        if (PassFails[ch].FirstFailIndex == i + 1)
+                        {
+                            PassFails[ch].FirstFail = "";
+                            PassFails[ch].FirstFailIndex = 0;
+                        }
+                        PassFails[ch].Results[i].Val = double.MaxValue;
+                        PassFails[ch].Results[i].msg = ""; PassFails[ch].Results[i].bPass = true;
+
+                        ResultDataGrid[ch + 4, i].Value = "";
+                        ResultDataGrid[ch + 4, i].Style.BackColor = Color.White;
+                        ResultDataGrid[ch, i].Style.BackColor = Color.White;
+                    }
+                  
+                }
+            }
+            
+            m_ChannelOn[ch] = true;
+        }
         public void InitResult(int ch)
         {
-            PassFails[ch].TotalFail = "";
+          
             PassFails[ch].FirstFail = "";
             PassFails[ch].FirstFailIndex = 0;
             for (int i = 0; i < (int)SpecItem.Length; i++)
-            {
-               
+            {              
                 PassFails[ch].Results[i].Val = double.MaxValue;
                 PassFails[ch].Results[i].msg = ""; PassFails[ch].Results[i].bPass = true;
             }
         }
-       
+
         public void ShowDataResultsInit(int ch)
         {
             if (ResultDataGrid.InvokeRequired)
@@ -953,18 +1019,17 @@ namespace FZ4P
 
         public void Process_Start(int port)
         {
-            STATIC.I2CFailcnt = 0;
+          
             STATIC.SaveLogData = string.Empty;
             if (Option.DryRunMode) { Thread.Sleep(40000); return; }
             int index = Rcp.RetryCnt.RetryOption.FindIndex(x => x.InspName == "All");
             int LoopCnt = 1 + Rcp.RetryCnt.RetryOption[index].Count;
-           
-
+            STATIC.Rcp.tt.CurrentST = 0;
             for (int Loop = 0; Loop < LoopCnt; Loop++)
             {
                 try
                 {
-
+                    STATIC.I2CFailcnt = 0;
                     STATIC.LogDate = DateTime.Now;
                     STATIC.ActID = string.Empty;
                     ShowDataResultsInit(0);
@@ -1071,7 +1136,7 @@ namespace FZ4P
                         AddLog(k, string.Format("Total Test Time\t{0:0.000} sec", ellipse));
                         PassFails[k].TotalTime = ellipse.ToString("F3");
                         STATIC.Rcp.tt.St += ellipse;
-                        STATIC.Rcp.tt.CurrentST = ellipse;
+                        STATIC.Rcp.tt.CurrentST += ellipse;
                     }
 
                     if (!SuddenStop)
@@ -1086,9 +1151,10 @@ namespace FZ4P
                                     if (errMsg[0] == "" && PassFails[0].FirstFailIndex == 0)
                                         WriteUserMem(ch, 0x02);
                                     else WriteUserMem(ch, 0x09);
-                                }                               
+                                }                        
                                 WriteResult(port);
                                 SaveLogData();
+                                SetFailList(ch);
 
                             }
                             else
@@ -1100,9 +1166,10 @@ namespace FZ4P
                                         if (errMsg[0] == "" && PassFails[0].FirstFailIndex == 0)
                                             WriteUserMem(ch, 0x02);
                                         else WriteUserMem(ch, 0x09);
-                                    }                                  
+                                    }                                 
                                     WriteResult(port);
                                     SaveLogData();
+                                    SetFailList(ch);
 
                                 }
                                 else
@@ -1123,9 +1190,10 @@ namespace FZ4P
                             }
                             WriteResult(port);
                             SaveLogData();
+                            SetFailList(ch);
                         }
                     }
-                    else { Dln.PowerOnOff(port, false); STATIC.Rcp.tt.Count++; return; }
+                    else { Dln.PowerOnOff(port, false);  STATIC.Rcp.tt.Count++; return; }
                     Dln.PowerOnOff(port, false);
                 }
                 catch
@@ -1138,12 +1206,16 @@ namespace FZ4P
             return;
 
         }
+        
         public void Process_Function(int port, string testItem)
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
             int index = 0;
+            int RetryIndex = Rcp.RetryCnt.RetryOption.FindIndex(x => x.InspName == testItem);
+            int RetryCnt = Rcp.RetryCnt.RetryOption[RetryIndex].Count + 1;
+           
             for (int i = 0; i < ItemList.Count; i++)
             {
                 if (testItem == ItemList[i].Name)
@@ -1168,41 +1240,49 @@ namespace FZ4P
 
             try
             {
-                Task Func1 = null, Func2 = null;
-
-                if (!ItemList[index].IsMulti)
+                for (int i = 0; i < RetryCnt; i++)
                 {
-                    Func1 = new Task(() => ItemList[index].Func(port, testItem, 0));
-                    Func1.Start();
+                    Task Func1 = null, Func2 = null;
 
-                    if (Func1 != null) Task.WaitAll(Func1);
-                }
-                else
-                {
-                    if (m_ChannelOn[ch])
+                    if (!ItemList[index].IsMulti)
                     {
-                        Func1 = new Task(() => ItemList[index].Func(ch, testItem, 0));
+                        Func1 = new Task(() => ItemList[index].Func(port, testItem, 0));
                         Func1.Start();
-                        AddLog(ch, testItem + " Start");
-                    }
-                    if (ChannelCnt > 1)
-                    {
-                        if (m_ChannelOn[ch + 1])
-                        {
-                            Func2 = new Task(() => ItemList[index].Func(ch + 1, testItem, 0));
-                            Func2.Start();
-                            AddLog(ch + 1, testItem + " Start");
-                        }
-                    }
 
-                    if (Func1 != null && Func2 != null) Task.WaitAll(Func1, Func2);
+                        if (Func1 != null) Task.WaitAll(Func1);
+                    }
                     else
                     {
-                        if (Func1 != null) Task.WaitAll(Func1);
-                        if (Func2 != null) Task.WaitAll(Func2);
+                        if (m_ChannelOn[ch])
+                        {
+                            Func1 = new Task(() => ItemList[index].Func(ch, testItem, 0));
+                            Func1.Start();
+                            AddLog(ch, testItem + " Start");
+                        }
+                        if (ChannelCnt > 1)
+                        {
+                            if (m_ChannelOn[ch + 1])
+                            {
+                                Func2 = new Task(() => ItemList[index].Func(ch + 1, testItem, 0));
+                                Func2.Start();
+                                AddLog(ch + 1, testItem + " Start");
+                            }
+                        }
+
+                        if (Func1 != null && Func2 != null) Task.WaitAll(Func1, Func2);
+                        else
+                        {
+                            if (Func1 != null) Task.WaitAll(Func1);
+                            if (Func2 != null) Task.WaitAll(Func2);
+                        }
+                    }
+                    if(i < RetryCnt - 1)
+                    {
+                        bool res = CheckFail(ch, testItem);
+                        if (res) break;
+                        else InitResult(ch, testItem);
                     }
                 }
-
 
             }
             catch (Exception e)

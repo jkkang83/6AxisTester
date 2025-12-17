@@ -25,6 +25,8 @@ namespace FZ4P
         public TestTime tt { get; set; }
         public VisionFile vsFile { get; set; }
         public RetryCount RetryCnt { get; set; }
+        public Password pw { get; set; }
+
         public Recipe()
         {
             Current = new CurrentPath();
@@ -89,7 +91,7 @@ namespace FZ4P
                 vsFile = DataIO.DeserializeXMLFileToObject<VisionFile>(STATIC.VisionFileDir);
             else DataIO.SerializeToXMLFile(vsFile, STATIC.VisionFileDir);
 
-                yield = new TotalYield();
+            yield = new TotalYield();
             if (File.Exists(STATIC.YieldPath))
                 yield = DataIO.DeserializeXMLFileToObject<TotalYield>(STATIC.YieldPath);
 
@@ -104,6 +106,10 @@ namespace FZ4P
             if (File.Exists(STATIC.TestTimeDir)) tt = DataIO.DeserializeXMLFileToObject<TestTime>(STATIC.TestTimeDir);
            
             RetryCnt = new RetryCount();
+
+            pw = new Password();
+            if (File.Exists(STATIC.PasswordDir))
+                pw = DataIO.DeserializeXMLFileToObject<Password>(STATIC.PasswordDir);
         }
     }
     public class BaseRecipe
@@ -582,8 +588,7 @@ namespace FZ4P
     public class PassFail
     {
         public int FirstFailIndex;
-        public string FirstFail;
-        public string TotalFail;
+        public string FirstFail;    
         public string TotalTime;
         public List<ResultItems> Results = new List<ResultItems>();
     }
@@ -918,6 +923,10 @@ namespace FZ4P
         public double LEDCurrentR { get; set; } = 2.3;
     }
    
+    public class Password
+    {
+        public string PW { get; set; } = "0";
+    }
 
   
 

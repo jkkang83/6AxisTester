@@ -50,6 +50,7 @@ namespace FZ4P
         public static string TestTimeDir = RootDir + "TestTime.txt";
         public static string VisionFileDir = RootDir + "VisionFile.txt";
         public static string RetryCountDir = RootDir + "RetryCount.txt";
+        public static string PasswordDir = RootDir + "PW.txt";
         public static DateTime LogDate = new DateTime();
         public static string FailNumber = string.Empty;
         public static string ActID = string.Empty;

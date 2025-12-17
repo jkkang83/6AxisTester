@@ -139,6 +139,12 @@
     <Compile Include="Process\STATICS.cs" />
     <Compile Include="Process\TCPComm.cs" />
     <Compile Include="Process\UserPROCESS.cs" />
+    <Compile Include="UI\F_Password.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\F_Password.Designer.cs">
+      <DependentUpon>F_Password.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\F_Start.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -168,6 +174,9 @@
     <Compile Include="Vision\MyMatrox.cs" />
     <Compile Include="Vision\MyMicroLibrary.cs" />
     <Compile Include="Vision\MySingleton.cs" />
+    <EmbeddedResource Include="UI\F_Password.resx">
+      <DependentUpon>F_Password.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="UI\F_Start.resx">
       <DependentUpon>F_Start.cs</DependentUpon>
       <SubType>Designer</SubType>

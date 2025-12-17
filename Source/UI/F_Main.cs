@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -64,13 +65,19 @@ namespace FZ4P
                 case (int)STATIC.STATE.Main:
                     //InitCondition();
                     //InitDataSpec();
-                    P_Main.Show();
-                    P_Manager.Location = new Point(3, 1026);
-                    P_Manager.Size = new Size(50, 31);
-                    P_Manager.Hide();
-                    P_Vision.Location = new Point(59, 1026);
-                    P_Vision.Size = new Size(50, 31);
-                    P_Vision.Hide();
+                    F_Password fpw = new F_Password();
+                    DialogResult dr = fpw.ShowDialog();
+                    if(dr == DialogResult.OK)
+                    {
+                        P_Main.Show();
+                        P_Manager.Location = new Point(3, 1026);
+                        P_Manager.Size = new Size(50, 31);
+                        P_Manager.Hide();
+                        P_Vision.Location = new Point(59, 1026);
+                        P_Vision.Size = new Size(50, 31);
+                        P_Vision.Hide();
+                    }
+                    else { }
                     break;
                 case (int)STATIC.STATE.Vision:
                     P_Main.Hide();

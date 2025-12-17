@@ -58,6 +58,7 @@ namespace FZ4P
             this.P_Manager = new System.Windows.Forms.Panel();
             this.LotID = new System.Windows.Forms.TextBox();
             this.P_Main = new System.Windows.Forms.Panel();
+            this.button2 = new System.Windows.Forms.Button();
             this.RetryGrid = new System.Windows.Forms.DataGridView();
             this.SetCodeScript = new System.Windows.Forms.Button();
             this.CodeScriptPath = new System.Windows.Forms.RichTextBox();
@@ -91,7 +92,6 @@ namespace FZ4P
             this.SaveCondition = new System.Windows.Forms.Button();
             this.OpenCondition = new System.Windows.Forms.Button();
             this.RecipeFileName = new System.Windows.Forms.TextBox();
-            this.button2 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.SpecGrid)).BeginInit();
             this.ModelGroup.SuspendLayout();
             this.panel4.SuspendLayout();
@@ -442,6 +442,21 @@ namespace FZ4P
             this.P_Main.Name = "P_Main";
             this.P_Main.Size = new System.Drawing.Size(1898, 998);
             this.P_Main.TabIndex = 197;
+            // 
+            // button2
+            // 
+            this.button2.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("button2.BackgroundImage")));
+            this.button2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button2.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold);
+            this.button2.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.button2.Location = new System.Drawing.Point(1414, 577);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(131, 28);
+            this.button2.TabIndex = 245;
+            this.button2.Text = "Save";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // RetryGrid
             // 
@@ -908,21 +923,6 @@ namespace FZ4P
             this.RecipeFileName.Text = "Recipe File Name";
             this.RecipeFileName.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
-            // button2
-            // 
-            this.button2.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("button2.BackgroundImage")));
-            this.button2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button2.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold);
-            this.button2.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.button2.Location = new System.Drawing.Point(1414, 577);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(131, 28);
-            this.button2.TabIndex = 245;
-            this.button2.Text = "Save";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
-            // 
             // F_Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
@@ -946,7 +946,7 @@ namespace FZ4P
             this.Name = "F_Main";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "6AxisTester_25121601_V27";
+            this.Text = "6AxisTester_25121701_V27";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.F_Main_FormClosing);
             this.Load += new System.EventHandler(this.F_Main_Load);

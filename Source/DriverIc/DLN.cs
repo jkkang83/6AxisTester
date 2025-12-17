@@ -104,10 +104,10 @@ namespace FZ4P
                 DLNdevice[i].Gpio.Pins[7].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
                 DLNdevice[i].Gpio.Pins[7].PulldownEnabled = true;
 
-                //// 스위치
-                //DLNdevice[i].Gpio.Pins[8].Enabled = true;
-                //DLNdevice[i].Gpio.Pins[8].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
-                //DLNdevice[i].Gpio.Pins[8].PulldownEnabled = true;
+                // 스위치
+                DLNdevice[i].Gpio.Pins[8].Enabled = true;
+                DLNdevice[i].Gpio.Pins[8].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+                DLNdevice[i].Gpio.Pins[8].PulldownEnabled = true;
 
                 //I2C 0x24관련    OIS_RESET
                 //DLNdevice[i].Gpio.Pins[14].Enabled = true;
