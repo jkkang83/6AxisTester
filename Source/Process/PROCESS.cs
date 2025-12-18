@@ -126,7 +126,7 @@ namespace FZ4P
                 tiltChart.Add(new TiltGraph
                 {
                     title = "AF Tilt",
-                    range = 20,
+                    range = 15,
                 });
                 tiltChart[i].SetRings(new double[] { tiltChart[i].range / 2, tiltChart[i].range });
                 
@@ -695,6 +695,8 @@ namespace FZ4P
                                         }
                                     }
                                     tiltChart[ch].SetPoints(xs, ys, Color.Lime);
+                                    tiltChart[ch].SetPoint(xs[0], ys[0], Color.LightGray);
+                                    tiltChart[ch].SetPoint(xs[xs.Length - 1], ys[ys.Length - 1], Color.LightGray);
                                     tiltChart[ch].SetPoint(MaxtiltX, MaxtiltY, Color.Red);
                                     tiltChart[ch].SetPoint(refArr[0], refArr[1], Color.Orange);
                                   
