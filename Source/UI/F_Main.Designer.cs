@@ -70,6 +70,9 @@ namespace FZ4P
             this.AFPidSetPath = new System.Windows.Forms.RichTextBox();
             this.ConditinGrid = new System.Windows.Forms.DataGridView();
             this.textBox2 = new System.Windows.Forms.TextBox();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.ToVision = new System.Windows.Forms.Button();
+            this.ToOperator = new System.Windows.Forms.Button();
             this.lblOPName = new System.Windows.Forms.Label();
             this.label16 = new System.Windows.Forms.Label();
             this.OperatorName = new System.Windows.Forms.TextBox();
@@ -89,17 +92,14 @@ namespace FZ4P
             this.SaveCondition = new System.Windows.Forms.Button();
             this.OpenCondition = new System.Windows.Forms.Button();
             this.RecipeFileName = new System.Windows.Forms.TextBox();
-            this.ToOperator = new System.Windows.Forms.Button();
-            this.ToVision = new System.Windows.Forms.Button();
-            this.panel2 = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)(this.SpecGrid)).BeginInit();
             this.ModelGroup.SuspendLayout();
             this.panel4.SuspendLayout();
             this.P_Main.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.RetryGrid)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ConditinGrid)).BeginInit();
-            this.panel3.SuspendLayout();
             this.panel2.SuspendLayout();
+            this.panel3.SuspendLayout();
             this.SuspendLayout();
             // 
             // SpecGrid
@@ -647,6 +647,46 @@ namespace FZ4P
             this.textBox2.Text = "Retry Count";
             this.textBox2.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
+            // panel2
+            // 
+            this.panel2.BackColor = System.Drawing.Color.Silver;
+            this.panel2.Controls.Add(this.ToVision);
+            this.panel2.Controls.Add(this.ToOperator);
+            this.panel2.Location = new System.Drawing.Point(0, 0);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(1907, 42);
+            this.panel2.TabIndex = 32;
+            // 
+            // ToVision
+            // 
+            this.ToVision.BackColor = System.Drawing.Color.DodgerBlue;
+            this.ToVision.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ToVision.BackgroundImage")));
+            this.ToVision.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.ToVision.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Bold);
+            this.ToVision.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.ToVision.Location = new System.Drawing.Point(363, 0);
+            this.ToVision.Name = "ToVision";
+            this.ToVision.Size = new System.Drawing.Size(400, 45);
+            this.ToVision.TabIndex = 68;
+            this.ToVision.Text = "Vision";
+            this.ToVision.UseVisualStyleBackColor = false;
+            this.ToVision.Click += new System.EventHandler(this.ToVision_Click);
+            // 
+            // ToOperator
+            // 
+            this.ToOperator.BackColor = System.Drawing.Color.DeepSkyBlue;
+            this.ToOperator.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ToOperator.BackgroundImage")));
+            this.ToOperator.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.ToOperator.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Bold);
+            this.ToOperator.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.ToOperator.Location = new System.Drawing.Point(0, 0);
+            this.ToOperator.Name = "ToOperator";
+            this.ToOperator.Size = new System.Drawing.Size(357, 45);
+            this.ToOperator.TabIndex = 120;
+            this.ToOperator.Text = "Operator";
+            this.ToOperator.UseVisualStyleBackColor = false;
+            this.ToOperator.Click += new System.EventHandler(this.ToOperator_Click);
+            // 
             // lblOPName
             // 
             this.lblOPName.AutoSize = true;
@@ -883,46 +923,6 @@ namespace FZ4P
             this.RecipeFileName.Text = "Recipe File Name";
             this.RecipeFileName.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
-            // ToOperator
-            // 
-            this.ToOperator.BackColor = System.Drawing.Color.DeepSkyBlue;
-            this.ToOperator.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ToOperator.BackgroundImage")));
-            this.ToOperator.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.ToOperator.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Bold);
-            this.ToOperator.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.ToOperator.Location = new System.Drawing.Point(0, 0);
-            this.ToOperator.Name = "ToOperator";
-            this.ToOperator.Size = new System.Drawing.Size(357, 45);
-            this.ToOperator.TabIndex = 120;
-            this.ToOperator.Text = "Operator";
-            this.ToOperator.UseVisualStyleBackColor = false;
-            this.ToOperator.Click += new System.EventHandler(this.ToOperator_Click);
-            // 
-            // ToVision
-            // 
-            this.ToVision.BackColor = System.Drawing.Color.DodgerBlue;
-            this.ToVision.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ToVision.BackgroundImage")));
-            this.ToVision.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.ToVision.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Bold);
-            this.ToVision.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.ToVision.Location = new System.Drawing.Point(363, 0);
-            this.ToVision.Name = "ToVision";
-            this.ToVision.Size = new System.Drawing.Size(400, 45);
-            this.ToVision.TabIndex = 68;
-            this.ToVision.Text = "Vision";
-            this.ToVision.UseVisualStyleBackColor = false;
-            this.ToVision.Click += new System.EventHandler(this.ToVision_Click);
-            // 
-            // panel2
-            // 
-            this.panel2.BackColor = System.Drawing.Color.Silver;
-            this.panel2.Controls.Add(this.ToVision);
-            this.panel2.Controls.Add(this.ToOperator);
-            this.panel2.Location = new System.Drawing.Point(0, 0);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(1907, 42);
-            this.panel2.TabIndex = 32;
-            // 
             // F_Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
@@ -946,7 +946,7 @@ namespace FZ4P
             this.Name = "F_Main";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "6AxisTester_25121901_V30";
+            this.Text = "6AxisTester_25121902_V30";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.F_Main_FormClosing);
             this.Load += new System.EventHandler(this.F_Main_Load);
@@ -959,9 +959,9 @@ namespace FZ4P
             this.P_Main.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.RetryGrid)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ConditinGrid)).EndInit();
+            this.panel2.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
             this.panel3.PerformLayout();
-            this.panel2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 

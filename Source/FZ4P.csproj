@@ -124,9 +124,6 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="TiltPlot">
-      <HintPath>..\lib\TiltPlot.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Process\AFLinCompCoef.cs" />
@@ -138,6 +135,7 @@
     <Compile Include="Process\RECIPE.cs" />
     <Compile Include="Process\STATICS.cs" />
     <Compile Include="Process\TCPComm.cs" />
+    <Compile Include="Process\TiltGraph.cs" />
     <Compile Include="Process\UserPROCESS.cs" />
     <Compile Include="UI\F_Password.cs">
       <SubType>Form</SubType>
