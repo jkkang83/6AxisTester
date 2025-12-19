@@ -429,6 +429,20 @@ namespace FZ4P
                 }
                 Process.Wait(10);
             }
+            else if(name.Contains("AF"))
+            {
+                if (isOn)
+                {
+                    Process.AddLog(ch, string.Format("AF On"));
+                }
+                else
+                {
+                    data = 0x40;
+                    Process.AddLog(ch, string.Format("AF Off"));
+                }
+                if (!Dln.WriteArray(ch, AFSlaveAddr, 0x02, new byte[] { data })) return;
+                Process.AddLog(ch, string.Format("Write Mem : 0x{0:X2} AFData : 0x{1:X2}", 0x02, data));
+            }
          
         }
        
