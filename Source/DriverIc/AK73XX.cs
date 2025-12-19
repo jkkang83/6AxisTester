@@ -380,12 +380,6 @@ namespace FZ4P
 
         #endregion
 
-
-
-
-
-
-
         public void OISOn(int ch, string name, bool isOn)
         {
             byte data = 0x00;
@@ -429,7 +423,7 @@ namespace FZ4P
                 }
                 Process.Wait(10);
             }
-            else if(name.Contains("AF"))
+            else if (name.Contains("AF"))
             {
                 if (isOn)
                 {
@@ -442,8 +436,9 @@ namespace FZ4P
                 }
                 if (!Dln.WriteArray(ch, AFSlaveAddr, 0x02, new byte[] { data })) return;
                 Process.AddLog(ch, string.Format("Write Mem : 0x{0:X2} AFData : 0x{1:X2}", 0x02, data));
+                Process.Wait(10);
             }
-         
+
         }
        
       

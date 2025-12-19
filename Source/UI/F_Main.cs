@@ -161,6 +161,7 @@ namespace FZ4P
                 else if(Model.MCType == "Slave") STATIC.TcpConn.connect("192.168.100.2", 5000);
 
             }
+            STATIC.fVision.MyOwner = this;
         }
 
         private void TcpConn_OnStatus(bool isCon)

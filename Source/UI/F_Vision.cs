@@ -6597,7 +6597,7 @@ namespace FZ4P
 
             Mat lCropImg = m__G.oCam[0].GrabLoadCropImg(0, false);
             pictureBox2.Image = BitmapConverter.ToBitmap(lCropImg);    //  Grab & Crop
-            string fileName = m__G.m_RootDirectory + "\\Result\\RawData\\Image\\LastGrab.bmp";
+            string fileName = m__G.m_RootDirectory + "Result\\RawData\\Image\\LastGrab.bmp";
             lCropImg.SaveImage(fileName);     //  Crop & Save
 
             m__G.oCam[0].mFAL.LoadFMICandidate();
