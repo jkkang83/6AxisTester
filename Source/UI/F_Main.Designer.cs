@@ -29,10 +29,10 @@ namespace FZ4P
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(F_Main));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this.SpecGrid = new System.Windows.Forms.DataGridView();
             this.btnApplyTesterNo2 = new System.Windows.Forms.Button();
             this.ModelGroup = new System.Windows.Forms.GroupBox();
@@ -70,9 +70,6 @@ namespace FZ4P
             this.AFPidSetPath = new System.Windows.Forms.RichTextBox();
             this.ConditinGrid = new System.Windows.Forms.DataGridView();
             this.textBox2 = new System.Windows.Forms.TextBox();
-            this.panel2 = new System.Windows.Forms.Panel();
-            this.ToVision = new System.Windows.Forms.Button();
-            this.ToOperator = new System.Windows.Forms.Button();
             this.lblOPName = new System.Windows.Forms.Label();
             this.label16 = new System.Windows.Forms.Label();
             this.OperatorName = new System.Windows.Forms.TextBox();
@@ -92,14 +89,17 @@ namespace FZ4P
             this.SaveCondition = new System.Windows.Forms.Button();
             this.OpenCondition = new System.Windows.Forms.Button();
             this.RecipeFileName = new System.Windows.Forms.TextBox();
+            this.ToOperator = new System.Windows.Forms.Button();
+            this.ToVision = new System.Windows.Forms.Button();
+            this.panel2 = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)(this.SpecGrid)).BeginInit();
             this.ModelGroup.SuspendLayout();
             this.panel4.SuspendLayout();
             this.P_Main.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.RetryGrid)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ConditinGrid)).BeginInit();
-            this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
+            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // SpecGrid
@@ -110,14 +110,14 @@ namespace FZ4P
             this.SpecGrid.AllowUserToResizeRows = false;
             this.SpecGrid.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.SpecGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
-            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle7.Font = new System.Drawing.Font("굴림", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.SpecGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("굴림", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.SpecGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.SpecGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.SpecGrid.Location = new System.Drawing.Point(769, 152);
             this.SpecGrid.Name = "SpecGrid";
@@ -466,14 +466,14 @@ namespace FZ4P
             this.RetryGrid.AllowUserToResizeRows = false;
             this.RetryGrid.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.RetryGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
-            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle8.Font = new System.Drawing.Font("굴림", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            dataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.RetryGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle8;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("굴림", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.RetryGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             this.RetryGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.RetryGrid.Location = new System.Drawing.Point(1246, 610);
             this.RetryGrid.Name = "RetryGrid";
@@ -615,14 +615,14 @@ namespace FZ4P
             this.ConditinGrid.AllowUserToResizeRows = false;
             this.ConditinGrid.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.ConditinGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
-            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle9.Font = new System.Drawing.Font("굴림", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            dataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.ConditinGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle9;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("굴림", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.ConditinGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
             this.ConditinGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.ConditinGrid.Location = new System.Drawing.Point(364, 43);
             this.ConditinGrid.Name = "ConditinGrid";
@@ -646,46 +646,6 @@ namespace FZ4P
             this.textBox2.TabStop = false;
             this.textBox2.Text = "Retry Count";
             this.textBox2.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
-            // panel2
-            // 
-            this.panel2.BackColor = System.Drawing.Color.Silver;
-            this.panel2.Controls.Add(this.ToVision);
-            this.panel2.Controls.Add(this.ToOperator);
-            this.panel2.Location = new System.Drawing.Point(0, 0);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(1907, 42);
-            this.panel2.TabIndex = 32;
-            // 
-            // ToVision
-            // 
-            this.ToVision.BackColor = System.Drawing.Color.DodgerBlue;
-            this.ToVision.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ToVision.BackgroundImage")));
-            this.ToVision.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.ToVision.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Bold);
-            this.ToVision.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.ToVision.Location = new System.Drawing.Point(363, 0);
-            this.ToVision.Name = "ToVision";
-            this.ToVision.Size = new System.Drawing.Size(400, 45);
-            this.ToVision.TabIndex = 68;
-            this.ToVision.Text = "Vision";
-            this.ToVision.UseVisualStyleBackColor = false;
-            this.ToVision.Click += new System.EventHandler(this.ToVision_Click);
-            // 
-            // ToOperator
-            // 
-            this.ToOperator.BackColor = System.Drawing.Color.DeepSkyBlue;
-            this.ToOperator.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ToOperator.BackgroundImage")));
-            this.ToOperator.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.ToOperator.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Bold);
-            this.ToOperator.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.ToOperator.Location = new System.Drawing.Point(0, 0);
-            this.ToOperator.Name = "ToOperator";
-            this.ToOperator.Size = new System.Drawing.Size(357, 45);
-            this.ToOperator.TabIndex = 120;
-            this.ToOperator.Text = "Operator";
-            this.ToOperator.UseVisualStyleBackColor = false;
-            this.ToOperator.Click += new System.EventHandler(this.ToOperator_Click);
             // 
             // lblOPName
             // 
@@ -923,6 +883,46 @@ namespace FZ4P
             this.RecipeFileName.Text = "Recipe File Name";
             this.RecipeFileName.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
+            // ToOperator
+            // 
+            this.ToOperator.BackColor = System.Drawing.Color.DeepSkyBlue;
+            this.ToOperator.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ToOperator.BackgroundImage")));
+            this.ToOperator.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.ToOperator.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Bold);
+            this.ToOperator.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.ToOperator.Location = new System.Drawing.Point(0, 0);
+            this.ToOperator.Name = "ToOperator";
+            this.ToOperator.Size = new System.Drawing.Size(357, 45);
+            this.ToOperator.TabIndex = 120;
+            this.ToOperator.Text = "Operator";
+            this.ToOperator.UseVisualStyleBackColor = false;
+            this.ToOperator.Click += new System.EventHandler(this.ToOperator_Click);
+            // 
+            // ToVision
+            // 
+            this.ToVision.BackColor = System.Drawing.Color.DodgerBlue;
+            this.ToVision.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ToVision.BackgroundImage")));
+            this.ToVision.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.ToVision.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Bold);
+            this.ToVision.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.ToVision.Location = new System.Drawing.Point(363, 0);
+            this.ToVision.Name = "ToVision";
+            this.ToVision.Size = new System.Drawing.Size(400, 45);
+            this.ToVision.TabIndex = 68;
+            this.ToVision.Text = "Vision";
+            this.ToVision.UseVisualStyleBackColor = false;
+            this.ToVision.Click += new System.EventHandler(this.ToVision_Click);
+            // 
+            // panel2
+            // 
+            this.panel2.BackColor = System.Drawing.Color.Silver;
+            this.panel2.Controls.Add(this.ToVision);
+            this.panel2.Controls.Add(this.ToOperator);
+            this.panel2.Location = new System.Drawing.Point(0, 0);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(1907, 42);
+            this.panel2.TabIndex = 32;
+            // 
             // F_Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
@@ -946,7 +946,7 @@ namespace FZ4P
             this.Name = "F_Main";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "6AxisTester_25121801_V30";
+            this.Text = "6AxisTester_25121901_V30";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.F_Main_FormClosing);
             this.Load += new System.EventHandler(this.F_Main_Load);
@@ -959,9 +959,9 @@ namespace FZ4P
             this.P_Main.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.RetryGrid)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ConditinGrid)).EndInit();
-            this.panel2.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
             this.panel3.PerformLayout();
+            this.panel2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -985,9 +985,6 @@ namespace FZ4P
         private System.Windows.Forms.TextBox LotID;
         private System.Windows.Forms.Panel P_Main;
         private System.Windows.Forms.DataGridView ConditinGrid;
-        private System.Windows.Forms.Panel panel2;
-        private System.Windows.Forms.Button ToVision;
-        public System.Windows.Forms.Button ToOperator;
         private System.Windows.Forms.Label lblOPName;
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.TextBox OperatorName;
@@ -1027,6 +1024,9 @@ namespace FZ4P
         private System.Windows.Forms.DataGridView RetryGrid;
         private System.Windows.Forms.TextBox textBox2;
         private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Button ToVision;
+        public System.Windows.Forms.Button ToOperator;
     }
 }
 

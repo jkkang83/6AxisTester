@@ -138,6 +138,8 @@
             this.btnCoverDn = new System.Windows.Forms.Button();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.button2 = new System.Windows.Forms.Button();
+            this.btnPowerOn = new System.Windows.Forms.Button();
+            this.btnPowerOff = new System.Windows.Forms.Button();
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
@@ -1704,12 +1706,44 @@
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click_1);
             // 
+            // btnPowerOn
+            // 
+            this.btnPowerOn.BackColor = System.Drawing.Color.Lavender;
+            this.btnPowerOn.BackgroundImage = global::FZ4P.Properties.Resources.BtnRP;
+            this.btnPowerOn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnPowerOn.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnPowerOn.ForeColor = System.Drawing.Color.White;
+            this.btnPowerOn.Location = new System.Drawing.Point(325, 26);
+            this.btnPowerOn.Name = "btnPowerOn";
+            this.btnPowerOn.Size = new System.Drawing.Size(142, 66);
+            this.btnPowerOn.TabIndex = 449;
+            this.btnPowerOn.Text = "Power on";
+            this.btnPowerOn.UseVisualStyleBackColor = false;
+            this.btnPowerOn.Click += new System.EventHandler(this.btnPowerOn_Click);
+            // 
+            // btnPowerOff
+            // 
+            this.btnPowerOff.BackColor = System.Drawing.Color.MediumBlue;
+            this.btnPowerOff.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnPowerOff.BackgroundImage")));
+            this.btnPowerOff.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnPowerOff.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnPowerOff.ForeColor = System.Drawing.Color.White;
+            this.btnPowerOff.Location = new System.Drawing.Point(325, 98);
+            this.btnPowerOff.Name = "btnPowerOff";
+            this.btnPowerOff.Size = new System.Drawing.Size(142, 66);
+            this.btnPowerOff.TabIndex = 512;
+            this.btnPowerOff.Text = "Power off";
+            this.btnPowerOff.UseVisualStyleBackColor = false;
+            this.btnPowerOff.Click += new System.EventHandler(this.btnPowerOff_Click);
+            // 
             // FVision
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(96)))), ((int)(((byte)(96)))), ((int)(((byte)(100)))));
             this.ClientSize = new System.Drawing.Size(1920, 1018);
             this.ControlBox = false;
+            this.Controls.Add(this.btnPowerOff);
+            this.Controls.Add(this.btnPowerOn);
             this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.groupBox2);
@@ -1921,5 +1955,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.GroupBox groupBox5;
         private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button btnPowerOn;
+        private System.Windows.Forms.Button btnPowerOff;
     }
 }
