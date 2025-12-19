@@ -3739,8 +3739,10 @@ namespace FZ4P
             // X Mem
             Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x3B });
             byte[] xWriteData = new byte[32];
-            //   xWriteData[0] = (byte)(PassFails[ch].Results[(int)SpecItem.OISX_Rolling].Val * 10);
-            xWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.OISX_Ratedstroke].Val / 10);
+           
+            if(PassFails[ch].Results[(int)SpecItem.OISX_Ratedstroke].Val < 770)
+                xWriteData[1] = (byte)((PassFails[ch].Results[(int)SpecItem.OISX_Ratedstroke].Val + 10) / 10);
+            else xWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.OISX_Ratedstroke].Val / 10);
             //xWriteData[2] = 0; //OC
             //xWriteData[3] = 0; //OC
             xWriteData[4] = 0x01;
@@ -3782,7 +3784,10 @@ namespace FZ4P
             Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xAE, new byte[] { 0x3B });
             byte[] yWriteData = new byte[32];
             //  yWriteData[0] = (byte)(PassFails[ch].Results[(int)SpecItem.OISY_Rolling].Val * 10);
-            yWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.OISY_Ratedstroke].Val / 10);
+            if(PassFails[ch].Results[(int)SpecItem.OISY_Ratedstroke].Val < 770)
+                yWriteData[1] = (byte)((PassFails[ch].Results[(int)SpecItem.OISY_Ratedstroke].Val + 10) / 10);
+            else yWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.OISY_Ratedstroke].Val / 10);
+
             //yWriteData[2] = 0; //OC
             //yWriteData[3] = 0; // OC
             yWriteData[4] = 0x01;
@@ -3875,7 +3880,10 @@ namespace FZ4P
 
             // 기존 데이터 입력
             AFWriteData[0] = (byte)res;
-            AFWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val / 4);
+            if(PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val < 770)
+                AFWriteData[1] = (byte)((PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val + 10) / 4);
+            else AFWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val / 4);
+
             AFWriteData[2] = 0x1E;
             AFWriteData[3] = 0x0B;
             AFWriteData[4] = (byte)(Convert.ToInt16(Model.TesterNo) >> 8);
