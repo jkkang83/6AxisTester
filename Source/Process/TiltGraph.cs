@@ -16,6 +16,8 @@ namespace FZ4P
         public Color c { get; set; }
         public bool DrawDot { get; set; }   // 추가
 
+        public bool DrawLine { get; set; }
+
     }
     public sealed class TiltGraph : Control
     {
@@ -52,7 +54,8 @@ namespace FZ4P
                         x = xs[i],
                         y = ys[i],
                         c = c,
-                        DrawDot = false   // 점 표시 안함
+                        DrawDot = false,   // 점 표시 안함
+                        DrawLine = true
                     });
                 }
             }
@@ -69,7 +72,8 @@ namespace FZ4P
                     x = xs,
                     y = ys,
                     c = c,
-                    DrawDot = true   // 점 표시
+                    DrawDot = true,  // 점 표시
+                    DrawLine = false
                 });
             }
             Invalidate();
@@ -215,17 +219,17 @@ namespace FZ4P
                         linePen.StartCap = LineCap.Round;
                         linePen.EndCap = LineCap.Round;
 
-                        PointF[] pts = new PointF[n];
+                        //   PointF[] pts = new PointF[n];
+                        List<PointF> pts = new List<PointF>();
                         for (int i = 0; i < n; i++)
                         {
                             var p = _points[i];
-                            pts[i] = new PointF(
-                                (float)(cx + p.x * unit),
-                                (float)(cy - p.y * unit)
-                            );
+                            if (!p.DrawLine) continue;
+                            pts.Add(new PointF((float)(cx + p.x * unit),
+                                (float)(cy - p.y * unit)));
                         }
 
-                        g.DrawLines(linePen, pts);
+                        g.DrawLines(linePen, pts.ToArray());
                     }
 
                     // 2) 점 그리기 (색별 브러시 재사용)

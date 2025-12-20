@@ -406,7 +406,8 @@ namespace FZ4P
                 }
                 if (camID0 == "")
                 {
-                    MessageBox.Show("Camera ID is not found. Check Camera ID and Restart Application.");
+                    MessageBox.Show("Camera ID is not found. Check Camera Cable and ID \nThen Restart Application.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    System.Diagnostics.Process.GetCurrentProcess().Kill();
                     return;
                 }
                 else

@@ -682,18 +682,24 @@ namespace FZ4P
                             {
                                 tiltChart[ch].BeginInvoke((MethodInvoker)delegate
                                 {
-                                    double[] xs = new double[Cal.CodeZ.Count];
-                                    double[] ys = new double[Cal.CodeZ.Count];
+                                    List<double> xs_List = new List<double>();
+                                    List<double> ys_List = new List<double>();
+
+                                  
 
                                     for (int i = 2; i < Cal.CodeZ.Count; i++)
                                     {
                                         if (Cal.CodeZ[i] >= Condition.TiltMinCode && Cal.CodeZ[i] <= Condition.TiltMaxCode)
                                         {
-                                            xs[i] = Cal.TiltX[i];
-                                            ys[i] = Cal.TiltY[i];
+                                            xs_List.Add(Cal.TiltX[i]);
+                                            ys_List.Add(Cal.TiltY[i]);
+                                            //xs[i] = Cal.TiltX[i];
+                                            //ys[i] = Cal.TiltY[i];
                                              
                                         }
                                     }
+                                    double[] xs = xs_List.ToArray();
+                                    double[] ys = ys_List.ToArray();
                                     tiltChart[ch].SetPoints(xs, ys, Color.Lime);
                                     tiltChart[ch].SetPoint(xs[0], ys[0], Color.LightGray);
                                     tiltChart[ch].SetPoint(xs[xs.Length - 1], ys[ys.Length - 1], Color.LightGray);
