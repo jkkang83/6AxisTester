@@ -151,6 +151,7 @@
             // btnLEDUP
             // 
             this.btnLEDUP.BackColor = System.Drawing.Color.Black;
+            this.btnLEDUP.Enabled = false;
             this.btnLEDUP.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnLEDUP.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold);
             this.btnLEDUP.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
@@ -165,6 +166,7 @@
             // btnLEDDOWN
             // 
             this.btnLEDDOWN.BackColor = System.Drawing.Color.White;
+            this.btnLEDDOWN.Enabled = false;
             this.btnLEDDOWN.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnLEDDOWN.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold);
             this.btnLEDDOWN.ForeColor = System.Drawing.Color.Black;
@@ -204,6 +206,7 @@
             // rbLED1
             // 
             this.rbLED1.AutoSize = true;
+            this.rbLED1.Enabled = false;
             this.rbLED1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.rbLED1.Font = new System.Drawing.Font("Calibri", 10F, System.Drawing.FontStyle.Bold);
             this.rbLED1.ForeColor = System.Drawing.Color.Yellow;
@@ -219,6 +222,7 @@
             // rbLED2
             // 
             this.rbLED2.AutoSize = true;
+            this.rbLED2.Enabled = false;
             this.rbLED2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.rbLED2.Font = new System.Drawing.Font("Calibri", 10F, System.Drawing.FontStyle.Bold);
             this.rbLED2.ForeColor = System.Drawing.Color.Yellow;
@@ -615,6 +619,7 @@
             // tbLedRight
             // 
             this.tbLedRight.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            this.tbLedRight.Enabled = false;
             this.tbLedRight.Location = new System.Drawing.Point(84, 900);
             this.tbLedRight.Name = "tbLedRight";
             this.tbLedRight.Size = new System.Drawing.Size(60, 21);
@@ -624,6 +629,7 @@
             // tbLedLeft
             // 
             this.tbLedLeft.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            this.tbLedLeft.Enabled = false;
             this.tbLedLeft.Location = new System.Drawing.Point(84, 873);
             this.tbLedLeft.Name = "tbLedLeft";
             this.tbLedLeft.Size = new System.Drawing.Size(60, 21);
@@ -1691,18 +1697,18 @@
             this.groupBox5.Font = new System.Drawing.Font("맑은 고딕", 10F, System.Drawing.FontStyle.Bold);
             this.groupBox5.Location = new System.Drawing.Point(316, 891);
             this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(392, 100);
+            this.groupBox5.Size = new System.Drawing.Size(197, 100);
             this.groupBox5.TabIndex = 511;
             this.groupBox5.TabStop = false;
-            this.groupBox5.Text = "Socket / Cover";
+            this.groupBox5.Text = "Center Move";
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(78, 24);
+            this.button2.Location = new System.Drawing.Point(44, 24);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(108, 59);
             this.button2.TabIndex = 0;
-            this.button2.Text = "button2";
+            this.button2.Text = "Move";
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click_1);
             // 

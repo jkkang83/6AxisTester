@@ -1395,6 +1395,7 @@ namespace FZ4P
         //}
         private void btnLEDUP_Click(object sender, EventArgs e)
         {
+            return;
             //m_FocusedLED = 0;
             //MessageBox.Show("Focus Led : " + m_FocusedLED.ToString());
             m__G.mDoingStatus = "Checking Vision";
@@ -1435,7 +1436,7 @@ namespace FZ4P
 
         private void btnLEDDOWN_Click(object sender, EventArgs e)
         {
-
+            return;
             //m_FocusedLED = 0;
             //MessageBox.Show("Focus Led : " + m_FocusedLED.ToString());
             m__G.mDoingStatus = "Checking Vision";
