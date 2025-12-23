@@ -154,22 +154,36 @@ namespace FZ4P
                 DLNi2c[portID] = DLNdevice[i].I2cMaster.Ports[0];
                 DLNgpio[portID] = DLNdevice[i].Gpio;
             }
-            if (STATIC.Rcp.Model.MCType == "Master" || STATIC.Rcp.Model.MCType == "Slave")
+            //if (STATIC.Rcp.Model.MCType == "Master" || STATIC.Rcp.Model.MCType == "Slave")
+            //{
+            //    DLNgpio[2].Pins[9].Enabled = true;
+            //    DLNgpio[2].Pins[9].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+            //    DLNgpio[2].Pins[9].OutputValue = 1;
+            //    DLNgpio[2].Pins[9].PulldownEnabled = true;
+
+            //}
+            //else
+            //{
+            //    DLNgpio[1].Pins[9].Enabled = true;
+            //    DLNgpio[1].Pins[9].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+            //    DLNgpio[1].Pins[9].OutputValue = 1;
+            //    DLNgpio[1].Pins[9].PulldownEnabled = true;
+
+            //}
+
+            if(DLNgpio.Length > 2)
             {
                 DLNgpio[2].Pins[9].Enabled = true;
                 DLNgpio[2].Pins[9].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
                 DLNgpio[2].Pins[9].OutputValue = 1;
                 DLNgpio[2].Pins[9].PulldownEnabled = true;
-
             }
-            else
-            {
-                DLNgpio[1].Pins[9].Enabled = true;
-                DLNgpio[1].Pins[9].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
-                DLNgpio[1].Pins[9].OutputValue = 1;
-                DLNgpio[1].Pins[9].PulldownEnabled = true;
 
-            }
+            DLNgpio[1].Pins[9].Enabled = true;
+            DLNgpio[1].Pins[9].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+            DLNgpio[1].Pins[9].OutputValue = 1;
+            DLNgpio[1].Pins[9].PulldownEnabled = true;
+
 
             DLNgpio[1].Pins[8].ConditionMetThreadSafe += SWEventHandler;
             DLNgpio[1].Pins[8].SetEventConfiguration(Dln.Gpio.EventType.LevelHigh, 50);
@@ -445,30 +459,15 @@ namespace FZ4P
                 {
 
                     STATIC.Process.AddLog(0, $"Power On");
-                    if (STATIC.Rcp.Model.MCType == "Master" || STATIC.Rcp.Model.MCType == "Slave")
-                    {
-                        lock (I2cLock) DLNgpio[2].Pins[9].Direction = 1;
-                    }
-                    else
-                    {
-                        lock (I2cLock) DLNgpio[1].Pins[9].Direction = 1;
-                    }
-                        
-
+                    if (DLNgpio.Length > 2) { lock (I2cLock) DLNgpio[2].Pins[9].Direction = 1; }
+                    lock (I2cLock) DLNgpio[1].Pins[9].Direction = 1;
                 }
                 else
                 {
                     STATIC.Process.AddLog(0, $"Power Off");
-                    if (STATIC.Rcp.Model.MCType == "Master" || STATIC.Rcp.Model.MCType == "Slave")
-                    {
-                        lock (I2cLock) DLNgpio[2].Pins[9].Direction = 0;
-                    }
-                    else
-                    {
-                        lock (I2cLock) DLNgpio[1].Pins[9].Direction = 0;
-                    }
-
-
+                    if (DLNgpio.Length > 2) { lock (I2cLock) DLNgpio[2].Pins[9].Direction = 0; }
+                     
+                    lock (I2cLock) DLNgpio[1].Pins[9].Direction = 0;
 
                 }
             }
