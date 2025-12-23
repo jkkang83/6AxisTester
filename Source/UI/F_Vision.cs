@@ -1395,6 +1395,7 @@ namespace FZ4P
         //}
         private void btnLEDUP_Click(object sender, EventArgs e)
         {
+            return;
             //m_FocusedLED = 0;
             //MessageBox.Show("Focus Led : " + m_FocusedLED.ToString());
             m__G.mDoingStatus = "Checking Vision";
@@ -1435,7 +1436,7 @@ namespace FZ4P
 
         private void btnLEDDOWN_Click(object sender, EventArgs e)
         {
-
+            return;
             //m_FocusedLED = 0;
             //MessageBox.Show("Focus Led : " + m_FocusedLED.ToString());
             m__G.mDoingStatus = "Checking Vision";
@@ -3975,10 +3976,10 @@ namespace FZ4P
             m__G.mFAL.mCandidateIndex = 0;
             ChangeFiducialMark(0);
 
-            pictureBox2.Image = BitmapConverter.ToBitmap(m__G.oCam[0].LoadCropMat(imgIndex));
+            
 
             string strtmp = NthMeasure(imgIndex, ScanName);
-
+            pictureBox2.Image = BitmapConverter.ToBitmap(m__G.oCam[0].LoadCropMat(imgIndex));
             DrawMarkDetected(true);
 
             strtmp += "\r\n" + imgIndex.ToString() + "\t";
@@ -4465,10 +4466,10 @@ namespace FZ4P
                 m__G.oCam[0].mFAL.BackupFMI();
             }
 
-            pictureBox2.Image = BitmapConverter.ToBitmap(m__G.oCam[0].LoadCropMat(imgIndex));
+          
 
             string strtmp = NthMeasure(imgIndex, ScanName);
-
+            pictureBox2.Image = BitmapConverter.ToBitmap(m__G.oCam[0].LoadCropMat(imgIndex));
             DrawMarkDetected(true);
 
             strtmp += "\r\n" + imgIndex.ToString() + "\t";
