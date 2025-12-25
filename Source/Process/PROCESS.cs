@@ -2925,7 +2925,7 @@ namespace FZ4P
                     }
                     else if (PassFails[j].FirstFailIndex < 0)
                     {
-
+                        errMsg[j] = PassFails[j].FirstFail;
                         log += errMsg[j] + ",";
                     }
                     else
@@ -3004,7 +3004,11 @@ namespace FZ4P
                 sw.Close();
 
             }
-            catch (Exception ex) {  MessageBox.Show(ex.ToString()); }
+            catch (Exception ex) 
+            {
+                m_ChannelOn[0] = false;
+                errMsg[0] = "Check the Result File Open!!!";
+            }
         }
         private void Act_ScanCode(int port, string testItem, int InspCnt)
         {

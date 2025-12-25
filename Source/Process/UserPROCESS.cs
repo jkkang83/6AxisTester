@@ -3729,251 +3729,275 @@ namespace FZ4P
         }
         void WriteUserMem(int ch, int res)
         {
-            var now = STATIC.LogDate;
-            var year = now.Year - 2000;
-            var month = now.Month;
-            var day = now.Day;
-            var hour = now.Hour;
-            var minute = now.Minute;
-            var second = now.Second;
-            // X Mem
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x3B });
-            byte[] xWriteData = new byte[32];
-
-            xWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.OISX_Ratedstroke].Val / 10);
-            //xWriteData[2] = 0; //OC
-            //xWriteData[3] = 0; //OC
-            xWriteData[4] = 0x01;
-            xWriteData[5] = (byte)(BestAFPos >> 4);
-            xWriteData[6] = 0;
-            xWriteData[7] = 0;
-            xWriteData[8] = 0;
-            xWriteData[9] = 0;
-            xWriteData[10] = 0;
-            xWriteData[11] = 0;
-            xWriteData[12] = 0;
-            xWriteData[13] = 0;
-            xWriteData[14] = 0;
-            xWriteData[15] = 0;
-            xWriteData[16] = 0;
-            xWriteData[17] = 0;
-            xWriteData[18] = 0;
-            xWriteData[19] = 0;
-            xWriteData[20] = 0;
-            xWriteData[21] = 0;
-            xWriteData[22] = 0;
-            xWriteData[23] = 0;
-            xWriteData[25] = (byte)((byte)(PassFails[ch].Results[(int)SpecItem.FRAX_PhaseMargin].Val) ^ 0x54 ^ 0xF9);
-            xWriteData[26] = (byte)(PassFails[ch].Results[(int)SpecItem.FRAX_Gain10Hz].Val);
-            xWriteData[27] = (byte)RingingXStabilizer;
-            xWriteData[28] = (byte)SinewaveXMaxDiff;
-            xWriteData[29] = (byte)((byte)(PassFails[ch].Results[(int)SpecItem.AF_Tilt].Val * 10) ^ 0x54 ^ 0xFD);
-            xWriteData[30] = (byte)OISPIDVer;
-            xWriteData[31] = 0x33;
-
-            for (int i = 0; i < xWriteData.Length; i++)
+            try
             {
-                int addr = 0xE0 + i;
-                if (addr == 0xF8 || addr == 0xE2 || addr == 0xE3 || addr == 0xE0) continue;
-                DrvIC.AK7326_EEPROM_Writecheck(ch, 0, (byte)addr, xWriteData[i]);
-            }
+                var now = STATIC.LogDate;
+                var year = now.Year - 2000;
+                var month = now.Month;
+                var day = now.Day;
+                var hour = now.Hour;
+                var minute = now.Minute;
+                var second = now.Second;
+                // X Mem
+                Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x3B });
+                byte[] xWriteData = new byte[32];
 
-            //Y Mem
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xAE, new byte[] { 0x3B });
-            byte[] yWriteData = new byte[32];
-            //  yWriteData[0] = (byte)(PassFails[ch].Results[(int)SpecItem.OISY_Rolling].Val * 10);
-            yWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.OISY_Ratedstroke].Val / 10);
+                if (PassFails[ch].Results[(int)SpecItem.OISX_Ratedstroke].Val >= 760 && PassFails[ch].Results[(int)SpecItem.OISX_Ratedstroke].Val <= 770)
+                    xWriteData[1] = (770 / 10);
+                else xWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.OISX_Ratedstroke].Val / 10);
 
-            //yWriteData[2] = 0; //OC
-            //yWriteData[3] = 0; // OC
-            yWriteData[4] = 0x01;
-            yWriteData[5] = (byte)(BestAFPos >> 4);
-            yWriteData[6] = 0;
-            yWriteData[7] = 0;
-            yWriteData[8] = 0;
-            yWriteData[9] = 0;
-            yWriteData[10] = 0;
-            yWriteData[11] = 0;
-            yWriteData[12] = 0;
-            yWriteData[13] = 0;
-            yWriteData[14] = 0;
-            yWriteData[15] = 0;
-            yWriteData[16] = 0;
-            yWriteData[17] = 0;
-            yWriteData[18] = 0;
-            yWriteData[19] = 0;
-            yWriteData[20] = 0;
-            yWriteData[21] = 0;
-            yWriteData[22] = 0;
-            yWriteData[23] = 0;
-            yWriteData[25] = (byte)((byte)(PassFails[ch].Results[(int)SpecItem.FRAY1_PhaseMargin].Val) ^ 0x54 ^ 0xF9);
-            yWriteData[26] = (byte)(PassFails[ch].Results[(int)SpecItem.FRAY1_Gain10Hz].Val);
-            yWriteData[27] = (byte)RingingYStabilizer;
-            yWriteData[28] = (byte)SinewaveYMaxDiff;
-            yWriteData[29] = (byte)((byte)(PassFails[ch].Results[(int)SpecItem.FRAAF_PhaseMargin].Val) ^ 0x54 ^ 0xFD);
-            yWriteData[30] = (byte)OISPIDVer;
+                //xWriteData[2] = 0; //OC
+                //xWriteData[3] = 0; //OC
+                xWriteData[4] = 0x01;
+                xWriteData[5] = (byte)(BestAFPos >> 4);
+                xWriteData[6] = 0;
+                xWriteData[7] = 0;
+                xWriteData[8] = 0;
+                xWriteData[9] = 0;
+                xWriteData[10] = 0;
+                xWriteData[11] = 0;
+                xWriteData[12] = 0;
+                xWriteData[13] = 0;
+                xWriteData[14] = 0;
+                xWriteData[15] = 0;
+                xWriteData[16] = 0;
+                xWriteData[17] = 0;
+                xWriteData[18] = 0;
+                xWriteData[19] = 0;
+                xWriteData[20] = 0;
+                xWriteData[21] = 0;
+                xWriteData[22] = 0;
+                xWriteData[23] = 0;
+                xWriteData[25] = (byte)((byte)(PassFails[ch].Results[(int)SpecItem.FRAX_PhaseMargin].Val) ^ 0x54 ^ 0xF9);
+                xWriteData[26] = (byte)(PassFails[ch].Results[(int)SpecItem.FRAX_Gain10Hz].Val);
+                xWriteData[27] = (byte)RingingXStabilizer;
+                xWriteData[28] = (byte)SinewaveXMaxDiff;
+                xWriteData[29] = (byte)((byte)(PassFails[ch].Results[(int)SpecItem.AF_Tilt].Val * 10) ^ 0x54 ^ 0xFD);
+                xWriteData[30] = (byte)OISPIDVer;
+                xWriteData[31] = 0x33;
 
-
-            for (int i = 0; i < yWriteData.Length; i++)
-            {
-                int addr = 0xE0 + i;
-                if (addr == 0xF8 || addr == 0xFF || addr == 0xE2 || addr == 0xE3 || addr == 0xE0) continue;
-                DrvIC.AK7326_EEPROM_Writecheck(ch, 1, (byte)addr, yWriteData[i]);
-            }
-
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x0 });
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xAE, new byte[] { 0x00 });
-
-            byte[] temp_pm = new byte[3];
-            byte[] decrypt_oispm = new byte[2];
-            byte decrypt_afpm = 0x00;
-            byte[] rbuf = new byte[1];
-            Dln.ReadArray(ch, DrvIC.XSlaveAddr, 0xF9, rbuf);
-            temp_pm[0] = rbuf[0];
-            Dln.ReadArray(ch, DrvIC.Y1SlaveAddr, 0xF9, rbuf);
-            temp_pm[1] = rbuf[0];
-            Dln.ReadArray(ch, DrvIC.Y1SlaveAddr, 0xFD, rbuf);
-            temp_pm[2] = rbuf[0];
-
-            decrypt_oispm[0] = (byte)(temp_pm[0] ^ 0x54 ^ 0xF9);
-            decrypt_oispm[1] = (byte)(temp_pm[1] ^ 0x54 ^ 0xF9);
-            decrypt_afpm = (byte)(temp_pm[2] ^ 0x54 ^ 0xFD);
-            byte[] OISPM = new byte[2] { (byte)(PassFails[ch].Results[(int)SpecItem.FRAX_PhaseMargin].Val),
-                 (byte)(PassFails[ch].Results[(int)SpecItem.FRAY1_PhaseMargin].Val) };
-            byte afPM = (byte)(PassFails[ch].Results[(int)SpecItem.FRAAF_PhaseMargin].Val);
-
-
-            AddLog(ch, $"[ORI]{OISPM[0]}, {OISPM[1]}, {afPM}, [DEC]{decrypt_oispm[0]}, {decrypt_oispm[1]}, {decrypt_afpm}");
-            for (int i = 0; i < 2; i++)
-            {
-                if (OISPM[i] != decrypt_oispm[i])
+                for (int i = 0; i < xWriteData.Length; i++)
                 {
-                    AddLog(ch, $"[OIS Encryption Error] axis:{i}, result_oispm:{OISPM[i]}, decrypt_oispm:{decrypt_oispm[i]}");
+                    int addr = 0xE0 + i;
+                    if (addr == 0xF8 || addr == 0xE2 || addr == 0xE3 || addr == 0xE0) continue;
+                    DrvIC.AK7326_EEPROM_Writecheck(ch, 0, (byte)addr, xWriteData[i]);
+                }
+
+                //Y Mem
+                Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xAE, new byte[] { 0x3B });
+                byte[] yWriteData = new byte[32];
+                //  yWriteData[0] = (byte)(PassFails[ch].Results[(int)SpecItem.OISY_Rolling].Val * 10);
+
+                if (PassFails[ch].Results[(int)SpecItem.OISY_Ratedstroke].Val >= 760 && PassFails[ch].Results[(int)SpecItem.OISY_Ratedstroke].Val <= 770)
+                    yWriteData[1] = 770 / 10;
+                else yWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.OISY_Ratedstroke].Val / 10);
+
+                //yWriteData[2] = 0; //OC
+                //yWriteData[3] = 0; // OC
+                yWriteData[4] = 0x01;
+                yWriteData[5] = (byte)(BestAFPos >> 4);
+                yWriteData[6] = 0;
+                yWriteData[7] = 0;
+                yWriteData[8] = 0;
+                yWriteData[9] = 0;
+                yWriteData[10] = 0;
+                yWriteData[11] = 0;
+                yWriteData[12] = 0;
+                yWriteData[13] = 0;
+                yWriteData[14] = 0;
+                yWriteData[15] = 0;
+                yWriteData[16] = 0;
+                yWriteData[17] = 0;
+                yWriteData[18] = 0;
+                yWriteData[19] = 0;
+                yWriteData[20] = 0;
+                yWriteData[21] = 0;
+                yWriteData[22] = 0;
+                yWriteData[23] = 0;
+                yWriteData[25] = (byte)((byte)(PassFails[ch].Results[(int)SpecItem.FRAY1_PhaseMargin].Val) ^ 0x54 ^ 0xF9);
+                yWriteData[26] = (byte)(PassFails[ch].Results[(int)SpecItem.FRAY1_Gain10Hz].Val);
+                yWriteData[27] = (byte)RingingYStabilizer;
+                yWriteData[28] = (byte)SinewaveYMaxDiff;
+                yWriteData[29] = (byte)((byte)(PassFails[ch].Results[(int)SpecItem.FRAAF_PhaseMargin].Val) ^ 0x54 ^ 0xFD);
+                yWriteData[30] = (byte)OISPIDVer;
+
+
+                for (int i = 0; i < yWriteData.Length; i++)
+                {
+                    int addr = 0xE0 + i;
+                    if (addr == 0xF8 || addr == 0xFF || addr == 0xE2 || addr == 0xE3 || addr == 0xE0) continue;
+                    DrvIC.AK7326_EEPROM_Writecheck(ch, 1, (byte)addr, yWriteData[i]);
+                }
+
+                Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x0 });
+                Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0xAE, new byte[] { 0x00 });
+
+                byte[] temp_pm = new byte[3];
+                byte[] decrypt_oispm = new byte[2];
+                byte decrypt_afpm = 0x00;
+                byte[] rbuf = new byte[1];
+                Dln.ReadArray(ch, DrvIC.XSlaveAddr, 0xF9, rbuf);
+                temp_pm[0] = rbuf[0];
+                Dln.ReadArray(ch, DrvIC.Y1SlaveAddr, 0xF9, rbuf);
+                temp_pm[1] = rbuf[0];
+                Dln.ReadArray(ch, DrvIC.Y1SlaveAddr, 0xFD, rbuf);
+                temp_pm[2] = rbuf[0];
+
+                decrypt_oispm[0] = (byte)(temp_pm[0] ^ 0x54 ^ 0xF9);
+                decrypt_oispm[1] = (byte)(temp_pm[1] ^ 0x54 ^ 0xF9);
+                decrypt_afpm = (byte)(temp_pm[2] ^ 0x54 ^ 0xFD);
+                byte[] OISPM = new byte[2] { (byte)(PassFails[ch].Results[(int)SpecItem.FRAX_PhaseMargin].Val),
+                 (byte)(PassFails[ch].Results[(int)SpecItem.FRAY1_PhaseMargin].Val) };
+                byte afPM = (byte)(PassFails[ch].Results[(int)SpecItem.FRAAF_PhaseMargin].Val);
+
+
+                AddLog(ch, $"[ORI]{OISPM[0]}, {OISPM[1]}, {afPM}, [DEC]{decrypt_oispm[0]}, {decrypt_oispm[1]}, {decrypt_afpm}");
+                for (int i = 0; i < 2; i++)
+                {
+                    if (OISPM[i] != decrypt_oispm[i])
+                    {
+                        AddLog(ch, $"[OIS Encryption Error] axis:{i}, result_oispm:{OISPM[i]}, decrypt_oispm:{decrypt_oispm[i]}");
+                        res = 0x09;
+                    }
+                }
+                if (afPM != decrypt_afpm)
+                {
+                    AddLog(ch, $"[AF Encryption Error]result_afpm:{afPM}, decrypt_afpm:{decrypt_afpm}");
                     res = 0x09;
                 }
-            }
-            if (afPM != decrypt_afpm)
-            {
-                AddLog(ch, $"[AF Encryption Error]result_afpm:{afPM}, decrypt_afpm:{decrypt_afpm}");
-                res = 0x09;
-            }
 
-            Dln.ReadArray(ch, DrvIC.XSlaveAddr, 0xE4, rbuf);
-            byte xShift = rbuf[0];
-            Dln.ReadArray(ch, DrvIC.Y1SlaveAddr, 0xE4, rbuf);
-            byte yShift = rbuf[0];
-            if(xShift != 1 && yShift != 1)
-            {
-                AddLog(ch, $" Test result : Fail! X_Shift_Flag : {xShift} , Y_Shift_Flag : {yShift}");
-                res = 0x09;
+                Dln.ReadArray(ch, DrvIC.XSlaveAddr, 0xE4, rbuf);
+                byte xShift = rbuf[0];
+                Dln.ReadArray(ch, DrvIC.Y1SlaveAddr, 0xE4, rbuf);
+                byte yShift = rbuf[0];
+                if (xShift != 1 && yShift != 1)
+                {
+                    AddLog(ch, $" Test result : Fail! X_Shift_Flag : {xShift} , Y_Shift_Flag : {yShift}");
+                    res = 0x09;
+                }
+                //AF Mem
+                Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xAE, new byte[] { 0x3B });
+
+
+                byte[] AFWriteAddr = new byte[] { 0xF0, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0xFB };
+                byte[] AFWriteData = new byte[AFWriteAddr.Length];
+
+                // 기존 데이터 입력
+                AFWriteData[0] = (byte)res;
+                if (PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val >= 760 && PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val <= 770)
+                    AFWriteData[1] = 770 / 4;
+                else AFWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val / 4);
+
+                AFWriteData[2] = 0x1E;
+                AFWriteData[3] = 0x0B;
+                AFWriteData[4] = (byte)(Convert.ToInt16(Model.TesterNo) >> 8);
+                AFWriteData[5] = (byte)Convert.ToInt16(Model.TesterNo);
+                // 0xF7: 년(6bit) | 월(상위2bit)
+                AFWriteData[6] = (byte)(((year & 0x3F) << 2) | ((month >> 2) & 0x03));
+                // 0xF8: 월(하위2bit) | 일(5bit) | 시간(1bit)
+                AFWriteData[7] = (byte)(((month & 0x03) << 6) | ((day & 0x1F) << 1) | ((hour >> 4) & 0x01));
+                // 0xF9: 시간(하위4bit) | 분(상위4bit)
+                AFWriteData[8] = (byte)(((hour & 0x0F) << 4) | ((minute >> 2) & 0x0F));
+                // 0xFA: 분(하위2bit) | 초(6bit)
+                AFWriteData[9] = (byte)(((minute & 0x03) << 6) | (second & 0x3F));
+                AFWriteData[10] = (byte)AFPIDVer;
+
+                for (int i = 0; i < AFWriteAddr.Length; i++)
+                {
+                    DrvIC.AK7314_EEPROM_Writecheck(ch, AFWriteAddr[i], AFWriteData[i]);
+
+                }
+                Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xAE, new byte[] { 0x00 });
+
+                Dln.PowerSequence(ch);
+                AK7314_ICReset(ch);
+                Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 });
+                Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 });
+
+                for (int i = 0; i < 7; i++)
+                {
+                    Dln.ReadArray(ch, DrvIC.AFSlaveAddr, 0xF4 + i, rbuf);
+                    STATIC.ActID += $"{rbuf[0].ToString("X2")}";
+                }
+
+                byte[] xCheckData = new byte[32];
+                byte[] yCheckData = new byte[32];
+                byte[] afCheckData = new byte[AFWriteAddr.Length];
+
+
+
+                AddLog(ch, "X Nvm Data Check");
+
+                for (int i = 0; i < xCheckData.Length; i++)
+                {
+                    int addr = 0xE0 + i;
+                    if (addr == 0xF8 || addr == 0xE2 || addr == 0xE3 || addr == 0xE0) continue;
+                    Dln.ReadArray(ch, DrvIC.XSlaveAddr, addr, rbuf);
+                    AddLog(ch, $"Addr : 0x{addr.ToString("X2")}, WData : 0x{xWriteData[i].ToString("X2")}, RData : 0x{rbuf[0].ToString("X2")}");
+                    if (xWriteData[i] != rbuf[0])
+                    {
+                        if (PassFails[ch].FirstFailIndex == 0)
+                        {
+                            AddLog(ch, "NVM Verify NG");
+                            PassFails[ch].Results[(int)SpecItem.OISPIDVerifyRes].Val = 1;
+                            ShowDataResults(ch, (int)SpecItem.OISPIDVerifyRes, (int)SpecItem.OISPIDVerifyRes, InspType.Normal, new double[] { });
+
+                        }
+
+
+                    }
+                }
+
+                AddLog(ch, "Y Nvm Data Check");
+                for (int i = 0; i < yCheckData.Length; i++)
+                {
+                    int addr = 0xE0 + i;
+                    if (addr == 0xF8 || addr == 0xFF || addr == 0xE2 || addr == 0xE3 || addr == 0xE0) continue;
+                    Dln.ReadArray(ch, DrvIC.Y1SlaveAddr, addr, rbuf);
+                    AddLog(ch, $"Addr : 0x{addr.ToString("X2")}, WData : 0x{yWriteData[i].ToString("X2")}, RData : 0x{rbuf[0].ToString("X2")}");
+                    if (yWriteData[i] != rbuf[0])
+                    {
+                        if (PassFails[ch].FirstFailIndex == 0)
+                        {
+                            AddLog(ch, "NVM Verify NG");
+                            PassFails[ch].Results[(int)SpecItem.OISPIDVerifyRes].Val = 1;
+                            ShowDataResults(ch, (int)SpecItem.OISPIDVerifyRes, (int)SpecItem.OISPIDVerifyRes, InspType.Normal, new double[] { });
+
+                        }
+
+                    }
+                }
+
+                AddLog(ch, "AF Nvm Data Check");
+                for (int i = 0; i < afCheckData.Length; i++)
+                {
+                    Dln.ReadArray(ch, DrvIC.AFSlaveAddr, AFWriteAddr[i], rbuf);
+                    AddLog(ch, $"Addr : 0x{AFWriteAddr[i].ToString("X2")}, WData : 0x{AFWriteData[i].ToString("X2")}, RData : 0x{rbuf[0].ToString("X2")}");
+                    if (AFWriteData[i] != rbuf[0])
+                    {
+                        if (PassFails[ch].FirstFailIndex == 0)
+                        {
+                            AddLog(ch, "NVM Verify NG");
+                            PassFails[ch].Results[(int)SpecItem.AFPIDVerifyRes].Val = 1;
+                            ShowDataResults(ch, (int)SpecItem.AFPIDVerifyRes, (int)SpecItem.AFPIDVerifyRes, InspType.Normal, new double[] { });
+
+                        }
+
+                    }
+                }
             }
-            //AF Mem
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xAE, new byte[] { 0x3B });
+            catch(Exception ex)
+            {
+
+                if (m_ChannelOn[ch] && PassFails[0].FirstFailIndex == 0)
+                {
+                    m_ChannelOn[ch] = false;
+                    PassFails[0].FirstFailIndex = -999;
+                    PassFails[0].FirstFail = "Check UserMem Setting";
+                }
            
-
-            byte[] AFWriteAddr = new byte[] { 0xF0, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0xFB };
-            byte[] AFWriteData = new byte[AFWriteAddr.Length];
-
-            // 기존 데이터 입력
-            AFWriteData[0] = (byte)res;
-            AFWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val / 4);
-            AFWriteData[2] = 0x1E;
-            AFWriteData[3] = 0x0B;
-            AFWriteData[4] = (byte)(Convert.ToInt16(Model.TesterNo) >> 8);
-            AFWriteData[5] = (byte)Convert.ToInt16(Model.TesterNo);
-            // 0xF7: 년(6bit) | 월(상위2bit)
-            AFWriteData[6] = (byte)(((year & 0x3F) << 2) | ((month >> 2) & 0x03));
-            // 0xF8: 월(하위2bit) | 일(5bit) | 시간(1bit)
-            AFWriteData[7] = (byte)(((month & 0x03) << 6) | ((day & 0x1F) << 1) | ((hour >> 4) & 0x01));
-            // 0xF9: 시간(하위4bit) | 분(상위4bit)
-            AFWriteData[8] = (byte)(((hour & 0x0F) << 4) | ((minute >> 2) & 0x0F));
-            // 0xFA: 분(하위2bit) | 초(6bit)
-            AFWriteData[9] = (byte)(((minute & 0x03) << 6) | (second & 0x3F));
-            AFWriteData[10] = (byte)AFPIDVer;
-
-            for (int i = 0; i < AFWriteAddr.Length; i++)
-            {
-                DrvIC.AK7314_EEPROM_Writecheck(ch, AFWriteAddr[i], AFWriteData[i]);
-               
-            }
-            Dln.WriteArray(ch, DrvIC.AFSlaveAddr, 0xAE, new byte[] { 0x00 });
-
-            Dln.PowerSequence(ch);
-            AK7314_ICReset(ch);
-            Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0x02, new byte[] { 0x40 });
-            Dln.WriteArray(ch, DrvIC.Y1SlaveAddr, 0x02, new byte[] { 0x40 });
-
-            for (int i = 0; i < 7; i++)
-            {
-                Dln.ReadArray(ch, DrvIC.AFSlaveAddr, 0xF4 + i, rbuf);
-                STATIC.ActID += $"{rbuf[0].ToString("X2")}";
             }
 
-            byte[] xCheckData = new byte[32];
-            byte[] yCheckData = new byte[32];
-            byte[] afCheckData = new byte[AFWriteAddr.Length];
-
-           
-
-            AddLog(ch, "X Nvm Data Check");
-            
-            for (int i = 0; i < xCheckData.Length; i++)
-            {
-                int addr = 0xE0 + i;
-                if (addr == 0xF8 || addr == 0xE2 || addr == 0xE3 || addr == 0xE0) continue;
-                Dln.ReadArray(ch, DrvIC.XSlaveAddr, addr, rbuf);
-                AddLog(ch, $"Addr : 0x{addr.ToString("X2")}, WData : 0x{xWriteData[i].ToString("X2")}, RData : 0x{rbuf[0].ToString("X2")}");
-                if (xWriteData[i] != rbuf[0])
-                {
-                    if (PassFails[ch].FirstFailIndex == 0)
-                    {
-                        AddLog(ch, "NVM Verify NG");
-                        PassFails[ch].Results[(int)SpecItem.OISPIDVerifyRes].Val = 1;
-                        ShowDataResults(ch, (int)SpecItem.OISPIDVerifyRes, (int)SpecItem.OISPIDVerifyRes, InspType.Normal, new double[] { });
-
-                    }
-
-
-                }
-            }
-
-            AddLog(ch, "Y Nvm Data Check");
-            for (int i = 0; i < yCheckData.Length; i++)
-            {
-                int addr = 0xE0 + i;
-                if (addr == 0xF8 || addr == 0xFF || addr == 0xE2 || addr == 0xE3 || addr == 0xE0) continue;
-                Dln.ReadArray(ch, DrvIC.Y1SlaveAddr, addr, rbuf);
-                AddLog(ch, $"Addr : 0x{addr.ToString("X2")}, WData : 0x{yWriteData[i].ToString("X2")}, RData : 0x{rbuf[0].ToString("X2")}");
-                if (yWriteData[i] != rbuf[0])
-                {
-                    if (PassFails[ch].FirstFailIndex == 0)
-                    {
-                        AddLog(ch, "NVM Verify NG");
-                        PassFails[ch].Results[(int)SpecItem.OISPIDVerifyRes].Val = 1;
-                        ShowDataResults(ch, (int)SpecItem.OISPIDVerifyRes, (int)SpecItem.OISPIDVerifyRes, InspType.Normal, new double[] { });
-
-                    }
-
-                }
-            }
-
-            AddLog(ch, "AF Nvm Data Check");
-            for (int i = 0; i < afCheckData.Length; i++)
-            {
-                Dln.ReadArray(ch, DrvIC.AFSlaveAddr, AFWriteAddr[i], rbuf);
-                AddLog(ch, $"Addr : 0x{AFWriteAddr[i].ToString("X2")}, WData : 0x{AFWriteData[i].ToString("X2")}, RData : 0x{rbuf[0].ToString("X2")}");
-                if (AFWriteData[i] != rbuf[0])
-                {
-                    if (PassFails[ch].FirstFailIndex == 0)
-                    {
-                        AddLog(ch, "NVM Verify NG");
-                        PassFails[ch].Results[(int)SpecItem.AFPIDVerifyRes].Val = 1;
-                        ShowDataResults(ch, (int)SpecItem.AFPIDVerifyRes, (int)SpecItem.AFPIDVerifyRes, InspType.Normal, new double[] { });
-
-                    }
-
-                }
-            }
 
         }
 
