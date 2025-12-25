@@ -2925,7 +2925,7 @@ namespace FZ4P
                     }
                     else if (PassFails[j].FirstFailIndex < 0)
                     {
-
+                        errMsg[j] = PassFails[j].FirstFail;
                         log += errMsg[j] + ",";
                     }
                     else
@@ -3004,7 +3004,33 @@ namespace FZ4P
                 sw.Close();
 
             }
-            catch (Exception ex) {  MessageBox.Show(ex.ToString()); }
+            catch (Exception ex) 
+            {
+                Form f = Application.OpenForms["F_Main"];
+
+                if (f != null)
+                {
+                    if (f.InvokeRequired)
+                    {
+                        f.BeginInvoke(new Action(() =>
+                            MessageBox.Show(f, ex.ToString(), "Error",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error)));
+                    }
+                    else
+                    {
+                        MessageBox.Show(f, ex.ToString(), "Error",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else
+                {
+                    // 메인폼을 못 찾았을 때 (owner 없이 표시)
+                    MessageBox.Show(ex.ToString(), "Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                m_ChannelOn[0] = false;
+                errMsg[0] = "Check the Result File Open!!!";
+            }
         }
         private void Act_ScanCode(int port, string testItem, int InspCnt)
         {

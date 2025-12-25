@@ -1640,5 +1640,14 @@ namespace FZ4P
             }
             DataIO.SerializeToXMLFile(Rcp.RetryCnt, STATIC.RetryCountDir);
         }
+
+        private void TesterNo_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!(char.IsDigit(e.KeyChar) || e.KeyChar == Convert.ToChar(Keys.Back)))
+            {
+                e.Handled = true;
+            }
+      
+        }
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,6 +37,34 @@ namespace FZ4P
         {
             if (!Init()) return;
         }
+
+        public void SetError(string s)
+        {
+
+            if (STATIC.Rcp.Model.MCType == "Handler")
+            {
+                STATIC.TcpConn.SendMessage("Disconnected");
+                STATIC.TcpConn.disconnect();
+            }
+
+            Form f = Application.OpenForms["F_Main"];
+
+            if (f != null)
+            {
+                MessageBox.Show(f, s, "Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                System.Diagnostics.Process.GetCurrentProcess().Kill();
+            }
+            else
+            {
+                // 메인폼을 못 찾았을 때 (owner 없이 표시)
+                MessageBox.Show(s, "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                System.Diagnostics.Process.GetCurrentProcess().Kill();
+            }
+           
+        }
+
         public bool Init()
         {
             try
@@ -292,11 +321,11 @@ namespace FZ4P
             }
             catch
             {
-                STATIC.TcpConn.SendMessage("Disconnected");
-                STATIC.TcpConn.disconnect();
-                Form f = Application.OpenForms["F_Main"];
-                MessageBox.Show(f, "Load Socket I2C NG", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);//STATIC.Process.AddLog(0, $"I2C Disconnected");
-                System.Diagnostics.Process.GetCurrentProcess().Kill();
+               
+                SetError("Load Socket I2C NG");
+                //Form f = Application.OpenForms["F_Main"];
+                //MessageBox.Show(f, "Load Socket I2C NG", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);//STATIC.Process.AddLog(0, $"I2C Disconnected");
+                //System.Diagnostics.Process.GetCurrentProcess().Kill();
                 //Init();
             }
 
@@ -313,9 +342,10 @@ namespace FZ4P
                     DLNgpio[1].Pins[20].OutputValue = 1;
                 }
             }
-            catch { STATIC.TcpConn.SendMessage("Disconnected"); STATIC.TcpConn.disconnect();
-                Form f = Application.OpenForms["F_Main"];
-                MessageBox.Show(f, "Unload Socket I2C NG", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); System.Diagnostics.Process.GetCurrentProcess().Kill(); }
+            catch 
+            {
+                SetError("Unload Socket I2C NG");
+            }
            
 
         }
@@ -332,9 +362,11 @@ namespace FZ4P
 
                 }
             }
-            catch { STATIC.TcpConn.SendMessage("Disconnected"); STATIC.TcpConn.disconnect();
-                Form f = Application.OpenForms["F_Main"];
-                MessageBox.Show(f, "Cover Dn I2C NG", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); System.Diagnostics.Process.GetCurrentProcess().Kill(); }
+            catch
+            {
+                SetError("Cover Dn I2C NG");
+             
+            }
            
 
         }
@@ -349,9 +381,11 @@ namespace FZ4P
                     DLNgpio[1].Pins[21].OutputValue = 1;
                 }
             }
-            catch { STATIC.TcpConn.SendMessage("Disconnected"); STATIC.TcpConn.disconnect();
-                Form f = Application.OpenForms["F_Main"];
-                MessageBox.Show(f, "Cover Up NG", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); System.Diagnostics.Process.GetCurrentProcess().Kill(); }
+            catch
+            {
+                SetError("Cover Up NG");
+              
+            }
           
 
         }
@@ -441,11 +475,8 @@ namespace FZ4P
                 }
                 catch
                 {
-                    STATIC.TcpConn.SendMessage("Disconnected");
-                    STATIC.TcpConn.disconnect();
-                    Form f = Application.OpenForms["F_Main"];
-                    MessageBox.Show(f, "Fail to LED Power :: Please Check USB Cable", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    System.Diagnostics.Process.GetCurrentProcess().Kill();
+                    SetError("Fail to LED Power :: Please Check USB Cable");
+                  
                     m_bOccupied = false;
                 }
                 m_bOccupied = false;
@@ -471,9 +502,11 @@ namespace FZ4P
 
                 }
             }
-            catch { STATIC.TcpConn.SendMessage("Disconnected"); STATIC.TcpConn.disconnect();
-                Form f = Application.OpenForms["F_Main"];
-                MessageBox.Show(f, "Power On Off I2C NG", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); System.Diagnostics.Process.GetCurrentProcess().Kill(); }
+            catch
+            {
+                SetError("Power On Off I2C NG");
+              
+            }
             
         }
 
@@ -501,9 +534,11 @@ namespace FZ4P
             catch
             {
                 STATIC.I2CFailcnt++;
-                if (STATIC.I2CFailcnt > 20) { STATIC.TcpConn.SendMessage("Disconnected"); STATIC.TcpConn.disconnect();
-                    Form f = Application.OpenForms["F_Main"];
-                    MessageBox.Show(f, "Get Current NG", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); System.Diagnostics.Process.GetCurrentProcess().Kill(); }
+                if (STATIC.I2CFailcnt > 20)
+                {
+                    SetError("Get Current NG");
+                   
+                }
                 return 0;
             }
             return res;
@@ -525,9 +560,11 @@ namespace FZ4P
             catch
             {
                 STATIC.I2CFailcnt++;
-                if (STATIC.I2CFailcnt > 20) { STATIC.TcpConn.SendMessage("Disconnected"); STATIC.TcpConn.disconnect();
-                    Form f = Application.OpenForms["F_Main"];
-                    MessageBox.Show(f, "Dln WriteFail", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); System.Diagnostics.Process.GetCurrentProcess().Kill(); }
+                if (STATIC.I2CFailcnt > 20)
+                {
+                    SetError("Dln WriteFail");
+                    
+                }
                 return false;
             }
         }
@@ -548,9 +585,11 @@ namespace FZ4P
             catch
             {
                 STATIC.I2CFailcnt++;
-                if (STATIC.I2CFailcnt > 20) { STATIC.TcpConn.SendMessage("Disconnected"); STATIC.TcpConn.disconnect();
-                    Form f = Application.OpenForms["F_Main"];
-                    MessageBox.Show(f, "Dln ReadFail", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); System.Diagnostics.Process.GetCurrentProcess().Kill(); }
+                if (STATIC.I2CFailcnt > 20)
+                {
+                    SetError("Dln ReadFail");
+                    
+                }
                 return false;
             }
         }
@@ -560,19 +599,25 @@ namespace FZ4P
             {
                 if (isOn)
                 {
-                    DLNgpio[1].Pins[12].Enabled = true;
-                    DLNgpio[1].Pins[12].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
-                    DLNgpio[1].Pins[12].PulldownEnabled = true;
-                    DLNgpio[1].Pins[13].Enabled = true;
-                    DLNgpio[1].Pins[13].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
-                    DLNgpio[1].Pins[13].PulldownEnabled = true;
+                    lock(I2cLock)
+                    {
+                        DLNgpio[1].Pins[12].Enabled = true;
+                        DLNgpio[1].Pins[12].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+                        DLNgpio[1].Pins[12].PulldownEnabled = true;
+                        DLNgpio[1].Pins[13].Enabled = true;
+                        DLNgpio[1].Pins[13].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+                        DLNgpio[1].Pins[13].PulldownEnabled = true;
+
+                    }
 
                 }
 
             }
-            catch { STATIC.TcpConn.SendMessage("Disconnected"); STATIC.TcpConn.disconnect();
-                Form f = Application.OpenForms["F_Main"];
-                MessageBox.Show(f, "Socket Sensor I2C NG", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); System.Diagnostics.Process.GetCurrentProcess().Kill(); }
+            catch
+            {
+                SetError("Socket Sensor I2C NG");
+              
+            }
         }
         public bool GetGpioStatus(int input)
         {
@@ -585,9 +630,12 @@ namespace FZ4P
                     else return false;
                 }
             }
-            catch { STATIC.TcpConn.SendMessage("Disconnected"); STATIC.TcpConn.disconnect();
-                Form f = Application.OpenForms["F_Main"];
-                MessageBox.Show(f, "Socket Sensor I2C NG", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); System.Diagnostics.Process.GetCurrentProcess().Kill(); return false; }
+            catch
+            {
+                SetError("Socket Sensor I2C NG");
+              
+                return false; 
+            }
 
         }
 
