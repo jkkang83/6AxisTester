@@ -32,7 +32,7 @@ namespace FZ4P
         private bool IsSwitch = false;
         public bool m_bOccupied = false;
         public bool[] IsLoad = new bool[2] { false, false };
-        object I2cLock = new object();
+        object I2cLock = new object(); 
         public DLN()
         {
             if (!Init()) return;
