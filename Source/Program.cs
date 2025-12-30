@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FZ4P.Bootstrapper;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -22,6 +23,7 @@ namespace FZ4P
             {
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
+                IAppBootStrapper bootstrapper= new 
                 Application.Run(new F_Main());
 
                 mutex.ReleaseMutex();

@@ -132,6 +132,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bootstrapper\DefaultAppBootStrapper.cs" />
+    <Compile Include="Bootstrapper\IAppBootStrapper.cs" />
     <Compile Include="DriverIc\DLN\DLNPowerOnOffLogic.cs" />
     <Compile Include="DriverIc\DLN\DLNPowerSequenceLogic.cs" />
     <Compile Include="DriverIc\DLN\DLNReadLogic.cs" />
