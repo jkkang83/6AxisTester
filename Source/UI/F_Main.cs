@@ -1,4 +1,5 @@
 ﻿
+using FZ4P.Helper;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -33,12 +34,12 @@ namespace FZ4P
             {
                 Task.Factory.StartNew(() =>
                 {
-                    Application.Run(STATIC.fStart);
+                    Application.Run(STATIC.FStart);
                 });
 
                 InitializeComponent();
 
-                STATIC.fStart.Log("Program Start !!");
+                STATIC.FStart.Log("Program Start !!");
                 STATIC.StateChange += Form_StateChange;
 
                 m__G = Global.GetInstance();
@@ -52,7 +53,7 @@ namespace FZ4P
         {
             switch (STATIC.State)
             {
-                case (int)STATIC.STATE.Manage:
+                case (int)STATE.Manage:
                     P_Main.Hide();
                     P_Manager.Location = new Point(0, 0);
                     P_Manager.Size = new Size(1920, 1080);
@@ -60,9 +61,9 @@ namespace FZ4P
                     P_Vision.Location = new Point(59, 1026);
                     P_Vision.Size = new Size(50, 31);
                     P_Vision.Hide();
-                    STATIC.fManage.BindingUIModel(this.Text);
+                    STATIC.FManage.BindingUIModel(this.Text);
                     break;
-                case (int)STATIC.STATE.Main:
+                case (int)STATE.Main:
                     //InitCondition();
                     //InitDataSpec();
                     F_Password fpw = new F_Password();
@@ -79,7 +80,7 @@ namespace FZ4P
                     }
                     else { }
                     break;
-                case (int)STATIC.STATE.Vision:
+                case (int)STATE.Vision:
                     P_Main.Hide();
                     P_Vision.Location = new Point(0, 0);
                     P_Vision.Size = new Size(1920, 1080);
@@ -89,7 +90,7 @@ namespace FZ4P
         }
         private void F_Main_Load(object sender, EventArgs e)
         {
-            List<Form> fList = new List<Form>() { STATIC.fManage, STATIC.fVision };
+            List<Form> fList = new List<Form>() { STATIC.FManage, STATIC.FVision };
             for (int i = 0; i < fList.Count; i++)
             {
                 fList[i].TopLevel = false;
@@ -97,16 +98,16 @@ namespace FZ4P
                 fList[i].FormBorderStyle = FormBorderStyle.None;
             }
 
-            P_Manager.Controls.Add(STATIC.fManage);
-            P_Vision.Controls.Add(STATIC.fVision);
+            P_Manager.Controls.Add(STATIC.FManage);
+            P_Vision.Controls.Add(STATIC.FVision);
 
-            STATIC.fStart.Log("Vision Initial Prossess..");
+            STATIC.FStart.Log("Vision Initial Prossess..");
             if (!Process.IsVirtual)
             {
                 m__G.Initial_Vision(2);  //  SOLIOS = 1, RADIENT = 2, ...
-                STATIC.fVision.Show();
+                STATIC.FVision.Show();
             }
-            STATIC.fManage.Show();
+            STATIC.FManage.Show();
 
             InitCondition();
 
@@ -122,34 +123,34 @@ namespace FZ4P
 
             LoadLastModelFileList();
 
-            if (!Process.IsVirtual) Task.WaitAll(Task.Factory.StartNew(() => { while (!STATIC.fVision.mLoaded) { Thread.Sleep(100); } }));
+            if (!Process.IsVirtual) Task.WaitAll(Task.Factory.StartNew(() => { while (!STATIC.FVision.mLoaded) { Thread.Sleep(100); } }));
 
-            STATIC.fStart.Log("Vision Initial Complete.");
+            STATIC.FStart.Log("Vision Initial Complete.");
 
             if (!Process.IsVirtual)
             {
-                STATIC.fVision.BufferInit();
+                STATIC.FVision.BufferInit();
 
-                STATIC.fVision.StartLive();
+                STATIC.FVision.StartLive();
 
                 Thread.Sleep(100);
 
-                STATIC.fVision.GrabHalt();
+                STATIC.FVision.GrabHalt();
 
             }
 
-            STATIC.State = (int)STATIC.STATE.Manage;
+            STATIC.State = (int)STATE.Manage;
 
             if (!Process.IsVirtual)
             {
-                STATIC.fVision.SetExposure(0, STATIC.Rcp.vsFile.Exposure);
+                STATIC.FVision.SetExposure(0, STATIC.Rcp.vsFile.Exposure);
                 //STATIC.fVision.SetRawGainNGamma(STATIC.Rcp.vsFile.RawGain, STATIC.Rcp.vsFile.Gamma);
                 //STATIC.fVision.SetExposure(0, STATIC.Rcp.vsFile.Exposure);
                 //STATIC.fVision.SetRawGainNGamma(STATIC.Rcp.vsFile.RawGain, STATIC.Rcp.vsFile.Gamma);
 
 
             }
-            STATIC.fStart.Invoke(new MethodInvoker(STATIC.fStart.Close));
+            STATIC.FStart.Invoke(new MethodInvoker(STATIC.FStart.Close));
 
 
             if(Model.MCType != "Normal")
@@ -161,12 +162,12 @@ namespace FZ4P
                 else if(Model.MCType == "Slave") STATIC.TcpConn.connect("192.168.100.2", 5000);
 
             }
-            STATIC.fVision.MyOwner = this;
+            STATIC.FVision.MyOwner = this;
         }
 
         private void TcpConn_OnStatus(bool isCon)
         {
-            STATIC.fManage.SetConStatus(isCon);
+            STATIC.FManage.SetConStatus(isCon);
         }
         object ReceiveLock = new object();
         object resetlock = new object();
@@ -181,11 +182,11 @@ namespace FZ4P
 
                         string[] split = data[j].Split('.');
                         
-                        STATIC.fManage.SetInforViewOnComm(split[1]);
+                        STATIC.FManage.SetInforViewOnComm(split[1]);
                     }
                     else if (data[j].Contains("Clear"))
                     {
-                        STATIC.fManage.SafeControlViewOnComm();
+                        STATIC.FManage.SafeControlViewOnComm();
                     }
                     else if (data[j].Contains("Home"))
                     {
@@ -236,7 +237,7 @@ namespace FZ4P
                 lbxModelFiles.Items.Add(filename);
             }
             lbxModelFiles.SelectedIndex = eachLine.Length - 1;
-            STATIC.fVision.SetModelFileList(lPreparedModelFile.ToArray());
+            STATIC.FVision.SetModelFileList(lPreparedModelFile.ToArray());
             bLoadLastModelFile = false;
             return true;
         }
@@ -244,9 +245,9 @@ namespace FZ4P
         private void F_Main_FormClosing(object sender, FormClosingEventArgs e)
         {
 
-            DataIO.SerializeToXMLFile(STATIC.Rcp.yield, STATIC.YieldPath);
-            DataIO.SerializeToXMLFile(Spec, STATIC.SpecDir + Current.SpecName);
-            DataIO.SerializeToXMLFile(STATIC.Rcp.tt, STATIC.TestTimeDir);
+            DataIO.SerializeToXMLFile(STATIC.Rcp.yield, STATIC.appPath.YieldPath);
+            DataIO.SerializeToXMLFile(Spec, STATIC.appPath.SpecDir + Current.SpecName);
+            DataIO.SerializeToXMLFile(STATIC.Rcp.tt, STATIC.appPath.TestTimeDir);
             if (!Process.IsVirtual)
             {
                 Process.LEDs_All_On(0, false);
@@ -580,10 +581,10 @@ namespace FZ4P
                 }
             }
 
-            STATIC.fVision.SetExposure(0, STATIC.Rcp.vsFile.Exposure);
-            STATIC.fVision.SetRawGainNGamma(STATIC.Rcp.vsFile.RawGain, STATIC.Rcp.vsFile.Gamma);
-            STATIC.fVision.SetExposure(0, STATIC.Rcp.vsFile.Exposure);
-            STATIC.fVision.SetRawGainNGamma(STATIC.Rcp.vsFile.RawGain, STATIC.Rcp.vsFile.Gamma);
+            STATIC.FVision.SetExposure(0, STATIC.Rcp.vsFile.Exposure);
+            STATIC.FVision.SetRawGainNGamma(STATIC.Rcp.vsFile.RawGain, STATIC.Rcp.vsFile.Gamma);
+            STATIC.FVision.SetExposure(0, STATIC.Rcp.vsFile.Exposure);
+            STATIC.FVision.SetRawGainNGamma(STATIC.Rcp.vsFile.RawGain, STATIC.Rcp.vsFile.Gamma);
 
         }
         public List<CheckBox> ListChk = new List<CheckBox>();
@@ -636,7 +637,7 @@ namespace FZ4P
         }
         private void ToOperator_Click(object sender, EventArgs e)
         {
-            STATIC.State = (int)STATIC.STATE.Manage;
+            STATIC.State = (int)STATE.Manage;
         }
 
         private void ToVision_Click(object sender, EventArgs e)
@@ -645,7 +646,7 @@ namespace FZ4P
             //STATIC.fVision.mLEDcurrent[1] = Condition.LedCurrentR;
             //STATIC.fVision.m_ChannelOn[0] = Process.m_ChannelOn[0];
             //STATIC.fVision.m_ChannelOn[1] = Process.m_ChannelOn[1];
-            STATIC.State = (int)STATIC.STATE.Vision;
+            STATIC.State = (int)STATE.Vision;
         }
 
         private void ToMotion_Click(object sender, EventArgs e)
@@ -655,42 +656,42 @@ namespace FZ4P
 
         private void OpenCondition_Click(object sender, EventArgs e)
         {
-            string result = STATIC.OpenFile(STATIC.RecipeDir, ".rcp");
+            string result = AppHelper.OpenFile(STATIC.appPath.RecipeDir, ".rcp");
             if (result == null) return;
             STATIC.Rcp.Condition = DataIO.DeserializeXMLFileToObject<Condition>(result);
             Current.ConditionName = Path.GetFileName(result);
-            DataIO.SerializeToXMLFile(Current, STATIC.CurrentPath);
+            DataIO.SerializeToXMLFile(Current, STATIC.appPath.CurrentPath);
             InitCondition();
         }
 
         private void SaveCondition_Click(object sender, EventArgs e)
         {
-            string path = STATIC.RecipeDir + Current.ConditionName;
+            string path = STATIC.appPath.RecipeDir + Current.ConditionName;
             UpdateUI();
             DataIO.SerializeToXMLFile(Condition, path);
         }
 
         private void SaveAsCondition_Click(object sender, EventArgs e)
         {
-            string result = STATIC.OpenFile(STATIC.RecipeDir, ".rcp", true);
+            string result = AppHelper.OpenFile(STATIC.appPath.RecipeDir, ".rcp", true);
             UpdateUI();
             DataIO.SerializeToXMLFile(Condition, result);
             Current.ConditionName = Path.GetFileName(result);
-            DataIO.SerializeToXMLFile(Current, STATIC.CurrentPath);
+            DataIO.SerializeToXMLFile(Current, STATIC.appPath.CurrentPath);
             RecipeFileName.Text = Current.ConditionName;
 
         }
 
         private void OpenSpec_Click(object sender, EventArgs e)
         {
-            string result = STATIC.OpenFile(STATIC.SpecDir, ".spc");
+            string result = AppHelper.OpenFile(STATIC.appPath.SpecDir, ".spc");
             if (result == null) return;
             Current.SpecName = Path.GetFileName(result);
             Spec.InitSpecList();
-            if (File.Exists(STATIC.SpecDir + Current.SpecName))
+            if (File.Exists(STATIC.appPath.SpecDir + Current.SpecName))
             {
                 Spec compare = new Spec();
-                compare = DataIO.DeserializeXMLFileToObject<Spec>(STATIC.SpecDir + Current.SpecName);
+                compare = DataIO.DeserializeXMLFileToObject<Spec>(STATIC.appPath.SpecDir + Current.SpecName);
                 for (int i = 0; i < compare.specList.Count; i++)
                 {
                     int index = Spec.specList.FindIndex(x => x.DisplayName == compare.specList[i].DisplayName);
@@ -705,7 +706,7 @@ namespace FZ4P
                 }
             }
 
-            DataIO.SerializeToXMLFile(Current, STATIC.CurrentPath);
+            DataIO.SerializeToXMLFile(Current, STATIC.appPath.CurrentPath);
             InitDataSpec();
             Process.InitResultData();
             Process.tiltChart[0].SetRings(new double[] { Spec.specList[(int)SpecItem.AF_Tilt].MaxSpec });
@@ -714,19 +715,19 @@ namespace FZ4P
         private void SaveSpec_Click(object sender, EventArgs e)
         {
             UpdateUI();
-            DataIO.SerializeToXMLFile(Spec, STATIC.SpecDir + Current.SpecName);
+            DataIO.SerializeToXMLFile(Spec, STATIC.appPath.SpecDir + Current.SpecName);
             Process.InitResultData();
             Process.tiltChart[0].SetRings(new double[] { Spec.specList[(int)SpecItem.AF_Tilt].MaxSpec });
         }
 
         private void SaveAsSpec_Click(object sender, EventArgs e)
         {
-            string result = STATIC.OpenFile(STATIC.SpecDir, ".spc", true);
+            string result = AppHelper.OpenFile(STATIC.appPath.SpecDir, ".spc", true);
             if (result == null) return;
             UpdateUI();
             DataIO.SerializeToXMLFile(Spec, result);
             Current.SpecName = Path.GetFileName(result);
-            DataIO.SerializeToXMLFile(Current, STATIC.CurrentPath);
+            DataIO.SerializeToXMLFile(Current, STATIC.appPath.CurrentPath);
             SpecFileName.Text = Current.SpecName;
             Process.InitResultData();
             Process.tiltChart[0].SetRings(new double[] { Spec.specList[(int)SpecItem.AF_Tilt].MaxSpec });
@@ -742,7 +743,7 @@ namespace FZ4P
                 var found = properties.Cast<PropertyDescriptor>().FirstOrDefault(prop => ((OptionAttribute)prop.Attributes[typeof(OptionAttribute)])?.DisplayName == ListChk[i].Text);
                 found.SetValue(Option, ListChk[i].Checked);
             }
-            DataIO.SerializeToXMLFile(Option, STATIC.OptionPath);
+            DataIO.SerializeToXMLFile(Option, STATIC.appPath.OptionPath);
             //Model ==
             Model.MCNum = tbMcNum.Text;
             Model.TesterNo = TesterNo.Text;
@@ -841,41 +842,41 @@ namespace FZ4P
 
         private void SetAFPIDUpdate_Click(object sender, EventArgs e)
         {
-            string result = STATIC.OpenFile(Rcp.AfPidSet.InitDir, Rcp.AfPidSet.Ext);
+            string result = AppHelper.OpenFile(Rcp.AfPidSet.InitDir, Rcp.AfPidSet.Ext);
             if (result == null) return;
             Rcp.AfPidSet.Read(result);
             Current.AFPidPath = Rcp.AfPidSet.CurrentName;
-            DataIO.SerializeToXMLFile(Current, STATIC.CurrentPath);
+            DataIO.SerializeToXMLFile(Current, STATIC.appPath.CurrentPath);
             AFPidSetPath.Text = Current.AFPidPath;
         }
 
         private void SetXPIDUpdate_Click(object sender, EventArgs e)
         {
-            string result = STATIC.OpenFile(Rcp.XPidSet.InitDir, Rcp.XPidSet.Ext);
+            string result = AppHelper.OpenFile(Rcp.XPidSet.InitDir, Rcp.XPidSet.Ext);
             if (result == null) return;
             Rcp.XPidSet.Read(result);
             Current.XPidPath = Rcp.XPidSet.CurrentName;
-            DataIO.SerializeToXMLFile(Current, STATIC.CurrentPath);
+            DataIO.SerializeToXMLFile(Current, STATIC.appPath.CurrentPath);
             XPidSetPath.Text = Current.XPidPath;
         }
 
         private void SetYPIDUpdate_Click(object sender, EventArgs e)
         {
-            string result = STATIC.OpenFile(Rcp.YPidSet.InitDir, Rcp.YPidSet.Ext);
+            string result = AppHelper.OpenFile(Rcp.YPidSet.InitDir, Rcp.YPidSet.Ext);
             if (result == null) return;
             Rcp.YPidSet.Read(result);
             Current.YPidPath = Rcp.YPidSet.CurrentName;
-            DataIO.SerializeToXMLFile(Current, STATIC.CurrentPath);
+            DataIO.SerializeToXMLFile(Current, STATIC.appPath.CurrentPath);
             YPidSetPath.Text = Current.YPidPath;
         }
 
         private void SetCodeScript_Click(object sender, EventArgs e)
         {
-            string result = STATIC.OpenFile(Rcp.CodeScript.InitDir, Rcp.CodeScript.Ext);
+            string result = AppHelper.OpenFile(Rcp.CodeScript.InitDir, Rcp.CodeScript.Ext);
             if (result == null) return;
             Rcp.CodeScript.Read(result);
             Current.CodeScriptPath = Rcp.CodeScript.CurrentName;
-            DataIO.SerializeToXMLFile(Current, STATIC.CurrentPath);
+            DataIO.SerializeToXMLFile(Current, STATIC.appPath.CurrentPath);
             CodeScriptPath.Text = Current.CodeScriptPath;
         }
 
@@ -958,8 +959,8 @@ namespace FZ4P
                     wr.WriteLine(filename);
                 }
                 wr.Close();
-                STATIC.fVision.SetModelFileList(lPreparedModelFile.ToArray());
-                STATIC.fVision.TransferModelFileList();
+                STATIC.FVision.SetModelFileList(lPreparedModelFile.ToArray());
+                STATIC.FVision.TransferModelFileList();
             }
             else
                 return;
@@ -1282,10 +1283,10 @@ namespace FZ4P
         }
         public string WriteResultBin(int modelIndex = 0)
         {
-            string sLotName = STATIC.fManage.GetLotName();
+            string sLotName = STATIC.FManage.GetLotName();
             m__G.mNowLotName = sLotName;
 
-            string sLotDir = STATIC.fManage.CheckResultFolder();
+            string sLotDir = STATIC.FManage.CheckResultFolder();
             if (sLotName != "")
                 sLotDir = sLotDir + sLotName;
 
@@ -1293,7 +1294,7 @@ namespace FZ4P
                 Directory.CreateDirectory(sLotDir);
 
             DateTime dtNow = DateTime.Now;   // 현재 날짜, 시간 얻기
-            int framCnt = STATIC.fVision.GetTriggerGrabbedFrame();
+            int framCnt = STATIC.FVision.GetTriggerGrabbedFrame();
 
             if (framCnt > m__G.oCam[0].mTargetTriggerCount)
                 framCnt = m__G.oCam[0].mTargetTriggerCount;
@@ -1323,10 +1324,10 @@ namespace FZ4P
                 //sResult.sTime = startDateTime.ToBinary();
                 sResult.sTime = unixTime;
                 sResult.frameCount = framCnt;
-                sResult.fps = STATIC.fVision.GetTriggerGrabbedFPS();
-                sResult.ledLeft = STATIC.fVision.mLEDcurrent[0];
-                sResult.ledRight = STATIC.fVision.mLEDcurrent[1];
-                sResult.testTime = STATIC.fVision.GetHowLongItTook();
+                sResult.fps = STATIC.FVision.GetTriggerGrabbedFPS();
+                sResult.ledLeft = STATIC.FVision.mLEDcurrent[0];
+                sResult.ledRight = STATIC.FVision.mLEDcurrent[1];
+                sResult.testTime = STATIC.FVision.GetHowLongItTook();
 
                 //////  임시  230924
                 ////double tx0 = m__G.oCam[0].mC_pTX[0];
@@ -1375,13 +1376,13 @@ namespace FZ4P
                 //byte[] sDataBuff = new byte[size];
                 //Marshal.Copy(wPtr, sDataBuff, 0, size);
                 //wr.Write(sDataBuff);
-                STATIC.fManage.sDataBuff = new byte[size];
-                Marshal.Copy(wPtr, STATIC.fManage.sDataBuff, 0, size);
+                STATIC.FManage.sDataBuff = new byte[size];
+                Marshal.Copy(wPtr, STATIC.FManage.sDataBuff, 0, size);
 
                 if (m__G.m_bSaveRawData)
                 {
                     BinaryWriter wr = new BinaryWriter(File.OpenWrite(sFilePath));
-                    wr.Write(STATIC.fManage.sDataBuff);
+                    wr.Write(STATIC.FManage.sDataBuff);
                     wr.Flush();
                     wr.Close();
                 }
@@ -1405,10 +1406,10 @@ namespace FZ4P
                 //sResult.sTime = startDateTime.ToBinary();
                 sResult.sTime = unixTime;
                 sResult.frameCount = framCnt;
-                sResult.fps = STATIC.fVision.GetTriggerGrabbedFPS();
-                sResult.ledLeft = STATIC.fVision.mLEDcurrent[0];
-                sResult.ledRight = STATIC.fVision.mLEDcurrent[1];
-                sResult.testTime = STATIC.fVision.GetHowLongItTook();
+                sResult.fps = STATIC.FVision.GetTriggerGrabbedFPS();
+                sResult.ledLeft = STATIC.FVision.mLEDcurrent[0];
+                sResult.ledRight = STATIC.FVision.mLEDcurrent[1];
+                sResult.testTime = STATIC.FVision.GetHowLongItTook();
 
                 for (i = 0; i < 5; i++)
                 {
@@ -1448,13 +1449,13 @@ namespace FZ4P
                 //byte[] sDataBuff = new byte[size];
                 //Marshal.Copy(wPtr, sDataBuff, 0, size);
                 //wr.Write(sDataBuff);
-                STATIC.fManage.sDataBuff = new byte[size];
-                Marshal.Copy(wPtr, STATIC.fManage.sDataBuff, 0, size);
+                STATIC.FManage.sDataBuff = new byte[size];
+                Marshal.Copy(wPtr, STATIC.FManage.sDataBuff, 0, size);
 
                 if (m__G.m_bSaveRawData)
                 {
                     BinaryWriter wr = new BinaryWriter(File.OpenWrite(sFilePath));
-                    wr.Write(STATIC.fManage.sDataBuff);
+                    wr.Write(STATIC.FManage.sDataBuff);
                     wr.Flush();
                     wr.Close();
                 }
@@ -1478,10 +1479,10 @@ namespace FZ4P
                 //sResult.sTime = startDateTime.ToBinary();
                 sResult.sTime = unixTime;
                 sResult.frameCount = framCnt;
-                sResult.fps = STATIC.fVision.GetTriggerGrabbedFPS();
-                sResult.ledLeft = STATIC.fVision.mLEDcurrent[0];
-                sResult.ledRight = STATIC.fVision.mLEDcurrent[1];
-                sResult.testTime = STATIC.fVision.GetHowLongItTook();
+                sResult.fps = STATIC.FVision.GetTriggerGrabbedFPS();
+                sResult.ledLeft = STATIC.FVision.mLEDcurrent[0];
+                sResult.ledRight = STATIC.FVision.mLEDcurrent[1];
+                sResult.testTime = STATIC.FVision.GetHowLongItTook();
 
                 if (framCnt > 1000)
                 {
@@ -1539,13 +1540,13 @@ namespace FZ4P
                 //byte[] sDataBuff = new byte[size];
                 //Marshal.Copy(wPtr, sDataBuff, 0, size);
                 //wr.Write(sDataBuff);
-                STATIC.fManage.sDataBuff = new byte[size];
-                Marshal.Copy(wPtr, STATIC.fManage.sDataBuff, 0, size);
+                STATIC.FManage.sDataBuff = new byte[size];
+                Marshal.Copy(wPtr, STATIC.FManage.sDataBuff, 0, size);
 
                 if (m__G.m_bSaveRawData)
                 {
                     BinaryWriter wr = new BinaryWriter(File.OpenWrite(sFilePath));
-                    wr.Write(STATIC.fManage.sDataBuff);
+                    wr.Write(STATIC.FManage.sDataBuff);
                     wr.Flush();
                     wr.Close();
                 }
@@ -1638,7 +1639,7 @@ namespace FZ4P
                 if(index != -1)
                     Rcp.RetryCnt.RetryOption[index].Count = Convert.ToInt32(RetryGrid[1, i].Value);
             }
-            DataIO.SerializeToXMLFile(Rcp.RetryCnt, STATIC.RetryCountDir);
+            DataIO.SerializeToXMLFile(Rcp.RetryCnt, STATIC.appPath.RetryCountDir);
         }
 
         private void TesterNo_KeyPress(object sender, KeyPressEventArgs e)

@@ -11,6 +11,7 @@ namespace FZ4P.Bootstrapper
     {
         public void Run()
         {
+            STATIC.Enable();
             var mainForm = new F_Main();
             Application.Run(mainForm);
         }

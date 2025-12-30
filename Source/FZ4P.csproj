@@ -144,6 +144,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppCore\AppPath.cs" />
     <Compile Include="Bootstrapper\AppBootstrapperFactory.cs" />
     <Compile Include="Bootstrapper\DefaultAppBootStrapper.cs" />
     <Compile Include="Bootstrapper\DIAppBootStrapper.cs" />
@@ -156,6 +157,7 @@
     <Compile Include="DriverIc\IC\AK7314\AK7326Logic.cs" />
     <Compile Include="DriverIc\IC\AK73XXBase.cs" />
     <Compile Include="DriverIc\IC\Params\AKSlaveParam.cs" />
+    <Compile Include="Helper\AppHelper.cs" />
     <Compile Include="Helper\ProcessHelper.cs" />
     <Compile Include="Process\AFLinCompCoef.cs" />
     <Compile Include="Process\OISLinCompCoef.cs" />

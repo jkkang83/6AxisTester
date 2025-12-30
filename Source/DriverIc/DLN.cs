@@ -10,8 +10,16 @@ using System.Windows.Forms;
 
 namespace FZ4P
 {
+    /// <summary>
+    /// 클래스 목표 
+    /// 객체 관리, 상태에 중점을 두는 클래스로써 존재해야됨.
+    /// 로직 및 기능들은 각 클래스에게 위임할 예정.
+    /// </summary>
     public class DLN
     {
+        public static bool SocIn = false;
+        public static bool SocOut = false;
+
         public Process Process { get { return STATIC.Process; } }
         public uint m_PortCount = 0;
         public List<Device> DLNdevice = new List<Device>();
@@ -32,12 +40,12 @@ namespace FZ4P
         private bool IsSwitch = false;
         public bool m_bOccupied = false;
         public bool[] IsLoad = new bool[2] { false, false };
+
         object I2cLock = new object(); 
         public DLN()
         {
             if (!Init()) return;
         }
-
         public void SetError(string s)
         {
 
@@ -64,7 +72,6 @@ namespace FZ4P
             }
            
         }
-
         public bool Init()
         {
             try
@@ -123,6 +130,7 @@ namespace FZ4P
                     return false;
                 }
             }
+
             for (int i = 0; i < m_PortCount; i++)
             {
                 // ID
@@ -259,8 +267,6 @@ namespace FZ4P
             //}
             return true;
         }
-        public static bool SocIn = false;
-        public static bool SocOut = false;
         private void DLN_ConditionMetThreadSafe(object sender, Dln.Gpio.ConditionMetEventArgs e)
         {
             switch(e.Pin)
@@ -638,6 +644,5 @@ namespace FZ4P
             }
 
         }
-
     }
 }

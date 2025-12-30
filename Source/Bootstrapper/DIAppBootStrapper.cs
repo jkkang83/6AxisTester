@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using FZ4P.AppCore;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace FZ4P.Bootstrapper
 
         public void Run()
         {
+            STATIC.Disable();
             ConfigurationService();
             var mainForm = _serviceProvider.GetRequiredService<F_Main>();
             Application.Run((Form)mainForm);
@@ -25,6 +27,7 @@ namespace FZ4P.Bootstrapper
 
             //클래스 생명주기 명시
             services.AddSingleton<F_Main>();
+            services.AddSingleton<AppPath>();
 
             _serviceProvider = services.BuildServiceProvider();
         }

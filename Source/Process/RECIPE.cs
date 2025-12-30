@@ -6,6 +6,7 @@ using System.IO;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
 using System.Windows.Forms.VisualStyles;
+using FZ4P.Helper;
 
 namespace FZ4P
 {
@@ -30,33 +31,33 @@ namespace FZ4P
         public Recipe()
         {
             Current = new CurrentPath();
-            if (File.Exists(STATIC.CurrentPath))
-                Current = DataIO.DeserializeXMLFileToObject<CurrentPath>(STATIC.CurrentPath);
+            if (File.Exists(STATIC.appPath.CurrentPath))
+                Current = DataIO.DeserializeXMLFileToObject<CurrentPath>(STATIC.appPath.CurrentPath);
 
-            if (!Directory.Exists(STATIC.RootDir)) Directory.CreateDirectory(STATIC.RootDir);
-            if (!Directory.Exists(STATIC.DataDir)) Directory.CreateDirectory(STATIC.DataDir);
-            if (!Directory.Exists(STATIC.RecipeDir)) Directory.CreateDirectory(STATIC.RecipeDir);
-            if (!Directory.Exists(STATIC.SpecDir)) Directory.CreateDirectory(STATIC.SpecDir);
-            if (!Directory.Exists(STATIC.PackageDir)) Directory.CreateDirectory(STATIC.PackageDir);
+            if (!Directory.Exists(STATIC.appPath.RootDir)) Directory.CreateDirectory(STATIC.appPath.RootDir);
+            if (!Directory.Exists(STATIC.appPath.DataDir)) Directory.CreateDirectory(STATIC.appPath.DataDir);
+            if (!Directory.Exists(STATIC.appPath.RecipeDir)) Directory.CreateDirectory(STATIC.appPath.RecipeDir);
+            if (!Directory.Exists(STATIC.appPath.SpecDir)) Directory.CreateDirectory(STATIC.appPath.SpecDir);
+            if (!Directory.Exists(STATIC.appPath.PackageDir)) Directory.CreateDirectory(STATIC.appPath.PackageDir);
             string res = string.Empty;
-            res = STATIC.PKGRelease(STATIC.PackageDir, "*.rcp", STATIC.RecipeDir);
+            res = AppHelper.PKGRelease(STATIC.appPath.PackageDir, "*.rcp", STATIC.appPath.RecipeDir);
             if (res != string.Empty) Current.ConditionName = Path.GetFileName(res);
-            res = STATIC.PKGRelease(STATIC.PackageDir, "*.spc", STATIC.SpecDir);
+            res = AppHelper.PKGRelease(STATIC.appPath.PackageDir, "*.spc", STATIC.appPath.SpecDir);
             if (res != string.Empty) Current.SpecName = Path.GetFileName(res);
-            res = STATIC.PKGRelease(STATIC.PackageDir, "*.txt", STATIC.RootDir);
+            res = AppHelper.PKGRelease(STATIC.appPath.PackageDir, "*.txt", STATIC.appPath.RootDir);
 
-            Current.SerializeToXMLFile(STATIC.CurrentPath);
+            Current.SerializeToXMLFile(STATIC.appPath.CurrentPath);
 
             Condition = new Condition();
-            if (File.Exists(STATIC.RecipeDir + Current.ConditionName))
-                Condition = DataIO.DeserializeXMLFileToObject<Condition>(STATIC.RecipeDir + Current.ConditionName);
+            if (File.Exists(STATIC.appPath.RecipeDir + Current.ConditionName))
+                Condition = DataIO.DeserializeXMLFileToObject<Condition>(STATIC.appPath.RecipeDir + Current.ConditionName);
 
             Spec = new Spec();
             Spec.InitSpecList();
-            if (File.Exists(STATIC.SpecDir + Current.SpecName))
+            if (File.Exists(STATIC.appPath.SpecDir + Current.SpecName))
             {
                 Spec compare = new Spec();
-                compare = DataIO.DeserializeXMLFileToObject<Spec>(STATIC.SpecDir + Current.SpecName);
+                compare = DataIO.DeserializeXMLFileToObject<Spec>(STATIC.appPath.SpecDir + Current.SpecName);
                 for (int i = 0; i < compare.specList.Count; i++)
                 {
                     int index = Spec.specList.FindIndex(x => x.DisplayName == compare.specList[i].DisplayName);
@@ -83,17 +84,17 @@ namespace FZ4P
             Model = new Model();
 
             Option = new Option();
-            if(File.Exists(STATIC.OptionPath))
-                Option = DataIO.DeserializeXMLFileToObject<Option>(STATIC.OptionPath);
+            if(File.Exists(STATIC.appPath.OptionPath))
+                Option = DataIO.DeserializeXMLFileToObject<Option>(STATIC.appPath.OptionPath);
 
             vsFile = new VisionFile();
-            if (File.Exists(STATIC.VisionFileDir))
-                vsFile = DataIO.DeserializeXMLFileToObject<VisionFile>(STATIC.VisionFileDir);
-            else DataIO.SerializeToXMLFile(vsFile, STATIC.VisionFileDir);
+            if (File.Exists(STATIC.appPath.VisionFileDir))
+                vsFile = DataIO.DeserializeXMLFileToObject<VisionFile>(STATIC.appPath.VisionFileDir);
+            else DataIO.SerializeToXMLFile(vsFile, STATIC.appPath.VisionFileDir);
 
             yield = new TotalYield();
-            if (File.Exists(STATIC.YieldPath))
-                yield = DataIO.DeserializeXMLFileToObject<TotalYield>(STATIC.YieldPath);
+            if (File.Exists(STATIC.appPath.YieldPath))
+                yield = DataIO.DeserializeXMLFileToObject<TotalYield>(STATIC.appPath.YieldPath);
 
 
             PassFails = new List<PassFail>();
@@ -103,13 +104,13 @@ namespace FZ4P
                 for (int j = 0; j < (int)SpecItem.Length; j++) PassFails[i].Results.Add(new ResultItems());
             }
             tt = new TestTime();
-            if (File.Exists(STATIC.TestTimeDir)) tt = DataIO.DeserializeXMLFileToObject<TestTime>(STATIC.TestTimeDir);
+            if (File.Exists(STATIC.appPath.TestTimeDir)) tt = DataIO.DeserializeXMLFileToObject<TestTime>(STATIC.appPath.TestTimeDir);
            
             RetryCnt = new RetryCount();
 
             pw = new Password();
-            if (File.Exists(STATIC.PasswordDir))
-                pw = DataIO.DeserializeXMLFileToObject<Password>(STATIC.PasswordDir);
+            if (File.Exists(STATIC.appPath.PasswordDir))
+                pw = DataIO.DeserializeXMLFileToObject<Password>(STATIC.appPath.PasswordDir);
         }
     }
     public class BaseRecipe
@@ -123,11 +124,11 @@ namespace FZ4P
         public string Ext { get; set; }
         public virtual void Init(string current, string subDir)
         {
-            if (!Directory.Exists(STATIC.BaseDir)) Directory.CreateDirectory(STATIC.BaseDir);
-            InitDir = STATIC.BaseDir + subDir;
+            if (!Directory.Exists(STATIC.appPath.BaseDir)) Directory.CreateDirectory(STATIC.appPath.BaseDir);
+            InitDir = STATIC.appPath.BaseDir + subDir;
             Ext = Path.GetExtension(current);
             if (!Directory.Exists(InitDir)) Directory.CreateDirectory(InitDir);
-            FilePath = STATIC.BaseDir + subDir + current;
+            FilePath = STATIC.appPath.BaseDir + subDir + current;
 
             CurrentName = current;
             if (!File.Exists(FilePath)) Save();
@@ -139,7 +140,7 @@ namespace FZ4P
         }
         public virtual void Read(string filePath = "")
         {
-            if (!Directory.Exists(STATIC.RootDir)) Directory.CreateDirectory(STATIC.RootDir);
+            if (!Directory.Exists(STATIC.appPath.RootDir)) Directory.CreateDirectory(STATIC.appPath.RootDir);
         }
         public virtual void SetParam()
         {
@@ -861,7 +862,7 @@ namespace FZ4P
 
         public Model()
         {
-            FilePath = STATIC.RootDir + "Model.txt";
+            FilePath = STATIC.appPath.RootDir + "Model.txt";
 
             MCTypeList.Add("Normal");
             MCTypeList.Add("Master");
@@ -878,13 +879,13 @@ namespace FZ4P
                 List.Add("0");
                 List.Add("0");
                 List.Add("Normal");
-               
-                STATIC.SetTextLine(FilePath, List);
+
+                AppHelper.SetTextLine(FilePath, List);
                 SetParam();
             }
             else
             {
-                List = STATIC.GetTextAll(FilePath);
+                List = AppHelper.GetTextAll(FilePath);
                 SetParam();
             }
         }
@@ -896,7 +897,7 @@ namespace FZ4P
             List.Add(MCType);
 
 
-            STATIC.SetTextLine(FilePath, List);
+            AppHelper.SetTextLine(FilePath, List);
         }
 
         public override void SetParam()

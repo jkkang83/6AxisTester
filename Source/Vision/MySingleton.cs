@@ -1092,7 +1092,7 @@ namespace FZ4P
         public int m_CLAFPeakTimeIndex = 0;
         public int m_AFPeakTimeIndex = 0;
         public int m_L3PeakTimeIndex = 0;
-        public string m_RootDirectory = STATIC.BaseDir;
+        public string m_RootDirectory = STATIC.appPath.BaseDir;
         public string[] m_FWVersion = new string[4];
 
         //  20170703    Camera Default ROI Definition

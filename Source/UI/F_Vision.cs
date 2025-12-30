@@ -3911,7 +3911,7 @@ namespace FZ4P
             //    MyOwner.ShowOperatorMode();
             //}
             BufferInit();
-            STATIC.State = (int)STATIC.STATE.Manage;
+            STATIC.State = (int)STATE.Manage;
         }
 
         private void rbLED1_CheckedChanged(object sender, EventArgs e)
@@ -5616,7 +5616,7 @@ namespace FZ4P
                 }
 
                 SettbUnCalibratedInfoVisible(isUncalibrated);
-                STATIC.fManage.SettbUncalibratedInfoVisible(isUncalibrated);
+                STATIC.FManage.SettbUncalibratedInfoVisible(isUncalibrated);
             }
             catch (Exception e)
             {

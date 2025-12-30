@@ -1,4 +1,5 @@
 ﻿using Basler.Pylon;
+using FZ4P.Helper;
 using FZ4P.Properties;
 using OpenCvSharp;
 using OpenCvSharp.Dnn;
@@ -147,10 +148,10 @@ namespace FZ4P
           
             for (int i = 0; i < ItemList.Count; i++)
                 Rcp.RetryCnt.RetryOption.Add(new Retry { InspName = ItemList[i].Name, Count = 0 });
-            if (File.Exists(STATIC.RetryCountDir))
+            if (File.Exists(STATIC.appPath.RetryCountDir))
             {
                 RetryCount compare = new RetryCount();
-                compare = DataIO.DeserializeXMLFileToObject<RetryCount>(STATIC.RetryCountDir);
+                compare = DataIO.DeserializeXMLFileToObject<RetryCount>(STATIC.appPath.RetryCountDir);
                 for (int i = 0; i < compare.RetryOption.Count; i++)
                 {
                     int index = Rcp.RetryCnt.RetryOption.FindIndex(x => x.InspName == compare.RetryOption[i].InspName);
@@ -183,7 +184,7 @@ namespace FZ4P
                 {
                     for (int i = 0; i < Spec.specList.Count; i++)
                     {
-                        if (!PassFails[ch].Results[i].bPass) { STATIC.FailNumber += $"{i + 1},"; lblFailList.Text = STATIC.FailNumber; }
+                        if (!PassFails[ch].Results[i].bPass) { STATIC.appPath.FailNumber += $"{i + 1},"; lblFailList.Text = STATIC.appPath.FailNumber; }
 
                     }
 
@@ -193,7 +194,7 @@ namespace FZ4P
             {
                 for (int i = 0; i < Spec.specList.Count; i++)
                 {
-                    if (!PassFails[ch].Results[i].bPass) { STATIC.FailNumber += $"{i + 1},"; lblFailList.Text = STATIC.FailNumber; }
+                    if (!PassFails[ch].Results[i].bPass) { STATIC.appPath.FailNumber += $"{i + 1},"; lblFailList.Text = STATIC.appPath.FailNumber; }
                 }
             }
         }
@@ -562,7 +563,7 @@ namespace FZ4P
                 });
             }
             else lblFailList.Text = "";
-            STATIC.FailNumber = "Fail No. : ";
+            STATIC.appPath.FailNumber = "Fail No. : ";
         }
         public void AddLog(int ch, string msg)
         {
@@ -1005,14 +1006,14 @@ namespace FZ4P
         }
         void SaveLogData()
         {
-            string dateDir = STATIC.CreateDateDir();
+            string dateDir = AppHelper.CreateDateDir();
             dateDir += "LogData\\";
             if (!Directory.Exists(dateDir))
                 Directory.CreateDirectory(dateDir);
             for (int j = 0; j < ChannelCnt; j++)
             {
 
-                string path = string.Format("{0}{1}_{2}.txt", dateDir, m_StrIndex[0], $"{STATIC.LogDate.Hour}h{STATIC.LogDate.Minute}m{STATIC.LogDate.Second}s");
+                string path = string.Format("{0}{1}_{2}.txt", dateDir, m_StrIndex[0], $"{STATIC.appPath.LogDate.Hour}h{STATIC.appPath.LogDate.Minute}m{STATIC.appPath.LogDate.Second}s");
 
                 if (path != "")
                 {
@@ -1038,8 +1039,8 @@ namespace FZ4P
                 try
                 {
                     STATIC.I2CFailcnt = 0;
-                    STATIC.LogDate = DateTime.Now;
-                    STATIC.ActID = string.Empty;
+                    STATIC.appPath.LogDate = DateTime.Now;
+                    STATIC.appPath.ActID = string.Empty;
                     ShowDataResultsInit(0);
                   
                     Dln.PowerOnOff(port, true);
@@ -1601,7 +1602,7 @@ namespace FZ4P
 
                         }
                 }
-                STATIC.fVision.m__G.oCam[port].GrabA(framCnt[port]);
+                STATIC.FVision.m__G.oCam[port].GrabA(framCnt[port]);
 
                 for (int j = ch; j < ch + ChannelCnt; j++)
                 {
@@ -1655,7 +1656,7 @@ namespace FZ4P
             for (int j = ch; j < ch + ChannelCnt; j++)
                 AddLog(j, string.Format("framCnt {0}", framCnt[port]));
 
-            STATIC.fVision.m__G.oCam[port].CommonToReplayBuf(name, framCnt[port]);
+            STATIC.FVision.m__G.oCam[port].CommonToReplayBuf(name, framCnt[port]);
         }
         public double settleRigingTime = 0;
         private void Process_ScanTimeTest(int port, string name)
@@ -1709,7 +1710,7 @@ namespace FZ4P
                     //         SupremeTimer.QueryPerformanceCounter(ref startTime);
                     while (IsScan[port])
                     {
-                        STATIC.fVision.m__G.oCam[port].GrabD(framCnt[port]);
+                        STATIC.FVision.m__G.oCam[port].GrabD(framCnt[port]);
                         for (int j = ch; j < ch + ChannelCnt; j++)
                         {
                             foreach (var Cal in CalList[j])
@@ -1791,7 +1792,7 @@ namespace FZ4P
                 {
                     AddLog(j, string.Format("FrmRate == {0:F2} frame/sec", frameRate));
                 }
-                STATIC.fVision.m__G.oCam[port].CommonToReplayBuf(name, framCnt[port]);
+                STATIC.FVision.m__G.oCam[port].CommonToReplayBuf(name, framCnt[port]);
 
                 //for (int j = ch; j < ch + ChannelCnt; j++)
                 //{
@@ -1978,7 +1979,7 @@ namespace FZ4P
             {
                 result.Add(new FindResult());
 
-                result[i] = STATIC.fVision.MeasureTxTyTz(i, name, true, false);
+                result[i] = STATIC.FVision.MeasureTxTyTz(i, name, true, false);
 
             }
 
@@ -2097,14 +2098,14 @@ namespace FZ4P
             if (Option.SaveRawData)
             {
                 string str = Convert.ToString(yield.LastSampleNum + 1);
-                string dateDir = STATIC.CreateDateDir();
+                string dateDir = AppHelper.CreateDateDir();
                 dateDir += "DrivingData\\";
                 if (!Directory.Exists(dateDir))
                     Directory.CreateDirectory(dateDir);
 
 
                 //string timeDir = string.Format("{0}{1}{2}", dt.Hour, dt.Minute, dt.Second);
-                string timeDir = $"{STATIC.LogDate.Hour}h{STATIC.LogDate.Minute}m{STATIC.LogDate.Second}s";
+                string timeDir = $"{STATIC.appPath.LogDate.Hour}h{STATIC.appPath.LogDate.Minute}m{STATIC.appPath.LogDate.Second}s";
           
 
                 for (int j = ch; j < ch + ChannelCnt; j++)
@@ -2184,7 +2185,7 @@ namespace FZ4P
                                     break;
 
                             }
-                            if (path != "") STATIC.SetTextLine(path, arry);
+                            if (path != "") AppHelper.SetTextLine(path, arry);
                         }
                 }
             }
@@ -2345,7 +2346,7 @@ namespace FZ4P
                 for (int i = 0; i < framCnt[port]; i++)
                 {
                     result.Add(new FindResult());
-                    result[i] = STATIC.fVision.MeasureTxTyTz(i, name, true, false);
+                    result[i] = STATIC.FVision.MeasureTxTyTz(i, name, true, false);
                 }
 
                 for (int j = ch; j < ch + ChannelCnt; j++)
@@ -2524,13 +2525,13 @@ namespace FZ4P
                 if (Option.SaveRawData)
                 {
                     string str = Convert.ToString(yield.LastSampleNum + 1);
-                    string dateDir = STATIC.CreateDateDir();
+                    string dateDir = AppHelper.CreateDateDir();
                     dateDir += "DrivingData\\";
                     if (!Directory.Exists(dateDir))
                         Directory.CreateDirectory(dateDir);
 
                     DateTime dt = DateTime.Now;
-                    string timeDir = $"{STATIC.LogDate.Hour}h{STATIC.LogDate.Minute}m{STATIC.LogDate.Second}s";
+                    string timeDir = $"{STATIC.appPath.LogDate.Hour}h{STATIC.appPath.LogDate.Minute}m{STATIC.appPath.LogDate.Second}s";
 
                     for (int j = ch; j < ch + ChannelCnt; j++)
                     {
@@ -2555,7 +2556,7 @@ namespace FZ4P
                                         //AddLog(j, lstr);
                                         break;
                                 }
-                                if (path != "") STATIC.SetTextLine(path, arry);
+                                if (path != "") AppHelper.SetTextLine(path, arry);
                             }
                     }
                 }
@@ -2876,7 +2877,7 @@ namespace FZ4P
         {
             try
             {
-                string dateDir = STATIC.CreateDateDir();
+                string dateDir = AppHelper.CreateDateDir();
                 if (!Directory.Exists(dateDir))
                     Directory.CreateDirectory(dateDir);
 
@@ -2912,7 +2913,7 @@ namespace FZ4P
                     //sHeader = "Date,Time,Index,PlateBCode,LotID,ACTID,Channel,PassFail,1st Fail Item,";
                     //"Time,Index,PlateBCode,LotID,ACTID,Channel,PM Index,PassFail,"
                     log += string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},",
-                        STATIC.LogDate.ToString("yyyy-MM-dd"), $"{STATIC.LogDate.Hour}h{STATIC.LogDate.Minute}m{STATIC.LogDate.Second}s", m_StrIndex[j], "", Model.LotID, STATIC.ActID, Model.MCNum,Model.TesterNo, PassFails[j].FirstFailIndex);
+                        STATIC.appPath.LogDate.ToString("yyyy-MM-dd"), $"{STATIC.appPath.LogDate.Hour}h{STATIC.appPath.LogDate.Minute}m{STATIC.appPath.LogDate.Second}s", m_StrIndex[j], "", Model.LotID, STATIC.appPath.ActID, Model.MCNum,Model.TesterNo, PassFails[j].FirstFailIndex);
 
                     yield.TotlaTested++;
                     //1st Fail Item
@@ -3053,8 +3054,8 @@ namespace FZ4P
         {
             FindResult res = new FindResult();
 
-            STATIC.fVision.m__G.oCam[0].Grab(0);
-            res = STATIC.fVision.MeasureTxTyTz(0);
+            STATIC.FVision.m__G.oCam[0].Grab(0);
+            res = STATIC.FVision.MeasureTxTyTz(0);
             return res; 
         }
 

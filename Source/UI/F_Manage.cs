@@ -1,5 +1,6 @@
 ﻿//using OpenCvSharp;
 using Dln;
+using FZ4P.Helper;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -58,7 +59,7 @@ namespace FZ4P
 
             if (Model.MCType == "Master") lbMCtype.Text = "PORT 1";
             else if (Model.MCType == "Slave") { lbMCtype.Text = "PORT 2"; }
-            else if (Model.MCType == "Handler") { lbMCtype.Text = $"Port {STATIC.GetEthernetIPv4()} (Handler)"; }
+            else if (Model.MCType == "Handler") { lbMCtype.Text = $"Port {AppHelper.GetEthernetIPv4()} (Handler)"; }
             else lbMCtype.Text = "Normal";
 
             if (STATIC.Rcp.tt.Count == 0) lbST.Text = $"0.0 sec";
@@ -174,7 +175,7 @@ namespace FZ4P
                 if (STATIC.Rcp.tt.Count == 0) lbST.Text = $"0.0 sec";
                 else lbST.Text = $"{(STATIC.Rcp.tt.St / STATIC.Rcp.tt.Count).ToString("F1")} sec";
             }
-            DataIO.SerializeToXMLFile(STATIC.Rcp.tt, STATIC.TestTimeDir);
+            DataIO.SerializeToXMLFile(STATIC.Rcp.tt, STATIC.appPath.TestTimeDir);
 
         }
 
@@ -412,8 +413,8 @@ namespace FZ4P
             {
                 DateTime dtNow = DateTime.Now;   // 현재 날짜, 시간 얻기
                 string pngname = "Screen" + "_" + dtNow.ToString("dd_hh_mm_ss") + ".png";
-                string sScreenCapturePath = STATIC.BaseDir + "\\Result\\ScreenCapture\\" + pngname;
-                string sDir = STATIC.BaseDir + "\\Result\\ScreenCapture";
+                string sScreenCapturePath = STATIC.appPath.BaseDir + "\\Result\\ScreenCapture\\" + pngname;
+                string sDir = STATIC.appPath.BaseDir + "\\Result\\ScreenCapture";
                 Bitmap memoryImage;
                 memoryImage = new Bitmap(1906, 1080);
                 Size s = new Size(memoryImage.Width, memoryImage.Height);
@@ -556,23 +557,23 @@ namespace FZ4P
             STATIC.Rcp.tt.St = 0;
             STATIC.Rcp.tt.Count = 0;
             STATIC.Rcp.tt.CurrentST = 0;
-            DataIO.SerializeToXMLFile(STATIC.Rcp.tt, STATIC.TestTimeDir);
+            DataIO.SerializeToXMLFile(STATIC.Rcp.tt, STATIC.appPath.TestTimeDir);
             lbST.Text = "0.0 sec";
             lbCurrentST.Text = "0.0 sec";
         }
 
         private void ToAdmin_Click(object sender, EventArgs e)
         {
-            STATIC.State = (int)STATIC.STATE.Main;
+            STATIC.State = (int)STATE.Main;
         }
 
         private void ToVision_Click(object sender, EventArgs e)
         {
-            STATIC.fVision.mLEDcurrent[0] = STATIC.Rcp.vsFile.LEDCurrentL;
-            STATIC.fVision.mLEDcurrent[1] = STATIC.Rcp.vsFile.LEDCurrentR;
+            STATIC.FVision.mLEDcurrent[0] = STATIC.Rcp.vsFile.LEDCurrentL;
+            STATIC.FVision.mLEDcurrent[1] = STATIC.Rcp.vsFile.LEDCurrentR;
             //STATIC.fVision.m_ChannelOn[0] = Process.m_ChannelOn[0];
             //STATIC.fVision.m_ChannelOn[1] = Process.m_ChannelOn[1];
-            STATIC.State = (int)STATIC.STATE.Vision;
+            STATIC.State = (int)STATE.Vision;
         }
 
         private void SaveScreenOperator_Click(object sender, EventArgs e)
@@ -581,8 +582,8 @@ namespace FZ4P
             {
                 DateTime dtNow = DateTime.Now;   // 현재 날짜, 시간 얻기
                 string pngname = "Screen" + "_" + dtNow.ToString("dd_hh_mm_ss") + ".png";
-                string sScreenCapturePath = STATIC.BaseDir + "\\Result\\ScreenCapture\\" + pngname;
-                string sDir = STATIC.BaseDir + "\\Result\\ScreenCapture";
+                string sScreenCapturePath = STATIC.appPath.BaseDir + "\\Result\\ScreenCapture\\" + pngname;
+                string sDir = STATIC.appPath.BaseDir + "\\Result\\ScreenCapture";
                 Bitmap memoryImage;
                 memoryImage = new Bitmap(1906, 1080);
                 Size s = new Size(memoryImage.Width, memoryImage.Height);
@@ -614,7 +615,7 @@ namespace FZ4P
                     Spec.specList[i].FailCnt = 0;
                 }
                 InitYield();
-                DataIO.SerializeToXMLFile(Spec, STATIC.SpecDir + Current.SpecName);
+                DataIO.SerializeToXMLFile(Spec, STATIC.appPath.SpecDir + Current.SpecName);
             }
         }
 
@@ -675,7 +676,7 @@ namespace FZ4P
         public string CheckResultFolder()
         {
             DateTime dt = DateTime.Now;
-            string resDirectory = STATIC.BaseDir + dt.Year + "\\" + dt.Month + "\\" + dt.Day + "\\";
+            string resDirectory = STATIC.appPath.BaseDir + dt.Year + "\\" + dt.Month + "\\" + dt.Day + "\\";
             if (!Directory.Exists(resDirectory))
                 Directory.CreateDirectory(resDirectory);
             return resDirectory;

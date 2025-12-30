@@ -50,7 +50,7 @@ namespace FZ4P
             MessageBox.Show(this, "PW Changed");
 
             STATIC.Rcp.pw.PW = tbChangePW.Text;
-            DataIO.SerializeToXMLFile(STATIC.Rcp.pw, STATIC.PasswordDir);
+            DataIO.SerializeToXMLFile(STATIC.Rcp.pw, STATIC.appPath.PasswordDir);
         }
 
         private void button1_Click(object sender, EventArgs e)

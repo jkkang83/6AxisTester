@@ -1,5 +1,6 @@
 ﻿using Dln;
 using Dln.Exceptions;
+using FZ4P.Helper;
 using MathNet.Numerics.Financial;
 using MathNet.Numerics.Optimization.TrustRegion;
 using OpenCvSharp;
@@ -533,7 +534,7 @@ namespace FZ4P
             if(Option.SaveRawData)
             {
                 StreamWriter sw = null;
-                string dateDir = STATIC.CreateDateDir();
+                string dateDir = AppHelper.CreateDateDir();
                 if(!Directory.Exists(dateDir)) Directory.CreateDirectory(dateDir);
                 string path = dateDir + $"Act_Temperature.csv";
               
@@ -545,7 +546,7 @@ namespace FZ4P
                     sw.Close();
                 }
                 sw = File.AppendText(path);
-                string data = $"{m_StrIndex[ch]},{STATIC.LogDate.ToString("yyyy-MM-dd")},{STATIC.LogDate.Hour}h{STATIC.LogDate.Minute}m{STATIC.LogDate.Second}s," +
+                string data = $"{m_StrIndex[ch]},{STATIC.appPath.LogDate.ToString("yyyy-MM-dd")},{STATIC.appPath.LogDate.Hour}h{STATIC.appPath.LogDate.Minute}m{STATIC.appPath.LogDate.Second}s," +
                     $"{val[2]},{AFVar},{AFReset},{val[0]},{XVar},{XReset},{val[1]},{YVar},{YReset}";
                 sw.WriteLine(data);
                 sw.Close();
@@ -1018,7 +1019,7 @@ namespace FZ4P
             if (Option.SaveRawData)
             {
                 StreamWriter sw = null;
-                string dateDir = STATIC.CreateDateDir();
+                string dateDir = AppHelper.CreateDateDir();
                 if (!Directory.Exists(dateDir)) Directory.CreateDirectory(dateDir);
                 string path = dateDir + $"AF_EPA_CODE.csv";
 
@@ -1030,7 +1031,7 @@ namespace FZ4P
                     sw.Close();
                 }
                 sw = File.AppendText(path);
-                string data = $"{m_StrIndex[ch]},{STATIC.LogDate.ToString("yyyy-MM-dd")},{STATIC.LogDate.Hour}h{STATIC.LogDate.Minute}m{STATIC.LogDate.Second}s," +
+                string data = $"{m_StrIndex[ch]},{STATIC.appPath.LogDate.ToString("yyyy-MM-dd")},{STATIC.appPath.LogDate.Hour}h{STATIC.appPath.LogDate.Minute}m{STATIC.appPath.LogDate.Second}s," +
                     $"{inf_tag_code},{mac_tag_code}";
                 sw.WriteLine(data);
                 sw.Close();
@@ -2395,8 +2396,8 @@ namespace FZ4P
             Wait(100);
             DrvIC.Move(0, "AF", BestAFPos);
             Wait(100);
-            STATIC.fVision.m__G.oCam[port].Grab(0);
-            res = STATIC.fVision.MeasureTxTyTz(0);
+            STATIC.FVision.m__G.oCam[port].Grab(0);
+            res = STATIC.FVision.MeasureTxTyTz(0);
 
             RefX = res.cx[0];
             RefY = res.cy[0];
@@ -2414,8 +2415,8 @@ namespace FZ4P
                 resList.Add(new FindResult());
                 DrvIC.Move(0, "AF", code[i]);
                 Wait(100);
-                STATIC.fVision.m__G.oCam[port].Grab(0);
-                resList[i] = STATIC.fVision.MeasureTxTyTz(0);
+                STATIC.FVision.m__G.oCam[port].Grab(0);
+                resList[i] = STATIC.FVision.MeasureTxTyTz(0);
             }
 
             for (int i = 0; i < resList.Count; i++)
@@ -2453,8 +2454,8 @@ namespace FZ4P
                 DrvIC.Move(0, "Y", OISCenter + hallcompy[i]);
                 Wait(100);
 
-                STATIC.fVision.m__G.oCam[port].Grab(0);
-                resList2[i] = STATIC.fVision.MeasureTxTyTz(0);
+                STATIC.FVision.m__G.oCam[port].Grab(0);
+                resList2[i] = STATIC.FVision.MeasureTxTyTz(0);
 
 
             }
@@ -2619,7 +2620,7 @@ namespace FZ4P
                 if (Option.SaveRawData)
                 {
                     StreamWriter sw = null;
-                    string dateDir = STATIC.CreateDateDir();
+                    string dateDir = AppHelper.CreateDateDir();
                     if (!Directory.Exists(dateDir)) Directory.CreateDirectory(dateDir);
                     string path = dateDir + $"OIS_AutoTest.csv";
 
@@ -2631,7 +2632,7 @@ namespace FZ4P
                         sw.Close();
                     }
                     sw = File.AppendText(path);
-                    string dt = $"{m_StrIndex[ch]},{STATIC.LogDate.ToString("yyyy-MM-dd")},{STATIC.LogDate.Hour}h{STATIC.LogDate.Minute}m{STATIC.LogDate.Second}s," +
+                    string dt = $"{m_StrIndex[ch]},{STATIC.appPath.LogDate.ToString("yyyy-MM-dd")},{STATIC.appPath.LogDate.Hour}h{STATIC.appPath.LogDate.Minute}m{STATIC.appPath.LogDate.Second}s," +
                         $"{sinetest_X1},{sinetest_Y1},{SinewaveXMaxDiff},{SinewaveYMaxDiff},{ringing_X},{ringing_Y}";
                     sw.WriteLine(dt);
                     sw.Close();
@@ -2693,7 +2694,7 @@ namespace FZ4P
             if (Option.SaveRawData)
             {
                 StreamWriter sw = null;
-                string dateDir = STATIC.CreateDateDir();
+                string dateDir = AppHelper.CreateDateDir();
                 if (!Directory.Exists(dateDir)) Directory.CreateDirectory(dateDir);
                 string path = dateDir + $"OIS_SENS_MODE_CHECK.csv";
                 
@@ -2814,7 +2815,7 @@ namespace FZ4P
             if (Option.SaveRawData)
             {
                 StreamWriter sw = null;
-                string dateDir = STATIC.CreateDateDir();
+                string dateDir = AppHelper.CreateDateDir();
                 if (!Directory.Exists(dateDir)) Directory.CreateDirectory(dateDir);
                 string path = dateDir + $"OIS_Shift.csv";
 
@@ -2826,7 +2827,7 @@ namespace FZ4P
                     sw.Close();
                 }
                 sw = File.AppendText(path);
-                string dt = $"{m_StrIndex[ch]},{STATIC.LogDate.ToString("yyyy-MM-dd")},{STATIC.LogDate.Hour}h{STATIC.LogDate.Minute}m{STATIC.LogDate.Second}s," +
+                string dt = $"{m_StrIndex[ch]},{STATIC.appPath.LogDate.ToString("yyyy-MM-dd")},{STATIC.appPath.LogDate.Hour}h{STATIC.appPath.LogDate.Minute}m{STATIC.appPath.LogDate.Second}s," +
                     $"{RefX}, {RefY}, {xDiffMax}, {yDiffMax}, {XDiff.Max()}, {YDiff.Max()}, {XDiff.Min()}, {YDiff.Min()}";
 
                 sw.WriteLine(dt);
@@ -3131,7 +3132,7 @@ namespace FZ4P
                 if (Option.SaveRawData)
                 {
                     StreamWriter sw = null;
-                    string dateDir = STATIC.CreateDateDir();
+                    string dateDir = AppHelper.CreateDateDir();
                     if (!Directory.Exists(dateDir)) Directory.CreateDirectory(dateDir);
                     string path = dateDir + $"OIS_IC_Mount_Error.csv";
 
@@ -3143,7 +3144,7 @@ namespace FZ4P
                         sw.Close();
                     }
                     sw = File.AppendText(path);
-                    string dt = $"{m_StrIndex[ch]},{STATIC.LogDate.ToString("yyyy-MM-dd")},{STATIC.LogDate.Hour}h{STATIC.LogDate.Minute}m{STATIC.LogDate.Second}s," +
+                    string dt = $"{m_StrIndex[ch]},{STATIC.appPath.LogDate.ToString("yyyy-MM-dd")},{STATIC.appPath.LogDate.Hour}h{STATIC.appPath.LogDate.Minute}m{STATIC.appPath.LogDate.Second}s," +
                         $"{OISStroke},{X_PNCAL[0]},{X_PNCAL[1]},{Y_PNCAL[0]},{Y_PNCAL[1]},{XPCAL},{XNCAL},{YPCAL},{YNCAL},{XIME},{YIME}";
                     sw.WriteLine(dt);
                     sw.Close();
@@ -3731,7 +3732,7 @@ namespace FZ4P
         {
             try
             {
-                var now = STATIC.LogDate;
+                var now = STATIC.appPath.LogDate;
                 var year = now.Year - 2000;
                 var month = now.Month;
                 var day = now.Day;
@@ -3917,7 +3918,7 @@ namespace FZ4P
                 for (int i = 0; i < 7; i++)
                 {
                     Dln.ReadArray(ch, DrvIC.AFSlaveAddr, 0xF4 + i, rbuf);
-                    STATIC.ActID += $"{rbuf[0].ToString("X2")}";
+                    STATIC.appPath.ActID += $"{rbuf[0].ToString("X2")}";
                 }
 
                 byte[] xCheckData = new byte[32];
