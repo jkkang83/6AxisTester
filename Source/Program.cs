@@ -23,8 +23,8 @@ namespace FZ4P
             {
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
-                IAppBootStrapper bootstrapper= new 
-                Application.Run(new F_Main());
+                IAppBootStrapper bootstrapper = new DefaultAppBootStrapper();
+                bootstrapper.Run();
 
                 mutex.ReleaseMutex();
                 System.Diagnostics.Process.GetCurrentProcess().Kill();
