@@ -27,6 +27,7 @@ namespace FZ4P.Bootstrapper
 
             //클래스 생명주기 명시
             services.AddSingleton<F_Main>();
+            services.AddSingleton<F_Start>();
             services.AddSingleton<AppPath>();
 
             _serviceProvider = services.BuildServiceProvider();

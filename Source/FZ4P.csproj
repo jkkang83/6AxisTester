@@ -149,6 +149,8 @@
     <Compile Include="Bootstrapper\DefaultAppBootStrapper.cs" />
     <Compile Include="Bootstrapper\DIAppBootStrapper.cs" />
     <Compile Include="Bootstrapper\IAppBootStrapper.cs" />
+    <Compile Include="DriverIc\Controls\DLNI2CControl.cs" />
+    <Compile Include="DriverIc\Controls\DLNIOControl.cs" />
     <Compile Include="DriverIc\DLN\DLNPowerOnOffLogic.cs" />
     <Compile Include="DriverIc\DLN\DLNPowerSequenceLogic.cs" />
     <Compile Include="DriverIc\DLN\DLNReadLogic.cs" />
@@ -157,6 +159,8 @@
     <Compile Include="DriverIc\IC\AK7314\AK7326Logic.cs" />
     <Compile Include="DriverIc\IC\AK73XXBase.cs" />
     <Compile Include="DriverIc\IC\Params\AKSlaveParam.cs" />
+    <Compile Include="DriverIc\Interfaces\IDLNI2CControl.cs" />
+    <Compile Include="DriverIc\Interfaces\IDLNIOControl.cs" />
     <Compile Include="Helper\AppHelper.cs" />
     <Compile Include="Helper\ProcessHelper.cs" />
     <Compile Include="Process\AFLinCompCoef.cs" />
@@ -288,6 +292,7 @@
     <None Include="Image\ArrD2.png" />
     <None Include="Image\ArrD.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

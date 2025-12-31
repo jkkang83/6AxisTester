@@ -1,5 +1,6 @@
 ﻿
 using FZ4P.Helper;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -34,7 +35,33 @@ namespace FZ4P
             {
                 Task.Factory.StartNew(() =>
                 {
-                    Application.Run(STATIC.FStart);
+                    if(STATIC.Enabled)
+                        Application.Run(STATIC.FStart);
+                });
+
+                InitializeComponent();
+
+                STATIC.FStart.Log("Program Start !!");
+                STATIC.StateChange += Form_StateChange;
+
+                m__G = Global.GetInstance();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+        }
+
+        public F_Main(IServiceProvider provider)
+        {
+            try
+            {
+                Task.Factory.StartNew(() =>
+                {
+                    if (STATIC.Enabled)
+                        Application.Run(STATIC.FStart);
+                    else
+                        Application.Run(provider.GetRequiredService<F_Start>());
                 });
 
                 InitializeComponent();

@@ -298,7 +298,6 @@ namespace FZ4P
                 IsSwitch = false;
             }
         }
-        
         private void SafeEventHandler(object sender, Dln.Gpio.ConditionMetEventArgs e)
         {
             if (e.Value == 1)
@@ -312,6 +311,8 @@ namespace FZ4P
                 IsSafeOn = true;
             }
         }
+
+        #region GPio 기능
         public void LoadSocket()
         {
             try
@@ -355,7 +356,6 @@ namespace FZ4P
            
 
         }
-
         public void CoverDn()
         {
             try
@@ -394,6 +394,114 @@ namespace FZ4P
             }
           
 
+        }
+        public void PowerOnOff(int port, bool IsOn = true)
+        {
+            try
+            {
+                if (IsOn)
+                {
+
+                    STATIC.Process.AddLog(0, $"Power On");
+                    if (DLNgpio.Length > 2) { lock (I2cLock) DLNgpio[2].Pins[9].Direction = 1; }
+                    lock (I2cLock) DLNgpio[1].Pins[9].Direction = 1;
+                }
+                else
+                {
+                    STATIC.Process.AddLog(0, $"Power Off");
+                    if (DLNgpio.Length > 2) { lock (I2cLock) DLNgpio[2].Pins[9].Direction = 0; }
+                     
+                    lock (I2cLock) DLNgpio[1].Pins[9].Direction = 0;
+
+                }
+            }
+            catch
+            {
+                SetError("Power On Off I2C NG");
+              
+            }
+            
+        }
+        public void SetSocketSensor(bool isOn)
+        {
+            try
+            {
+                if (isOn)
+                {
+                    lock (I2cLock)
+                    {
+                        DLNgpio[1].Pins[12].Enabled = true;
+                        DLNgpio[1].Pins[12].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+                        DLNgpio[1].Pins[12].PulldownEnabled = true;
+                        DLNgpio[1].Pins[13].Enabled = true;
+                        DLNgpio[1].Pins[13].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
+                        DLNgpio[1].Pins[13].PulldownEnabled = true;
+
+                    }
+
+                }
+
+            }
+            catch
+            {
+                SetError("Socket Sensor I2C NG");
+
+            }
+        }
+        public void PowerSequence(int port)
+        {
+            PowerOnOff(0, false);
+            Process.Wait(200);
+            PowerOnOff(0, true);
+            Process.Wait(200);
+        }
+        public bool GetGpioStatus(int input)
+        {
+
+            try
+            {
+                lock (I2cLock)
+                {
+                    if (DLNgpio[1].Pins[input].Value == 1) return true;
+                    else return false;
+                }
+            }
+            catch
+            {
+                SetError("Socket Sensor I2C NG");
+
+                return false;
+            }
+
+        }
+        #endregion
+
+        #region I2C 기능 
+        public double GetCurrent(int ch, int mode)
+        {
+            double res = 0;
+            int RegAddr = 0x01;
+            byte[] buffer2 = new byte[2];
+            try
+            {
+                lock(I2cLock)
+                {
+                    if (mode == 0) { DLNi2c[ch + 1].Read(0x40, 1, RegAddr, buffer2); } // AF
+                    else DLNi2c[ch + 1].Read(0x41, 1, RegAddr, buffer2);
+                }
+                res = (buffer2[0] * 256 + buffer2[1]) / 10.0 + 10;
+            }
+            catch
+            {
+                STATIC.I2CFailcnt++;
+                if (STATIC.I2CFailcnt > 20)
+                {
+                    SetError("Get Current NG");
+                   
+                }
+                return 0;
+            }
+            return res;
         }
         public void SetLEDpower(int id, int value)
         {
@@ -482,74 +590,12 @@ namespace FZ4P
                 catch
                 {
                     SetError("Fail to LED Power :: Please Check USB Cable");
-                  
+
                     m_bOccupied = false;
                 }
                 m_bOccupied = false;
             }
         }
-        public void PowerOnOff(int port, bool IsOn = true)
-        {
-            try
-            {
-                if (IsOn)
-                {
-
-                    STATIC.Process.AddLog(0, $"Power On");
-                    if (DLNgpio.Length > 2) { lock (I2cLock) DLNgpio[2].Pins[9].Direction = 1; }
-                    lock (I2cLock) DLNgpio[1].Pins[9].Direction = 1;
-                }
-                else
-                {
-                    STATIC.Process.AddLog(0, $"Power Off");
-                    if (DLNgpio.Length > 2) { lock (I2cLock) DLNgpio[2].Pins[9].Direction = 0; }
-                     
-                    lock (I2cLock) DLNgpio[1].Pins[9].Direction = 0;
-
-                }
-            }
-            catch
-            {
-                SetError("Power On Off I2C NG");
-              
-            }
-            
-        }
-
-        public void PowerSequence(int port)
-        {
-            PowerOnOff(0, false);
-            Process.Wait(200);
-            PowerOnOff(0, true);
-            Process.Wait(200);
-        }
-        public double GetCurrent(int ch, int mode)
-        {
-            double res = 0;
-            int RegAddr = 0x01;
-            byte[] buffer2 = new byte[2];
-            try
-            {
-                lock(I2cLock)
-                {
-                    if (mode == 0) { DLNi2c[ch + 1].Read(0x40, 1, RegAddr, buffer2); } // AF
-                    else DLNi2c[ch + 1].Read(0x41, 1, RegAddr, buffer2);
-                }
-                res = (buffer2[0] * 256 + buffer2[1]) / 10.0 + 10;
-            }
-            catch
-            {
-                STATIC.I2CFailcnt++;
-                if (STATIC.I2CFailcnt > 20)
-                {
-                    SetError("Get Current NG");
-                   
-                }
-                return 0;
-            }
-            return res;
-        }
-   
         public bool WriteArray(int ch, int slaveAddr, int memAddr, byte[] data)
         {
 
@@ -574,7 +620,6 @@ namespace FZ4P
                 return false;
             }
         }
-   
         public bool ReadArray(int ch, int slaveAddr, int memAddr, byte[] data)
         {
 
@@ -599,50 +644,7 @@ namespace FZ4P
                 return false;
             }
         }
-        public void SetSocketSensor(bool isOn)
-        {
-            try
-            {
-                if (isOn)
-                {
-                    lock(I2cLock)
-                    {
-                        DLNgpio[1].Pins[12].Enabled = true;
-                        DLNgpio[1].Pins[12].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
-                        DLNgpio[1].Pins[12].PulldownEnabled = true;
-                        DLNgpio[1].Pins[13].Enabled = true;
-                        DLNgpio[1].Pins[13].Direction = 0;   //  0 ~ 15 : 0(in), 24 ~ 31 : 1(out)
-                        DLNgpio[1].Pins[13].PulldownEnabled = true;
+        #endregion
 
-                    }
-
-                }
-
-            }
-            catch
-            {
-                SetError("Socket Sensor I2C NG");
-              
-            }
-        }
-        public bool GetGpioStatus(int input)
-        {
-          
-            try
-            {              
-                lock (I2cLock)
-                {
-                    if (DLNgpio[1].Pins[input].Value == 1) return true;
-                    else return false;
-                }
-            }
-            catch
-            {
-                SetError("Socket Sensor I2C NG");
-              
-                return false; 
-            }
-
-        }
     }
 }
