@@ -80,10 +80,6 @@
     <Reference Include="dln.net">
       <HintPath>..\lib\dln.net.dll</HintPath>
     </Reference>
-    <Reference Include="FAutoLearn, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\FAutoLearn.dll</HintPath>
-    </Reference>
     <Reference Include="MathNet.Numerics, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MathNet.Numerics.5.0.0\lib\net461\MathNet.Numerics.dll</HintPath>
     </Reference>
@@ -98,9 +94,6 @@
     </Reference>
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=10.0.0.1, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.10.0.1\lib\net462\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="MOTSimulator">
-      <HintPath>..\MOTSimulator.dll</HintPath>
     </Reference>
     <Reference Include="OpenCvSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=6adad1e807fea099, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenCvSharp4.4.5.5.20211231\lib\netstandard2.0\OpenCvSharp.dll</HintPath>
@@ -291,6 +284,16 @@
     <None Include="Image\ArrL.png" />
     <None Include="Image\ArrD2.png" />
     <None Include="Image\ArrD.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FAutoLearn\FAutoLearn.csproj">
+      <Project>{39752b05-88c4-4608-a3dc-695d165b7a94}</Project>
+      <Name>FAutoLearn</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MOTSimulator\MOTSimulator.csproj">
+      <Project>{ffb2e2ca-02d4-43f1-87df-9a8169531781}</Project>
+      <Name>MOTSimulator</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
