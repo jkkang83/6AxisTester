@@ -167,6 +167,13 @@
     <Compile Include="Process\TCPComm.cs" />
     <Compile Include="Process\TiltGraph.cs" />
     <Compile Include="Process\UserPROCESS.cs" />
+    <Compile Include="UI\CustomComponent\ActroChart.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="UI\CustomComponent\Builders\ChartBuilder.cs" />
+    <Compile Include="UI\CustomComponent\Builders\Params\ChartAreasParams.cs" />
+    <Compile Include="UI\CustomComponent\Builders\Params\LegendParams.cs" />
+    <Compile Include="UI\CustomComponent\Builders\Params\SeriesParams.cs" />
     <Compile Include="UI\F_Password.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -295,9 +302,7 @@
       <Name>MOTSimulator</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="UI\CustomComponent\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

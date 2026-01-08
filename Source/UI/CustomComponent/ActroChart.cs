@@ -254,7 +254,7 @@ namespace FZ4P
     }
 
 
-    public class ChartList
+    /*public class ChartList
     {
         public Chart C = new Chart();
         public string Title = "";
@@ -459,5 +459,5 @@ namespace FZ4P
                 C.Tag = "S";
             }
         }
-    }
+    }*/
 }
