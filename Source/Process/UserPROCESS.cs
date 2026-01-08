@@ -1648,9 +1648,9 @@ namespace FZ4P
 
             int addr = axis == 0 ? DrvIC.XSlaveAddr : DrvIC.Y1SlaveAddr;
             string AxisName = axis == 0 ? "X" : "Y";
-            float[] dbTargetPosi = new float[33];
-            float[] dbLensPosi = new float[33];
-            int[] dbHalldata = new int[33];
+            float[] dbTargetPosi = new float[Condition.OISLincompStep + 1];
+            float[] dbLensPosi = new float[Condition.OISLincompStep + 1];
+            int[] dbHalldata = new int[Condition.OISLincompStep + 1];
             float RefData = 0;
             byte[] ucResultCoef = new byte[13];
             int temp_table = Condition.OISLincompCodeMargin, step = 128;
@@ -3743,10 +3743,10 @@ namespace FZ4P
                 Dln.WriteArray(ch, DrvIC.XSlaveAddr, 0xAE, new byte[] { 0x3B });
                 byte[] xWriteData = new byte[32];
 
-                if (PassFails[ch].Results[(int)SpecItem.OISX_Ratedstroke].Val >= 760 && PassFails[ch].Results[(int)SpecItem.OISX_Ratedstroke].Val <= 770)
-                    xWriteData[1] = (770 / 10);
-                else xWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.OISX_Ratedstroke].Val / 10);
-
+                //if (PassFails[ch].Results[(int)SpecItem.OISX_Ratedstroke].Val >= 760 && PassFails[ch].Results[(int)SpecItem.OISX_Ratedstroke].Val <= 770)
+                //    xWriteData[1] = (770 / 10);
+                //else xWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.OISX_Ratedstroke].Val / 10);
+                xWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.OISX_Ratedstroke].Val / 10);
                 //xWriteData[2] = 0; //OC
                 //xWriteData[3] = 0; //OC
                 xWriteData[4] = 0x01;
@@ -3789,10 +3789,10 @@ namespace FZ4P
                 byte[] yWriteData = new byte[32];
                 //  yWriteData[0] = (byte)(PassFails[ch].Results[(int)SpecItem.OISY_Rolling].Val * 10);
 
-                if (PassFails[ch].Results[(int)SpecItem.OISY_Ratedstroke].Val >= 760 && PassFails[ch].Results[(int)SpecItem.OISY_Ratedstroke].Val <= 770)
-                    yWriteData[1] = 770 / 10;
-                else yWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.OISY_Ratedstroke].Val / 10);
-
+                //if (PassFails[ch].Results[(int)SpecItem.OISY_Ratedstroke].Val >= 760 && PassFails[ch].Results[(int)SpecItem.OISY_Ratedstroke].Val <= 770)
+                //    yWriteData[1] = 770 / 10;
+                //else yWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.OISY_Ratedstroke].Val / 10);
+                yWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.OISY_Ratedstroke].Val / 10);
                 //yWriteData[2] = 0; //OC
                 //yWriteData[3] = 0; // OC
                 yWriteData[4] = 0x01;
@@ -3885,10 +3885,10 @@ namespace FZ4P
 
                 // 기존 데이터 입력
                 AFWriteData[0] = (byte)res;
-                if (PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val >= 760 && PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val <= 770)
-                    AFWriteData[1] = 770 / 4;
-                else AFWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val / 4);
-
+                //if (PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val >= 760 && PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val <= 770)
+                //    AFWriteData[1] = 770 / 4;
+                //else AFWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val / 4);
+                AFWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val / 4);
                 AFWriteData[2] = 0x1E;
                 AFWriteData[3] = 0x0B;
                 AFWriteData[4] = (byte)(Convert.ToInt16(Model.TesterNo) >> 8);

@@ -136,12 +136,10 @@ namespace FZ4P
                     else
                     {
                         string s = Process.errMsg[0] == "" ? "OK" : $"NG,{Process.PassFails[0].FirstFailIndex.ToString("D3")}";
+                        if (Process.errMsg[0] != "" && Process.PassFails[0].FirstFailIndex == 0)
+                            s = $"NG,{50.ToString("D3")}";
                         STATIC.TcpConn.SendMessage(s);
                     }
-
-
-
-                 
                 }
             }
 
