@@ -1317,18 +1317,29 @@ namespace FZ4P
 
             if (volt == null)
             {
+                // LJH 수정 260109
                 volt = new List<double>
                 {
-                    STATIC.Rcp.vsFile.LEDCurrentL,
-                    STATIC.Rcp.vsFile.LEDCurrentR
+                    STATIC.Rcp.vsFile.LEDCurrentR,   // 2.3
+                    STATIC.Rcp.vsFile.LEDCurrentL  // 2.8
                 };
+
+                //volt = new List<double>
+                //{
+                //    STATIC.Rcp.vsFile.LEDCurrentL,
+                //    STATIC.Rcp.vsFile.LEDCurrentR
+                //};
             }
 
             if (m_bAllLEDOn = isOn)
             {
                 //  CSH035 적용 시 
-                Dln.SetLEDpower(1, (int)(STATIC.Rcp.vsFile.LEDCurrentL * 500));
-                Dln.SetLEDpower(2, (int)(STATIC.Rcp.vsFile.LEDCurrentR * 500));
+                //Dln.SetLEDpower(1, (int)(STATIC.Rcp.vsFile.LEDCurrentL * 500));
+                //Dln.SetLEDpower(2, (int)(STATIC.Rcp.vsFile.LEDCurrentR * 500));
+
+                // LJH 260109 수정
+                Dln.SetLEDpower(1, (int)(volt[0] * 500));    // Side LED (큰 LED) = LEDCurrentR
+                Dln.SetLEDpower(2, (int)(volt[1] * 500));    // Top LED (작은 LED) = LEDCurrentL
             }
             else
                 for (int k = ch; k < ch + ChannelCnt; k++)

@@ -396,8 +396,10 @@ namespace FZ4P
 
             int lDACaddr = 0x4F;        // A0,A1상태에 따라 ID 변경, 지금은  A0,A1 pull up
 
-            if (value > 4095)
-                value = 4095;
+            if (value > 1650)  
+            {
+                value = 1650;  // 소프트웨어 전압 기준 3.3V
+            }
             //  기존 single channel dac code
             //   | XXXX | XXXX |  
             //   | XXXX | XXXX | XXXX | 0000 |
@@ -410,7 +412,7 @@ namespace FZ4P
             //bufferL[0] = (byte)(value % 256);
 
 
-            byte[] left_side = { 0x10 };      //1
+            byte[] left_side = { 0x10 };      //1      
             byte[] left_center = { 0x12 };    //2
             byte[] right_side = { 0x14 };     //3
             byte[] right_center = { 0x16 };   //4

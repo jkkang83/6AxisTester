@@ -370,8 +370,8 @@ namespace FZ4P
                     {
                         btnLive2.Enabled = false;
                         btnAllLEDOn.Enabled = false;
-                        btnLEDDOWN.Enabled = false;
-                        btnLEDUP.Enabled = false;
+                        btnLEDUp.Enabled = false;
+                        btnLEDDown.Enabled = false;
                         btnHalt2.Enabled = false;
                      
                     });
@@ -500,8 +500,8 @@ namespace FZ4P
                     {
                         btnLive2.Enabled = true;
                         btnAllLEDOn.Enabled = true;
-                        btnLEDDOWN.Enabled = true;
-                        btnLEDUP.Enabled = true;
+                        btnLEDUp.Enabled = true;
+                        btnLEDDown.Enabled = true;
                         btnHalt2.Enabled = true;
                       
 
@@ -620,7 +620,7 @@ namespace FZ4P
             }
 
             //SlowlyChk.Checked = false; //2021.08.31 added
-            rbLED2.Checked = true; //2021.08.31 added
+            rbLED0.Checked = true; //2021.08.31 added
             rb1step.Checked = true;
             cbSetTXTYwithMaster.Checked = false;
 
@@ -718,7 +718,11 @@ namespace FZ4P
             m__G.mDoingStatus = "Checking Vision";
 
             //m__G.fGraph.mDriverIC.SetLEDpowers((int)((mLEDcurrent[0] - 0.07) * 5000), (int)((mLEDcurrent[1] - 0.07) * 5000), m__G.mCamCount);
-            Process.LEDs_All_On(0, true);
+
+            //Process.LEDs_All_On(0, true);
+            //LJH 수정 260109
+            Process.LEDs_All_On(0, true, new List<double> { mLEDcurrent[0], mLEDcurrent[1]});
+
             btnAllLEDOn.ForeColor = Color.White;
 
             m_bAllLEDOn = true;
@@ -1395,7 +1399,7 @@ namespace FZ4P
         //}
         private void btnLEDUP_Click(object sender, EventArgs e)
         {
-            return;
+            //return;
             //m_FocusedLED = 0;
             //MessageBox.Show("Focus Led : " + m_FocusedLED.ToString());
             m__G.mDoingStatus = "Checking Vision";
@@ -1404,13 +1408,13 @@ namespace FZ4P
 
             if (ch == 1)
             {
-                if (tbLedLeft.Text.Length > 0)
-                    mLEDcurrent[ch] = double.Parse(tbLedLeft.Text);
+                if (tbLed1.Text.Length > 0)
+                    mLEDcurrent[ch] = double.Parse(tbLed1.Text);
             }
             else
             {
-                if (tbLedRight.Text.Length > 0)
-                    mLEDcurrent[ch] = double.Parse(tbLedRight.Text);
+                if (tbLed0.Text.Length > 0)
+                    mLEDcurrent[ch] = double.Parse(tbLed0.Text);
             }
 
             if (mLEDcurrent[ch] > 0)
@@ -1423,20 +1427,27 @@ namespace FZ4P
             //m__G.fGraph.mDriverIC.SetLEDpowers((int)((mLEDcurrent[0] - 0.07) * 5000), (int)((mLEDcurrent[1] - 0.07) * 5000), m__G.mCamCount);
             //m__G.fGraph.Drive_LED(ch, mLEDcurrent[ch]);
 
-            tbLedLeft.Text = mLEDcurrent[1].ToString("F3");
-            tbLedRight.Text = mLEDcurrent[0].ToString("F3");
-
-            if (bHaltLive) StartLive();
+            if (bHaltLive)
+            {
+                StartLive();
+            }
             else
             {
-                Process.LEDs_All_On(0, true);
+                // LJH 수정 260109
+                Process.LEDs_All_On(0, true, new List<double> { mLEDcurrent[0], mLEDcurrent[1] });
+                //Process.LEDs_All_On(0, true);
             }
+
+
+            tbLed1.Text = mLEDcurrent[1].ToString("F3");
+            tbLed0.Text = mLEDcurrent[0].ToString("F3");
+
 
         }
 
         private void btnLEDDOWN_Click(object sender, EventArgs e)
         {
-            return;
+            //return;
             //m_FocusedLED = 0;
             //MessageBox.Show("Focus Led : " + m_FocusedLED.ToString());
             m__G.mDoingStatus = "Checking Vision";
@@ -1445,34 +1456,29 @@ namespace FZ4P
 
             if (ch == 1)
             {
-                if (tbLedLeft.Text.Length > 0)
-                    mLEDcurrent[ch] = double.Parse(tbLedLeft.Text);
+                if (tbLed1.Text.Length > 0)
+                    mLEDcurrent[ch] = double.Parse(tbLed1.Text);
             }
             else
             {
-                if (tbLedRight.Text.Length > 0)
-                    mLEDcurrent[ch] = double.Parse(tbLedRight.Text);
+                if (tbLed0.Text.Length > 0)
+                    mLEDcurrent[ch] = double.Parse(tbLed0.Text);
             }
 
 
-            if (mLEDcurrent[ch] < 5)
+            if (mLEDcurrent[ch] < 3)
                 mLEDcurrent[ch] += 0.01;
-
-            //m__G.oCam[0].HaltA();
-            //if (m__G.mCamCount > 1)
-            //    m__G.oCam[1].HaltA();
-
-            //m__G.fGraph.mDriverIC.SetLEDpowers((int)((mLEDcurrent[0] - 0.07) * 5000), (int)((mLEDcurrent[1] - 0.07) * 5000), m__G.mCamCount);
-            //m__G.fGraph.Drive_LED(ch, mLEDcurrent[ch]);
-
-            tbLedLeft.Text = mLEDcurrent[1].ToString("F3");   //  Left
-            tbLedRight.Text = mLEDcurrent[0].ToString("F3");   //  Right
 
             if (bHaltLive) StartLive();
             else
             {
-                Process.LEDs_All_On(0, true);
+                // LJH 수정 260109
+                Process.LEDs_All_On(0, true, new List<double> { mLEDcurrent[0], mLEDcurrent[1] });
+                //Process.LEDs_All_On(0, true);
             }
+
+            tbLed1.Text = mLEDcurrent[1].ToString("F3");
+            tbLed0.Text = mLEDcurrent[0].ToString("F3");
         }
 
         private void btnFOVUp_Click(object sender, EventArgs e)
@@ -3922,14 +3928,12 @@ namespace FZ4P
             }
         }
 
-        private void rbLED2_CheckedChanged(object sender, EventArgs e)
+        private void rbLED0_CheckedChanged(object sender, EventArgs e)
         {
-            if (rbLED2.Checked)
+            if (rbLED0.Checked)
             {
                 m_FocusedLED = 0;
-
             }
-
         }
         public int saveCount = 0;
         private void btnAllLEDOn_Click(object sender, EventArgs e)
@@ -4747,8 +4751,8 @@ namespace FZ4P
 
             btnLive2.Enabled = false;
             btnAllLEDOn.Enabled = false;
-            btnLEDDOWN.Enabled = false;
-            btnLEDUP.Enabled = false;
+            btnLEDUp.Enabled = false;
+            btnLEDDown.Enabled = false;
             btnHalt2.Enabled = false;
           
             cbContinuosMode.Enabled = false;
@@ -4760,8 +4764,8 @@ namespace FZ4P
 
             btnLive2.Enabled = true;
             btnAllLEDOn.Enabled = true;
-            btnLEDDOWN.Enabled = true;
-            btnLEDUP.Enabled = true;
+            btnLEDUp.Enabled = true;
+            btnLEDDown.Enabled = true;
             btnHalt2.Enabled = true;
            
             cbContinuosMode.Enabled = true;

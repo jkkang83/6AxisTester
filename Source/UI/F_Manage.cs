@@ -568,8 +568,8 @@ namespace FZ4P
 
         private void ToVision_Click(object sender, EventArgs e)
         {
-            STATIC.fVision.mLEDcurrent[0] = STATIC.Rcp.vsFile.LEDCurrentL;
-            STATIC.fVision.mLEDcurrent[1] = STATIC.Rcp.vsFile.LEDCurrentR;
+            STATIC.fVision.mLEDcurrent[1] = STATIC.Rcp.vsFile.LEDCurrentL;
+            STATIC.fVision.mLEDcurrent[0] = STATIC.Rcp.vsFile.LEDCurrentR;
             //STATIC.fVision.m_ChannelOn[0] = Process.m_ChannelOn[0];
             //STATIC.fVision.m_ChannelOn[1] = Process.m_ChannelOn[1];
             STATIC.State = (int)STATIC.STATE.Vision;

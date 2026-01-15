@@ -29,12 +29,12 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FVision));
-            this.btnLEDUP = new System.Windows.Forms.Button();
-            this.btnLEDDOWN = new System.Windows.Forms.Button();
+            this.btnLEDDown = new System.Windows.Forms.Button();
+            this.btnLEDUp = new System.Windows.Forms.Button();
             this.tbVsnLog = new System.Windows.Forms.TextBox();
             this.panelCam0 = new System.Windows.Forms.Panel();
             this.rbLED1 = new System.Windows.Forms.RadioButton();
-            this.rbLED2 = new System.Windows.Forms.RadioButton();
+            this.rbLED0 = new System.Windows.Forms.RadioButton();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.radioButtonSlowStep = new System.Windows.Forms.RadioButton();
             this.btnGobackOrg = new System.Windows.Forms.Button();
@@ -62,8 +62,8 @@
             this.cbSetTXTYwithMaster = new System.Windows.Forms.CheckBox();
             this.label42 = new System.Windows.Forms.Label();
             this.label43 = new System.Windows.Forms.Label();
-            this.tbLedRight = new System.Windows.Forms.TextBox();
-            this.tbLedLeft = new System.Windows.Forms.TextBox();
+            this.tbLed0 = new System.Windows.Forms.TextBox();
+            this.tbLed1 = new System.Windows.Forms.TextBox();
             this.tbMaxThread = new System.Windows.Forms.TextBox();
             this.cbCompatibility = new System.Windows.Forms.CheckBox();
             this.tbBreakIndex = new System.Windows.Forms.TextBox();
@@ -148,35 +148,33 @@
             this.groupBox5.SuspendLayout();
             this.SuspendLayout();
             // 
-            // btnLEDUP
+            // btnLEDDown
             // 
-            this.btnLEDUP.BackColor = System.Drawing.Color.Black;
-            this.btnLEDUP.Enabled = false;
-            this.btnLEDUP.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.btnLEDUP.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold);
-            this.btnLEDUP.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-            this.btnLEDUP.Location = new System.Drawing.Point(79, 930);
-            this.btnLEDUP.Name = "btnLEDUP";
-            this.btnLEDUP.Size = new System.Drawing.Size(66, 61);
-            this.btnLEDUP.TabIndex = 247;
-            this.btnLEDUP.Text = "LED Darker";
-            this.btnLEDUP.UseVisualStyleBackColor = false;
-            this.btnLEDUP.Click += new System.EventHandler(this.btnLEDUP_Click);
+            this.btnLEDDown.BackColor = System.Drawing.Color.Black;
+            this.btnLEDDown.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.btnLEDDown.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold);
+            this.btnLEDDown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            this.btnLEDDown.Location = new System.Drawing.Point(79, 930);
+            this.btnLEDDown.Name = "btnLEDDown";
+            this.btnLEDDown.Size = new System.Drawing.Size(66, 61);
+            this.btnLEDDown.TabIndex = 247;
+            this.btnLEDDown.Text = "LED Darker";
+            this.btnLEDDown.UseVisualStyleBackColor = false;
+            this.btnLEDDown.Click += new System.EventHandler(this.btnLEDDOWN_Click);
             // 
-            // btnLEDDOWN
+            // btnLEDUp
             // 
-            this.btnLEDDOWN.BackColor = System.Drawing.Color.White;
-            this.btnLEDDOWN.Enabled = false;
-            this.btnLEDDOWN.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.btnLEDDOWN.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold);
-            this.btnLEDDOWN.ForeColor = System.Drawing.Color.Black;
-            this.btnLEDDOWN.Location = new System.Drawing.Point(2, 930);
-            this.btnLEDDOWN.Name = "btnLEDDOWN";
-            this.btnLEDDOWN.Size = new System.Drawing.Size(71, 61);
-            this.btnLEDDOWN.TabIndex = 248;
-            this.btnLEDDOWN.Text = "LED Brighter";
-            this.btnLEDDOWN.UseVisualStyleBackColor = false;
-            this.btnLEDDOWN.Click += new System.EventHandler(this.btnLEDDOWN_Click);
+            this.btnLEDUp.BackColor = System.Drawing.Color.White;
+            this.btnLEDUp.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.btnLEDUp.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Bold);
+            this.btnLEDUp.ForeColor = System.Drawing.Color.Black;
+            this.btnLEDUp.Location = new System.Drawing.Point(2, 930);
+            this.btnLEDUp.Name = "btnLEDUp";
+            this.btnLEDUp.Size = new System.Drawing.Size(71, 61);
+            this.btnLEDUp.TabIndex = 248;
+            this.btnLEDUp.Text = "LED Brighter";
+            this.btnLEDUp.UseVisualStyleBackColor = false;
+            this.btnLEDUp.Click += new System.EventHandler(this.btnLEDUP_Click);
             // 
             // tbVsnLog
             // 
@@ -206,34 +204,32 @@
             // rbLED1
             // 
             this.rbLED1.AutoSize = true;
-            this.rbLED1.Enabled = false;
             this.rbLED1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.rbLED1.Font = new System.Drawing.Font("Calibri", 10F, System.Drawing.FontStyle.Bold);
             this.rbLED1.ForeColor = System.Drawing.Color.Yellow;
             this.rbLED1.Location = new System.Drawing.Point(4, 873);
             this.rbLED1.Name = "rbLED1";
-            this.rbLED1.Size = new System.Drawing.Size(56, 21);
+            this.rbLED1.Size = new System.Drawing.Size(72, 21);
             this.rbLED1.TabIndex = 6;
             this.rbLED1.TabStop = true;
-            this.rbLED1.Text = "LED L";
+            this.rbLED1.Text = "LED Top";
             this.rbLED1.UseVisualStyleBackColor = true;
             this.rbLED1.CheckedChanged += new System.EventHandler(this.rbLED1_CheckedChanged);
             // 
-            // rbLED2
+            // rbLED0
             // 
-            this.rbLED2.AutoSize = true;
-            this.rbLED2.Enabled = false;
-            this.rbLED2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.rbLED2.Font = new System.Drawing.Font("Calibri", 10F, System.Drawing.FontStyle.Bold);
-            this.rbLED2.ForeColor = System.Drawing.Color.Yellow;
-            this.rbLED2.Location = new System.Drawing.Point(4, 900);
-            this.rbLED2.Name = "rbLED2";
-            this.rbLED2.Size = new System.Drawing.Size(58, 21);
-            this.rbLED2.TabIndex = 5;
-            this.rbLED2.TabStop = true;
-            this.rbLED2.Text = "LED R";
-            this.rbLED2.UseVisualStyleBackColor = true;
-            this.rbLED2.CheckedChanged += new System.EventHandler(this.rbLED2_CheckedChanged);
+            this.rbLED0.AutoSize = true;
+            this.rbLED0.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.rbLED0.Font = new System.Drawing.Font("Calibri", 10F, System.Drawing.FontStyle.Bold);
+            this.rbLED0.ForeColor = System.Drawing.Color.Yellow;
+            this.rbLED0.Location = new System.Drawing.Point(4, 900);
+            this.rbLED0.Name = "rbLED0";
+            this.rbLED0.Size = new System.Drawing.Size(75, 21);
+            this.rbLED0.TabIndex = 5;
+            this.rbLED0.TabStop = true;
+            this.rbLED0.Text = "LED Side";
+            this.rbLED0.UseVisualStyleBackColor = true;
+            this.rbLED0.CheckedChanged += new System.EventHandler(this.rbLED0_CheckedChanged);
             // 
             // groupBox3
             // 
@@ -616,25 +612,23 @@
             this.label43.TabIndex = 428;
             this.label43.Text = "min";
             // 
-            // tbLedRight
+            // tbLed0
             // 
-            this.tbLedRight.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
-            this.tbLedRight.Enabled = false;
-            this.tbLedRight.Location = new System.Drawing.Point(84, 900);
-            this.tbLedRight.Name = "tbLedRight";
-            this.tbLedRight.Size = new System.Drawing.Size(60, 21);
-            this.tbLedRight.TabIndex = 430;
-            this.tbLedRight.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.tbLed0.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            this.tbLed0.Location = new System.Drawing.Point(84, 900);
+            this.tbLed0.Name = "tbLed0";
+            this.tbLed0.Size = new System.Drawing.Size(60, 21);
+            this.tbLed0.TabIndex = 430;
+            this.tbLed0.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
-            // tbLedLeft
+            // tbLed1
             // 
-            this.tbLedLeft.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
-            this.tbLedLeft.Enabled = false;
-            this.tbLedLeft.Location = new System.Drawing.Point(84, 873);
-            this.tbLedLeft.Name = "tbLedLeft";
-            this.tbLedLeft.Size = new System.Drawing.Size(60, 21);
-            this.tbLedLeft.TabIndex = 431;
-            this.tbLedLeft.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.tbLed1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            this.tbLed1.Location = new System.Drawing.Point(84, 873);
+            this.tbLed1.Name = "tbLed1";
+            this.tbLed1.Size = new System.Drawing.Size(60, 21);
+            this.tbLed1.TabIndex = 431;
+            this.tbLed1.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
             // tbMaxThread
             // 
@@ -1782,8 +1776,8 @@
             this.Controls.Add(this.tbBreakIndex);
             this.Controls.Add(this.cbCompatibility);
             this.Controls.Add(this.tbMaxThread);
-            this.Controls.Add(this.tbLedLeft);
-            this.Controls.Add(this.tbLedRight);
+            this.Controls.Add(this.tbLed1);
+            this.Controls.Add(this.tbLed0);
             this.Controls.Add(this.label42);
             this.Controls.Add(this.label43);
             this.Controls.Add(this.cbSetTXTYwithMaster);
@@ -1801,12 +1795,12 @@
             this.Controls.Add(this.rb2step);
             this.Controls.Add(this.rb1step);
             this.Controls.Add(this.button8);
-            this.Controls.Add(this.btnLEDUP);
-            this.Controls.Add(this.btnLEDDOWN);
+            this.Controls.Add(this.btnLEDDown);
+            this.Controls.Add(this.btnLEDUp);
             this.Controls.Add(this.panelCam0);
             this.Controls.Add(this.btnBack);
             this.Controls.Add(this.btnAllLEDOn);
-            this.Controls.Add(this.rbLED2);
+            this.Controls.Add(this.rbLED0);
             this.Controls.Add(this.btnUptoNthMesure);
             this.Controls.Add(this.rbLED1);
             this.Controls.Add(this.btnLive2);
@@ -1857,8 +1851,8 @@
         //private System.IO.Ports.SerialPort serialPort1;
         //private System.IO.Ports.SerialPort serialPort2;
         private System.Windows.Forms.Button btnOISXStepReplay;
-        private System.Windows.Forms.Button btnLEDUP;
-        private System.Windows.Forms.Button btnLEDDOWN;
+        private System.Windows.Forms.Button btnLEDDown;
+        private System.Windows.Forms.Button btnLEDUp;
         private System.Windows.Forms.Button btnFOVDown;
         private System.Windows.Forms.Button btnFOVUp;
         private System.Windows.Forms.Button btnFOVLeft;
@@ -1869,7 +1863,7 @@
         public System.Windows.Forms.Panel panelCam0;
         private System.Windows.Forms.Button btnBack;
         private System.Windows.Forms.RadioButton rbLED1;
-        private System.Windows.Forms.RadioButton rbLED2;
+        private System.Windows.Forms.RadioButton rbLED0;
         private System.Windows.Forms.Button btnAllLEDOn;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.TextBox tbImgNumber;
@@ -1897,8 +1891,8 @@
         private System.Windows.Forms.CheckBox cbSetTXTYwithMaster;
         private System.Windows.Forms.Label label42;
         private System.Windows.Forms.Label label43;
-        private System.Windows.Forms.TextBox tbLedRight;
-        private System.Windows.Forms.TextBox tbLedLeft;
+        private System.Windows.Forms.TextBox tbLed0;
+        private System.Windows.Forms.TextBox tbLed1;
         private System.Windows.Forms.TextBox tbMaxThread;
         private System.Windows.Forms.CheckBox cbCompatibility;
         private System.Windows.Forms.TextBox tbBreakIndex;

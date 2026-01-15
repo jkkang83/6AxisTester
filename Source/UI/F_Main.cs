@@ -1324,8 +1324,8 @@ namespace FZ4P
                 sResult.sTime = unixTime;
                 sResult.frameCount = framCnt;
                 sResult.fps = STATIC.fVision.GetTriggerGrabbedFPS();
-                sResult.ledLeft = STATIC.fVision.mLEDcurrent[0];
-                sResult.ledRight = STATIC.fVision.mLEDcurrent[1];
+                sResult.ledLeft = STATIC.fVision.mLEDcurrent[1];
+                sResult.ledRight = STATIC.fVision.mLEDcurrent[0];
                 sResult.testTime = STATIC.fVision.GetHowLongItTook();
 
                 //////  임시  230924
@@ -1479,8 +1479,8 @@ namespace FZ4P
                 sResult.sTime = unixTime;
                 sResult.frameCount = framCnt;
                 sResult.fps = STATIC.fVision.GetTriggerGrabbedFPS();
-                sResult.ledLeft = STATIC.fVision.mLEDcurrent[0];
-                sResult.ledRight = STATIC.fVision.mLEDcurrent[1];
+                sResult.ledLeft = STATIC.fVision.mLEDcurrent[1];
+                sResult.ledRight = STATIC.fVision.mLEDcurrent[0];
                 sResult.testTime = STATIC.fVision.GetHowLongItTook();
 
                 if (framCnt > 1000)
