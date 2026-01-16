@@ -1417,8 +1417,8 @@ namespace FZ4P
                     mLEDcurrent[ch] = double.Parse(tbLed0.Text);
             }
 
-            if (mLEDcurrent[ch] > 0)
-                mLEDcurrent[ch] -= 0.01;
+            if (mLEDcurrent[ch] < 3)
+                mLEDcurrent[ch] += 0.01;
 
             //m__G.oCam[0].HaltA();
             //if (m__G.mCamCount > 1)
@@ -1466,8 +1466,8 @@ namespace FZ4P
             }
 
 
-            if (mLEDcurrent[ch] < 3)
-                mLEDcurrent[ch] += 0.01;
+            if (mLEDcurrent[ch] > 0)
+                mLEDcurrent[ch] -= 0.01;
 
             if (bHaltLive) StartLive();
             else
@@ -3942,7 +3942,7 @@ namespace FZ4P
             {
                 m__G.mDoingStatus = "Checking Vision";
 
-                Process.LEDs_All_On(0, true);
+                Process.LEDs_All_On(0, true, new List<double> { mLEDcurrent[0], mLEDcurrent[1] });
 
                 m_bAllLEDOn = true;
 
