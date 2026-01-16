@@ -1647,9 +1647,9 @@ namespace FZ4P
 
             int addr = axis == 0 ? DrvIC.XSlaveAddr : DrvIC.Y1SlaveAddr;
             string AxisName = axis == 0 ? "X" : "Y";
-            float[] dbTargetPosi = new float[33];
-            float[] dbLensPosi = new float[33];
-            int[] dbHalldata = new int[33];
+            float[] dbTargetPosi = new float[Condition.OISLincompStep + 1];
+            float[] dbLensPosi = new float[Condition.OISLincompStep + 1];
+            int[] dbHalldata = new int[Condition.OISLincompStep + 1];
             float RefData = 0;
             byte[] ucResultCoef = new byte[13];
             int temp_table = Condition.OISLincompCodeMargin, step = 128;
