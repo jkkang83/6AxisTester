@@ -3745,7 +3745,7 @@ namespace FZ4P
                 //if (PassFails[ch].Results[(int)SpecItem.OISX_Ratedstroke].Val >= 760 && PassFails[ch].Results[(int)SpecItem.OISX_Ratedstroke].Val <= 770)
                 //    xWriteData[1] = (770 / 10);
                 //else xWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.OISX_Ratedstroke].Val / 10);
-                xWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.OISX_Ratedstroke].Val / 10);
+                xWriteData[1] = (byte)(Math.Round(PassFails[ch].Results[(int)SpecItem.OISX_Ratedstroke].Val / 10.0, MidpointRounding.AwayFromZero));
                 //xWriteData[2] = 0; //OC
                 //xWriteData[3] = 0; //OC
                 xWriteData[4] = 0x01;
@@ -3791,7 +3791,7 @@ namespace FZ4P
                 //if (PassFails[ch].Results[(int)SpecItem.OISY_Ratedstroke].Val >= 760 && PassFails[ch].Results[(int)SpecItem.OISY_Ratedstroke].Val <= 770)
                 //    yWriteData[1] = 770 / 10;
                 //else yWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.OISY_Ratedstroke].Val / 10);
-                yWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.OISY_Ratedstroke].Val / 10);
+                yWriteData[1] = (byte)(Math.Round(PassFails[ch].Results[(int)SpecItem.OISY_Ratedstroke].Val / 10.0, MidpointRounding.AwayFromZero));
                 //yWriteData[2] = 0; //OC
                 //yWriteData[3] = 0; // OC
                 yWriteData[4] = 0x01;
@@ -3887,7 +3887,7 @@ namespace FZ4P
                 //if (PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val >= 760 && PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val <= 770)
                 //    AFWriteData[1] = 770 / 4;
                 //else AFWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val / 4);
-                AFWriteData[1] = (byte)(PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val / 4);
+                AFWriteData[1] = (byte)(Math.Round(PassFails[ch].Results[(int)SpecItem.AF_Ratedstroke].Val / 4.0, MidpointRounding.AwayFromZero));
                 AFWriteData[2] = 0x1E;
                 AFWriteData[3] = 0x0B;
                 AFWriteData[4] = (byte)(Convert.ToInt16(Model.TesterNo) >> 8);

@@ -71,14 +71,14 @@ namespace FZ4P
                 }
             }
 
-            AfPidSet = new AFPidSet();
-            AfPidSet.Init(Current.AFPidPath, "PID\\");
-            XPidSet = new XPidSet();
-            XPidSet.Init(Current.XPidPath, "PID\\");
-            YPidSet = new YPidSet();
-            YPidSet.Init(Current.YPidPath, "PID\\");
-            CodeScript = new CodeScript();
-            CodeScript.Init(Current.CodeScriptPath, "PID\\");
+            //AfPidSet = new AFPidSet();
+            //AfPidSet.Init(Current.AFPidPath, "PID\\");
+            //XPidSet = new XPidSet();
+            //XPidSet.Init(Current.XPidPath, "PID\\");
+            //YPidSet = new YPidSet();
+            //YPidSet.Init(Current.YPidPath, "PID\\");
+            //CodeScript = new CodeScript();
+            //CodeScript.Init(Current.CodeScriptPath, "PID\\");
 
             Model = new Model();
 
