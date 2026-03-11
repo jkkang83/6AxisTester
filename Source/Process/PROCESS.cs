@@ -97,7 +97,7 @@ namespace FZ4P
         double SlopeX = 0;
         double SlopeY = 0;
      
-        bool I2CMonitorStartFlag = false;
+        public bool I2CMonitorStartFlag = false;
         bool isI2cMonitoring = false;
         public Process()
         {
