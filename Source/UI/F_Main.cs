@@ -164,7 +164,7 @@ namespace FZ4P
 
             }
             STATIC.fVision.MyOwner = this;
-            Process.StartI2CMonitor();
+           // Process.StartI2CMonitor();
         }
 
         private void TcpConn_OnStatus(bool isCon)
