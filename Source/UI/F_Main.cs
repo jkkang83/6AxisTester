@@ -383,7 +383,7 @@ namespace FZ4P
                 ConditinGrid.ReadOnly = true;
                 for (int row = 0; row < ConditinGrid.Rows.Count; row++)
                 {
-                    ConditinGrid[1, row].Style.BackColor = Color.LightGray;
+                    ConditinGrid[2, row].Style.BackColor = Color.LightGray;
                 }
             }
             if (EditSpec.Checked == true)
