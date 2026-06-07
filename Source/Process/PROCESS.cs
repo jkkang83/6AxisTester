@@ -97,8 +97,8 @@ namespace FZ4P
         double SlopeX = 0;
         double SlopeY = 0;
      
-        public bool I2CMonitorStartFlag = false;
-        bool isI2cMonitoring = false;
+        //public bool I2CMonitorStartFlag = false;
+        //bool isI2cMonitoring = false;
         public Process()
         {
             PortCnt = 1;
@@ -167,50 +167,50 @@ namespace FZ4P
 
 
         #region Default
-        public void StartI2CMonitor()
-        {
-            if (I2CMonitorStartFlag) return;
-            I2CMonitorStartFlag = true;
-            isI2cMonitoring = true;
-            Task monitorI2C = new Task(() => MonitorI2C());
-            monitorI2C.Start();
-        }
+        //public void StartI2CMonitor()
+        //{
+        //    if (I2CMonitorStartFlag) return;
+        //    I2CMonitorStartFlag = true;
+        //    isI2cMonitoring = true;
+        //    Task monitorI2C = new Task(() => MonitorI2C());
+        //    monitorI2C.Start();
+        //}
 
 
-        void MonitorI2C()
-        {
-            while (true)
-            {
-                if (!I2CMonitorStartFlag) { m__G.mIDLEcount = 0; break; }
-                Thread.Sleep(5000);
-                if (!I2CMonitorStartFlag) { m__G.mIDLEcount = 0; break; }
-                if (!Dln.IsRun)
-                {
-                    m__G.mIDLEcount++;
-                    if (m__G.mIDLEcount > 7)
-                 {
-                        List<double> led = new List<double>() { 0.5, 0.5 };
-                        LEDs_All_On(0, true, led);
-                        Thread.Sleep(1);
-                        if (m__G.mIDLEcount > 7)
-                        {
-                            if (!Dln.IsRun)
-                            {
-                                LEDs_All_On(0, false);
-                                m__G.mIDLEcount = 0;
-                            }
-                        }
+        //void MonitorI2C()
+        //{
+        //    while (true)
+        //    {
+        //        if (!I2CMonitorStartFlag) { m__G.mIDLEcount = 0; break; }
+        //        Thread.Sleep(5000);
+        //        if (!I2CMonitorStartFlag) { m__G.mIDLEcount = 0; break; }
+        //        if (!Dln.IsRun)
+        //        {
+        //            m__G.mIDLEcount++;
+        //            if (m__G.mIDLEcount > 7)
+        //         {
+        //                List<double> led = new List<double>() { 0.5, 0.5 };
+        //                LEDs_All_On(0, true, led);
+        //                Thread.Sleep(1);
+        //                if (m__G.mIDLEcount > 7)
+        //                {
+        //                    if (!Dln.IsRun)
+        //                    {
+        //                        LEDs_All_On(0, false);
+        //                        m__G.mIDLEcount = 0;
+        //                    }
+        //                }
 
-                    }
-                }
-                else
-                {
-                    m__G.mIDLEcount = 0;
-                }
-                if (!I2CMonitorStartFlag) { m__G.mIDLEcount = 0; break; }
-            }
-            isI2cMonitoring = false;
-        }
+        //            }
+        //        }
+        //        else
+        //        {
+        //            m__G.mIDLEcount = 0;
+        //        }
+        //        if (!I2CMonitorStartFlag) { m__G.mIDLEcount = 0; break; }
+        //    }
+        //    isI2cMonitoring = false;
+        //}
 
 
         public bool CheckFail(int ch, string Item)
@@ -940,7 +940,7 @@ namespace FZ4P
         }
         public void RunTest(int InspType) // 0:btn 1:switch 2:handler
         {
-            I2CMonitorStartFlag = false;
+          //  I2CMonitorStartFlag = false;
             if (RepeatRun == 1 || InspType != 0)
             {
                 CurrentRun = 1;
@@ -960,7 +960,7 @@ namespace FZ4P
                 while (true)
                 {
                     //   ClearChart();
-                    I2CMonitorStartFlag = false;
+                   // I2CMonitorStartFlag = false;
                     foreach (var l in ViewLog) l.Clear();
 
                     Task tasks = null;
@@ -1045,7 +1045,7 @@ namespace FZ4P
 
                 if (InspType != 2) UnloadSeq();
                 Dln.IsRun = false;
-                StartI2CMonitor();
+              //  StartI2CMonitor();
             }
             catch (Exception ex)
             {
@@ -1077,7 +1077,7 @@ namespace FZ4P
 
         public void Process_Start(int port)
         {
-            while (isI2cMonitoring) Thread.Sleep(10);
+            //while (isI2cMonitoring) Thread.Sleep(10);
             STATIC.SaveLogData = string.Empty;
             if (Option.DryRunMode) { Thread.Sleep(40000); return; }
             int index = Rcp.RetryCnt.RetryOption.FindIndex(x => x.InspName == "All");

@@ -61,7 +61,7 @@ namespace FZ4P
                     P_Vision.Size = new Size(50, 31);
                     P_Vision.Hide();
                     STATIC.fManage.BindingUIModel(this.Text);
-                    Process.StartI2CMonitor();
+                  //  Process.StartI2CMonitor();
                     break;
                 case (int)STATIC.STATE.Main:
                     //InitCondition();
@@ -85,7 +85,7 @@ namespace FZ4P
                     P_Vision.Location = new Point(0, 0);
                     P_Vision.Size = new Size(1920, 1080);
                     P_Vision.Show();
-                    Process.I2CMonitorStartFlag = false;
+                 //   Process.I2CMonitorStartFlag = false;
                     break;
             }
         }
